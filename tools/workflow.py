@@ -69,10 +69,17 @@ def registered(status):
 def public_status(raw):
     """Whitelist fields; old status files may contain private exception text."""
     current = raw.get('current', {})
-    return {'phase': raw.get('phase', 'unknown'), 'enabled': raw.get('enabled') is True,
+    result = {'phase': raw.get('phase', 'unknown'), 'enabled': raw.get('enabled') is True,
             'manager_alive': raw.get('manager_alive') is True,
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
+    result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    scope = raw.get('ims_observation_scope')
+    result['ims_observation_scope'] = scope if scope in ('owned_native', 'system_status_only') else 'unknown'
+    wait = raw.get('startup_wait', {})
+    result['startup_wait'] = {k: wait[k] for k in ('attempt', 'max_attempts', 'seconds_per_attempt', 'sim_ready', 'lte_ready')
+                              if isinstance(wait, dict) and type(wait.get(k)) in (int, bool)}
+    return result
 
 
 class Client:
@@ -159,7 +166,7 @@ class Client:
         path = '/var/rootdata/q10_volte_stage_' + uuid.uuid4().hex[:12]
         names = (FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py'])
-        names += ['profile-request.json']
+        names += ['profile-request.json', 'stage-cleanup.py']
         local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
         local_request.parent.mkdir(parents=True, exist_ok=True)
         local_request.write_bytes(profiles.canonical(self.request))
@@ -173,7 +180,9 @@ class Client:
             self.progress('connection', 'done')
             self.progress('transfer', 'working')
             for name in names:
-                source = local_request if name == 'profile-request.json' else ROOT / (MANIFEST if name == 'payload-manifest.json' else name)
+                source = (local_request if name == 'profile-request.json' else
+                          ROOT / 'tools/stage_cleanup.py' if name == 'stage-cleanup.py' else
+                          ROOT / (MANIFEST if name == 'payload-manifest.json' else name))
                 self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options + [str(source), self.host + ':' + path + '/' + name], 40)
             self.progress('transfer', 'done')
             yield path
@@ -186,9 +195,11 @@ class Client:
                 self.progress('stage_cleanup', 'pending')
             if created and completed:
                 try:
-                    # Exact new stage files only. rmdir refuses unexpected content.
-                    self.remote('rm -f ' + ' '.join(shlex.quote(path + '/' + name) for name in names) +
-                                ' && rmdir ' + ' '.join(shlex.quote(path + suffix) for suffix in ('/device', '/driver', '')))
+                    # BB10 lacks a shell rmdir. The helper verifies the exact
+                    # generated tree first, then uses unlink / os.rmdir only.
+                    result = self.execute(path + '/stage-cleanup.py', shlex.quote(json.dumps(names)))
+                    if result.get('stage_removed') is not True:
+                        raise WorkflowError('stage_cleanup_not_verified')
                 except WorkflowError:
                     self.progress('stage_cleanup', 'pending')
 

@@ -11,7 +11,7 @@
     "device/profiles.py": "fc5d4aaf469876aab33dce50938025bce80e3598b448a0d0537afda846b6a1db",
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
     "device/run.sh": "5e980fc9799f05d7c0b70a018e4b6148184c105d1806c3a7d809bfe83707e878",
-    "device/service.py": "2f60efa8735dd89b272acee4f25de70cac1e121b3d374314e0680f26caa52c85",
+    "device/service.py": "e17e379556f24c53c9f5c86017e9aeb2142f067df6804f38defbddd3f3a834e6",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
   }
 }
