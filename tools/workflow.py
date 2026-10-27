@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'device'))
 import compatibility as compat
+import profiles
 
 BASE = compat.BASE
 ENV = ('LD_LIBRARY_PATH=/base/usr/lib:/base/lib:/base/lib/dll:/radio/lib:/radio/lib/dll:/radio/usr/lib:/proc/boot '
@@ -72,10 +73,16 @@ def public_status(raw):
 
 
 class Client:
-    def __init__(self, host='q10-root', ssh_config=None, progress=None):
+    def __init__(self, host='q10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', host):
             raise WorkflowError('invalid_host')
         self.host = host
+        try:
+            value = profiles.read_json(str(profile)) if isinstance(profile, (str, Path)) else profile
+            self.request = profiles.request(value, allow_experimental)
+        except (ValueError, TypeError, OSError):
+            raise WorkflowError('invalid_profile') from None
+        self.profile = self.request['profile']
         self.progress = progress or (lambda phase, state: None)
         self.options = ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=5',
                         '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=2', '-o', 'ClearAllForwardings=yes']
@@ -110,7 +117,7 @@ class Client:
         parent = path.rsplit('/', 1)[0]
         trust = ' && '.join('(test ! -e ' + shlex.quote(parent + '/' + name) +
                             ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/' + name) + ')'
-                            for name in ('native.py', 'compatibility.py'))
+                            for name in ('native.py', 'profiles.py', 'device_info.py', 'compatibility.py'))
         trust += ' && /proc/boot/pathtrust ' + shlex.quote('!' + path)
         output = self.remote(trust + ' && ' + ENV + '/usr/bin/python3.2 ' + shlex.quote(path) + ' ' + args, timeout)
         try:
@@ -124,7 +131,12 @@ class Client:
         verify_package()
         self.progress('package', 'done')
         path = '/var/rootdata/q10_volte_stage_' + uuid.uuid4().hex[:12]
-        names = FILES + ['payload-manifest.json'] if payload else ['device/native.py', 'device/compatibility.py']
+        names = (FILES + ['payload-manifest.json'] if payload else
+                 ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py'])
+        names += ['profile-request.json']
+        local_request = ROOT / 'private' / ('profile-stage-' + uuid.uuid4().hex + '.json')
+        local_request.parent.mkdir(parents=True, exist_ok=True)
+        local_request.write_bytes(profiles.canonical(self.request))
         created = False
         completed = False
         try:
@@ -135,12 +147,13 @@ class Client:
             self.progress('connection', 'done')
             self.progress('transfer', 'working')
             for name in names:
-                source = ROOT / (MANIFEST if name == 'payload-manifest.json' else name)
+                source = local_request if name == 'profile-request.json' else ROOT / (MANIFEST if name == 'payload-manifest.json' else name)
                 self.process([self.scp, '-O', '-q'] + self.options + [str(source), self.host + ':' + path + '/' + name], 40)
             self.progress('transfer', 'done')
             yield path
             completed = True
         finally:
+            local_request.unlink(missing_ok=True)
             if created and not completed:
                 # A timed-out SSH child may still be reading this stage. Never
                 # remove its inputs or retry a write while the outcome is unknown.
@@ -155,8 +168,8 @@ class Client:
 
     def inspect_stage(self, path):
         self.progress('preflight', 'working')
-        report = self.execute(path + '/device/compatibility.py')
-        if report.get('schema') != 1 or report.get('profile') != compat.PROFILE:
+        report = self.execute(path + '/device/compatibility.py', '--request ' + shlex.quote(path + '/profile-request.json'))
+        if report.get('schema') != 2 or report.get('profile_sha256') != profiles.fingerprint(self.request):
             raise WorkflowError('invalid_device_response')
         self.progress('preflight', 'done')
         return report
@@ -191,6 +204,7 @@ class Client:
             after = self.inspect_stage(path)
             if (after['installation'].get('payload_verified') is not True or
                     after['installation'].get('version') != verify_package()['version'] or
+                    after['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request) or
                     after['installation']['state'] != 'stopped'):
                 raise WorkflowError('installation_not_verified', after)
             self.progress('verify', 'done')
@@ -199,7 +213,8 @@ class Client:
             result.update(self.action('start'))
         return result
 
-    def wait_registration(self, timeout=180):
+    def wait_registration(self, timeout=None):
+        timeout = self.profile['runtime']['registration_wait_seconds'] if timeout is None else timeout
         deadline = time.monotonic() + timeout
         self.progress('registration', 'working')
         state = {}
@@ -210,7 +225,7 @@ class Client:
                 return {'registration': 'verified', 'status': state, 'call_acceptance': 'pending'}
             if state['phase'] in ('error', 'error_restored', 'cleanup_required', 'native_exited'):
                 raise WorkflowError('service_needs_attention', state)
-            time.sleep(3)
+            time.sleep(self.profile['runtime']['poll_seconds'])
         self.progress('registration', 'pending')
         return {'registration': 'pending', 'status': state, 'call_acceptance': 'pending'}
 
@@ -227,6 +242,8 @@ class Client:
             result = public_status(self.service('status'))
             return {'status': result, 'registered': registered(result), 'preflight': report}
         if action in ('start', 'enable'):
+            if report['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request):
+                raise WorkflowError('profile_update_required', report)
             if not report.get('can_start'):
                 if action == 'start' and installed == 'busy':
                     state = public_status(self.service('status'))
@@ -234,7 +251,8 @@ class Client:
                             'already_started': True, 'call_acceptance': 'pending'}
                 raise WorkflowError('preflight_blocked', report)
             self.progress('start', 'working')
-            self.execute(BASE + '/device/install.py', 'enable')
+            if action == 'enable' or self.profile['runtime']['autostart']:
+                self.execute(BASE + '/device/install.py', 'enable')
             if action == 'enable':
                 self.progress('start', 'done')
                 return {'enabled': True}

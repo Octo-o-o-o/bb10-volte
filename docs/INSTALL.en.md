@@ -73,13 +73,13 @@ python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 
 Before changing network configuration, the installer checks native hashes, the original voice policy `00`, existing IMS/VPN state and software provider state. Finish any previous experiment before proceeding; do not delete unknown objects to pass preflight.
 
-v0.2.0 also checks model, full OS version, SIM/MCC/MNC, LTE and APN. The desktop verifies the pinned manifest without regenerating it; the phone repeats preflight before writing. `setup` installs, reads back, starts and observes registration; `install` only installs and `update` only updates. `check` is an alias of `preflight`. An incompatible preflight exits 2; execution errors exit 1. Service readiness waits are bounded at 300 seconds, and a known incompatible SIM/carrier fails immediately.
+v0.3.0 adds device recognition, editable profiles and explicit experimental opt-in; see [profiles](PROFILES.en.md). The desktop verifies the fixed manifest, and the phone repeats preflight before writing. Setup installs/reads back/starts/observes; install and update do not start; check aliases preflight. Ineligible preflight exits 2, execution errors 1. Root preparation remains Q10-only; Q20/Q30 need their own matching root SSH. Readiness waits are configurable, and incompatible SIM/carrier combinations fail immediately.
 
 Files are installed under `/var/rootdata/q10_volte`; the startup entry is `/var/addons/q10-unicom-volte/init/start.sh` through AutoRoot v4's addon mechanism. The stock IMS binary remains unchanged. The manager runs on the phone after the desktop command returns. First start sets IMS-preferred voice through the native API and may briefly reload the radio; it then waits for LTE/SIM readiness, establishes the IMS APN and starts native IMS.
 
 ## 5. Check status and calls
 
-`setup` / `start` observe IMS registration for up to 180 seconds. If registration is pending, check again later:
+`setup` / `start` observe IMS registration for the configured duration (180 seconds by default). If registration is pending, check again later:
 
 ```powershell
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
@@ -122,4 +122,4 @@ python tools/q10.py start --ssh-config private/root-kit/ssh_config
 
 Update checks the previous installation's file ownership and preserves the recovery journal. Collected logs go under ignored `private/` and may contain phone numbers, SIM identifiers and authentication data. Do not attach them directly to public issues; see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
-Updates disable boot startup during writing and restore the previous switch after completion. Interrupted writes leave a transaction receipt or incomplete directories and block replacement/startup. Automatic repair of arbitrary interrupted writes is not implemented; preserve evidence for manual inspection. Keep USB connected and do not run another installer concurrently. Full hardware installation acceptance of v0.2.0 is still pending; earlier call evidence is not acceptance of the new workflow.
+Updates disable autostart while writing, then apply the selected profile's setting. Changing parameters requires stop/restore, fresh preflight, update and call acceptance. A mismatched profile cannot start an old installation. Interrupted writes preserve receipts and block replacement; no arbitrary interruption repair is provided. Keep USB connected and avoid concurrent installers. Full v0.3.0 hardware installation acceptance remains pending; earlier calling evidence is separate.

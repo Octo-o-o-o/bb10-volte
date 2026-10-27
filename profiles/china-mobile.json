@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "china-mobile",
+  "label": "China Mobile - untested template",
+  "carrier": {
+    "mcc": "460",
+    "mncs": [
+      "00",
+      "02",
+      "07"
+    ],
+    "data_apns": [
+      "cmnet"
+    ],
+    "stock_config": "auto",
+    "stock_sha256": ""
+  },
+  "ims": {
+    "apn": "ims",
+    "ip_family": "IPv4v6",
+    "home_domain": "auto",
+    "sms": true
+  },
+  "runtime": {
+    "sim_wait_seconds": 300,
+    "ims_apn_wait_seconds": 45,
+    "existing_ims_wait_seconds": 330,
+    "registration_wait_seconds": 180,
+    "poll_seconds": 3,
+    "autostart": true
+  }
+}

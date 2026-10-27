@@ -1,10 +1,10 @@
-# BB10 VoLTE — 黑莓 Q10 4G 通话解锁
+# BB10 VoLTE — 黑莓 4G 通话实验工具
 
 **简体中文** | [English](README.en.md)
 
 **仓库状态：暂时保持 Private，待稳定后再由维护者开放为 Public。** 源码采用 MIT 许可证，以下文档同时为后续公开发布作准备。
 
-为 BlackBerry 10 启用原生 VoLTE / 4G 语音通话的开源工具，使用手机自己的 SIM、IMS 协议栈和系统拨号器。当前实现与实机验证范围为 **BlackBerry Q10 SQN100-3、BB10 10.3.3.3216、北京中国联通 460-01**。
+为 BlackBerry 10 启用原生 VoLTE / 4G 语音通话，使用手机自己的 SIM、IMS 协议栈和系统拨号器。实机验证范围为 **Q10 SQN100-3、BB10 OS 10.3.3.3216、北京中国联通 460-01**。v0.3.0 自动识别 Q10、Classic（Q20）和 Passport（Q30），支持运营商配置编辑和 JSON 导入导出。Q20 / Q30 显示“未实测适配 · 可实验试用”，勾选试用并通过全部技术检查后可以安装。
 
 **已于 2026 年 10 月 27 日在真实 Q10 上测试验证。** 最新一轮已确认正常重启后自动恢复、断开 USB 后使用系统拨号器呼入接听和呼出、双向声音，以及通话期间保持 4G；两次呼叫均有 `INVITE 200 / ACK / BYE` 证据。本轮接通后通话约 **14.2 秒和 5.6 秒**，64 个状态样本全部为 LTE 且 IMS connected。当前仍为**单机实验版**，尚不能据此宣称长通话、长期待机或其他机型、固件与运营商稳定可用。
 
@@ -25,7 +25,7 @@
 
 | 组件 | 要求 / 已记录的测试环境 |
 | --- | --- |
-| 手机 | **BlackBerry Q10 SQN100-3**；其他 Q10 版本与 BB10 机型未验证 |
+| 手机 | **Q10 SQN100-3** 已实测；其他 Q10 变体、Q20 / Q30 仅在全部技术检查通过后允许实验试用 |
 | 手机系统（OS） | **BlackBerry 10 OS 10.3.3.3216**；固件包文件名写作 `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，安装器严格检查原生文件哈希 |
 | SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
 | 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
@@ -72,9 +72,11 @@ python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
 ```
 
-`setup` 固定执行安装、回读、启动和最长 180 秒的注册观察。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
+`setup` 固定执行安装、回读、启动和可配置的注册观察（默认 180 秒）。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
 
-v0.2.0 的兼容性预检已在上述 Q10 实机执行；GUI 和新安装控制流程的验证与此前通话证据分开记录，新流程尚需完整实机安装验收。外省联通只在相同技术条件下允许试验；移动、电信、其他 MNC 或 ISIM 会被阻止安装，详见兼容性矩阵。
+v0.3.0 的软件验证与此前通话证据分开记录，新流程尚需完整实机安装验收。移动、电信及其他联通 MNC 可选择模板或编辑参数后勾选实验试用，仍需满足 OS、ABI、原生哈希、SIM 和原厂配置检查；ISIM 仍不支持。CLI 试用添加 `--allow-experimental`，自定义配置添加 `--profile path/to/profile.json`，后续操作沿用相同选项。注册观察默认 180 秒，可在配置中修改。
+
+见 [配置指南](docs/PROFILES.md) 和 [资料调研](docs/CARRIER-RESEARCH.md)。**Root 固件准备仍为 Q10 专用；Q20 / Q30 必须准备对应机型的 Root SSH，不得使用 Q10 镜像刷写。**
 
 ### 4. 实际通话与恢复
 

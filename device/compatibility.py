@@ -11,21 +11,25 @@ import sys
 import time
 
 import native as n
+import profiles
+import device_info
 
-PROFILE = 'q10-sqn100-3-os3216-unicom01-usim-v1'
+PROFILE = profiles.DEFAULT['id']
 OWNER = 'q10-unicom-volte-v1'
 BASE = '/var/rootdata/q10_volte'
 ADDON = '/var/addons/q10-unicom-volte'
 LEGACY_FILES = {'device/install.py', 'device/service.py', 'device/native.py',
                 'device/ims_image.py', 'device/radio_api.py', 'device/run.sh',
                 'device/addon-start.sh', 'driver/devnp-volte_swcrypto_probe.so'}
-FILES = LEGACY_FILES | {'device/compatibility.py'}
+V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
+FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
 
 
-def read_network():
+def read_network(profile=None):
     """Return derived facts, never IMSI/ICCID/IMEI or the raw PPS objects."""
+    p = profiles.validate(profiles.default() if profile is None else profile)
     result = {}
     try:
         card = n.attrs(n.read('/pps/services/cellular/uicc/card0/status_private'))
@@ -34,7 +38,7 @@ def read_network():
         home = n.value(card, 'hplmn', {})
         result['mcc'], result['mnc'] = home.get('mcc'), home.get('mnc')
         restricted = n.attrs(n.read('/pps/services/cellular/uicc/card0/status_restricted'))
-        result['identity_matches'] = bool(re.match(r'^46001[0-9]{10}$', str(n.value(restricted, 'imsi'))))
+        result['identity_matches'] = profiles.identity_matches(str(n.value(restricted, 'imsi')), result['mcc'], result['mnc'])
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         result['sim_read_error'] = True
     try:
@@ -42,22 +46,23 @@ def read_network():
         internet = n.value(n.attrs(n.read(DATA)), 'internet', {})
         result.update(radio_on=n.value(radio, 'power_status') == 'ON',
                       lte=n.value(radio, 'network_technology') == ['lte'],
-                      apn_matches=internet.get('apn') == '3gnet',
+                      apn_matches=internet.get('apn') in p['carrier']['data_apns'],
                       data_connected=internet.get('connected') is True)
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         result['network_read_error'] = True
     return result
 
 
-def network_checks(s):
+def network_checks(s, profile=None):
+    p = profiles.validate(profiles.default() if profile is None else profile)
     checks = []
     def add(key, status, code):
         checks.append({'id': key, 'status': status, 'code': code})
     ready = s.get('sim_state') == 'READY' and not s.get('sim_read_error')
     add('sim', 'pass' if ready else 'wait', 'sim_ready' if ready else 'sim_unavailable')
     if ready:
-        carrier = (s.get('mcc'), s.get('mnc')) == ('460', '01')
-        add('carrier', 'pass' if carrier else 'adapt', 'unicom_46001' if carrier else 'carrier_not_profiled')
+        carrier = s.get('mcc') == p['carrier']['mcc'] and s.get('mnc') in p['carrier']['mncs']
+        add('carrier', 'pass' if carrier else 'adapt', 'carrier_matches_profile' if carrier else 'carrier_not_profiled')
         kind = s.get('sim_type')
         supported = isinstance(kind, int) and bool(kind & 2) and not bool(kind & 16)
         add('sim_route', 'pass' if supported else 'adapt', 'usim_without_isim' if supported else 'sim_route_not_profiled')
@@ -71,8 +76,8 @@ def network_checks(s):
     return checks
 
 
-def network_state(s):
-    checks = network_checks(s)
+def network_state(s, profile=None):
+    checks = network_checks(s, profile)
     return ('needs_adaptation' if any(c['status'] == 'adapt' for c in checks) else
             'not_ready' if any(c['status'] != 'pass' for c in checks) else 'ready')
 
@@ -95,7 +100,7 @@ def installed_state():
             return result
         manifest = json.loads(n.read(BASE + '/installation.json').decode('ascii'))
         names = set(manifest['files'])
-        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, FILES):
+        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, FILES):
             return result
         for name, expected in manifest['files'].items():
             path = BASE + '/' + name
@@ -107,6 +112,12 @@ def installed_state():
         result = {'state': 'stopped', 'version': manifest.get('version'),
                   'enabled': os.path.isfile(BASE + '/enabled'), 'payload_verified': True,
                   'current_profile': names == FILES}
+        if names == FILES:
+            if os.path.islink(BASE + '/carrier-profile.json'):
+                return {'state': 'conflict'}
+            request = profiles.installed_request(BASE)
+            result['carrier_profile_sha256'] = profiles.fingerprint(request)
+            result['carrier_profile_id'] = request['profile']['id']
         if os.path.exists(BASE + '/state/lock.json'):
             # Never delete a stale/unknown lock from a preflight.
             result['state'] = 'busy'
@@ -140,27 +151,32 @@ def pristine_configuration():
     return True
 
 
-def observe():
-    s = read_network()
+def observe(profile=None):
+    p = profiles.validate(profiles.default() if profile is None else profile)
+    s = read_network(p)
     s['root_ready'] = os.geteuid() == 0 and os.path.isfile('/tmp/root.done')
     s['arm32_qnx'] = ctypes.sizeof(ctypes.c_void_p) == 4 and os.uname()[0] == 'QNX'
     try:
-        props = n.attrs(n.read('/pps/services/deviceproperties'))
-        # Model and version strings are not device-unique identifiers.
-        s['model'] = n.value(props, 'modelname')
-        s['variant'] = n.value(props, 'modelnumber')
-        s['os_version'] = n.read('/etc/os.version').decode('ascii').strip()
+        s.update(device_info.read_identity())
     except (OSError, ValueError, TypeError):
         pass
     s['native_hashes'] = {}
+    s['native_sha256'] = {}
     for path, expected in n.STOCK_HASHES.items():
         try:
-            s['native_hashes'][path] = n.digest(n.read(path)) == expected
+            digest = n.digest(n.read(path))
+            s['native_hashes'][path] = digest == expected
+            s['native_sha256'][path] = digest
         except OSError:
             s['native_hashes'][path] = False
     s['installation'] = installed_state()
+    try:
+        s['carrier_template'], _ = profiles.carrier_template(p, s.get('mcc'), s.get('mnc'))
+        s['carrier_template_ready'] = True
+    except Exception:
+        s['carrier_template_ready'] = False
     # Never call native ARM functions on a different build, host or privilege level.
-    if s['root_ready'] and s['arm32_qnx'] and all(s['native_hashes'].values()):
+    if s['root_ready'] and device_info.engine_matches(s):
         try:
             s.update(voice_policy=n.voice_policy(), crypto=n.crypto_policy(),
                      ims_count=len(n.ims_pids()), vpn_count=len(n.active_vpn_sessions()),
@@ -170,31 +186,44 @@ def observe():
     return s
 
 
-def evaluate(s):
+def evaluate(s, profile=None, allow_experimental=False):
+    req = profiles.request(profile, allow_experimental)
+    p = req['profile']
+    device = device_info.identify(s)
     checks = []
     def check(key, passed, code, failure='block'):
         checks.append({'id': key, 'status': 'pass' if passed else failure, 'code': code})
-    check('model', s.get('model') == 'Q10' and s.get('variant') == 'SQN100-3', 'q10_sqn100_3_required')
-    check('os', s.get('os_version') == '10.3.3.3216', 'os_3216_required')
+    check('model', device['recognized'], 'device_identified' if device['recognized'] else 'device_identity_unknown')
+    check('os', s.get('os_version') == device_info.OS_VERSION, 'os_3216_required')
     check('root', s.get('root_ready') and s.get('arm32_qnx'), 'root_qnx_arm32_required', 'wait')
     hashes = s.get('native_hashes', {})
     check('native', set(hashes) == set(n.STOCK_HASHES) and all(hashes.values()), 'native_hashes_required')
-    checks.extend(network_checks(s))
+    checks.extend(network_checks(s, p))
+    check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
+    experimental = not device['hardware_tested'] or not profiles.baseline_parameters(p)
+    check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else 'recorded_baseline', 'wait')
     statuses = [c['status'] for c in checks]
     outcome = ('unsupported' if 'block' in statuses else 'needs_adaptation' if 'adapt' in statuses
-               else 'not_ready' if 'wait' in statuses else 'compatible')
+               else 'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
     installation = s.get('installation', {'state': 'conflict'})
     pristine = (not s.get('native_read_error') and s.get('voice_policy') == 0 and
                 s.get('crypto') == {'swcr_id': -1, 'crypto_support': 0} and
                 s.get('ims_count') == 0 and s.get('vpn_count') == 0 and
                 s.get('clean_configuration') is True)
     state = installation['state']
-    allowed = outcome == 'compatible' and pristine
+    allowed = outcome in ('compatible', 'experimental') and pristine
     checks.append({'id': 'installation', 'status': 'pass' if state in ('absent', 'stopped', 'busy') else 'wait',
                    'code': 'installation_' + state})
     checks.append({'id': 'baseline', 'status': 'pass' if pristine else 'wait',
                    'code': 'baseline_clean' if pristine else 'baseline_not_clean'})
-    return {'schema': 1, 'profile': PROFILE, 'checked_at': int(time.time()),
+    request_sha = profiles.fingerprint(req)
+    matching_profile = installation.get('carrier_profile_sha256') == request_sha
+    check('saved_profile', state == 'absent' or not installation.get('current_profile') or matching_profile,
+          'saved_profile_matches' if matching_profile else 'profile_update_required', 'wait')
+    return {'schema': 2, 'profile': p['id'], 'profile_sha256': request_sha,
+            'profile_parameters': p, 'experimental': experimental, 'experimental_allowed': allow_experimental,
+            'device': device, 'native_sha256': s.get('native_sha256', {}),
+            'carrier_template': s.get('carrier_template'), 'checked_at': int(time.time()),
             'outcome': outcome, 'checks': checks,
             'facts': {key: s.get(key) for key in ('model', 'variant', 'os_version', 'mcc', 'mnc')},
             'installation': installation,
@@ -202,17 +231,17 @@ def evaluate(s):
                                                     'clean_configuration', 'native_read_error')},
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
-            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True,
-            'hardware_validation': 'single_q10_beijing_unicom_only',
+            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
+            'hardware_validation': 'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',
             'carrier_provisioning': 'requires_user_confirmation_and_real_calls'}
 
 
-def probe():
-    return evaluate(observe())
+def probe(profile=None, allow_experimental=False):
+    return evaluate(observe(profile), profile, allow_experimental)
 
 
-def require(action):
-    report = probe()
+def require(action, profile=None, allow_experimental=False):
+    report = probe(profile, allow_experimental)
     if not report.get('can_' + action):
         failures = ','.join(c['code'] for c in report['checks'] if c['status'] != 'pass')
         raise RuntimeError('Preflight blocked ' + action + ': ' + report['outcome'] + ' ' + failures)
@@ -220,4 +249,5 @@ def require(action):
 
 
 if __name__ == '__main__':
-    print(json.dumps(probe(), sort_keys=True))
+    req = profiles.load_request(sys.argv[2]) if len(sys.argv) == 3 and sys.argv[1] == '--request' else profiles.request()
+    print(json.dumps(probe(req['profile'], req['allow_experimental']), sort_keys=True))

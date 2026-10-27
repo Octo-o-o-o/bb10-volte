@@ -6,6 +6,7 @@ import sys
 import time
 import native as n
 import compatibility as compatibility
+import profiles
 
 BASE = '/var/rootdata/q10_volte'
 ADDON = '/var/addons/q10-unicom-volte'
@@ -23,14 +24,15 @@ def install(stage, update=False):
         if name.endswith('.py'):
             compile(data, name, 'exec')
     assert manifest['files']['driver/devnp-volte_swcrypto_probe.so'] == n.HELPER_HASH
+    request = profiles.load_request(stage + '/profile-request.json')
     n.verify_stock()
     # Authoritative fresh check on the phone, even if the desktop already checked.
     # No payload, addon, modem or carrier changes occur before this gate.
-    compatibility.require('update' if update else 'install')
+    compatibility.require('update' if update else 'install', request['profile'], request['allow_experimental'])
     if update:
         previous = json.loads(n.read(BASE+'/installation.json').decode('ascii'))
         assert previous['owner'] == manifest['owner']
-        assert set(previous['files']) in (compatibility.LEGACY_FILES, required)
+        assert set(previous['files']) in (compatibility.LEGACY_FILES, compatibility.V02_FILES, required)
         for name, expected in previous['files'].items():
             assert n.digest(n.read(BASE+'/'+name)) == expected, 'Installed file changed outside the project: '+name
         assert n.digest(n.read(ADDON+'/init/start.sh')) == previous['files']['device/addon-start.sh']
@@ -72,8 +74,11 @@ def install(stage, update=False):
             os.mkdir(path, 0o755)
     n.atomic(ADDON + '/init/start.sh', n.read(BASE+'/device/addon-start.sh'), 0o700)
     n.command(['/proc/boot/pathtrust', '!'+ADDON+'/init/start.sh'])
+    n.atomic(BASE + '/carrier-profile.json', profiles.canonical(request))
+    manifest['carrier_profile_sha256'] = profiles.fingerprint(request)
+    manifest['carrier_profile_id'] = request['profile']['id']
     n.atomic(BASE + '/installation.json', json.dumps(manifest, indent=2).encode('ascii'))
-    if not update or was_enabled:
+    if request['profile']['runtime']['autostart']:
         n.atomic(BASE + '/enabled', b'enabled by owner installation\n')
     os.unlink(BASE + '/install-transaction.json')
     print(json.dumps({'installed': True, 'base': BASE, 'addon': ADDON,

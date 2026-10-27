@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
        'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
-            'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json')
+            'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 SENSITIVE = {
     'access token': re.compile(r'(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})'),

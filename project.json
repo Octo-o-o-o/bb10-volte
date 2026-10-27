@@ -1,8 +1,8 @@
 {
   "name": "q10-unicom-volte",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "state": "experimental_gui_preflight_verified_full_install_acceptance_pending",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / China Unicom46001; exact native hashes required"
+  "scope": "Auto-detected Q10, Classic/Q20 and Passport/Q30; recorded Q10 baseline plus explicit experimental opt-in, exact OS/ABI/native hashes always required"
 }

@@ -1,4 +1,4 @@
-"""Phone-managed Q10 Unicom VoLTE service, with an owned journal and explicit stop.
+"""Phone-managed BB10 VoLTE service, with an owned journal and explicit stop.
 
 No phone calls are initiated. Stock executable files are never overwritten.
 Python 3.2 compatible; intended only for the exact native hashes in native.py.
@@ -14,6 +14,8 @@ import traceback
 
 import native as n
 import compatibility
+import profiles
+import device_info
 from ims_image import temporary_binary
 from radio_api import set_voice_preference
 
@@ -43,34 +45,12 @@ UPDATES = {
           'Home_network_domain_name': ':' + DOMAIN},
     CDSC: {'cdsc_xml': ':' + APN},
 }
-OLD_APN = ('    <ServiceConfigurationAlias>\n      <Name>ims</Name>\n'
-           '      <Reference>internet</Reference>\n    </ServiceConfigurationAlias>')
-NEW_APN = '''    <ServiceConfiguration>
-      <Name>ims</Name>
-      <Description>Q10 Unicom IMS</Description>
-      <AlwaysOn>true</AlwaysOn>
-      <AppModifiable>false</AppModifiable>
-      <LTEAttachService>false</LTEAttachService>
-      <NetworkInterfaceConfiguration>
-        <IPConfiguration>
-          <Type>IPv4v6</Type>
-          <ProtectRouting>true</ProtectRouting>
-        </IPConfiguration>
-      </NetworkInterfaceConfiguration>
-      <BearerManagementTimer/>
-      <RadioAccessTechnology>
-        <NetworkServiceFilter>LTE</NetworkServiceFilter>
-        <APN>ims</APN>
-      </RadioAccessTechnology>
-      <IMSConfiguration>
-        <RequestPCSCFViaPCO>true</RequestPCSCFViaPCO>
-      </IMSConfiguration>
-      <EPDGConfiguration/>
-    </ServiceConfiguration>'''
 shutdown = False
 j = None
 child = None
 event_seen = set()
+ACTIVE_REQUEST = profiles.request()
+ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
 
 
 def load(path):
@@ -137,31 +117,50 @@ def current_usim():
     kind = n.value(card, 'uicc_type')
     assert kind & 2 and not kind & 16, 'Only the verified USIM-without-ISIM route is supported'
     home = n.value(card, 'hplmn')
-    assert (home.get('mcc'), home.get('mnc')) == ('460', '01'), 'Supported HPLMN is46001 only'
+    assert (home.get('mcc') == ACTIVE_PROFILE['carrier']['mcc'] and
+            home.get('mnc') in ACTIVE_PROFILE['carrier']['mncs']), 'SIM does not match the installed operator profile'
     imsi = str(n.value(restricted, 'imsi'))
-    assert re.match(r'^46001[0-9]{10}$', imsi), 'Unexpected USIM identity layout'
+    assert profiles.identity_matches(imsi, home.get('mcc'), home.get('mnc')), 'Unexpected USIM identity layout'
     return imsi
 
 
 def ready():
-    return compatibility.network_state(compatibility.read_network()) == 'ready'
+    return compatibility.network_state(compatibility.read_network(ACTIVE_PROFILE), ACTIVE_PROFILE) == 'ready'
 
 
-def wait_for_network(timeout=300):
+def wait_for_network(timeout=None):
+    timeout = ACTIVE_PROFILE['runtime']['sim_wait_seconds'] if timeout is None else timeout
     deadline = time.time() + timeout
     while time.time() < deadline:
-        snapshot = compatibility.read_network()
-        state = compatibility.network_state(snapshot)
+        snapshot = compatibility.read_network(ACTIVE_PROFILE)
+        state = compatibility.network_state(snapshot, ACTIVE_PROFILE)
         if state == 'needs_adaptation':
-            raise RuntimeError('SIM/carrier needs adaptation; this profile is Unicom46001 USIM without ISIM')
+            raise RuntimeError('SIM/carrier needs adaptation; check the installed profile and USIM-without-ISIM route')
         if state == 'ready':
             return True
         if stopping():
             status('stopped_before_configuration')
             return False
         status('waiting_for_lte_and_usim')
-        time.sleep(3)
-    raise RuntimeError('Readiness timed out after 300 seconds; check SIM, LTE and the 3gnet data APN')
+        time.sleep(ACTIVE_PROFILE['runtime']['poll_seconds'])
+    raise RuntimeError('Readiness timed out after %s seconds; check SIM, LTE and the profile data APN' % timeout)
+
+
+def profile_updates(profile, mcc, mnc):
+    services = [{'service': 'voice', 'feature_tag': '', 'network': ['LTE']}]
+    if profile['ims']['sms']:
+        services.append({'service': 'sms', 'feature_tag': '', 'network': ['LTE']})
+    return {VOICE: {'voice_domain_preference_EUTRAN': 'n:3'},
+            IMS: {'IMS_profilesV2': 'json:["IR92"]', 'supported_networks': 'json:["LTE"]',
+                  'IMS_services': 'json:' + json.dumps(services, separators=(',', ':')),
+                  'Home_network_domain_name': ':' + profiles.home_domain(profile, mcc, mnc)},
+            CDSC: {'cdsc_xml': ':' + APN}}
+
+
+def applied_updates():
+    # Restore the exact values that were applied, even if a different operator
+    # profile was selected later. Pre-v0.3 journals use the original baseline.
+    return j.get('pps_applied', UPDATES)
 
 
 def init_journal():
@@ -206,11 +205,12 @@ def write_owned(path, data, mode, uid=None, gid=None):
 
 def apply_fields(path):
     current = n.attrs(n.read(path))
-    for key, target in UPDATES[path].items():
+    updates = applied_updates()[path]
+    for key, target in updates.items():
         assert current.get(key) in (j['pps_before'][path][key], target), 'Concurrent carrier change: ' + key
-    n.update_pps(path, UPDATES[path])
+    n.update_pps(path, updates)
     actual = n.attrs(n.read(path))
-    assert all(actual.get(k) == v for k, v in UPDATES[path].items())
+    assert all(actual.get(k) == v for k, v in updates.items())
 
 
 def crypto_command(option):
@@ -324,7 +324,7 @@ def restore():
     for path in (IMS, CDSC, VOICE):
         current = n.attrs(n.read(path))
         updates = {}
-        for key, applied in UPDATES[path].items():
+        for key, applied in applied_updates()[path].items():
             original = j['pps_before'][path][key]
             assert current.get(key) in (applied, original), 'Refuse to overwrite concurrent carrier change'
             updates[key] = original
@@ -352,20 +352,26 @@ def restore():
 def configure():
     assert ready(), 'SIM/network changed after preflight; recheck compatibility'
     imsi = current_usim()
+    network = compatibility.read_network(ACTIVE_PROFILE)
+    assert profiles.identity_matches(imsi, network.get('mcc'), network.get('mnc')), 'SIM identity changed during configuration'
+    template, carrier_xml = profiles.carrier_template(ACTIVE_PROFILE, network.get('mcc'), network.get('mnc'))
+    updates = profile_updates(ACTIVE_PROFILE, network.get('mcc'), network.get('mnc'))
     init_journal()
+    request_sha = profiles.fingerprint(ACTIVE_REQUEST)
+    if not j.get('restore_completed') and j.get('profile_sha256') not in (None, request_sha):
+        raise RuntimeError('Restore the previous profile before applying another configuration')
     assert not n.ims_pids(), 'An existing IMS instance must finish before activation'
     collect_vpn_evidence()  # Preserve proof from the previous run before replacing its stdout.
     cleanup_vpn()
-    j.update(boot=boot_token(), native_pid=None, restore_completed=False,
+    j.update(boot=boot_token(), native_pid=None, restore_completed=False, pps_applied=updates,
+             profile_sha256=request_sha, carrier_template=template,
              vpn_before_uids=sorted(x.decode('ascii') for x in n.vpn_ids(n.vpn_configs())))
     save_journal()
     original = n.read('/radio/bin/ims_rrm')
     changed, patches = temporary_binary(original, True)
     write_owned(BIN, changed, 0o755)
     j['binary_patches'] = patches
-    stock = n.read('/etc/carrier/config/36.xml')
-    assert stock.count(OLD_APN.encode('ascii')) == 1
-    write_owned(APN, stock.replace(OLD_APN.encode('ascii'), NEW_APN.encode('ascii')), 0o644)
+    write_owned(APN, carrier_xml, 0o644)
     write_owned(RUNTIME + '/carrier/emergency.xml', n.read('/radio/etc/carrier/config/emergency.xml'), 0o644)
     if not os.path.exists(CFG_DIR):
         os.mkdir(CFG_DIR, 0o755)
@@ -379,7 +385,7 @@ def configure():
     n.update_pps(CFG, {'IMS_platform': ':common'})
     os.chmod(CFG, 0o644)
     assert n.attrs(n.read(CFG)) == {'IMS_platform': ':common'}
-    impi = imsi + '@' + DOMAIN
+    impi = imsi + '@' + profiles.home_domain(ACTIVE_PROFILE, network['mcc'], network['mnc'])
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<ims><ImsConfig>'
            '<Impi>%s</Impi><Imsi>%s</Imsi><ImpuList><Impu>sip:%s</Impu></ImpuList>'
            '</ImsConfig></ims>\n' % (impi, imsi, impi)).encode('ascii')
@@ -402,8 +408,9 @@ def configure():
         assert j.get('crypto_boot') == boot_token() and crypto['swcr_id'] == j.get('provider'), 'Unowned crypto provider'
     assert 0 <= j['provider'] <= 127
     apply_fields(CDSC)
-    wait_until(lambda: n.value(n.attrs(n.read(DATA)), 'ims', {}).get('apn') == 'ims' and
-               n.value(n.attrs(n.read(DATA)), 'ims', {}).get('connected'), 45, 'dedicated IMS APN')
+    wait_until(lambda: n.value(n.attrs(n.read(DATA)), 'ims', {}).get('apn') == ACTIVE_PROFILE['ims']['apn'] and
+               n.value(n.attrs(n.read(DATA)), 'ims', {}).get('connected'),
+               ACTIVE_PROFILE['runtime']['ims_apn_wait_seconds'], 'dedicated IMS APN')
     apply_fields(IMS)
     n.command(['/proc/boot/pathtrust', '!' + BIN])
     save_journal()
@@ -430,7 +437,7 @@ def serve():
         n.verify_stock()
         if not wait_for_network():
             return
-        wait_until(lambda: not n.ims_pids(), 330, 'pre-existing native IMS instance')
+        wait_until(lambda: not n.ims_pids(), ACTIVE_PROFILE['runtime']['existing_ims_wait_seconds'], 'pre-existing native IMS instance')
         configure()
         stdout_fd = os.open(STATE + '/native.log', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_APPEND, 0o600)
         with os.fdopen(stdout_fd, 'wb') as output:
@@ -455,7 +462,7 @@ def serve():
             state = live()
             status('running' if state['ims'] == 'connected' and state['register_status'] == '200 OK' else 'registering')
             # LTE loss is handled by the native IMS state machine; never toggle radio here.
-            time.sleep(3)
+            time.sleep(ACTIVE_PROFILE['runtime']['poll_seconds'])
             count += 1
         if os.path.exists(STOP):
             restore()
@@ -479,6 +486,7 @@ def serve():
 
 
 def main():
+    global ACTIVE_REQUEST, ACTIVE_PROFILE
     assert os.geteuid() == 0 and len(sys.argv) == 2
     action = sys.argv[1]
     if action == 'status':
@@ -489,7 +497,13 @@ def main():
         result['native_alive'] = result.get('native_pid') in n.ims_pids()
         print(json.dumps(result))
     elif action == 'start':
-        assert os.path.isfile(BASE + '/enabled'), 'Service is disabled'
+        ACTIVE_REQUEST = profiles.installed_request(BASE)
+        ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
+        n.verify_stock()
+        identity = device_info.read_identity()
+        device = device_info.identify(identity)
+        assert device['recognized'] and identity['os_version'] == device_info.OS_VERSION, 'Device/OS needs adaptation'
+        assert (device['hardware_tested'] and profiles.baseline_parameters(ACTIVE_PROFILE)) or ACTIVE_REQUEST['allow_experimental'], 'Experimental opt-in is required'
         if os.path.isfile(LOCK):
             lock = load(LOCK)
             if lock.get('boot') == boot_token() and alive(lock['pid']):
@@ -525,7 +539,8 @@ def main():
             restore()
             print(json.dumps({'restored': True}))
     elif action == 'check':
-        print(json.dumps(compatibility.probe()))
+        req = profiles.installed_request(BASE)
+        print(json.dumps(compatibility.probe(req['profile'], req['allow_experimental'])))
     else:
         raise SystemExit('Use start, stop, status or check')
 

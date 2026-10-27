@@ -1,10 +1,10 @@
-# BB10 VoLTE — 4G Calling on BlackBerry Q10
+# BB10 VoLTE — Experimental 4G Calling on BlackBerry 10
 
 [简体中文](README.md) | **English**
 
 **Repository status: temporarily Private. The maintainer will make it Public after stabilization.** The source uses the MIT license; these documents also prepare for that future public release.
 
-An open-source toolkit for enabling native VoLTE / 4G voice calling on BlackBerry 10, using the phone's own SIM, IMS stack and system dialer. The implementation and hardware validation currently cover **BlackBerry Q10 SQN100-3, BB10 10.3.3.3216, and China Unicom 460-01 in Beijing**.
+An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS stack and system dialer. Hardware call evidence covers **Q10 SQN100-3, BB10 OS 10.3.3.3216 and Beijing Unicom 460-01**. v0.3.0 recognizes Q10, Classic (Q20) and Passport (Q30) and supports editable operator JSON profiles. Q20/Q30 display “Not hardware validated; experimental use available.” Installation requires explicit opt-in and every technical gate passing.
 
 **Tested on a real Q10 on October 27, 2026.** The latest trial confirmed automatic recovery after a normal reboot, answered incoming and outgoing calls with the system dialer while USB was disconnected, two-way audio and continued 4G. Both calls have `INVITE 200 / ACK / BYE` evidence. Established call durations were approximately **14.2 and 5.6 seconds**, with all 64 status samples showing LTE and connected IMS. This remains a **single-device experimental release**; longer calls, long-term standby and other devices, firmware versions or carriers have not been validated.
 
@@ -72,9 +72,11 @@ python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
 ```
 
-`setup` installs, reads back the release, starts it and observes registration for up to 180 seconds. Look for `registration=verified`; `status` returns `registered=true` only with a live manager/native process and current connected IMS / 200 OK / LTE. A timeout reports pending, without reinstalling. First activation may briefly reload the radio. Registration alone does not establish working calls.
+`setup` installs, reads back the release, starts it and observes registration for a configurable duration (180 seconds by default). Look for `registration=verified`; `status` returns `registered=true` only with a live manager/native process and current connected IMS / 200 OK / LTE. A timeout reports pending, without reinstalling. First activation may briefly reload the radio. Registration alone does not establish working calls.
 
-The v0.2.0 preflight has run on the Q10 above. The GUI/new installation workflow is validated separately from the earlier calling evidence and still needs full hardware installation acceptance. Another province with the same conditions is eligible for experimental testing; China Mobile, China Telecom, other MNCs and ISIM are blocked. See the compatibility matrix.
+v0.3.0 software validation is separate from earlier calling evidence; full hardware installation acceptance of the new workflow is pending. Mobile, Telecom and other Unicom MNCs have untested templates. All OS, ABI, native hash, SIM and stock-carrier checks remain mandatory; ISIM is unsupported. CLI trials require `--allow-experimental`; custom profiles use `--profile path/to/profile.json`. Keep these options consistent for subsequent operations. Registration observation defaults to 180 seconds and is configurable.
+
+See [profiles](docs/PROFILES.en.md) and [research](docs/CARRIER-RESEARCH.en.md). **Root firmware preparation remains Q10-only. Q20/Q30 testers must prepare root SSH for their own model; never flash the Q10 images onto them.**
 
 ### 4. Test calls and recovery
 

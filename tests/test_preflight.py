@@ -15,6 +15,7 @@ import install
 import native
 import service
 import workflow as w
+import profiles
 
 
 def baseline():
@@ -24,7 +25,7 @@ def baseline():
                 radio_on=True, lte=True, apn_matches=True, data_connected=True,
                 installation={'state': 'absent'}, voice_policy=0,
                 crypto={'swcr_id': -1, 'crypto_support': 0}, ims_count=0, vpn_count=0,
-                clean_configuration=True)
+                clean_configuration=True, carrier_template_ready=True)
 
 
 class CompatibilityTests(unittest.TestCase):
@@ -50,7 +51,7 @@ class CompatibilityTests(unittest.TestCase):
                 self.assertFalse(report['can_install'])
 
     def test_unknown_model_os_or_hash_blocked(self):
-        for changes in ({'variant': 'SQN100-1'}, {'os_version': '10.3.3.9999'}, {'model': 'Q20'},
+        for changes in ({'variant': 'UNKNOWN'}, {'os_version': '10.3.3.9999'}, {'model': 'Q20'},
                         {'native_hashes': {}}, {'native_hashes': {p: False for p in native.STOCK_HASHES}}):
             s = baseline(); s.update(changes)
             self.assertEqual(c.evaluate(s)['outcome'], 'unsupported')
@@ -76,6 +77,7 @@ class CompatibilityTests(unittest.TestCase):
         report = c.evaluate(s)
         self.assertTrue(report['can_update']); self.assertFalse(report['can_start'])
         s['installation']['current_profile'] = True
+        s['installation']['carrier_profile_sha256'] = profiles.fingerprint(profiles.request())
         self.assertTrue(c.evaluate(s)['can_start'])
 
     def test_sensitive_inputs_never_enter_report(self):
@@ -159,7 +161,8 @@ class WorkflowTests(unittest.TestCase):
     def test_clean_install_readback_precedes_activation(self):
         client = self.client(); events = []
         after = c.evaluate(baseline())
-        after['installation'] = {'payload_verified': True, 'version': w.verify_package()['version'], 'state': 'stopped'}
+        after['installation'] = {'payload_verified': True, 'version': w.verify_package()['version'], 'state': 'stopped',
+                                 'carrier_profile_sha256': profiles.fingerprint(client.request)}
         def inspect(_):
             events.append('check')
             return {'can_install': True} if events.count('check') == 1 else after
@@ -186,6 +189,7 @@ class WorkflowTests(unittest.TestCase):
         data['payload-manifest.json'] = (ROOT / w.MANIFEST).read_bytes()
         stage = '/var/rootdata/q10_volte_stage_test'
         with patch.object(native, 'read', side_effect=lambda p: data[p[len(stage) + 1:]]), \
+             patch.object(profiles, 'load_request', return_value=profiles.request()), \
              patch.object(install.os.path, 'realpath', return_value=stage), \
              patch.object(native, 'verify_stock'), patch.object(c, 'require', side_effect=RuntimeError('changed SIM')), \
              patch.object(native, 'atomic') as write, patch.object(install.os, 'mkdir') as mkdir:

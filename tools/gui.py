@@ -1,4 +1,4 @@
-"""Q10 VoLTE Desk: standard-library desktop UI over the fixed workflow."""
+"""BB10 VoLTE Desk: standard-library desktop UI over the fixed workflow."""
 import argparse
 import json
 import os
@@ -9,25 +9,34 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from workflow import Client, ROOT, WorkflowError
+from profile_editor import ProfileEditor, presets, profiles
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
 BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
 NAMES = {'model': '手机型号', 'os': '系统版本', 'root': 'Root 环境', 'native': '原生文件',
          'sim': 'SIM 就绪', 'carrier': '运营商', 'sim_route': 'SIM 路线', 'identity': '身份格式',
-         'lte': '4G 网络', 'apn': '数据 APN', 'installation': '已装服务', 'baseline': '安装前状态'}
+         'lte': '4G 网络', 'apn': '数据 APN', 'carrier_config': '原厂数据配置', 'experiment': '实测与试用',
+         'installation': '已装服务', 'baseline': '安装前状态', 'saved_profile': '已装配置'}
 NOTES = {
-    'q10_sqn100_3_required': '要求 Q10 · SQN100-3', 'os_3216_required': '要求 BB10 OS 10.3.3.3216',
+    'device_identified': '已自动识别型号和硬件变体；实测状态见顶部',
+    'device_identity_unknown': '型号未知或与硬件变体冲突，请导出报告协助适配',
+    'os_3216_required': '要求 BB10 OS 10.3.3.3216',
     'root_qnx_arm32_required': '要求 AutoRoot 已就绪、有效 root 和 QNX ARM32',
     'native_hashes_required': '4 个原生文件 SHA-256 必须与验证基线一致',
     'sim_ready': 'SIM 已就绪', 'sim_unavailable': '解锁 SIM 并等待就绪后重试',
-    'unicom_46001': '中国联通 460-01；归属省份不作为自动判据',
-    'carrier_not_profiled': '此 MCC/MNC 未适配；移动、电信及其他联通 MNC 暂不能安装',
+    'carrier_matches_profile': '实际 SIM 的 MCC/MNC 与所选配置一致',
+    'carrier_not_profiled': 'SIM 与当前配置不一致；请选择或编辑运营商配置',
+    'carrier_template_required': '按实际 SIM 匹配原厂配置、数据 APN 和 IMS 结构；失败时需适配',
+    'experimental_opt_in': '未实测适配；勾选实验试用后，仍须通过全部技术检查',
+    'recorded_baseline': '有 Q10 SQN100-3 北京联通单机记录；本机仍须验收',
+    'saved_profile_matches': '所选配置与手机已装配置一致',
+    'profile_update_required': '新安装将保存所选配置；已装配置有变更时先停用恢复，再更新',
     'usim_without_isim': 'USIM，无 ISIM；符合当前实现',
     'sim_route_not_profiled': '此 SIM 类型需要另行适配，不能套用当前配置',
     'identity_layout_matches': '在手机本地核验通过；报告不包含完整标识',
     'identity_layout_unknown': 'SIM 身份格式不符，需提供脱敏预检报告排查',
     'lte_ready': '无线已开启，当前处于 LTE', 'lte_not_ready': '开启移动网络并等待 LTE',
-    'data_apn_ready': '3gnet 已连接', 'data_apn_not_ready': '要求 3gnet 已连接；检查数据服务与 APN',
+    'data_apn_ready': '所选配置的数据 APN 已连接', 'data_apn_not_ready': '所选数据 APN 未连接；检查数据服务与配置',
     'installation_absent': '未安装，可在全部检查通过后安装',
     'installation_stopped': '文件完整且已停止，可以更新',
     'installation_busy': '已有管理器或锁；更新前先停用并恢复',
@@ -38,6 +47,8 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
+    'invalid_profile': '配置格式或参数不符合要求，请在配置编辑器中检查。',
+    'profile_update_required': '所选配置与已装配置不同。先停用恢复，再预检和更新安装。',
     'invalid_host': 'SSH 别名只能使用字母、数字、点、下划线和短横线。',
     'config_missing': '找不到 SSH 配置文件，请重新选择。',
     'openssh_missing': '缺少 Windows OpenSSH 客户端，请按安装文档准备 ssh 和 scp。',
@@ -66,18 +77,25 @@ class App:
         self.root, self.events = root, queue.Queue()
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
+        self.presets = presets()
+        self.profile = profiles.default()
+        self.profile_name = tk.StringVar(value=self.profile['label'])
+        self.experimental = tk.BooleanVar(value=False)
         self.host = tk.StringVar(value=host)
         default = ROOT / 'private/root-kit/ssh_config'
         self.config = tk.StringVar(value=config or (str(default) if default.is_file() else ''))
         self.ack = tk.BooleanVar()
-        root.title('Q10 VoLTE Desk')
-        root.geometry('1160x820')
-        root.minsize(1030, 760)
+        root.title('BB10 VoLTE Desk')
+        root.geometry('1200x900')
+        root.minsize(1080, 840)
         root.configure(bg=BG)
         root.option_add('*Font', ('Microsoft YaHei UI', 10))
         root.protocol('WM_DELETE_WINDOW', self.close)
         style = ttk.Style()
         style.theme_use('clam')
+        style.configure('TFrame', background=BG)
+        style.configure('TLabel', background=BG, foreground=INK)
+        style.configure('TNotebook', background=BG)
         style.configure('TButton', font=('Microsoft YaHei UI', 10), padding=(12, 9),
                         background='white', foreground=INK, borderwidth=0)
         style.map('TButton', background=[('active', '#E9EFFA'), ('disabled', '#E9EDF3')],
@@ -96,6 +114,7 @@ class App:
         self.build()
         self.host.trace_add('write', self.connection_changed)
         self.config.trace_add('write', self.connection_changed)
+        self.experimental.trace_add('write', self.connection_changed)
         self.ack.trace_add('write', lambda *_: self.refresh_buttons())
         self.root.after(100, self.drain)
 
@@ -107,7 +126,7 @@ class App:
         sidebar = tk.Frame(self.root, bg='#172740', width=178)
         sidebar.pack(side='left', fill='y')
         sidebar.pack_propagate(False)
-        self.label(sidebar, 'Q10', 31, 'white', bold=True).pack(anchor='w', padx=25, pady=(30, 0))
+        self.label(sidebar, 'BB10', 31, 'white', bold=True).pack(anchor='w', padx=25, pady=(30, 0))
         self.label(sidebar, 'VoLTE DESK', 10, '#AFC6EA', bold=True).pack(anchor='w', padx=27)
         self.label(sidebar, '设备服务工具', 10, '#9BAFCD').pack(anchor='w', padx=27, pady=(8, 35))
         for number, title, detail in [('01', '连接与预检', '确认设备适用条件'),
@@ -130,7 +149,8 @@ class App:
         self.label(header, '让每一步都可核验', 21, bold=True).pack(side='left')
         self.export_button = ttk.Button(header, text='导出脱敏报告', command=self.export, state='disabled')
         self.export_button.pack(side='right')
-        self.label(main, 'Q10 SQN100-3  /  BB10 10.3.3.3216  /  联通 460-01 USIM', 9, MUTED).pack(anchor='w', pady=(4, 17))
+        self.device_label = self.label(main, '自动识别 Q10 / Classic（Q20）/ Passport（Q30） · 待连接', 9, MUTED)
+        self.device_label.pack(anchor='w', pady=(4, 17))
 
         summary = tk.Frame(main, bg='white', padx=18, pady=13)
         summary.pack(fill='x')
@@ -151,6 +171,19 @@ class App:
         self.label(connection, '别名', 9, MUTED).grid(row=0, column=3, padx=(0, 8))
         self.host_entry = ttk.Entry(connection, textvariable=self.host, width=13)
         self.host_entry.grid(row=0, column=4)
+
+        settings = tk.Frame(main, bg=BG)
+        settings.pack(fill='x', pady=(0, 10))
+        self.label(settings, '运营商配置', 9, MUTED).pack(side='left', padx=(0, 10))
+        self.profile_picker = ttk.Combobox(settings, textvariable=self.profile_name,
+                                          values=[p['label'] for p in self.presets], state='readonly', width=47)
+        self.profile_picker.pack(side='left', fill='x', expand=True)
+        self.profile_picker.bind('<<ComboboxSelected>>', self.select_profile)
+        self.edit_button = ttk.Button(settings, text='编辑 / 导入配置', command=self.edit_profile)
+        self.edit_button.pack(side='left', padx=(8, 0))
+        self.experiment_check = ttk.Checkbutton(main, text='允许未实测设备 / 运营商实验试用（仍须通过系统与原生文件校验）',
+                                                variable=self.experimental)
+        self.experiment_check.pack(anchor='w', pady=(0, 12))
 
         table_frame = tk.Frame(main, bg='white')
         table_frame.pack(fill='both', expand=True)
@@ -187,11 +220,28 @@ class App:
 
     def connection_changed(self, *_):
         self.report, self.report_connection, self.last_result = None, None, None
-        self.summary.configure(text='连接信息已更新，请重新预检', fg=INK)
-        self.detail.configure(text='安装按钮将在新连接的检查通过后启用。')
+        self.summary.configure(text='连接或配置已更新，请重新预检', fg=INK)
+        self.detail.configure(text='安装按钮将在当前设备和所选配置的检查通过后启用。')
         for row in self.table.get_children():
-            self.table.item(row, values=(NAMES[row], '待检查', '连接信息已更新'), tags=('idle',))
+            self.table.item(row, values=(NAMES[row], '待检查', '连接或配置已更新'), tags=('idle',))
         self.refresh_buttons()
+
+    def selection(self):
+        return (self.host.get(), self.config.get(), profiles.fingerprint(profiles.request(self.profile, self.experimental.get())))
+
+    def set_profile(self, profile):
+        self.profile = profiles.validate(profile)
+        self.profile_name.set(self.profile['label'])
+        self.connection_changed()
+
+    def select_profile(self, _=None):
+        index = self.profile_picker.current()
+        if index >= 0:
+            self.set_profile(self.presets[index])
+
+    def edit_profile(self):
+        if not self.busy:
+            ProfileEditor(self.root, self.profile, self.set_profile)
 
     def refresh_buttons(self):
         if not hasattr(self, 'buttons'):
@@ -203,8 +253,9 @@ class App:
         self.buttons['install'].configure(text='更新并验证' if r.get('can_update') else '安装并验证')
         for key, button in self.buttons.items():
             button.configure(state='normal' if not self.busy and allowed[key] else 'disabled')
-        for widget in (self.config_entry, self.host_entry, self.browse_button):
+        for widget in (self.config_entry, self.host_entry, self.browse_button, self.edit_button, self.experiment_check):
             widget.configure(state='disabled' if self.busy else 'normal')
+        self.profile_picker.configure(state='disabled' if self.busy else 'readonly')
         self.export_button.configure(state='normal' if self.last_result and not self.busy else 'disabled')
 
     def browse(self):
@@ -214,7 +265,13 @@ class App:
 
     def render_report(self, report):
         self.report = report
-        self.report_connection = (self.host.get(), self.config.get())
+        self.report_connection = self.selection()
+        device = report.get('device', {})
+        badge = '有 Q10 单机实测记录' if device.get('hardware_tested') else '未实测适配 · 可实验试用'
+        if not device.get('recognized'):
+            badge = '机型待识别'
+        self.device_label.configure(text='{}  /  {}  /  OS {}  ·  {}'.format(
+            device.get('display_name', '未知设备'), device.get('variant', '?'), device.get('os_version', '?'), badge))
         for row in self.table.get_children():
             self.table.item(row, values=(NAMES[row], '待检查', '当前无法确认'), tags=('idle',))
         labels = {'pass': '通过', 'wait': '待处理', 'adapt': '需适配', 'block': '不支持'}
@@ -224,7 +281,8 @@ class App:
                 self.table.item(key, values=(NAMES[key], labels[state], NOTES.get(check['code'], check['code'])), tags=(state,))
         outcome = report['outcome']
         title, color = {'compatible': ('符合当前适配条件', GREEN), 'not_ready': ('有条件尚未就绪', AMBER),
-                        'needs_adaptation': ('此 SIM 或运营商需要适配', AMBER), 'unsupported': ('不在当前支持范围', RED)}[outcome]
+                        'experimental': ('未实测适配 · 可实验试用', AMBER),
+                        'needs_adaptation': ('此 SIM 或运营商配置需要适配', AMBER), 'unsupported': ('关键技术条件未通过', RED)}[outcome]
         state = report['installation']['state']
         if state == 'busy':
             detail = '已有服务正在运行或持有锁。更新前请先停用并恢复；本次不会覆盖安装。'
@@ -241,14 +299,16 @@ class App:
         if self.busy:
             return
         if action in ('install', 'start', 'disable'):
-            if not self.ack.get() or self.report_connection != (self.host.get(), self.config.get()):
+            if not self.ack.get() or self.report_connection != self.selection():
                 return
             message = ('将停止本项目服务、恢复其修改并关闭自动启动。' if action == 'disable' else
-                       '将使用固定版本并重新预检，启用自动启动和 IMS 验证。首次启动可能短暂重载无线网络。')
+                       '将按所选配置安装或启动并进行 IMS 验证。自动启动：' +
+                       ('开启' if self.profile['runtime']['autostart'] else '关闭') + '。首次启动可能短暂重载无线网络。')
             if not messagebox.askokcancel('确认设备操作', message + '\n\n请保持 USB 连接，操作期间不要换卡或拨打电话。', parent=self.root):
                 return
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
         host, config = self.host.get().strip(), self.config.get().strip()
+        profile, experimental = profiles.validate(self.profile), self.experimental.get()
         self.busy = True
         self.last_result = None
         self.refresh_buttons()
@@ -258,7 +318,8 @@ class App:
 
         def work():
             try:
-                client = Client(host, config or None, lambda phase, state: self.events.put(('progress', (phase, state))))
+                client = Client(host, config or None, lambda phase, state: self.events.put(('progress', (phase, state))),
+                                profile=profile, allow_experimental=experimental)
                 result = (client.preflight() if action == 'preflight' else
                           client.install(mode, start=True) if action == 'install' else client.action(action))
                 self.events.put(('result', (action, result)))

@@ -1,0 +1,41 @@
+{
+  "version": "0.3.0",
+  "date": "2026-10-27",
+  "desktop": {
+    "platform": "Windows 11 x64",
+    "python": "3.14.9",
+    "tk": "9.0",
+    "unit_tests_passed": 66,
+    "gui_profile_operator_ims_runtime_tabs": "visually checked; clipped action row fixed",
+    "gui_apply_invalidates_preflight": true,
+    "gui_real_q10_preflight": "compatible; existing running service prevented installation"
+  },
+  "phone": {
+    "model": "Q10",
+    "variant": "SQN100-3",
+    "os": "10.3.3.3216",
+    "python": "3.2.2",
+    "device_python_files_compiled": 8,
+    "stock_carrier_selection": "true_home_carrier.preloadedConfigFile",
+    "stock_xml_namespace_and_ims_replacement_checked": true,
+    "existing_service_version": "0.1.0",
+    "existing_payload_hashes_verified": true,
+    "existing_service_state": "busy",
+    "telephony_configuration_changed": false,
+    "service_stopped_or_upgraded": false
+  },
+  "simulated_only": [
+    "Classic/Q20 and Passport/Q30 detection and explicit experimental gates",
+    "Any mismatched native hash, OS, ABI or ISIM still blocks installation",
+    "Mobile/Telecom/custom profile validation and selected-SIM matching",
+    "Saved profile and consent fingerprint binding",
+    "Custom PPS restoration from the journal and autostart-disabled behavior"
+  ],
+  "pending": [
+    "Full v0.3.0 hardware install/update/start/restore and GUI mutation acceptance",
+    "Q20/Q30 real native fingerprints and call acceptance",
+    "Other carrier/province real SIM and call acceptance",
+    "Long calls, standby, roaming and handover"
+  ],
+  "scope": "Software tests and read-only Q10 probes are not proof of Q20/Q30 or cross-carrier VoLTE support. Original Q10 calling evidence remains separate."
+}

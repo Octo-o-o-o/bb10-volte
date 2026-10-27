@@ -1,0 +1,20 @@
+{
+  "researched_on": "2026-10-27",
+  "source": "Android Open Source Project device/sample APN example",
+  "url": "https://android.googlesource.com/device/sample/+/73f904fbeb872f5675cb5f18cd9dfb15856425a6/etc/apns-full-conf.xml",
+  "commit": "73f904fbeb872f5675cb5f18cd9dfb15856425a6",
+  "raw_xml_sha256": "9e44015793ec01d0773123103dca19b181fbc5fdd43cfc1b1d5cfacbda622726",
+  "scope": "Manually curated facts from selected MCC 460 entries, not a complete current MNC directory or BB10 certification",
+  "rows": [
+    {"carrier": "China Unicom", "mcc": "460", "mncs": ["01", "09"], "data_apn": "3gnet", "ims_apn": "ims", "ims_family": "IPv4v6"},
+    {"carrier": "China Mobile", "mcc": "460", "mncs": ["00", "02", "07"], "data_apn": "cmnet", "ims_apn": "ims", "ims_family": "IPv4v6"},
+    {"carrier": "China Telecom", "mcc": "460", "mncs": ["03", "11"], "data_apn": "ctnet", "ims_apn": "ims", "ims_family": "IPv4v6"}
+  ],
+  "runtime_defaults": "Project-defined wait values, SMS capability and stock-selection rules; not supplied by AOSP",
+  "hardware_evidence": "Only Q10 SQN100-3 / OS 10.3.3.3216 / Beijing Unicom 460-01 / USIM without ISIM has recorded call evidence",
+  "unavailable_as_universal_public_data": ["Subscriber identities and authentication", "Current network P-CSCF", "Per-SIM provisioning", "Terminal admission policies", "BB10 native compatibility and real-call results"],
+  "standards": [
+    "https://www.etsi.org/deliver/etsi_ts/123000_123099/123003/16.11.01_60/ts_123003v161101p.pdf",
+    "https://www.etsi.org/deliver/etsi_ts/131100_131199/131103/14.04.00_60/ts_131103v140400p.pdf"
+  ]
+}

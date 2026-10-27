@@ -62,15 +62,15 @@ python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 
 安装器在修改网络配置前校验原生文件、原始策略 `00`、既有 IMS/VPN 与软件算法提供器。若提示已有实验进程或配置，先收尾原实验，不能删除未知对象来强行通过。
 
-v0.2.0 同时读取机型、完整 OS、SIM/MCC/MNC、LTE 与 APN。桌面只验证固定发布清单，不自动重写清单；手机在写入前再次预检。`setup` 执行安装、回读、启动和注册观察；`install` 只安装，`update` 只更新。`check` 是 `preflight` 的别名。兼容性不符时预检退出码为 2；执行错误为 1。
+v0.3.0 支持机型自动识别、运营商配置和明确实验试用，见 [配置指南](PROFILES.md)。桌面只校验固定清单；手机写入前再次预检。`setup` 安装、回读、启动并观察注册；`install` 只安装，`update` 只更新，`check` 等同 `preflight`。不符合条件的预检退出码 2，执行错误为 1。Root 镜像准备部分仍只适用于 Q10，Q20 / Q30 需另行准备对应 Root SSH。
 
 手机上安装到 `/var/rootdata/q10_volte`。启动入口为 `/var/addons/q10-unicom-volte/init/start.sh`，使用已安装 AutoRoot v4 的 addon 机制。原厂 `/radio/bin/ims_rrm` 不被覆盖。服务自己管理进程，电脑命令返回后继续运行。
 
-首次启动会通过原生 RadioControl API 将语音策略改为 IMS 优先，可能出现一次短暂无线重载。服务启动时最多等待 SIM/LTE/3gnet 就绪 300 秒；已明确不匹配的运营商或 SIM 路线立即报错。满足条件后建立独立 IMS APN 并启动原生 IMS。
+首次启动会通过原生 RadioControl API 将语音策略改为 IMS 优先，可能出现一次短暂无线重载。服务启动时按配置等待 SIM/LTE/数据 APN 就绪（默认 300 秒）；已明确不匹配的运营商或 SIM 路线立即报错。满足条件后建立独立 IMS APN 并启动原生 IMS。
 
 ## 4. 查看状态并实际验收
 
-`setup` / `start` 最多观察 IMS 注册 180 秒。若返回 `registration=pending`，稍后检查：
+`setup` / `start` 按配置观察 IMS 注册（默认 180 秒）。若返回 `registration=pending`，稍后检查：
 
 ```powershell
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
@@ -105,7 +105,7 @@ python tools/q10.py uninstall --ssh-config private/root-kit/ssh_config
 
 更新本项目脚本前，先 `stop`，等待上述恢复检查通过，再运行 `python tools/q10.py update --ssh-config private/root-kit/ssh_config`，然后 `start`。更新会校验旧文件仍与安装清单一致，并保留原恢复记录。若只安装、还没有启动，直接停用或卸载也可以。
 
-更新写入期间关闭自动启动，完整完成后恢复先前开关。中断会保留安装事务记录或不完整目录，阻止覆盖和启动；当前没有任意中断点自动修复，需要保留现场人工处理。保持 USB 连接，禁止同时运行另一套安装工具。v0.2.0 新流程的完整实机安装验收仍待补充，此前通话证据不等于新流程验收。
+更新期间关闭自动启动，完成后按所选配置设置开关。改参数需先停用恢复，再预检、更新、通话验收；不能直接启动配置不一致的旧安装。中断保留事务记录并阻止覆盖，尚无任意中断点自动修复。保持 USB 连接，不并行安装。v0.3.0 全流程实机安装验收仍待补充；原有通话证据独立保留。
 
 `stop` 后 PPS 可能暂留上一次的 `register_status="200 OK"`。只有管理器存活、原生进程存在、当前 IMS 为 `connected` 且处于 LTE，才能判为正在注册在线。
 

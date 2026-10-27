@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "china-unicom",
+  "label": "China Unicom 01/09 - untested template",
+  "carrier": {
+    "mcc": "460",
+    "mncs": [
+      "01",
+      "09"
+    ],
+    "data_apns": [
+      "3gnet"
+    ],
+    "stock_config": "auto",
+    "stock_sha256": ""
+  },
+  "ims": {
+    "apn": "ims",
+    "ip_family": "IPv4v6",
+    "home_domain": "auto",
+    "sms": true
+  },
+  "runtime": {
+    "sim_wait_seconds": 300,
+    "ims_apn_wait_seconds": 45,
+    "existing_ims_wait_seconds": 330,
+    "registration_wait_seconds": 180,
+    "poll_seconds": 3,
+    "autostart": true
+  }
+}
