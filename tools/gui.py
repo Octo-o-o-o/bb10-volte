@@ -132,7 +132,7 @@ class App:
         self.config.trace_add('write', self.connection_changed)
         self.experimental.trace_add('write', self.connection_changed)
         self.ack.trace_add('write', lambda *_: self.refresh_buttons())
-        self.root.after(100, self.drain)
+        self._drain_job = self.root.after(100, self.drain)
 
     def label(self, parent, text, size=10, fg=INK, bg=None, bold=False, **kwargs):
         return tk.Label(parent, text=text, font=(FONT, max(size, 11), 'bold' if bold else 'normal'),
@@ -198,13 +198,14 @@ class App:
 
         settings = tk.Frame(main, bg=BG)
         settings.pack(fill='x', pady=(0, 10))
-        self.label(settings, '运营商配置', 9, MUTED).pack(side='left', padx=(0, 10))
+        settings.columnconfigure(1, weight=1)
+        self.label(settings, '运营商配置', 9, MUTED).grid(row=0, column=0, sticky='w', padx=(0, 10))
         self.profile_picker = ttk.Combobox(settings, textvariable=self.profile_name,
                                           values=[display_label(p['label']) for p in self.presets], state='readonly', width=47)
-        self.profile_picker.pack(side='left', fill='x', expand=True)
+        self.profile_picker.grid(row=0, column=1, sticky='ew')
         self.profile_picker.bind('<<ComboboxSelected>>', self.select_profile)
         self.edit_button = ttk.Button(settings, text='编辑 / 导入配置', command=self.edit_profile)
-        self.edit_button.pack(side='left', padx=(8, 0))
+        self.edit_button.grid(row=0, column=2, padx=(8, 0))
         self.experiment_check = ttk.Checkbutton(main, text='允许未实测设备 / 运营商实验试用（仍须通过系统与原生文件校验）',
                                                 variable=self.experimental)
         self.experiment_check.pack(anchor='w', pady=(0, 12))
@@ -230,11 +231,13 @@ class App:
         toolbar = tk.Frame(main, bg=BG)
         toolbar.pack(fill='x')
         self.buttons = {}
-        for key, text, style in [('preflight', '运行预检', 'TButton'), ('install', '安装并验证', 'Accent.TButton'),
-                                 ('start', '启动验证', 'TButton'), ('status', '查看状态', 'TButton'),
-                                 ('disable', '停用并恢复', 'TButton')]:
+        for column, (key, text, style) in enumerate([
+                ('preflight', '运行预检', 'TButton'), ('install', '安装并验证', 'Accent.TButton'),
+                ('start', '启动验证', 'TButton'), ('status', '查看状态', 'TButton'),
+                ('disable', '停用并恢复', 'TButton')]):
+            toolbar.columnconfigure(column, weight=1, uniform='actions')
             button = ttk.Button(toolbar, text=text, style=style, command=lambda k=key: self.run(k))
-            button.pack(side='left', padx=(0, 8))
+            button.grid(row=0, column=column, sticky='ew', padx=(0, 8 if column < 4 else 0))
             self.buttons[key] = button
         self.progress = ttk.Progressbar(main, mode='indeterminate', length=300)
         self.progress.pack(fill='x', pady=(14, 7))
@@ -414,7 +417,7 @@ class App:
                 self.refresh_buttons()
         except queue.Empty:
             pass
-        self.root.after(100, self.drain)
+        self._drain_job = self.root.after(100, self.drain)
 
     def explain_row(self, _):
         rows = self.table.selection()
@@ -458,6 +461,7 @@ class App:
         if self.busy:
             messagebox.showinfo('操作进行中', '请等待本次有界操作结束。强行退出不能撤销已经写入手机的步骤。', parent=self.root)
             return
+        self.root.after_cancel(self._drain_job)
         self.root.destroy()
 
 
