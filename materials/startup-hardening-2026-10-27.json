@@ -34,7 +34,84 @@
     "upgrade_from_01_passed": true,
     "new_service_register_200_lte": true,
     "phone_stage_cleanup_passed": true,
-    "hardened_normal_reboot": "pending",
-    "calls_after_hardened_reboot": "pending"
-  }
+    "hardened_normal_reboot": "passed",
+    "calls_after_hardened_reboot": "passed; short calls",
+    "delayed_apn_second_and_third_rounds": "unit-tested; not induced on the phone"
+  },
+  "recorded_utc": "2026-10-27T15:41:10.259141+00:00",
+  "boot": {
+    "root_addon_invoked_at": "23:21:30",
+    "root_ready_at": "23:21:45",
+    "ims_registered_at": "23:26:27.291",
+    "seconds_root_ready_to_register": 282.291,
+    "full_boot_duration_measured": false,
+    "manual_appworld_launch_required": false,
+    "desktop_service_start_after_reboot": false,
+    "automatic_start_verified": true,
+    "ims_apn_wait_round_used": 1
+  },
+  "owner_answer": "都没问题",
+  "owner_test_requested": "After the hardened normal reboot, answer an incoming call and make an outgoing call with the native dialer; check two-way audio and 4G. USB remained connected.",
+  "owner_confirmed": {
+    "incoming_answered": true,
+    "outgoing_answered": true,
+    "audio_both_directions": true,
+    "four_g_during_calls": true
+  },
+  "calls": [
+    {
+      "direction": "outgoing",
+      "invite_cseq": 54781,
+      "invite_at": "23:30:18.753",
+      "answer_200_at": "23:30:23.103",
+      "ack_at": "23:30:23.117",
+      "bye_cseq": 54784,
+      "bye_at": "23:30:30.465",
+      "bye_200_at": "23:30:30.663",
+      "established_seconds_to_bye": 7.362,
+      "invite_200_ack_bye_verified": true
+    },
+    {
+      "direction": "incoming",
+      "invite_cseq": 86758,
+      "invite_at": "23:30:37.565",
+      "answer_200_at": "23:30:42.313",
+      "ack_at": "23:30:42.485",
+      "bye_cseq": 86763,
+      "bye_at": "23:30:46.987",
+      "bye_200_at": "23:30:47.193",
+      "established_seconds_to_bye": 4.674,
+      "invite_200_ack_bye_verified": true
+    }
+  ],
+  "additional_attempt": {
+    "invite_at": "23:29:26.910",
+    "final_invite_response": 487,
+    "final_response_at": "23:29:36.755",
+    "counted_as_answered": false,
+    "reason_for_early_termination_established": false
+  },
+  "lte_samples": 208,
+  "all_samples_lte_and_ims_connected": true,
+  "final_state": {
+    "version": "0.3.1",
+    "service_enabled": true,
+    "phase": "running",
+    "manager_alive": true,
+    "native_alive": true,
+    "ims": "connected",
+    "registration": "200 OK",
+    "rat": "LTE",
+    "status_from_current_boot": true,
+    "installed_payload_matches_source_manifest": true,
+    "read_only_recorder_finished": true,
+    "service_has_no_deadline": true
+  },
+  "raw_capture_sha256": "b9dd0846cc39634d542602a07a6a76c02e6f0cbb72421180fc9814079fce646f",
+  "limits": [
+    "The independently captured answered calls lasted 7.362 seconds outgoing and 4.674 seconds incoming; 20-second or longer calls were not established.",
+    "This hardened-version call test kept USB connected. Earlier unplugged-call acceptance is a separate record.",
+    "Normal reboot passed on this one Q10/firmware/China Unicom combination; long-term standby, abrupt power loss, roaming, handover and emergency calling remain untested.",
+    "The pre-removal REGISTER 500 cause is unresolved; it was not seen to block this fresh registration and is not treated as proof of app-removal causation."
+  ]
 }

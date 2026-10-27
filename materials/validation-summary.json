@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-10-27T09:00:56.434931+00:00",
+  "recorded_utc": "2026-10-27T15:41:10.259141+00:00",
   "single_device_scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / Unicom46001",
   "source_helper_rebuilt_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
   "offline_root_images_built": true,
@@ -7,7 +7,7 @@
   "root_source_downloads_verified": 4,
   "usb_driver_parts_verified": 7,
   "usb_bundle_and_catalog_signatures": "Valid",
-  "local_regression_tests_passed": 15,
+  "local_regression_tests_passed": 85,
   "temporary_native_call": {
     "outgoing_invite_200_ack_bye": true,
     "incoming_ringing": true,
@@ -25,8 +25,12 @@
     "second_reboot_acceptance": "passed",
     "answered_calls_with_each_audio_direction": "passed; short-call durations in call acceptance report",
     "usb_independence": "passed",
-    "service_left_enabled": true
+    "service_left_enabled": true,
+    "installed_version": "0.3.1",
+    "hardened_normal_reboot": "passed",
+    "hardened_native_calls": "passed; 7.362 s outgoing and 4.674 s incoming with owner-confirmed two-way audio and LTE"
   },
   "publication_state": "Single-device experimental release; original device logs remain private",
-  "call_acceptance_report": "call-acceptance-2026-10-27.json"
+  "call_acceptance_report": "call-acceptance-2026-10-27.json",
+  "startup_hardening_acceptance_report": "startup-hardening-2026-10-27.json"
 }
