@@ -7,7 +7,7 @@
   "root_source_downloads_verified": 4,
   "usb_driver_parts_verified": 7,
   "usb_bundle_and_catalog_signatures": "Valid",
-  "local_regression_tests_passed": 107,
+  "local_regression_tests_passed": 119,
   "temporary_native_call": {
     "outgoing_invite_200_ack_bye": true,
     "incoming_ringing": true,
@@ -38,5 +38,7 @@
   "startup_hardening_acceptance_report": "startup-hardening-2026-10-27.json",
   "device_hardening_branch_tests_passed": 85,
   "desktop_package_acceptance_report": "desktop-package-acceptance.json",
-  "startup_latency_acceptance_report": "startup-latency-2026-10-28.json"
+  "startup_latency_acceptance_report": "startup-latency-2026-10-28.json",
+  "startup_latency_branch_tests_passed": 107,
+  "desktop_integration_tests_passed": 119
 }

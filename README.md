@@ -8,7 +8,7 @@
 
 为 BlackBerry 10 启用原生 VoLTE / 4G 语音通话，使用手机自己的 SIM、IMS 协议栈和系统拨号器。实机验证范围为 **Q10 SQN100-3、BB10 OS 10.3.3.3216、北京中国联通 460-01**。v0.3.0 自动识别 Q10、Classic（Q20）和 Passport（Q30），支持运营商配置编辑和 JSON 导入导出。Q20 / Q30 显示“未实测适配 · 可实验试用”，勾选试用并通过全部技术检查后可以安装。
 
-**已于 2026 年 10 月 27 日在真实 Q10 上测试验证。** 最新的 0.3.1 加固版完成正常重启自动恢复，以及系统拨号器呼出、呼入、双向声音和全程 4G 验收。两次接听均有 `INVITE 200 / ACK / BYE` 证据：呼出约 **7.362 秒**、呼入约 **4.674 秒**，208 个状态样本全部 LTE / IMS connected。Root 就绪至注册约 **4 分 42 秒**，本轮未测量完整开机时长。此次 USB 保持连接；下午已通过的断开 USB 通话属于[另一轮记录](materials/call-acceptance-2026-10-27.json)。详见[加固版验收](materials/startup-hardening-2026-10-27.json)。当前仍为**单机实验版**，尚未完成 20 秒或长通话、长期稳定性及其他机型、固件与运营商验收。
+**已在真实 Q10 上验证。** 最新的 0.3.2 版本通过手机电源菜单正常重启、自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和全程 4G 验收。呼入接通约 **6.088 秒**、呼出约 **5.894 秒**，163 个状态样本全部 LTE / IMS connected。Root 就绪至注册约 **44.7 秒**，从系统启动至注册约 **3 分 48 秒**；45 秒不是整机启动时长。此前电脑命令触发的一次重启黑屏原因未确定，日常请使用手机电源菜单重启。详见[实机验收](materials/startup-latency-2026-10-28.json)。当前仍为**单机实验版**，尚未完成 20 秒或长通话、长期稳定性及其他机型、固件与运营商验收。
 
 [Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 
@@ -80,7 +80,7 @@ python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 
 `setup` 固定执行安装、回读、启动和可配置的注册观察（默认 180 秒）。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
 
-v0.3.1 修订手机端已通过 Q10 升级回读、正常重启自动恢复和双向短通话验收；最终 EXE 的完整手机安装未另行复测。移动、电信及其他联通 MNC 可选择模板或编辑参数后勾选实验试用，仍需满足 OS、ABI、原生哈希、SIM 和原厂配置检查；ISIM 仍不支持。CLI 试用添加 `--allow-experimental`，自定义配置添加 `--profile path/to/profile.json`，后续操作沿用相同选项。注册观察默认 180 秒，可在配置中修改。
+v0.3.2 修订手机端已通过 Q10 升级回读、手机菜单重启自动恢复及拔 USB 双向短通话验收；最终 EXE 的完整手机安装未另行复测。移动、电信及其他联通 MNC 可选择模板或编辑参数后勾选实验试用，仍需满足 OS、ABI、原生哈希、SIM 和原厂配置检查；ISIM 仍不支持。CLI 试用添加 `--allow-experimental`，自定义配置添加 `--profile path/to/profile.json`，后续操作沿用相同选项。注册观察默认 180 秒，可在配置中修改。
 
 见 [配置指南](docs/PROFILES.md) 和 [资料调研](docs/CARRIER-RESEARCH.md)。**Root 固件准备仍为 Q10 专用；Q20 / Q30 必须准备对应机型的 Root SSH，不得使用 Q10 镜像刷写。**
 
@@ -115,10 +115,11 @@ python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 | 修订版正常重启后自动恢复 | 16:36:20 重启，16:44:02.121 注册成功；无需手动打开 AppWorld 或电脑启动服务 |
 | 下午常驻版呼出 | `INVITE 200 / ACK / BYE`，接通后约 5.6 秒；本轮 64 个状态样本全部为 LTE / IMS connected |
 | 0.3.1 加固版重启与双向通话 | 自动恢复通过；呼出 7.362 秒、呼入 4.674 秒，208 个样本保持 LTE / IMS connected；本轮 USB 连接 |
+| 0.3.2 提速版重启与双向通话 | 手机菜单重启后自动恢复；拔 USB 呼入 6.088 秒、呼出 5.894 秒；163 个样本 LTE / IMS connected |
 | 至少 20 秒及更长通话、长期稳定性 | **仍需补充验证** |
 | 其他机型、系统、运营商、漫游、切换小区、长期待机、紧急呼叫 | **未测试** |
 
-详见 [验收记录](docs/VALIDATION.md)、[下午断开 USB 通话证据](materials/call-acceptance-2026-10-27.json)、[加固版重启与通话证据](materials/startup-hardening-2026-10-27.json) 和 [机器可读摘要](materials/validation-summary.json)。原始日志包含个人通信信息，保留在本地。自动测试不能替代实机验收。
+详见 [验收记录](docs/VALIDATION.md)、[下午断开 USB 通话证据](materials/call-acceptance-2026-10-27.json)、[0.3.1 加固版证据](materials/startup-hardening-2026-10-27.json)、[0.3.2 提速版验收](materials/startup-latency-2026-10-28.json) 和 [机器可读摘要](materials/validation-summary.json)。原始日志包含个人通信信息，保留在本地。自动测试不能替代实机验收。
 
 ## 实现原理
 

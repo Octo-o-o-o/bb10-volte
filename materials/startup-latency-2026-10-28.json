@@ -60,7 +60,7 @@
     "Captured calls were 6.088 seconds incoming and 5.894 seconds outgoing; the requested 20-second duration was not established.",
     "Calls were placed after registration; the earliest possible successful call at the precise registration instant was not measured."
   ],
-  "owner_answer": "都正常",
+  "owner_answer": "\u90fd\u6b63\u5e38",
   "owner_test_requested": "After the verified normal menu reboot, unplug USB, answer an incoming call and make an outgoing call with the system dialer; check both audio directions and 4G, then reconnect USB.",
   "owner_confirmed": {
     "incoming_answered": true,
@@ -119,5 +119,6 @@
     "recorder_finished": true,
     "service_has_no_deadline": true
   },
-  "raw_call_capture_sha256": "d144cef454d6a8ef540a6ab56a247febdd22347f447c935c032d26b92162e051"
+  "raw_call_capture_sha256": "d144cef454d6a8ef540a6ab56a247febdd22347f447c935c032d26b92162e051",
+  "desktop_integration_tests_passed": 119
 }
