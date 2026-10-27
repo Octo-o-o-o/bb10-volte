@@ -42,10 +42,10 @@ def fetch(item, offline=False):
 
 
 def runtime_data():
-    """Never include private/, downloads/, root images, keys or preparation tools."""
+    """Include the QNX cleanup resource, never keys, root images or download tools."""
     names = set(FILES) | {'project.json', 'materials/payload-manifest.json',
                          'materials/windows-runtime.json', 'LICENSE', 'NOTICE.md',
-                         'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico'}
+                         'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py'}
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*.md'))
     return sorted(names)

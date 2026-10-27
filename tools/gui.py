@@ -73,6 +73,10 @@ PHASES = {'package': '校验安装包', 'connection': '连接设备', 'transfer'
           'preflight': '兼容性预检', 'install': '安装固定版本', 'verify': '回读已装文件',
           'start': '启动服务', 'registration': '验证 IMS 注册', 'restore': '停用并恢复',
           'stage_cleanup': '临时检查文件清理'}
+SERVICE_PHASES = {'waiting_for_native_ims': '等待系统 IMS 初始化结束',
+                  'configuring': '准备运营商配置', 'waiting_for_ims_apn': '等待 IMS 专用网络',
+                  'not_started_this_boot': '本次开机尚未启动', 'not_started': '尚未启动',
+                  'running': '运行中', 'registering': '等待 IMS 注册', 'stopped': '已停止'}
 
 
 class App:
@@ -383,8 +387,16 @@ class App:
                         self.summary.configure(text='服务已启动，注册仍待确认', fg=AMBER)
                         self.detail.configure(text='等待窗口已结束。稍后重新预检并查看状态；尚不能判断为安装通话成功。')
                     elif action == 'status':
-                        self.summary.configure(text='当前状态：' + result.get('status', {}).get('phase', 'unknown'), fg=INK)
-                        self.detail.configure(text='注册判断同时要求管理器、原生进程存活，以及当前 LTE 和 IMS 连接。')
+                        status = result.get('status', {})
+                        phase = status.get('phase', 'unknown')
+                        self.summary.configure(text='当前状态：' + SERVICE_PHASES.get(phase, phase), fg=INK)
+                        detail = ('系统状态可能来自原厂 IMS；当前服务尚未完成注册。' if status.get('ims_observation_scope') == 'system_status_only'
+                                  else '注册判断同时要求管理器、原生进程存活，以及当前 LTE 和 IMS 连接。')
+                        wait = status.get('startup_wait', {})
+                        if phase == 'waiting_for_ims_apn' and wait.get('attempt'):
+                            detail = '第 {}/{} 轮等待，每轮最多 {} 秒。请保持 SIM 和 LTE 就绪。'.format(
+                                wait['attempt'], wait.get('max_attempts', 3), wait.get('seconds_per_attempt', 45))
+                        self.detail.configure(text=detail)
                     self.activity.configure(text='本次操作已结束 · ' + time.strftime('%H:%M:%S') + ' · 报告不含完整 SIM 或设备标识')
                 self.refresh_buttons()
         except queue.Empty:
@@ -400,7 +412,7 @@ class App:
     def export(self):
         if not self.last_result:
             return
-        path = filedialog.asksaveasfilename(title='保存脱敏检查报告', defaultextension='.json', initialfile='q10-preflight.json', filetypes=[('JSON', '*.json')])
+        path = filedialog.asksaveasfilename(title='保存脱敏检查报告', defaultextension='.json', initialfile='bb10-volte-preflight.json', filetypes=[('JSON', '*.json')])
         if path:
             try:
                 with open(path, 'w', encoding='utf-8') as file:

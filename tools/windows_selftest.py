@@ -36,6 +36,21 @@ def run(output):
     assert ssh.returncode == 0 and 'OpenSSH' in ssh.stderr
     assert scp.returncode == 1 and 'usage:' in scp.stderr
     assert (bundle / 'docs/GUI.md').is_file()
+    assert (bundle / 'tools/stage_cleanup.py').is_file()
+    transferred = []
+    def local_transfer(args, timeout):
+        source = resource_root() / args[-2]
+        assert source.is_file()
+        transferred.append(source)
+        return ''
+    # Exercise the frozen staging paths without invoking a transport operation.
+    client.remote = lambda *args: ''
+    client.process = local_transfer
+    client.execute = lambda *args: {'stage_removed': True}
+    with client.stage():
+        pass
+    assert bundle / 'tools/stage_cleanup.py' in transferred
+    assert len(transferred) == 6
     if frozen():
         assert (bundle / 'licenses/THIRD-PARTY-NOTICES.txt').stat().st_size > 1000
         assert (bundle / 'assets/app.ico').is_file()
@@ -47,6 +62,8 @@ def run(output):
               'bundled_ssh': client.ssh.startswith(str(bundle / 'vendor/openssh')),
               'ssh_version': ssh.stderr.strip(), 'scp_available': True,
               'payload_files_verified': len(manifest['files']),
+              'qnx_stage_cleanup_resource_present': True,
+              'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,

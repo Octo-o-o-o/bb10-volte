@@ -89,10 +89,11 @@ class DesktopPackageTests(unittest.TestCase):
                 patch.object(w.shutil, 'which', side_effect=lambda name: '/test path/' + name), \
                 patch.object(w, 'private_root', return_value=Path(folder)):
             client = w.Client()
-            with patch.object(client, 'remote', return_value=''), patch.object(client, 'process', return_value='') as run:
+            with patch.object(client, 'remote', return_value=''), patch.object(client, 'process', return_value='') as run, \
+                    patch.object(client, 'execute', return_value={'stage_removed': True}):
                 with client.stage():
                     pass
-                self.assertEqual(run.call_count, 5)
+                self.assertEqual(run.call_count, 6)
                 for call in run.call_args_list:
                     self.assertEqual(call.args[0][:5], ['/test path/scp', '-S', '/test path/ssh', '-O', '-q'])
 
@@ -100,7 +101,8 @@ class DesktopPackageTests(unittest.TestCase):
         names = build_windows.runtime_data()
         self.assertIn('device/install.py', names)
         self.assertIn('materials/payload-manifest.json', names)
-        self.assertFalse(any(name.startswith(('private/', 'downloads/', 'tools/')) for name in names))
+        self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
+        self.assertEqual({name for name in names if name.startswith('tools/')}, {'tools/stage_cleanup.py'})
 
     def test_legacy_device_transport_keeps_strict_host_verification(self):
         with patch.object(w, 'frozen', return_value=False), patch.object(w.shutil, 'which', side_effect=lambda n: n):

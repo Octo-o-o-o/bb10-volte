@@ -3,7 +3,7 @@
   "version": "0.3.1",
   "project": "bb10-volte",
   "platform": "Windows 11 x64",
-  "regression_tests_passed": 76,
+  "regression_tests_passed": 95,
   "isolated_executable_selftest": {
     "passed": true,
     "outside_checkout": true,
@@ -27,10 +27,11 @@
     "system_python_or_ssh_on_path": false,
     "existing_running_installation_not_overwritten": true,
     "installation_or_service_changes_performed": false,
-    "temporary_probe_cleanup": "attempted by workflow; result not recorded by CLI report"
+    "temporary_probe_cleanup": "attempted by workflow; result not recorded by CLI report",
+    "scope": "Transport verified before startup-hardening integration; final integrated EXE phone test remains delegated to the device session"
   },
   "q20_q30_hardware": "not_run",
-  "new_payload_full_phone_install": "not_run",
+  "new_payload_full_phone_install": "Device session reports Python 3.2 compilation, upgrade/readback and registration passed; hardened normal reboot/calls pending. See startup-hardening-2026-10-27.json.",
   "runtime_downloads": [],
   "included": [
     "Python",
@@ -63,5 +64,7 @@
     "symptom": "new SSH client closed during GCM handshake with QNX OpenSSH 6.2",
     "resolution": "device-scoped AES-CTR, strict known-host checking retained",
     "real_q10_ssh_scp_preflight": "passed"
-  }
+  },
+  "integrated_startup_fix": "54a0a89998d361b3e2576fbfb0d452bd53bc338c",
+  "exact_executable_evidence": "Release self-test JSON records the final EXE SHA-256; no claim of a clean Windows VM or final EXE phone-install acceptance."
 }
