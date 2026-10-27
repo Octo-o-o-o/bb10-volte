@@ -2,6 +2,8 @@
 
 [简体中文](README.md) | **English**
 
+**Repository status: temporarily Private. The maintainer will make it Public after stabilization.** The source uses the MIT license; these documents also prepare for that future public release.
+
 An open-source toolkit for enabling native VoLTE / 4G voice calling on BlackBerry 10, using the phone's own SIM, IMS stack and system dialer. The implementation and hardware validation currently cover **BlackBerry Q10 SQN100-3, BB10 10.3.3.3216, and China Unicom 460-01 in Beijing**.
 
 **Tested on a real Q10 on October 27, 2026.** Outgoing calls completed an IMS `INVITE 200 / ACK / BYE` exchange, incoming calls reached ringing, and all 366 sampled radio states remained LTE. The owner reported successful use. Answered incoming calls and audio in each direction were not separately recorded. This is an **experimental release**: the revised persistent service still needs reboot, unplugged operation and full call acceptance. Other BB10 devices, firmware versions and carriers are untested.
