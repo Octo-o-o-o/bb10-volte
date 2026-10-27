@@ -25,9 +25,21 @@ def run(output):
     editor.withdraw()
     assert editor.value() == app.profile
     editor.destroy()
-    root.update_idletasks()
+    # Map an invisible minimum-sized window so Tk computes actual geometry.
+    # Check that the complete action row and status stay inside the viewport.
+    root.attributes('-alpha', 0.0)
+    root.geometry('960x700')
+    root.deiconify()
+    root.update()
+    for widget in list(app.buttons.values()) + [app.activity]:
+        x = widget.winfo_rootx() - root.winfo_rootx()
+        y = widget.winfo_rooty() - root.winfo_rooty()
+        assert widget.winfo_width() > 1 and widget.winfo_height() > 1
+        assert x >= 0 and y >= 0 and x + widget.winfo_width() <= root.winfo_width()
+        assert y + widget.winfo_height() <= root.winfo_height()
+    assert all(button.winfo_width() >= 115 for button in app.buttons.values())
     tcl, tk_version = root.tk.call('info', 'patchlevel'), root.tk.call('package', 'provide', 'Tk')
-    root.destroy()
+    app.close()
     client = Client()
     ssh = subprocess.run([client.ssh, '-V'], capture_output=True, text=True, timeout=15,
                          creationflags=CREATE_NO_WINDOW)
@@ -65,6 +77,7 @@ def run(output):
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
+              'minimum_window_actions_visible': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
               'phone_contacted': False}

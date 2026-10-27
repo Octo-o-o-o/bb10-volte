@@ -180,7 +180,7 @@ class App:
         self.summary = self.label(summary, '先连接设备，运行兼容性预检', 16, bold=True)
         self.summary.pack(anchor='w')
         self.detail = self.label(summary, '预检不会修改通话配置。初次 Root 请使用对应机型的方法并先备份。', 9, MUTED,
-                                 wraplength=800, justify='left')
+                                 wraplength=800, justify='left', anchor='w')
         self.detail.pack(anchor='w', fill='x', pady=(5, 0))
         self.detail.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width - 4)))
 
