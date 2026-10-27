@@ -1,0 +1,123 @@
+{
+  "recorded_utc": "2026-10-27T16:52:07.740761+00:00",
+  "date": "2026-10-28",
+  "timezone": "Asia/Shanghai",
+  "version": "0.3.2",
+  "device_scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / China Unicom 460-01 USIM without ISIM",
+  "baseline": {
+    "version": "0.3.1",
+    "root_ready_to_register_seconds": 282.291,
+    "root_ready_to_stock_exit_seconds": 250.108,
+    "stock_exit_to_register_seconds": 32.183
+  },
+  "recovery_boot": {
+    "root_ready_at": "00:30:50",
+    "register_200_at": "00:31:33.498",
+    "root_ready_to_register_seconds": 43.498,
+    "counts_as_clean_normal_reboot": false
+  },
+  "normal_menu_reboot": {
+    "system_boot_at": "00:35:20",
+    "root_ready_at": "00:38:23",
+    "register_200_at": "00:39:07.698",
+    "root_ready_to_register_seconds": 44.698,
+    "system_boot_to_register_seconds": 227.698,
+    "seconds_saved_against_baseline": 237.593,
+    "percent_reduction": 84.17,
+    "automatic_start": true,
+    "manual_appworld_or_term49": false,
+    "desktop_service_start_commands_after_reboot": 0
+  },
+  "handoff": {
+    "exact_stock_process_idle_checked_twice": true,
+    "single_sigterm_per_boot": true,
+    "forced_kill": false,
+    "current_call_namespaces_empty_required": true,
+    "active_vpn_prohibited": true,
+    "current_pid_no_profiles_log_required": true,
+    "existing_wait_and_apn_timeouts_retained": true,
+    "experimental_models_and_profiles_use_original_passive_wait": true
+  },
+  "validation": {
+    "local_tests": 107,
+    "python_32_compile": true,
+    "installed_payload_readback": true,
+    "normal_menu_reboot": true,
+    "calls_and_usb_independence": "passed; short calls, USB disconnection and audio owner-confirmed"
+  },
+  "interrupted_software_reboot": {
+    "black_unresponsive_screen_reported": true,
+    "power_hold_recovered_desktop": true,
+    "cause_established": false,
+    "counted_as_clean_normal_reboot": false,
+    "subsequent_menu_reboot_reached_desktop_and_registered": true
+  },
+  "limits": [
+    "Times after Root readiness must not be reported as total device boot time.",
+    "This is one exact phone, OS and carrier baseline.",
+    "A software-requested reboot stalled with a black screen; its cause is unresolved and it is not counted as successful normal-reboot acceptance.",
+    "Long-term standby, roaming, cell handover and emergency calls remain untested.",
+    "Captured calls were 6.088 seconds incoming and 5.894 seconds outgoing; the requested 20-second duration was not established.",
+    "Calls were placed after registration; the earliest possible successful call at the precise registration instant was not measured."
+  ],
+  "owner_answer": "都正常",
+  "owner_test_requested": "After the verified normal menu reboot, unplug USB, answer an incoming call and make an outgoing call with the system dialer; check both audio directions and 4G, then reconnect USB.",
+  "owner_confirmed": {
+    "incoming_answered": true,
+    "outgoing_answered": true,
+    "audio_both_directions": true,
+    "four_g_during_calls": true,
+    "usb_disconnected_during_calls": true,
+    "usb_reconnected_afterward": true
+  },
+  "calls": [
+    {
+      "direction": "incoming",
+      "invite_cseq": 377660,
+      "invite_at": "00:46:10.468",
+      "answer_200_at": "00:46:18.579",
+      "ack_at": "00:46:18.780",
+      "bye_cseq": 377665,
+      "bye_at": "00:46:24.667",
+      "bye_200_at": "00:46:24.904",
+      "established_seconds_to_bye": 6.088,
+      "invite_200_ack_bye_verified": true
+    },
+    {
+      "direction": "outgoing",
+      "invite_cseq": 58985,
+      "invite_at": "00:46:50.476",
+      "answer_200_at": "00:46:55.841",
+      "ack_at": "00:46:55.846",
+      "bye_cseq": 58988,
+      "bye_at": "00:47:01.735",
+      "bye_200_at": "00:47:01.918",
+      "established_seconds_to_bye": 5.894,
+      "invite_200_ack_bye_verified": true
+    }
+  ],
+  "additional_attempt": {
+    "invite_at": "00:46:40.134",
+    "final_invite_response": 487,
+    "final_response_at": "00:46:47.812",
+    "counted_as_answered": false,
+    "reason_for_early_termination_established": false
+  },
+  "lte_samples": 163,
+  "all_samples_lte_and_ims_connected": true,
+  "final_state": {
+    "version": "0.3.2",
+    "enabled": true,
+    "phase": "running",
+    "manager_alive": true,
+    "native_alive": true,
+    "ims": "connected",
+    "register_status": "200 OK",
+    "rat": "LTE",
+    "current_boot": true,
+    "payload_matches_manifest": true,
+    "recorder_finished": true,
+    "service_has_no_deadline": true
+  },
+  "raw_call_capture_sha256": "d144cef454d6a8ef540a6ab56a247febdd22347f447c935c032d26b92162e051"
+}
