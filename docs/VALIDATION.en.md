@@ -85,3 +85,22 @@ Version 0.3.1 passed 85 local tests and public-file checks. On this Q10 it passe
 - A separate early dialog at 23:29 ended with INVITE 487 and was not counted as answered; the reason for termination was not established. The two subsequent complete INVITE 200 / ACK / BYE sessions provide the answered-call evidence.
 
 USB remained connected during this run; earlier unplugged acceptance remains a separate afternoon record. These durations establish short calls, not 20-second or longer calls. The IMS APN connected in the first waiting round; second- and third-round boundaries were unit-tested but not deliberately induced on the phone. Only the read-only recorder was stopped; the service remains enabled with no expiry window.
+
+## Startup latency acceptance for 0.3.2 — October 28, 2026
+
+The same Q10, firmware and China Unicom SIM passed the 0.3.2 update, device Python 3.2 compilation and payload readback. All 107 local tests passed. The change only accelerates handoff from a verified idle, unregistered stock IMS process; APN/registration wait limits and the running call path remain unchanged. See the [latency and call record](../materials/startup-latency-2026-10-28.json).
+
+| Measurement scope | Duration |
+| --- | --- |
+| 0.3.1, Root ready to IMS registration | 282.291 seconds |
+| 0.3.2, boot after power-hold recovery, Root ready to registration | 43.498 seconds; not counted as clean normal-reboot acceptance |
+| 0.3.2, normal phone-menu reboot, Root ready to registration | 44.698 seconds; 84.17% below the baseline |
+| That normal menu reboot, system BootTime to registration | 227.698 seconds |
+
+For the normal menu reboot, BootTime was 00:35:20, Root was ready at 00:38:23 and the owned IMS received REGISTER 200 at 00:39:07.698. AppWorld/Term49 were not opened manually and the computer did not start the service again. The idle stock process received one SIGTERM, followed by the existing configuration and registration flow after it exited.
+
+The owner disconnected USB, tested incoming/outgoing calls, both audio directions and 4G, reported success and reconnected USB. Captured incoming INVITE 200 / ACK / BYE began with the answer at 00:46:18.579 and lasted **6.088 seconds**. The outgoing answer at 00:46:55.841 was followed by ACK / BYE and lasted **5.894 seconds**. A separate early outgoing dialog ended with INVITE 487 and was not counted as answered; its termination reason was not established. All 163 status samples showed LTE / IMS connected. The final state remained enabled/running with current-boot REGISTER 200 and a matching payload. Only the read-only recorder was stopped; the calling service has no expiry.
+
+An earlier computer-requested reboot stalled at an unresponsive black screen. The owner recovered it by holding the power key. Its cause remains unresolved, and it is documented separately rather than counted as successful normal-reboot acceptance. The subsequent phone-menu reboot and calls above passed. Use the phone power menu for routine rebooting.
+
+These were short calls, not verified 20-second or longer calls. The 44.698-second figure measures **registration after Root readiness**, not total device boot time or the earliest possible successful call at the precise registration instant. Long-term stability, roaming, handover and emergency calling remain untested.
