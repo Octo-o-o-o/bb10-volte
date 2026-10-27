@@ -5,6 +5,7 @@ Python 3.2 compatible; intended only for the exact native hashes in native.py.
 """
 import json
 import os
+import posixpath
 import re
 import signal
 import subprocess
@@ -49,6 +50,8 @@ shutdown = False
 j = None
 child = None
 event_seen = set()
+startup_handoff = {}
+startup_timing = {}
 ACTIVE_REQUEST = profiles.request()
 ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
 
@@ -85,9 +88,12 @@ def live():
 
 
 def status(phase, error=None, details=None):
+    startup_timing.setdefault(phase, time.time())
     result = {'phase': phase, 'at': time.time(), 'manager_pid': os.getpid(),
               'native_pid': j.get('native_pid') if j else None, 'error': error,
               'boot': boot_token(),
+              'startup_timing': dict(startup_timing),
+              'stock_handoff': dict(startup_handoff),
               'ims_observation_scope': 'owned_native' if phase in ('running', 'registering')
               and j and j.get('native_pid') else 'system_status_only'}
     if details is not None:
@@ -471,12 +477,131 @@ def configure():
     save_journal()
 
 
+def phone_idle():
+    # Both namespaces must be readable; absence is not proof of an idle phone.
+    for path in ('/pps/services/phone/public/calls', '/pps/services/phone/private/calls'):
+        if not os.path.isdir(path) or os.listdir(path):
+            return False
+    return True
+
+
+def stock_exit_candidate():
+    """Read-only proof for the tested stock instance's no-profile startup wait.
+
+    Any missing/ambiguous evidence selects the original passive wait instead.
+    A global REGISTER status may be stale across boots; use the current stock
+    PID's no-profile log and disconnected public status, not that old value.
+    """
+    if stopping() or os.path.exists(BASE + '/conservative-start'):
+        return None, 'conservative_or_stopping'
+    if not os.path.isfile(BASE + '/enabled') or not os.path.isfile(JOURNAL):
+        return None, 'not_an_enabled_reboot'
+    previous = load(JOURNAL)
+    if (previous.get('owner') != 'q10-unicom-volte-v1' or
+            not previous.get('boot') or previous['boot'] == boot_token()):
+        return None, 'not_a_previous_boot_journal'
+    receipt = STATE + '/stock-handoff.json'
+    if os.path.exists(receipt) and load(receipt).get('boot') == boot_token():
+        return None, 'already_attempted_this_boot'
+    identity = device_info.read_identity()
+    if (not device_info.identify(identity)['hardware_tested'] or
+            identity['os_version'] != device_info.OS_VERSION or
+            not profiles.baseline_parameters(ACTIVE_PROFILE)):
+        return None, 'outside_tested_baseline'
+    pids = n.ims_pids()
+    if len(pids) != 1:
+        return None, 'no_unique_stock_process'
+    pid = pids[0]
+    arguments = n.command(['/bin/pidin', '-p', str(pid), '-f', 'A']).decode('ascii')
+    rows = [line.strip().split() for line in arguments.splitlines() if line.strip()]
+    expected = ['-U', '453:31,80,387,427,521,1001']
+    if (len(rows) != 2 or rows[0] != ['Arguments'] or len(rows[1]) != 3 or
+            posixpath.normpath(rows[1][0]) != '/radio/bin/ims_rrm' or rows[1][1:] != expected):
+        return None, 'not_exact_stock_arguments'
+    names = [line.strip() for line in n.command(
+        ['/bin/pidin', '-p', str(pid), '-F', '%80N']).decode('ascii').splitlines() if line.strip()]
+    if (len(names) != 2 or names[0] != 'name' or
+            posixpath.normpath('/' + names[1].lstrip('/')) != '/radio/bin/ims_rrm'):
+        return None, 'not_exact_stock_image'
+    if not ready() or live().get('ims') != 'disconnected' or not phone_idle():
+        return None, 'network_or_calls_not_idle'
+    config = n.attrs(n.read(IMS))
+    if any(n.value(config, key) not in (None, []) for key in ('IMS_profiles', 'IMS_profilesV2')):
+        return None, 'carrier_profiles_present'
+    if n.active_vpn_sessions():
+        return None, 'active_vpn'
+    text = n.command(['/bin/slog2info', '-b', 'ims_rrm'], 8).decode('utf-8', 'replace')
+    prefix = 'ims_rrm.' + str(pid) + ' '
+    own = '\n'.join(line for line in text.splitlines() if prefix in line)
+    profiles_seen = re.findall(r'bb\.cfgmgr:\d+ imsProfiles= 0x([0-9a-fA-F]+)', own)
+    if (not profiles_seen or int(profiles_seen[-1], 16) != 0 or
+            'No IMS profiles provisioned .. waiting' not in own or
+            'exit req but wait acl' in own or
+            re.search(r'CSeq:\s*\d+\s+(?:REGISTER|INVITE)\b', own)):
+        return None, 'no_current_idle_stock_evidence'
+    return pid, 'verified_idle_stock'
+
+
+def request_idle_stock_exit():
+    """At most one SIGTERM per boot; never SIGKILL or a name-wide service stop."""
+    global startup_handoff
+    signalled = False
+    try:
+        pid, reason = stock_exit_candidate()
+        startup_handoff = {'attempted': False, 'reason': reason}
+        if pid is None:
+            return False
+        identity = current_usim()
+        # Observe two separate idle snapshots, then revalidate the same PID,
+        # carrier, calls, profile and log immediately before requesting exit.
+        for unused in range(3):
+            if stopping():
+                return False
+            time.sleep(1)
+        second, reason = stock_exit_candidate()
+        if second != pid or current_usim() != identity or stopping():
+            startup_handoff['reason'] = 'changed_before_signal'
+            return False
+        if n.ims_pids() != [pid] or not phone_idle():
+            startup_handoff['reason'] = 'changed_before_signal'
+            return False
+        # Persist the attempt before signalling; a manager restart must not
+        # repeatedly terminate a replacement process in this boot.
+        startup_handoff = {'attempted': True, 'reason': 'sigterm_requested',
+                           'pid': pid, 'boot': boot_token(), 'requested_at': time.time()}
+        n.atomic(STATE + '/stock-handoff.json', json.dumps(startup_handoff).encode('ascii'))
+        os.kill(pid, signal.SIGTERM)
+        signalled = True
+        startup_timing['stock_exit_requested'] = time.time()
+        startup_handoff['signal_delivered'] = True
+        n.atomic(STATE + '/stock-handoff.json', json.dumps(startup_handoff).encode('ascii'))
+        return True
+    except Exception:
+        # A failed observation or signal must not turn a working passive
+        # startup into a configuration/restore failure.
+        startup_handoff['reason'] = 'passive_wait_after_unavailable_evidence'
+        return signalled
+
+
 def prepare_connection():
     n.verify_stock()
     if not wait_for_network():
         return False
-    wait_until(lambda: not n.ims_pids(), ACTIVE_PROFILE['runtime']['existing_ims_wait_seconds'],
+    requested = request_idle_stock_exit()
+    quiet = [None]
+    def stock_finished():
+        if n.ims_pids():
+            quiet[0] = None
+            return False
+        if not requested:
+            return True
+        if quiet[0] is None:
+            quiet[0] = time.time()
+        # Give a supervisor time to expose a replacement; it is never signalled.
+        return time.time() - quiet[0] >= 3
+    wait_until(stock_finished, ACTIVE_PROFILE['runtime']['existing_ims_wait_seconds'],
                'pre-existing native IMS instance', phase='waiting_for_native_ims')
+    startup_timing['stock_finished'] = time.time()
     # The stock process can take several minutes to exit. Its initial LTE
     # snapshot is no longer enough to authorize carrier configuration.
     if not wait_for_network():
@@ -489,6 +614,7 @@ def prepare_connection():
 
 def serve():
     global child, shutdown, j
+    startup_timing['manager_started'] = time.time()
     token = boot_token()
     if os.path.exists(LOCK):
         old = load(LOCK)
