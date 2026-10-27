@@ -1,4 +1,6 @@
-# BB10 VoLTE — 黑莓 4G 通话实验工具
+# bb10-volte — 黑莓 4G 通话实验工具
+
+<img src="assets/icon.png" width="96" alt="bb10-volte：黑色黑莓图形，4G 位于右上角">
 
 **简体中文** | [English](README.en.md)
 
@@ -8,7 +10,7 @@
 
 **已于 2026 年 10 月 27 日在真实 Q10 上测试验证。** 最新一轮已确认正常重启后自动恢复、断开 USB 后使用系统拨号器呼入接听和呼出、双向声音，以及通话期间保持 4G；两次呼叫均有 `INVITE 200 / ACK / BYE` 证据。本轮接通后通话约 **14.2 秒和 5.6 秒**，64 个状态样本全部为 LTE 且 IMS connected。当前仍为**单机实验版**，尚不能据此宣称长通话、长期待机或其他机型、固件与运营商稳定可用。
 
-[桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
+[Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 
 ## 项目功能
 
@@ -30,9 +32,9 @@
 | SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
 | 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
 | 电脑 | 实测 **Windows 11 x64**；Root 准备与 USB 驱动流程需要 Windows，macOS/Linux 部署未验证 |
-| 电脑 Python | **Python 3.14**，本次使用 3.14.9；完整 Root 准备使用其 Zstandard tar 支持，无需额外 pip 包 |
+| 电脑 Python | **EXE 用户无需安装**；源码运行 / 完整 Root 准备使用 Python 3.14（本次 3.14.9），含 Tk 和 Zstandard tar 支持 |
 | 手机 Python | BB10 自带 **Python 3.2**，以及安装器校验的原生库 |
-| 连接 | 稳定的 USB 数据线、BlackBerry USB 网络，以及 OpenSSH `ssh`、`scp`、`ssh-keygen`；`scp` 需支持 `-O` |
+| 连接 | 稳定的 USB 数据线与 BlackBerry USB 网络；EXE 内置 `ssh` / `scp`，源码及首次密钥准备需自行安装 OpenSSH |
 | USB 驱动 | **BlackBerry USB Drivers 5.0.0.2 x64**，准备流程核验文件哈希和安装包 / CAT 签名 |
 | 仅首次 Root 所需 | AutoRoot v4、Q10 原版固件、**7-Zip**、libusb **1.0.30**、LZO **2.10-3**、**Git for Windows 2.55.0.windows.5 / OpenSSL 3.5.7** 中的固定 DLL；建议预留约 **15 GB** |
 | 可选辅助模块重建 | **Zig 0.13.0**；安装随仓库提供的模块无需 QNX SDK |
@@ -40,6 +42,10 @@
 精确文件名、原始下载地址及 SHA-256 见 [sources.json](materials/sources.json)、[usb-drivers.json](materials/usb-drivers.json)、[stock-partitions.json](materials/stock-partitions.json)。这些是已经记录的可工作版本，不应直接用最新版替换；散列不匹配时准备流程会停止。
 
 ## 快速开始
+
+### 双击 Windows EXE（推荐）
+
+从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取 `bb10-volte-0.3.1-windows-x64.exe`，或由维护者直接发送文件。内置 Python、Tk、SSH、配置和载荷，双击启动即可；已有匹配机型 Root、USB 网络和个人 SSH 配置后，电脑无需联网即可执行预检与安装。首次 Root / USB 驱动仍需另行准备，手机通话需要运营商网络。详见 [离线边界与测试步骤](docs/WINDOWS-EXE.md)。下文为源码方式。
 
 ### 1. 获取源码
 
@@ -60,7 +66,7 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-推荐在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，选择个人 SSH 配置后点击“运行预检”。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 仍按完整安装文档操作。
+源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，选择个人 SSH 配置后点击“运行预检”。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 仍按完整安装文档操作。
 
 或在仓库根目录执行同一套流程：
 

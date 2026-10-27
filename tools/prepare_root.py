@@ -57,7 +57,8 @@ def main():
     (kit/'ssh_config').write_text('Host q10-root\n    HostName 169.254.0.1\n    User root\n'
         +'    IdentityFile "'+(kit/'q10_root_rsa').as_posix()+'"\n'
         +'    UserKnownHostsFile "'+(kit/'known_hosts').as_posix()+'"\n'
-        +'    IdentitiesOnly yes\n    StrictHostKeyChecking yes\n    PasswordAuthentication no\n    BatchMode yes\n    ConnectTimeout 5\n',encoding='utf-8')
+        +'    IdentitiesOnly yes\n    StrictHostKeyChecking yes\n    PasswordAuthentication no\n    BatchMode yes\n    ConnectTimeout 5\n'
+        +'    Ciphers aes128-ctr,aes192-ctr,aes256-ctr\n    HostKeyAlgorithms +ssh-rsa\n    PubkeyAcceptedAlgorithms +ssh-rsa\n',encoding='utf-8')
     libusb=items['libusb']
     data=subprocess.check_output([str(args.seven_zip),'e','-so',str(ROOT/'downloads'/libusb['file']),libusb['extract']])
     assert hashlib.sha256(data).hexdigest()==libusb['dll_sha256']

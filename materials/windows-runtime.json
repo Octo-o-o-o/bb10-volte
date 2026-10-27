@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "python": "3.14.9",
+  "tcl": "9.0.4",
+  "tk": "9.0.4",
+  "pyinstaller": "6.22.3",
+  "platform": "windows-x64",
+  "openssh": {
+    "version": "10.4.0.0p1-Preview",
+    "upstream_channel": "preview",
+    "file": "openssh-10.4.0.0-win64.zip",
+    "url": "https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.4.0.0p1-Preview/OpenSSH-Win64.zip",
+    "sha256": "b67ff8becd203502190ec42ac7787c24c2cd3325ed7700485fe7a1c83d2a7957",
+    "prefix": "OpenSSH-Win64/",
+    "files": {
+      "ssh.exe": "ee115a1b833261034dcb2e5b862e6571f6dcedc084c555ea0df45ae7fd42c5e0",
+      "scp.exe": "41f0f40a823d3f1b105778492cf7d9c004b4e01fec3025aa7fe1140b4deec02b",
+      "libcrypto.dll": "b4cbfd202d52ec0f094bfa328414c74b05b51234df95d2eb42e5fdb47160c9b5",
+      "LICENSE.txt": "568c41f330a50a7d2d2eba9d3f7807caaaf4e091705ab6652ec26a3f9d1acfdb",
+      "NOTICE.txt": "2cd5f5d0064bc909dfe0f0fc8f4787882c7c379f2730d89e5faa0c2bc57c620b"
+    }
+  },
+  "licenses": [
+    {
+      "component": "Tcl 9.0.4",
+      "file": "tcl-9.0.4-license.terms",
+      "url": "https://raw.githubusercontent.com/tcltk/tcl/core-9-0-4/license.terms",
+      "sha256": "c0a69a2bfd757361ec7e6143973b103c90409316b49e9c88db26ad6388e79f16"
+    },
+    {
+      "component": "Tk 9.0.4",
+      "file": "tk-9.0.4-license.terms",
+      "url": "https://raw.githubusercontent.com/tcltk/tk/core-9-0-4/license.terms",
+      "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+    }
+  ]
+}

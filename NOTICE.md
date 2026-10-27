@@ -17,3 +17,9 @@ AutoRoot v4 / bb10mt 属于原作者项目，请遵守其发布条件：[作者�
 libusb、LZO、OpenSSL、Git for Windows、Zig与7-Zip按各自许可证分发。材料准备脚本从指定来源或已验证安装目录取文件，相关许可证随本地材料保留。MIT授权不替代这些第三方许可。
 
 排查参考了3GPP/ETSI、Qualcomm、libqmi与AOSP的公开资料，具体链接与用途见 [设计说明](docs/DESIGN.md)。最终补丁偏移和ABI以这一台设备的原生文件验证为准。
+
+## Desktop application bundle / 桌面应用打包
+
+The Windows EXE embeds CPython, Tcl/Tk, the PyInstaller bootloader and Microsoft Win32-OpenSSH client/crypto binaries. Full upstream licenses and notices, including the PyInstaller bootloader exception, are available offline in the application. Sources and hashes are pinned in [windows-runtime.json](materials/windows-runtime.json). No third-party Root kit, stock firmware, USB driver or personal SSH credential is embedded. The generated project icon follows the owner-requested BlackBerry-style design; it does not indicate endorsement. See [branding](docs/BRANDING.md).
+
+Windows EXE 内置 CPython、Tcl/Tk、PyInstaller 引导程序和 Microsoft Win32-OpenSSH 客户端 / crypto 文件，原作者许可完整保留，可在应用内离线查看。未内置第三方 Root 包、原版固件、USB 驱动和个人 SSH 凭据；本项目 MIT 许可不替代第三方许可。

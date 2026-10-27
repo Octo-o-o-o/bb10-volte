@@ -1,4 +1,4 @@
-"""BB10 VoLTE Desk: standard-library desktop UI over the fixed workflow."""
+"""bb10-volte: standard-library desktop UI over the fixed workflow."""
 import argparse
 import json
 import os
@@ -6,9 +6,11 @@ import queue
 import threading
 import time
 import tkinter as tk
+from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from workflow import Client, ROOT, WorkflowError
+from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
@@ -47,6 +49,7 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
+    'bundled_ssh_mismatch': '内置 SSH 文件校验失败，请重新获取完整 EXE。',
     'invalid_profile': '配置格式或参数不符合要求，请在配置编辑器中检查。',
     'profile_update_required': '所选配置与已装配置不同。先停用恢复，再预检和更新安装。',
     'invalid_host': 'SSH 别名只能使用字母、数字、点、下划线和短横线。',
@@ -82,10 +85,16 @@ class App:
         self.profile_name = tk.StringVar(value=self.profile['label'])
         self.experimental = tk.BooleanVar(value=False)
         self.host = tk.StringVar(value=host)
-        default = ROOT / 'private/root-kit/ssh_config'
+        default = private_root() / 'root-kit/ssh_config'
         self.config = tk.StringVar(value=config or (str(default) if default.is_file() else ''))
         self.ack = tk.BooleanVar()
-        root.title('BB10 VoLTE Desk')
+        root.title('bb10-volte')
+        if os.name == 'nt' and (ROOT / 'assets/app.ico').is_file():
+            root.iconbitmap(str(ROOT / 'assets/app.ico'))
+        self.icon = None
+        if (ROOT / 'assets/icon.png').is_file():
+            self.icon = tk.PhotoImage(file=str(ROOT / 'assets/icon.png'))
+            root.iconphoto(True, self.icon)
         root.geometry('1200x900')
         root.minsize(1080, 840)
         root.configure(bg=BG)
@@ -126,8 +135,10 @@ class App:
         sidebar = tk.Frame(self.root, bg='#172740', width=178)
         sidebar.pack(side='left', fill='y')
         sidebar.pack_propagate(False)
-        self.label(sidebar, 'BB10', 31, 'white', bold=True).pack(anchor='w', padx=25, pady=(30, 0))
-        self.label(sidebar, 'VoLTE DESK', 10, '#AFC6EA', bold=True).pack(anchor='w', padx=27)
+        if self.icon:
+            self.sidebar_icon = tk.PhotoImage(file=str(ROOT / 'assets/icon-96.png'))
+            tk.Label(sidebar, image=self.sidebar_icon, bg='#172740', bd=0).pack(anchor='w', padx=25, pady=(25, 12))
+        self.label(sidebar, 'bb10-volte', 14, 'white', bold=True).pack(anchor='w', padx=23, pady=(8, 0))
         self.label(sidebar, '设备服务工具', 10, '#9BAFCD').pack(anchor='w', padx=27, pady=(8, 35))
         for number, title, detail in [('01', '连接与预检', '确认设备适用条件'),
                                       ('02', '安装与验证', '固定版本 · 回读检查'),
@@ -138,6 +149,8 @@ class App:
         footer.pack(side='bottom', fill='x', padx=20, pady=24)
         tk.Button(footer, text='使用与恢复指南  ↗', bg='#223956', fg='white', relief='flat',
                   activebackground='#30496B', activeforeground='white', bd=0, pady=9, command=self.guide).pack(fill='x')
+        tk.Button(footer, text='版本与开源许可', bg='#172740', fg='#AFC6EA', relief='flat',
+                  activebackground='#223956', activeforeground='white', bd=0, pady=8, command=self.licenses).pack(fill='x')
         version = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))['version']
         self.label(footer, 'v' + version + ' · 实验版本', 9, '#9BAFCD').pack(anchor='w', pady=(17, 5))
         self.label(footer, '单机验证 · 逐台验收', 9, '#9BAFCD').pack(anchor='w')
@@ -259,7 +272,8 @@ class App:
         self.export_button.configure(state='normal' if self.last_result and not self.busy else 'disabled')
 
     def browse(self):
-        path = filedialog.askopenfilename(title='选择这台手机的 SSH 配置', initialdir=str(ROOT / 'private'), filetypes=[('SSH config', '*')])
+        initial = private_root() if private_root().is_dir() else Path.home()
+        path = filedialog.askopenfilename(title='选择这台手机的 SSH 配置', initialdir=str(initial), filetypes=[('SSH config', '*')])
         if path:
             self.config.set(path)
 
@@ -396,8 +410,15 @@ class App:
                 messagebox.showerror('无法保存', '请检查保存路径和写入权限。', parent=self.root)
 
     def guide(self):
+        self.show_document('使用与恢复指南', ROOT / 'docs/GUI.md')
+
+    def licenses(self):
+        path = ROOT / 'licenses/THIRD-PARTY-NOTICES.txt'
+        self.show_document('版本与开源许可', path if path.is_file() else ROOT / 'NOTICE.md')
+
+    def show_document(self, title, path):
         popup = tk.Toplevel(self.root)
-        popup.title('使用与恢复指南')
+        popup.title(title)
         popup.geometry('760x580')
         text = tk.Text(popup, wrap='word', font=('Microsoft YaHei UI', 11), padx=24, pady=20,
                        bg='white', fg=INK, relief='flat')
@@ -405,7 +426,7 @@ class App:
         bar.pack(side='right', fill='y')
         text.configure(yscrollcommand=bar.set)
         text.pack(fill='both', expand=True)
-        text.insert('1.0', (ROOT / 'docs/GUI.md').read_text(encoding='utf-8'))
+        text.insert('1.0', path.read_text(encoding='utf-8'))
         text.configure(state='disabled')
 
     def close(self):
@@ -419,7 +440,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--host', default='q10-root')
     parser.add_argument('--ssh-config', default='')
+    parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
+    parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')
     args = parser.parse_args()
+    prepare_external_programs()
+    if args.self_test:
+        from windows_selftest import run
+        return run(args.self_test)
+    if args.preflight_report:
+        try:
+            report = Client(args.host, args.ssh_config or None).preflight()
+            code = 0 if report['outcome'] in ('compatible', 'experimental') else 2
+        except WorkflowError as error:
+            report, code = {'error': error.code}, 1
+        args.preflight_report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+        return code
     if os.name == 'nt':
         import ctypes
         try:
@@ -433,7 +468,8 @@ def main():
     root.tk.call('tk', 'scaling', min(float(root.tk.call('tk', 'scaling')), 1.6))
     App(root, args.host, args.ssh_config)
     root.mainloop()
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

@@ -1,6 +1,6 @@
 {
-  "name": "q10-unicom-volte",
-  "version": "0.3.0",
+  "name": "bb10-volte",
+  "version": "0.3.1",
   "state": "experimental_gui_preflight_verified_full_install_acceptance_pending",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",

@@ -1,10 +1,10 @@
-# BB10 VoLTE Desk 使用指南
+# bb10-volte 使用指南
 
 [English](GUI.en.md)
 
-这是 Windows 桌面界面，与命令行共用固定流程。运行环境为 Windows 11、Python 3.14（含 Tk）、OpenSSH 客户端，以及已准备好的个人 Root SSH 配置。不需要 Codex、其他 AI 工具、额外 Python 包或云端账号。
+这是 Windows 桌面界面，与命令行共用固定流程。推荐双击独立 [Windows EXE](WINDOWS-EXE.md)，已内置 Python、Tk 和 SSH；测试者无需安装这些组件。源码方式需要 Python 3.14（含 Tk）和 OpenSSH。两种方式都需要已准备好的个人 Root SSH 配置及 USB 网络，不需要 Codex、其他 AI 工具或云端账号。
 
-从完整解压后的发布目录双击 `Start-GUI.cmd`，或运行 `python tools/gui.py`。请保留整个目录；不能只复制界面脚本。安装包校验不符时应换回完整发布包，客户不能通过重新生成清单跳过检查。
+使用源码时，从完整解压后的发布目录双击 `Start-GUI.cmd`，或运行 `python tools/gui.py`。请保留整个目录；不能只复制界面脚本。安装包校验不符时应换回完整发布包，客户不能通过重新生成清单跳过检查。
 
 ## 1. 连接与预检
 

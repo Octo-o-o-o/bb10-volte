@@ -9,7 +9,8 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
-       'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd'}
+       'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
+       'tools/windows-freeze-requirements.txt', 'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
@@ -57,6 +58,10 @@ def check(check_git=False):
         name = path.relative_to(ROOT).as_posix()
         data = path.read_bytes()
         hashes[name] = hashlib.sha256(data).hexdigest()
+        if name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}:
+            magic = {'.png': b'\x89PNG\r\n\x1a\n', '.ico': b'\x00\x00\x01\x00', '.icns': b'icns'}
+            assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
+            continue
         if name == HELPER:
             continue
         text = data.decode('utf-8')

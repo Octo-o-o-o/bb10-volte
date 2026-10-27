@@ -11,8 +11,9 @@ import sys
 import time
 import uuid
 from pathlib import Path
+from desktop_paths import resource_root, private_root, frozen
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = resource_root()
 sys.path.insert(0, str(ROOT / 'device'))
 import compatibility as compat
 import profiles
@@ -33,6 +34,8 @@ class WorkflowError(RuntimeError):
 
 def write_manifest():
     """Explicit maintainer operation. Normal commands NEVER bless local changes."""
+    if frozen():
+        raise WorkflowError('package_readonly')
     project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
     manifest = {'owner': compat.OWNER, 'version': project['version'],
                 'files': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in FILES}}
@@ -85,14 +88,37 @@ class Client:
         self.profile = self.request['profile']
         self.progress = progress or (lambda phase, state: None)
         self.options = ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=5',
-                        '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=2', '-o', 'ClearAllForwardings=yes']
+                        '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=2', '-o', 'ClearAllForwardings=yes',
+                        # QNX OpenSSH 6.2 advertises GCM but closes the handshake
+                        # when the new client prefers it. CTR is verified on Q10.
+                        # RSA/SHA1 is scoped to this legacy device connection.
+                        '-o', 'Ciphers=aes128-ctr,aes192-ctr,aes256-ctr',
+                        '-o', 'HostKeyAlgorithms=+ssh-rsa', '-o', 'PubkeyAcceptedAlgorithms=+ssh-rsa']
         if ssh_config:
             path = Path(ssh_config).resolve()
             if not path.is_file():
                 raise WorkflowError('config_missing')
             self.options += ['-F', str(path)]
-        self.ssh = shutil.which('ssh') or shutil.which('ssh.exe')
-        self.scp = shutil.which('scp') or shutil.which('scp.exe')
+        if frozen() and sys.platform == 'win32':
+            try:
+                vendor = ROOT / 'vendor/openssh'
+                pinned = json.loads((ROOT / 'materials/windows-runtime.json').read_text(encoding='utf-8'))['openssh']['files']
+                if set(pinned) != {'ssh.exe', 'scp.exe', 'libcrypto.dll', 'LICENSE.txt', 'NOTICE.txt'}:
+                    raise ValueError('incomplete SSH manifest')
+                for name, expected in pinned.items():
+                    path = vendor / name
+                    if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                        raise ValueError('bundled SSH changed')
+                self.ssh, self.scp = str(vendor / 'ssh.exe'), str(vendor / 'scp.exe')
+            except (OSError, ValueError, KeyError, TypeError):
+                raise WorkflowError('bundled_ssh_mismatch') from None
+        elif frozen() and sys.platform == 'darwin':
+            self.ssh, self.scp = '/usr/bin/ssh', '/usr/bin/scp'
+            if not Path(self.ssh).is_file() or not Path(self.scp).is_file():
+                raise WorkflowError('openssh_missing')
+        else:
+            self.ssh = shutil.which('ssh') or shutil.which('ssh.exe')
+            self.scp = shutil.which('scp') or shutil.which('scp.exe')
         if not self.ssh or not self.scp:
             raise WorkflowError('openssh_missing')
 
@@ -134,7 +160,7 @@ class Client:
         names = (FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py'])
         names += ['profile-request.json']
-        local_request = ROOT / 'private' / ('profile-stage-' + uuid.uuid4().hex + '.json')
+        local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
         local_request.parent.mkdir(parents=True, exist_ok=True)
         local_request.write_bytes(profiles.canonical(self.request))
         created = False
@@ -148,7 +174,7 @@ class Client:
             self.progress('transfer', 'working')
             for name in names:
                 source = local_request if name == 'profile-request.json' else ROOT / (MANIFEST if name == 'payload-manifest.json' else name)
-                self.process([self.scp, '-O', '-q'] + self.options + [str(source), self.host + ':' + path + '/' + name], 40)
+                self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options + [str(source), self.host + ':' + path + '/' + name], 40)
             self.progress('transfer', 'done')
             yield path
             completed = True
@@ -280,12 +306,12 @@ class Client:
         return {'action': action, 'restored': True, 'preflight': after}
 
     def collect(self):
-        folder = ROOT / 'private' / datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+        folder = private_root() / datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
         folder.mkdir(parents=True, exist_ok=False, mode=0o700)
         if sys.platform == 'win32':
             account = subprocess.check_output(['whoami'], text=True, creationflags=CREATE_NO_WINDOW).strip()
             self.process(['icacls', str(folder), '/inheritance:r', '/grant:r',
                           account + ':(OI)(CI)F', 'SYSTEM:(OI)(CI)F'], 20)
-        self.process([self.scp, '-O', '-q', '-r'] + self.options + [self.host + ':' + BASE + '/state', str(folder)], 60)
-        self.process([self.scp, '-O', '-q'] + self.options + [self.host + ':' + BASE + '/installation.json', str(folder / 'installation.json')], 30)
+        self.process([self.scp, '-S', self.ssh, '-O', '-q', '-r'] + self.options + [self.host + ':' + BASE + '/state', str(folder)], 60)
+        self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options + [self.host + ':' + BASE + '/installation.json', str(folder / 'installation.json')], 30)
         return {'private_logs_saved': str(folder), 'share_publicly': False}

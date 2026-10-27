@@ -1,4 +1,6 @@
-# BB10 VoLTE — Experimental 4G Calling on BlackBerry 10
+# bb10-volte — Experimental 4G Calling on BlackBerry 10
+
+<img src="assets/icon.png" width="96" alt="bb10-volte: black berry emblem with 4G at the upper right">
 
 [简体中文](README.md) | **English**
 
@@ -8,7 +10,7 @@ An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS st
 
 **Tested on a real Q10 on October 27, 2026.** The latest trial confirmed automatic recovery after a normal reboot, answered incoming and outgoing calls with the system dialer while USB was disconnected, two-way audio and continued 4G. Both calls have `INVITE 200 / ACK / BYE` evidence. Established call durations were approximately **14.2 and 5.6 seconds**, with all 64 status samples showing LTE and connected IMS. This remains a **single-device experimental release**; longer calls, long-term standby and other devices, firmware versions or carriers have not been validated.
 
-[Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
+[Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
 ## What it does
 
@@ -30,9 +32,9 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 | SIM and network | **China Unicom 460-01 USIM in Beijing**, working LTE data and a subscription confirmed to support VoLTE; the tested SIM had no ISIM |
 | Phone access | Working **root SSH**, the owner's private key and a verified host key; the service uses the AutoRoot v4 addon mechanism |
 | Computer | **Windows 11 x64** was used; the Root preparation and USB driver workflows require Windows. macOS/Linux deployment has not been validated |
-| Desktop Python | **Python 3.14** (tested with 3.14.9); full Root preparation uses its Zstandard tar support. No third-party Python packages are required |
+| Desktop Python | **Not required for EXE users**; source execution / full Root preparation uses Python 3.14 (tested 3.14.9), including Tk and Zstandard tar support |
 | Device Python | BB10's built-in **Python 3.2**, with the native libraries checked by the installer |
-| Connection | Reliable USB data cable, BlackBerry USB networking and OpenSSH `ssh`, `scp`, `ssh-keygen`; `scp` must support `-O` |
+| Connection | Reliable USB cable and BlackBerry USB networking; the EXE bundles SSH/SCP. Source execution and initial key preparation require OpenSSH separately |
 | USB drivers | **BlackBerry USB Drivers 5.0.0.2 x64**; preparation checks file hashes and package/catalog signatures |
 | Initial Root only | AutoRoot v4, Q10 stock firmware, **7-Zip**, libusb **1.0.30**, LZO **2.10-3**, and the pinned OpenSSL DLLs from **Git for Windows 2.55.0.windows.5 / OpenSSL 3.5.7**; allow about **15 GB** of workspace |
 | Optional helper rebuild | **Zig 0.13.0**; no QNX SDK is needed to install the supplied helper |
@@ -40,6 +42,10 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 Exact filenames, original download URLs and SHA-256 values are in [sources.json](materials/sources.json), [usb-drivers.json](materials/usb-drivers.json) and [stock-partitions.json](materials/stock-partitions.json). These are recorded working versions, not a request to use whichever version is newest. A hash mismatch stops preparation.
 
 ## Quick start
+
+### Run the Windows EXE (recommended)
+
+Obtain `bb10-volte-0.3.1-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
 
 ### 1. Obtain the source
 

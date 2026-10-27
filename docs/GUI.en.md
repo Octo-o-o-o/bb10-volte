@@ -1,10 +1,10 @@
-# BB10 VoLTE Desk
+# bb10-volte
 
 [简体中文](GUI.md)
 
-The Windows GUI uses the same fixed workflow as the CLI. Requirements: Windows 11, Python 3.14 including Tk, OpenSSH, and your own verified root SSH configuration. No AI account, cloud service or third-party Python package is needed. The first UI is in Chinese; this guide describes its controls.
+The Windows GUI uses the same fixed workflow as the CLI. The recommended [standalone EXE](WINDOWS-EXE.en.md) embeds Python, Tk and SSH. Source execution requires Python 3.14 with Tk and OpenSSH separately. Both need working USB networking and your own verified root SSH configuration. No AI account or cloud service is needed. The first UI is in Chinese; this guide describes its controls.
 
-Extract the complete release and double-click `Start-GUI.cmd`, or run `python tools/gui.py`. Keep the complete directory. Do not regenerate a manifest on a customer's machine to bypass a package mismatch.
+For source execution, extract the complete release and double-click `Start-GUI.cmd`, or run `python tools/gui.py`. Keep the complete directory. Do not regenerate a manifest on a customer's machine to bypass a package mismatch.
 
 1. Select the phone's `ssh_config`; the default alias is `q10-root`. A blank config field uses the existing OpenSSH configuration. Strict host-key checking remains enabled.
 2. Select a preset or **编辑 / 导入配置 / Edit or import profile**. Edit MCC/MNC, data/IMS APNs, IP family, domain, waits and autostart; import/export JSON. Q20/Q30 and untested operators require explicit experimental opt-in. Changes invalidate preflight. See [profiles](PROFILES.en.md). Then click **运行预检 / Preflight**: it recognizes the device and checks OS, root, native hashes, SIM, LTE, selected data APN, stock carrier configuration and existing state. Four probe modules and a configuration request are temporarily uploaded; executed scripts are individually trusted and cleaned up on success. It does not change telephony settings.

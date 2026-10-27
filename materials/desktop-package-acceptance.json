@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-27",
+  "version": "0.3.1",
+  "project": "bb10-volte",
+  "platform": "Windows 11 x64",
+  "regression_tests_passed": 76,
+  "isolated_executable_selftest": {
+    "passed": true,
+    "outside_checkout": true,
+    "path_contains_spaces_and_chinese": true,
+    "python_on_path": false,
+    "system_ssh_on_path": false,
+    "invalid_pythonhome_and_pythonpath_ignored": true,
+    "python_socket_connections_blocked_during_selftest": true,
+    "tk_and_profile_editor_roundtrip": true,
+    "payload_files_verified": 11,
+    "profiles_loaded": 4,
+    "clean_windows_vm_without_python": "not_run",
+    "temporary_extraction_path_contains_spaces_and_chinese": true
+  },
+  "packaged_q10_preflight": {
+    "passed": true,
+    "outcome": "compatible",
+    "model": "Q10 SQN100-3",
+    "os": "10.3.3.3216",
+    "bundled_ssh_and_scp": true,
+    "system_python_or_ssh_on_path": false,
+    "existing_running_installation_not_overwritten": true,
+    "installation_or_service_changes_performed": false,
+    "temporary_probe_cleanup": "attempted by workflow; result not recorded by CLI report"
+  },
+  "q20_q30_hardware": "not_run",
+  "new_payload_full_phone_install": "not_run",
+  "runtime_downloads": [],
+  "included": [
+    "Python",
+    "Tcl/Tk",
+    "SSH/SCP",
+    "crypto library",
+    "phone payload",
+    "operator profiles",
+    "offline guides",
+    "licenses"
+  ],
+  "external_prerequisites": [
+    "model-specific root",
+    "USB networking driver",
+    "per-device SSH credentials and verified host key",
+    "VoLTE carrier service"
+  ],
+  "macos": {
+    "feasibility": "native_app_then_signed_notarized_dmg",
+    "maintainer_macbook_developer_id_application_identity_found": true,
+    "maintainer_macbook_notarytool_found": true,
+    "certificate_or_key_exported": false,
+    "app_build_sign_notarize_usb_acceptance": "not_run"
+  },
+  "gui_visual_check": {
+    "name_and_upper_right_4g_icon": true,
+    "offline_licenses": true
+  },
+  "transport_regression": {
+    "symptom": "new SSH client closed during GCM handshake with QNX OpenSSH 6.2",
+    "resolution": "device-scoped AES-CTR, strict known-host checking retained",
+    "real_q10_ssh_scp_preflight": "passed"
+  }
+}
