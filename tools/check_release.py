@@ -9,7 +9,7 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
-       'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml'}
+       'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'

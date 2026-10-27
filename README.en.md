@@ -8,7 +8,7 @@ An open-source toolkit for enabling native VoLTE / 4G voice calling on BlackBerr
 
 **Tested on a real Q10 on October 27, 2026.** The latest trial confirmed automatic recovery after a normal reboot, answered incoming and outgoing calls with the system dialer while USB was disconnected, two-way audio and continued 4G. Both calls have `INVITE 200 / ACK / BYE` evidence. Established call durations were approximately **14.2 and 5.6 seconds**, with all 64 status samples showing LTE and connected IMS. This remains a **single-device experimental release**; longer calls, long-term standby and other devices, firmware versions or carriers have not been validated.
 
-[Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
+[Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
 ## What it does
 
@@ -16,6 +16,7 @@ An open-source toolkit for enabling native VoLTE / 4G voice calling on BlackBerr
 - Builds a hash-checked copy of the stock IMS program with an isolated platform configuration and a two-byte change to the ordinary voice VoPS decision.
 - Enables the existing QNX software crypto provider and selects IMS-preferred voice through the native radio API.
 - Installs a phone-side service with status, start, stop, update, disable, collection and recovery commands.
+- Provides a Windows GUI, sanitized compatibility reports and a fixed workflow with a fresh phone-side gate before writing.
 - Provides complete Python, shell and C source, a reproducible 5,264-byte helper, pinned material manifests and regression tests.
 
 The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must match the published SHA-256 values. The toolkit does not unlock a SIM, obtain free service or provide a separate calling account; it needs an active VoLTE-capable subscription.
@@ -59,18 +60,21 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Run these commands from the repository root with the phone connected:
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and run preflight. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); initial Root flashing remains a separate procedure.
+
+Alternatively, run the same workflow from the repository root:
 
 ```powershell
-python tools/q10.py install --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
-python tools/q10.py start --ssh-config private/root-kit/ssh_config
+python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 
-# After about one minute:
+# If registration is pending, check again later:
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
 ```
 
-Look for `phase=running`, `manager_alive=true`, `register_status="200 OK"` and `ran="LTE"`, together with a live native IMS process and a connected IMS state. The first start may briefly reload the radio. An IMS registration response alone does not establish that voice calls work.
+`setup` installs, reads back the release, starts it and observes registration for up to 180 seconds. Look for `registration=verified`; `status` returns `registered=true` only with a live manager/native process and current connected IMS / 200 OK / LTE. A timeout reports pending, without reinstalling. First activation may briefly reload the radio. Registration alone does not establish working calls.
+
+The v0.2.0 preflight has run on the Q10 above. The GUI/new installation workflow is validated separately from the earlier calling evidence and still needs full hardware installation acceptance. Another province with the same conditions is eligible for experimental testing; China Mobile, China Telecom, other MNCs and ISIM are blocked. See the compatibility matrix.
 
 ### 4. Test calls and recovery
 
@@ -87,7 +91,7 @@ python tools/q10.py check --ssh-config private/root-kit/ssh_config
 python tools/q10.py disable --ssh-config private/root-kit/ssh_config
 ```
 
-Wait for `stopped`, no live manager or project IMS process, original voice policy `0` and software provider `-1`. `cleanup_required` means recovery needs investigation. See the [installation guide](docs/INSTALL.en.md) for updating, collecting private diagnostics and removing the startup entry.
+Stop waits for restoration and returns `restored=true`. The preflight `baseline` check must pass, confirming policy 0, provider -1 and no IMS/VPN or override conflicts. `cleanup_required` means recovery needs investigation. See the [installation guide](docs/INSTALL.en.md) for updating, collecting private diagnostics and removing the startup entry.
 
 ## Validation status
 

@@ -64,25 +64,28 @@ The host key is pinned to the key generated for your own images. If the phone wa
 
 Keep the phone powered on with USB connected and its own SIM inserted. Replace the SSH configuration path if yours differs; use `--host` if the alias is not `q10-root`.
 
+Alternatively, launch [Start-GUI.cmd](../Start-GUI.cmd) and follow [the GUI guide](GUI.en.md). Initial Root flashing is separate.
+
 ```powershell
-python tools/q10.py install --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
-python tools/q10.py start --ssh-config private/root-kit/ssh_config
+python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 ```
 
 Before changing network configuration, the installer checks native hashes, the original voice policy `00`, existing IMS/VPN state and software provider state. Finish any previous experiment before proceeding; do not delete unknown objects to pass preflight.
+
+v0.2.0 also checks model, full OS version, SIM/MCC/MNC, LTE and APN. The desktop verifies the pinned manifest without regenerating it; the phone repeats preflight before writing. `setup` installs, reads back, starts and observes registration; `install` only installs and `update` only updates. `check` is an alias of `preflight`. An incompatible preflight exits 2; execution errors exit 1. Service readiness waits are bounded at 300 seconds, and a known incompatible SIM/carrier fails immediately.
 
 Files are installed under `/var/rootdata/q10_volte`; the startup entry is `/var/addons/q10-unicom-volte/init/start.sh` through AutoRoot v4's addon mechanism. The stock IMS binary remains unchanged. The manager runs on the phone after the desktop command returns. First start sets IMS-preferred voice through the native API and may briefly reload the radio; it then waits for LTE/SIM readiness, establishes the IMS APN and starts native IMS.
 
 ## 5. Check status and calls
 
-After approximately one minute:
+`setup` / `start` observe IMS registration for up to 180 seconds. If registration is pending, check again later:
 
 ```powershell
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
 ```
 
-Expect `phase=running`, `manager_alive=true`, `register_status="200 OK"` and `ran="LTE"`. Confirm the current native process is alive and IMS is connected. Complete [incoming, outgoing, audio, reboot and unplugged acceptance](VALIDATION.en.md).
+Expect top-level `registered=true`, `status.phase=running`, live manager/native process, and connected IMS / 200 OK / LTE under `status.current`. Complete [incoming, outgoing, audio, reboot and unplugged acceptance](VALIDATION.en.md).
 
 The startup entry runs after Root is ready. In the recorded normal-reboot trial, IMS registered about 7 minutes 42 seconds after reboot without opening BlackBerry World or manually starting the service. USB, desktop, LTE, Root and IMS can become ready at different times. If another device never brings up Root/SSH, check its startup stage, then open BlackBerry World once and wait if needed; validate the outcome on that device.
 
@@ -106,7 +109,7 @@ python tools/q10.py collect --ssh-config private/root-kit/ssh_config
 python tools/q10.py uninstall --ssh-config private/root-kit/ssh_config
 ```
 
-Stopping takes time. Verify `stopped`, `manager_alive=false`, no project IMS process, original voice policy `0` and provider `-1`. A leftover PPS `register_status="200 OK"` can be stale after stop. `cleanup_required` indicates a recovery conflict; preserve diagnostics rather than repeatedly reinstalling.
+Stop waits for restoration and returns `restored=true`. The preflight baseline check must pass; its diagnostics show policy 0, provider -1 and no IMS/VPN or override conflicts. A leftover PPS `register_status="200 OK"` can be stale after stop. `cleanup_required` indicates a recovery conflict; preserve diagnostics rather than repeatedly reinstalling.
 
 If native IMS exits independently, `native_exited` retains the journal and avoids reloading the radio during possible system shutdown. Once the device is stable, collect diagnostics, explicitly stop and verify restoration.
 
@@ -118,3 +121,5 @@ python tools/q10.py start --ssh-config private/root-kit/ssh_config
 ```
 
 Update checks the previous installation's file ownership and preserves the recovery journal. Collected logs go under ignored `private/` and may contain phone numbers, SIM identifiers and authentication data. Do not attach them directly to public issues; see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+Updates disable boot startup during writing and restore the previous switch after completion. Interrupted writes leave a transaction receipt or incomplete directories and block replacement/startup. Automatic repair of arbitrary interrupted writes is not implemented; preserve evidence for manual inspection. Keep USB connected and do not run another installer concurrently. Full hardware installation acceptance of v0.2.0 is still pending; earlier call evidence is not acceptance of the new workflow.

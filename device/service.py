@@ -13,6 +13,7 @@ import time
 import traceback
 
 import native as n
+import compatibility
 from ims_image import temporary_binary
 from radio_api import set_voice_preference
 
@@ -143,16 +144,24 @@ def current_usim():
 
 
 def ready():
-    try:
-        current_usim()
-        radio = n.attrs(n.read(RADIO))
-        data = n.attrs(n.read(DATA))
-        internet = n.value(data, 'internet', {})
-        return (n.value(radio, 'power_status') == 'ON' and
-                n.value(radio, 'network_technology') == ['lte'] and
-                internet.get('apn') == '3gnet' and internet.get('connected'))
-    except (AssertionError, OSError, KeyError, TypeError, ValueError):
-        return False
+    return compatibility.network_state(compatibility.read_network()) == 'ready'
+
+
+def wait_for_network(timeout=300):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        snapshot = compatibility.read_network()
+        state = compatibility.network_state(snapshot)
+        if state == 'needs_adaptation':
+            raise RuntimeError('SIM/carrier needs adaptation; this profile is Unicom46001 USIM without ISIM')
+        if state == 'ready':
+            return True
+        if stopping():
+            status('stopped_before_configuration')
+            return False
+        status('waiting_for_lte_and_usim')
+        time.sleep(3)
+    raise RuntimeError('Readiness timed out after 300 seconds; check SIM, LTE and the 3gnet data APN')
 
 
 def init_journal():
@@ -341,6 +350,7 @@ def restore():
 
 
 def configure():
+    assert ready(), 'SIM/network changed after preflight; recheck compatibility'
     imsi = current_usim()
     init_journal()
     assert not n.ims_pids(), 'An existing IMS instance must finish before activation'
@@ -418,12 +428,8 @@ def serve():
     signal.signal(signal.SIGINT, terminate)
     try:
         n.verify_stock()
-        status('waiting_for_lte_and_usim')
-        while not ready():
-            if stopping():
-                status('stopped_before_configuration')
-                return
-            time.sleep(3)
+        if not wait_for_network():
+            return
         wait_until(lambda: not n.ims_pids(), 330, 'pre-existing native IMS instance')
         configure()
         stdout_fd = os.open(STATE + '/native.log', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_APPEND, 0o600)
@@ -480,6 +486,7 @@ def main():
         result['enabled'] = os.path.isfile(BASE + '/enabled')
         result['manager_alive'] = (os.path.isfile(LOCK) and load(LOCK).get('boot') == boot_token() and alive(load(LOCK)['pid']))
         result['current'] = live()
+        result['native_alive'] = result.get('native_pid') in n.ims_pids()
         print(json.dumps(result))
     elif action == 'start':
         assert os.path.isfile(BASE + '/enabled'), 'Service is disabled'
@@ -518,9 +525,7 @@ def main():
             restore()
             print(json.dumps({'restored': True}))
     elif action == 'check':
-        n.verify_stock()
-        print(json.dumps({'supported_hashes': True, 'voice_policy': n.voice_policy(),
-                          'crypto': n.crypto_policy(), 'ims_pids': n.ims_pids(), 'current': live()}))
+        print(json.dumps(compatibility.probe()))
     else:
         raise SystemExit('Use start, stop, status or check')
 

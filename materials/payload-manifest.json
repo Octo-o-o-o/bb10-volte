@@ -1,14 +1,15 @@
 {
   "owner": "q10-unicom-volte-v1",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "files": {
-    "device/install.py": "75bd2a7bcfcaafa0f60be282b105822a8a8079f4f0b717db8ab776fe6d712e60",
-    "device/service.py": "8ceeaf6b539c6be320c17bcc4dadf51ee89a6c919ccfe4311eca91c0084ce9e7",
-    "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
-    "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
-    "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
-    "device/run.sh": "29055b702bbd6a20c5fc572167599c8c36596a3e6ffa55fa08142b13c014fbc0",
     "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
+    "device/compatibility.py": "d454f6e14c1ee450ea6f43865f0e961521e249f8bf06c65ed8cc1e94ed92e865",
+    "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
+    "device/install.py": "2a21a200cb8bb400c1ab32a4aba39c52ef8700d6d717b2e161561bf7477604fe",
+    "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+    "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+    "device/run.sh": "0e21fda3ecf30144da7573760603ce4445cd218b1afaaef3398b52451ffb9660",
+    "device/service.py": "15886843d6d6c9ce5feda6fa92d46ebad8a08d1b239a0de7963ce155688f246b",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
   }
 }

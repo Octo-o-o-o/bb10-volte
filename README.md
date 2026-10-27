@@ -8,7 +8,7 @@
 
 **已于 2026 年 10 月 27 日在真实 Q10 上测试验证。** 最新一轮已确认正常重启后自动恢复、断开 USB 后使用系统拨号器呼入接听和呼出、双向声音，以及通话期间保持 4G；两次呼叫均有 `INVITE 200 / ACK / BYE` 证据。本轮接通后通话约 **14.2 秒和 5.6 秒**，64 个状态样本全部为 LTE 且 IMS connected。当前仍为**单机实验版**，尚不能据此宣称长通话、长期待机或其他机型、固件与运营商稳定可用。
 
-[完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
+[桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 
 ## 项目功能
 
@@ -16,6 +16,7 @@
 - 生成经过哈希校验的原生 IMS 副本，使用隔离的平台配置，并修改普通语音 VoPS 判断的两个字节。
 - 启用 QNX 已有的软件加密提供器，通过原生无线接口选择 IMS 优先语音。
 - 安装手机端常驻服务，提供状态、启动、停止、更新、停用、采集及恢复命令。
+- 提供 Windows GUI、脱敏兼容性报告和固定安装流程；安装前在手机上重新检查，文件不符或状态未知时停止。
 - 公开完整 Python、shell、C 源码、可复现构建的 5,264 字节辅助模块、固定材料清单和回归测试。
 
 原厂 `/radio/bin/ims_rrm` 不被覆盖，原生文件必须匹配公开的 SHA-256。这里的“解锁”指启用原生 VoLTE 通话能力；需要本身已开通 VoLTE 的有效套餐，不提供 SIM 解锁、免费通话或独立网络电话账号。
@@ -59,18 +60,21 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-手机连接电脑后，在仓库根目录执行：
+推荐在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，选择个人 SSH 配置后点击“运行预检”。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 仍按完整安装文档操作。
+
+或在仓库根目录执行同一套流程：
 
 ```powershell
-python tools/q10.py install --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
-python tools/q10.py start --ssh-config private/root-kit/ssh_config
+python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/q10.py setup --ssh-config private/root-kit/ssh_config
 
-# 约一分钟后查看状态：
+# 如注册仍待确认，稍后查看状态：
 python tools/q10.py status --ssh-config private/root-kit/ssh_config
 ```
 
-应看到 `phase=running`、`manager_alive=true`、`register_status="200 OK"` 和 `ran="LTE"`，并结合当前原生 IMS 进程存活、IMS 状态 connected 判断。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
+`setup` 固定执行安装、回读、启动和最长 180 秒的注册观察。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
+
+v0.2.0 的兼容性预检已在上述 Q10 实机执行；GUI 和新安装控制流程的验证与此前通话证据分开记录，新流程尚需完整实机安装验收。外省联通只在相同技术条件下允许试验；移动、电信、其他 MNC 或 ISIM 会被阻止安装，详见兼容性矩阵。
 
 ### 4. 实际通话与恢复
 
@@ -87,7 +91,7 @@ python tools/q10.py check --ssh-config private/root-kit/ssh_config
 python tools/q10.py disable --ssh-config private/root-kit/ssh_config
 ```
 
-等待状态变为 `stopped`，管理器和本项目 IMS 进程消失，原语音策略恢复为 `0`，软件提供器为 `-1`。`cleanup_required` 表示恢复需要排查。更新、私有诊断采集和移除启动入口的步骤见 [安装指南](docs/INSTALL.md)。
+停止命令等待恢复，并返回 `restored=true`；预检的 `baseline` 项应通过，表示已回读原语音策略 `0`、软件提供器 `-1`、无 IMS/VPN 和覆盖冲突。`cleanup_required` 表示恢复需要排查。更新、私有诊断采集和移除启动入口的步骤见 [安装指南](docs/INSTALL.md)。
 
 ## 测试验证范围
 

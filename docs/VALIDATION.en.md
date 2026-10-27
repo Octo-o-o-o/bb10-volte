@@ -2,6 +2,14 @@
 
 [简体中文](VALIDATION.md) | **English**
 
+## v0.2.0 preflight and desktop UI — October 27, 2026
+
+All 43 local Windows tests passed, covering compatibility rejection, SIM changes, no retry after an unknown installation outcome, retention of in-flight transfer inputs, no activation after failed readback and report privacy. The GUI ran a real phone preflight and correctly disabled installation/update while the existing service was active.
+
+All six device Python files compiled on the Q10's **Python 3.2.2**. Preflight matched Q10 / SQN100-3 / OS 10.3.3.3216, pinned native hashes, 460-01 USIM, LTE and 3gnet. The existing v0.1.0 payload was intact and busy, so installation/update/repeated activation were blocked. Only temporary probe files were staged; telephony configuration was unchanged and the service was neither stopped nor upgraded.
+
+**Full hardware installation, update and restoration acceptance of the new GUI/workflow is pending.** Earlier calling evidence below is separate. Synthetic cases for other provinces/carriers test decisions, not hardware compatibility. See [the machine-readable record](../materials/desktop-workflow-validation-2026-10-27.json).
+
 ## Recorded Q10 call trial — October 27, 2026
 
 Device: **BlackBerry Q10 SQN100-3, BB10 10.3.3.3216, Beijing China Unicom, HPLMN 46001, USIM without ISIM**. The comparison device was a Lenovo TB350XC running Android 12 with another SIM on the same carrier's primary/secondary-card plan. It had working IMS registration and MMTEL voice capability. Times below are **UTC+8 (Asia/Shanghai)**.
