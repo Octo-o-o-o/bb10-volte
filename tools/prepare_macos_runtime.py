@@ -51,8 +51,16 @@ def main():
     venv_python = venv/'bin/python'
     subprocess.run([str(venv_python), '-m', 'pip', 'install', '-r',
                     str(ROOT/'tools/macos-freeze-requirements.txt')], env=env, check=True)
+    # Apple's protected /usr/bin/arch strips DYLD_* from its inherited
+    # environment. PyInstaller uses arch for isolated child interpreters;
+    # forward only this task-local framework path using arch's documented -e.
+    tools_dir = root/'build-tools'
+    tools_dir.mkdir()
+    arch = tools_dir/'arch'
+    arch.write_text('#!/bin/sh\nexec /usr/bin/arch -e "DYLD_FRAMEWORK_PATH=$BB10_FRAMEWORK_PATH" "$@"\n', encoding='utf-8')
+    arch.chmod(0o755)
     settings = {'python': str(venv_python), 'DYLD_FRAMEWORK_PATH': env['DYLD_FRAMEWORK_PATH'],
-                'framework': str(framework), 'installer_sha256': item['sha256']}
+                'PATH_PREFIX': str(tools_dir), 'framework': str(framework), 'installer_sha256': item['sha256']}
     (root/'build-environment.json').write_text(json.dumps(settings, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({'prepared': True, 'build_root': str(root), 'python': str(venv_python),
                       'installer_sha256': item['sha256'], 'system_installation_performed': False}))

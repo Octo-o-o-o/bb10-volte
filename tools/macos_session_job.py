@@ -34,9 +34,10 @@ def main():
     if args.environment:
         env = json.loads(args.environment.read_text(encoding='utf-8'))
         payload['framework_path'] = env['DYLD_FRAMEWORK_PATH']
+        payload['path_prefix'] = env.get('PATH_PREFIX', '')
     (job/'payload.json').write_text(json.dumps(payload), encoding='utf-8')
     wrapper = job/'run.py'
-    wrapper.write_text("""import json,os,pathlib,subprocess,sys,traceback\np=json.loads(pathlib.Path(sys.argv[1]).read_text())\ne=os.environ.copy()\ne['PATH']='/usr/bin:/bin:/usr/sbin:/sbin'\nif p['clean']:\n for k in ('PYTHONHOME','PYTHONPATH','TCL_LIBRARY','TK_LIBRARY','DYLD_FRAMEWORK_PATH','DYLD_LIBRARY_PATH','VIRTUAL_ENV'): e.pop(k,None)\nif 'framework_path' in p:e['DYLD_FRAMEWORK_PATH']=p['framework_path']\ntry:\n with open(p['log'],'w',encoding='utf-8') as out:\n  r=subprocess.run(p['command'],cwd=p['cwd'],env=e,stdout=out,stderr=subprocess.STDOUT)\n result={'returncode':r.returncode}\nexcept Exception:\n with open(p['log'],'a',encoding='utf-8') as out:traceback.print_exc(file=out)\n result={'returncode':1}\ntmp=pathlib.Path(p['status']+'.partial');tmp.write_text(json.dumps(result));tmp.replace(p['status'])\n""", encoding='utf-8')
+    wrapper.write_text("""import json,os,pathlib,subprocess,sys,traceback\np=json.loads(pathlib.Path(sys.argv[1]).read_text())\ne=os.environ.copy()\ne['PATH']='/usr/bin:/bin:/usr/sbin:/sbin'\nif p['clean']:\n for k in ('PYTHONHOME','PYTHONPATH','TCL_LIBRARY','TK_LIBRARY','DYLD_FRAMEWORK_PATH','DYLD_LIBRARY_PATH','BB10_FRAMEWORK_PATH','VIRTUAL_ENV'): e.pop(k,None)\nif 'framework_path' in p:\n e['DYLD_FRAMEWORK_PATH']=p['framework_path']\n e['BB10_FRAMEWORK_PATH']=p['framework_path']\n if p['path_prefix']:e['PATH']=p['path_prefix']+':'+e['PATH']\ntry:\n with open(p['log'],'w',encoding='utf-8') as out:\n  r=subprocess.run(p['command'],cwd=p['cwd'],env=e,stdout=out,stderr=subprocess.STDOUT)\n result={'returncode':r.returncode}\nexcept Exception:\n with open(p['log'],'a',encoding='utf-8') as out:traceback.print_exc(file=out)\n result={'returncode':1}\ntmp=pathlib.Path(p['status']+'.partial');tmp.write_text(json.dumps(result));tmp.replace(p['status'])\n""", encoding='utf-8')
     plist = job/'job.plist'
     with plist.open('wb') as f:
         plistlib.dump({'Label': label, 'ProgramArguments': [sys.executable, str(wrapper), str(job/'payload.json')],
