@@ -1,7 +1,7 @@
 {
   "name": "bb10-volte",
   "version": "0.3.2",
-  "state": "startup_hardening_normal_reboot_and_short_calls_verified",
+  "state": "startup_latency_candidate_hardware_acceptance_pending",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
   "scope": "BlackBerry 10 devices with automatic model detection; Q10 verified, other models experimental, exact OS/ABI/native hashes always required"

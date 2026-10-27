@@ -64,6 +64,16 @@
 
 现场还发现 Q10 没有 shell `rmdir` 命令。已完成的预检/安装改由随本次暂存目录上传的 Python 3.2 清理器处理：删除前核对根目录、全部文件名及文件类型，再逐项 unlink 和 os.rmdir；发现额外文件、缓存目录或符号链接就保留现场。未知远端执行结果仍不自动清理。
 
+## 空闲原厂 IMS 的启动交接（0.3.2 候选）
+
+0.3.1 的实测中，Root 就绪到注册共 282.291 秒，其中约 250 秒在等待原厂 IMS 自行退出。该实例的本次日志明确记录没有 IMS profile：先等待约 300 秒，再等待 ACL 退出约 60 秒。后续配置和真正注册只用了约 32 秒。
+
+候选优化仅用于已有安装在正常重启后的 Q10 SQN100-3 / 已核验固件 / 联通 460-01 基线。两次独立观测必须确认唯一进程的实际映像及完整参数为原厂 IMS、本次 PID 日志仍无 profile 且没有 REGISTER/INVITE、运营商未提供 profile、LTE/SIM 就绪、IMS disconnected、两套通话目录为空且无活动 VPN。旧的全局 REGISTER 200 可能跨重启残留，不能代替当前 PID 的证据。
+
+符合条件时先写入本次启动的尝试记录，再只向该 PID 发送一次 SIGTERM。原厂启动脚本的停止路径也使用该信号；候选不会调用它随后可能执行的强制终止，也不按进程名批量停止。进程仍在、证据不足或出现新进程时，继续原先最多 330 秒的被动等待，不再发送信号。所有 IMS 进程消失并连续保持 3 秒后，重新核验网络，再运行既有配置和注册步骤。运行中的已注册服务不走此路径。
+
+在服务根目录放置 `conservative-start` 文件即可关闭提前交接，保留原来的等待策略；不需要缩短 APN 或注册超时。`state/stock-handoff.json` 与状态中的 `startup_timing` 记录实际选择和时间。候选已通过 107 项本地测试和手机 Python 3.2 编译，重启耗时及通话验收结果另行记录，尚不以代码检查代替硬件验收。
+
 ## 资料来源
 
 - [AutoRoot v4 作者说明](https://bb10.root.sx/blog/autoroot-v4)：Root 环境和 addon 机制；实际入口另由本机 btool 字符串核对。
@@ -71,3 +81,4 @@
 - [3GPP TS23.228](https://www.etsi.org/deliver/etsi_TS/123200_123299/123228/16.06.00_60/ts_123228v160600p.pdf)：无 ISIM 的 USIM 注册身份。
 - [Qualcomm QMI decoder API](https://github.com/qualcomm/qmi-framework/blob/main/include/qmi_idl_lib.h)：原生布局验证所用解码 ABI。
 - [libqmi 1.34 NAS 定义](https://github.com/linux-mobile-broadband/libqmi/blob/1.34.0/data/qmi-service-nas.json)：与本机原生定义交叉核对；本项目运行时不依赖 libqmi。
+- [QNX 6.5 slay](https://qnx.com/developers/docs/6.5.0SP1.update/com.qnx.doc.neutrino_utilities/s/slay.html) 与 [pidin](https://qnx.com/developers/docs/6.5.0SP1.update/com.qnx.doc.neutrino_utilities/p/pidin.html)：信号和进程识别接口；BB10 的具体停止行为仍以本机脚本及实测为准。
