@@ -1,0 +1,33 @@
+name: Source and release checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.14'
+      - name: Regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Compile source
+        run: python -m compileall -q device tools tests
+      - name: Public allowlist, hashes and privacy checks
+        run: python tools/check_release.py --check-git
+      - name: Package and verify source archive
+        run: python tools/package_release.py
+      - name: Require a clean checkout
+        run: git diff --exit-code

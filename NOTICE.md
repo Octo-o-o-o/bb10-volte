@@ -1,0 +1,19 @@
+# 来源与第三方材料 / Third-party notices
+
+Original Python, shell and C code, documentation and tests in this repository are licensed under MIT. The bundled helper is built from the complete source in `driver/volte_swcrypto.c`.
+
+BlackBerry/QNX firmware, stock IMS binaries and carrier XML are supplied by the owner/device and are not distributed in this repository. The toolkit checks their hashes and creates a dedicated copy on the phone. AutoRoot v4 and bb10mt belong to their original authors; obtain them from the [author's release page](https://bb10.root.sx/blog/autoroot-v4) and [bb10mt repository](https://github.com/bb10root/bb10mt) under their respective terms. MIT licensing of this toolkit does not relicense third-party materials.
+
+libusb, LZO, OpenSSL, Git for Windows, Zig and 7-Zip retain their respective licenses. Preparation scripts use pinned sources or verified installed files and retain the associated local license files where implemented. The [design notes](docs/DESIGN.md) identify the public standards and implementation references used in the investigation; offsets and ABI details were validated against the actual device files.
+
+## 中文说明
+
+本仓库的Python、shell、C辅助模块、文档和测试按MIT许可证提供。辅助模块完整源码位于 `driver/volte_swcrypto.c`；构建后的模块也由本项目源码生成。
+
+BlackBerry/QNX原厂固件、原生IMS程序及运营商XML由设备或用户自行提供。本项目在设备上读取并检查散列，生成专用副本；原厂二进制不随公开源码包分发。
+
+AutoRoot v4 / bb10mt 属于原作者项目，请遵守其发布条件：[作者发布页](https://bb10.root.sx/blog/autoroot-v4)、[bb10mt](https://github.com/bb10root/bb10mt)。本项目不把第三方Root包重新声明为MIT。
+
+libusb、LZO、OpenSSL、Git for Windows、Zig与7-Zip按各自许可证分发。材料准备脚本从指定来源或已验证安装目录取文件，相关许可证随本地材料保留。MIT授权不替代这些第三方许可。
+
+排查参考了3GPP/ETSI、Qualcomm、libqmi与AOSP的公开资料，具体链接与用途见 [设计说明](docs/DESIGN.md)。最终补丁偏移和ABI以这一台设备的原生文件验证为准。

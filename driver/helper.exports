@@ -1,0 +1,4 @@
+{
+  global: iopkt_drvr_entry; volte_crypto_entry;
+  local: *;
+};

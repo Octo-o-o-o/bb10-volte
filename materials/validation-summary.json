@@ -1,0 +1,29 @@
+{
+  "recorded_utc": "2026-10-27T07:57:20.166623+00:00",
+  "single_device_scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / Unicom46001",
+  "source_helper_rebuilt_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
+  "offline_root_images_built": true,
+  "original_partitions_and_radio_hashes_preserved": true,
+  "root_source_downloads_verified": 4,
+  "usb_driver_parts_verified": 7,
+  "usb_bundle_and_catalog_signatures": "Valid",
+  "local_regression_tests_passed": 15,
+  "temporary_native_call": {
+    "outgoing_invite_200_ack_bye": true,
+    "incoming_ringing": true,
+    "owner_reported_success": true,
+    "lte_snapshots": 366,
+    "all_snapshots_lte": true,
+    "incoming_answer_and_each_audio_direction_separately_recorded": false
+  },
+  "persistent_service": {
+    "install_and_register": true,
+    "stop_restore": true,
+    "restart_after_stop": true,
+    "first_reboot_exposed_issues": true,
+    "revised_service_registers": true,
+    "second_reboot_acceptance": "pending owner action",
+    "answered_calls_with_each_audio_direction": "pending"
+  },
+  "publication_state": "experimental draft; original device logs remain private"
+}

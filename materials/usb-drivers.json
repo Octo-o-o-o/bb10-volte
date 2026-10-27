@@ -1,0 +1,57 @@
+{
+  "version": "5.0.0.2",
+  "source_page": "https://github.com/anpho/BlackBerryInstallers",
+  "parts": [
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.001",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.001",
+      "bytes": 5242880,
+      "sha256": "5bf7587241f3a8cd6cdc4cc9063e0465f6ef3766afb6706e53f28c01116135fb"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.002",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.002",
+      "bytes": 5242880,
+      "sha256": "cf9aa509fed0700ac9485e031de1d61fd7a7a20865412cdbd185978ce526c565"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.003",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.003",
+      "bytes": 5242880,
+      "sha256": "59b5d4ee9df82081f88593ba24dd09b460f136876ade1f26d2ed63f06a46f4d0"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.004",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.004",
+      "bytes": 5242880,
+      "sha256": "6dfb322c712039ebd9191aaa933140036cb00018df9e7a430dbee196e68a9a5d"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.005",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.005",
+      "bytes": 5242880,
+      "sha256": "2c9484891a25876d2a7136f22af750bd99abeaf60ddce9fea7bdae8d66cbc696"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.006",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.006",
+      "bytes": 5242880,
+      "sha256": "a3d25c35172fa53257b4e12a34468a4a251f3c67f43de1d93dee735a26411166"
+    },
+    {
+      "file": "BlackBerry-USBDrivers-5.0.0.2.7z.007",
+      "url": "https://raw.githubusercontent.com/anpho/BlackBerryInstallers/main/BlackBerry-USBDrivers-5.0.0.2.7z.007",
+      "bytes": 4329946,
+      "sha256": "e5ff4ab0ae91e9236f96fb8e96203f02201f7bd07995ea1e9bae414fd69462d5"
+    }
+  ],
+  "bundle_sha256": "4fa91edc0234c432b50dedfc297b816ca6fe86a8a82c9997a3498ea1f5c2c68b",
+  "msi_sha256": "a9535c01177785391be33e0953d16c9362bcc04cecce11152744747b18453f27",
+  "driver_files": {
+    "RimUsb_AMD64.sys": "5bf5a09efc7a49971c8f8203b09113bc172f4d2fc9eb530885777d49a02f4ed5",
+    "RimUsb.sys": "8c683f3873d64d442127b2ef662822a9e755ca9002385b0c5080c1e587cdc462",
+    "rimusbnt.cat": "8d3e68155b1ab5ebd7665ba4b9777c0efa14bfca8d9a820464ce07caf964a303",
+    "RimUsbNT.inf": "2e2b51c408d8ed99467b4e2cc32ca27c647d186d3d92841622604d8f42f913af",
+    "WdfCoInstaller01007.dll": "749cc009f1cae5c633083897e906b381aa685829fee2d7cd5e07bae543848ff7"
+  }
+}

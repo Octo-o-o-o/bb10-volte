@@ -1,0 +1,54 @@
+{
+  "verified_inputs": [
+    {
+      "id": "autoroot-v4",
+      "file": "autoroot_v4.zip",
+      "url": "https://bb10.root.sx/blog/autoroot-v4/autoroot_v4.zip",
+      "source_page": "https://bb10.root.sx/blog/autoroot-v4",
+      "sha256": "151f9f0f86d3083bdec3f87115a69bb04d924f3e61697d58d8a7ee85d1a7191a",
+      "required_for": "initial root only"
+    },
+    {
+      "id": "stock-q10",
+      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z",
+      "url": "https://archive.org/download/black-berry-q20/Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z",
+      "source_page": "https://archive.org/details/black-berry-q20",
+      "sha256": "1cd4d70fe2fd0ebc7155d54deeb6cc4b45cc74b75dca76305a6fe6ffd7cec1e4",
+      "required_for": "initial root and recovery",
+      "extracted_file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.exe",
+      "extracted_sha256": "18ab9ab0da25ad4dfb0f2a885aad81ddf2119c484d5b9b0b392a3472eedfa207",
+      "manufacturer_signature_verified": false
+    },
+    {
+      "id": "libusb",
+      "file": "libusb-1.0.30.7z",
+      "url": "https://github.com/libusb/libusb/releases/download/v1.0.30/libusb-1.0.30.7z",
+      "sha256": "7fb1dfec805b97983763d7d0ae244320da12add1003d4249c96cc4d586398c79",
+      "extract": "VS2022/MS64/dll/libusb-1.0.dll",
+      "dll_sha256": "7cbf37e76dae9c840c7e8dbf7348ee8897dcc86c8ba45e46ada60b89411569f7",
+      "required_for": "Windows root-image builder"
+    },
+    {
+      "id": "lzo",
+      "file": "lzo2-2.10-3.pkg.tar.zst",
+      "url": "https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-3-any.pkg.tar.zst",
+      "sha256": "445115c31e91486801af9493278c0eb86c6194c2644a54e92d5afac10edea630",
+      "extract": "mingw64/bin/liblzo2-2.dll",
+      "rename": "lzo2.dll",
+      "dll_sha256": "7c34ad01e75c97c6636a2f609089a85abdb50b75e13c5fda731352ec8aa053e9",
+      "required_for": "Windows root-image builder"
+    }
+  ],
+  "openssl": {
+    "source": "Git for Windows 2.55.0.windows.5 bundled OpenSSL3.5.7, independently matched byte-for-byte to working builder DLLs",
+    "source_page": "https://gitforwindows.org/",
+    "locate": "git --exec-path",
+    "files": {
+      "libcrypto-3-x64.dll": "0330b5f558996f297d687e1a2b2fcc2cacf883b16baef74aaef35285d7c1231c",
+      "libssl-3-x64.dll": "feb5b300e0b3a021fed481178f3d66896426576d4d13b85a304d2a3809b25bfd"
+    }
+  },
+  "source_helper": "../driver/volte_swcrypto.c",
+  "helper_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
+  "toolchain": "Zig0.13.0 (optional rebuild)"
+}

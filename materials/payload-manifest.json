@@ -1,0 +1,14 @@
+{
+  "owner": "q10-unicom-volte-v1",
+  "version": "0.1.0",
+  "files": {
+    "device/install.py": "75bd2a7bcfcaafa0f60be282b105822a8a8079f4f0b717db8ab776fe6d712e60",
+    "device/service.py": "8ceeaf6b539c6be320c17bcc4dadf51ee89a6c919ccfe4311eca91c0084ce9e7",
+    "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+    "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
+    "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+    "device/run.sh": "29055b702bbd6a20c5fc572167599c8c36596a3e6ffa55fa08142b13c014fbc0",
+    "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
+    "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+  }
+}

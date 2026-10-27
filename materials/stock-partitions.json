@@ -1,0 +1,29 @@
+{
+  "unchanged_partitions": [
+    {
+      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.0.ifs",
+      "bytes": 11010048,
+      "sha256": "f328418288f59ffeb70885d8e86ced9dd4fb0e715f4effcbd4ab02991b1f726c",
+      "unchanged": true
+    },
+    {
+      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.1.rcfs",
+      "bytes": 402849792,
+      "sha256": "667685f3889f9cb8d6a44bf08a69c3598c62969d29cb9cc53f874d196192ea60",
+      "unchanged": true
+    },
+    {
+      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.2.sig2",
+      "bytes": 65536,
+      "sha256": "6c03f22ac7237c3043db46e3f24c5a55f126bc45217611604afc4cfe931631e2",
+      "unchanged": true
+    },
+    {
+      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.3.mbr",
+      "bytes": 65536,
+      "sha256": "429beab37931b853c0e07af712b158e903ec0fc4cfee01d227eb344e751211c9",
+      "unchanged": true
+    }
+  ],
+  "radio_original_sha256": "ad47026501255f0bb503b195ff4fa41db528336803c861744d3949b9c5745b3f"
+}

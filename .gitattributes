@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.so -text
+*.zip -text
+*.7z -text
+*.exe -text
+*.dll -text

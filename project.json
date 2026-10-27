@@ -1,0 +1,8 @@
+{
+  "name": "q10-unicom-volte",
+  "version": "0.1.0",
+  "state": "experimental_persistent_runtime_under_validation",
+  "repository": "https://github.com/Octo-o-o-o/bb10-volte",
+  "license": "MIT",
+  "scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / China Unicom46001; exact native hashes required"
+}
