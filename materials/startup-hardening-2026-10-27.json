@@ -36,7 +36,8 @@
     "phone_stage_cleanup_passed": true,
     "hardened_normal_reboot": "passed",
     "calls_after_hardened_reboot": "passed; short calls",
-    "delayed_apn_second_and_third_rounds": "unit-tested; not induced on the phone"
+    "delayed_apn_second_and_third_rounds": "unit-tested; not induced on the phone",
+    "desktop_integration_tests_passed": 95
   },
   "recorded_utc": "2026-10-27T15:41:10.259141+00:00",
   "boot": {
@@ -50,7 +51,7 @@
     "automatic_start_verified": true,
     "ims_apn_wait_round_used": 1
   },
-  "owner_answer": "都没问题",
+  "owner_answer": "\u90fd\u6ca1\u95ee\u9898",
   "owner_test_requested": "After the hardened normal reboot, answer an incoming call and make an outgoing call with the native dialer; check two-way audio and 4G. USB remained connected.",
   "owner_confirmed": {
     "incoming_answered": true,

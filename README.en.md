@@ -8,7 +8,7 @@
 
 An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS stack and system dialer. Hardware call evidence covers **Q10 SQN100-3, BB10 OS 10.3.3.3216 and Beijing Unicom 460-01**. v0.3.0 recognizes Q10, Classic (Q20) and Passport (Q30) and supports editable operator JSON profiles. Q20/Q30 display “Not hardware validated; experimental use available.” Installation requires explicit opt-in and every technical gate passing.
 
-**Tested on a real Q10 on October 27, 2026.** The latest trial confirmed automatic recovery after a normal reboot, answered incoming and outgoing calls with the system dialer while USB was disconnected, two-way audio and continued 4G. Both calls have `INVITE 200 / ACK / BYE` evidence. Established call durations were approximately **14.2 and 5.6 seconds**, with all 64 status samples showing LTE and connected IMS. This remains a **single-device experimental release**; longer calls, long-term standby and other devices, firmware versions or carriers have not been validated.
+**Tested on a real Q10 on October 27, 2026.** The latest hardened 0.3.1 version recovered automatically after a normal reboot and passed answered outgoing/incoming calls with the native dialer, two-way audio and continued 4G. Both have `INVITE 200 / ACK / BYE` evidence: approximately **7.362 seconds outgoing** and **4.674 seconds incoming**, with all 208 samples showing LTE / connected IMS. Root-ready to registration was approximately **4 minutes 42 seconds**; full boot duration was not measured. USB remained connected in this run; the afternoon unplugged-call trial is a [separate record](materials/call-acceptance-2026-10-27.json). See the [hardened-version acceptance](materials/startup-hardening-2026-10-27.json). This remains a **single-device experimental release**; 20-second or longer calls, long-term stability and other devices, firmware versions or carriers have not been validated.
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
@@ -80,7 +80,7 @@ python tools/q10.py status --ssh-config private/root-kit/ssh_config
 
 `setup` installs, reads back the release, starts it and observes registration for a configurable duration (180 seconds by default). Look for `registration=verified`; `status` returns `registered=true` only with a live manager/native process and current connected IMS / 200 OK / LTE. A timeout reports pending, without reinstalling. First activation may briefly reload the radio. Registration alone does not establish working calls.
 
-v0.3.0 software validation is separate from earlier calling evidence; full hardware installation acceptance of the new workflow is pending. Mobile, Telecom and other Unicom MNCs have untested templates. All OS, ABI, native hash, SIM and stock-carrier checks remain mandatory; ISIM is unsupported. CLI trials require `--allow-experimental`; custom profiles use `--profile path/to/profile.json`. Keep these options consistent for subsequent operations. Registration observation defaults to 180 seconds and is configurable.
+The revised 0.3.1 phone payload passed Q10 upgrade/readback, automatic normal-reboot recovery and short calls in both directions. Full phone installation through the final EXE was not separately repeated. Mobile, Telecom and other Unicom MNCs have untested templates. All OS, ABI, native hash, SIM and stock-carrier checks remain mandatory; ISIM is unsupported. CLI trials require `--allow-experimental`; custom profiles use `--profile path/to/profile.json`. Keep these options consistent for subsequent operations. Registration observation defaults to 180 seconds and is configurable.
 
 See [profiles](docs/PROFILES.en.md) and [research](docs/CARRIER-RESEARCH.en.md). **Root firmware preparation remains Q10-only. Q20/Q30 testers must prepare root SSH for their own model; never flash the Q10 images onto them.**
 
@@ -107,17 +107,18 @@ Stop waits for restoration and returns `restored=true`. The preflight `baseline`
 | --- | --- |
 | Dedicated IMS APN, AKA/IPsec, `REGISTER 200 OK` | Verified on Q10 |
 | System-dialer outgoing call | Verified `INVITE 200`, `ACK`, normal `BYE` on 2026-10-27 |
-| Answered incoming call | Latest persistent-service trial completed `INVITE 200 / ACK / BYE`, approximately 14.2 seconds after answer |
+| Answered incoming call | Afternoon persistent-service trial completed `INVITE 200 / ACK / BYE`, approximately 14.2 seconds after answer |
 | LTE during the original call trial | All 366 sampled states were LTE |
 | Two-way audio and operation without a computer | Owner completed both calls with USB disconnected, confirmed audio in both directions and 4G, then reconnected |
 | Persistent service installation, registration, stop/restore and restart | Verified on Q10 |
 | Persistent service beyond the old 30-minute trial window | Same instance remained registered on LTE from 15:34 to 16:32 (UTC+8) |
 | Revised service after a normal reboot | Reboot at 16:36:20, registered at 16:44:02.121; no manual AppWorld launch or desktop service start |
-| Latest persistent-service outgoing call | `INVITE 200 / ACK / BYE`, approximately 5.6 seconds after answer; all 64 trial samples showed LTE / IMS connected |
+| Afternoon persistent-service outgoing call | `INVITE 200 / ACK / BYE`, approximately 5.6 seconds after answer; all 64 trial samples showed LTE / IMS connected |
+| Hardened 0.3.1 reboot and two-way calls | Automatic recovery passed; 7.362 s outgoing, 4.674 s incoming, all 208 samples LTE / IMS connected; USB connected in this run |
 | Calls of at least 20 seconds, longer calls and long-term stability | **Further validation needed** |
 | Other models, versions, carriers, roaming, handover, long-term standby and emergency calls | **Not tested** |
 
-See [validation details](docs/VALIDATION.en.md), the [latest reboot/call evidence](materials/call-acceptance-2026-10-27.json) and the [machine-readable summary](materials/validation-summary.json). The original logs contain private communications data and are not distributed. Automated tests do not replace hardware acceptance.
+See [validation details](docs/VALIDATION.en.md), the [afternoon unplugged-call evidence](materials/call-acceptance-2026-10-27.json), [hardened-version reboot/call evidence](materials/startup-hardening-2026-10-27.json) and the [machine-readable summary](materials/validation-summary.json). The original logs contain private communications data and are not distributed. Automated tests do not replace hardware acceptance.
 
 ## How it works
 

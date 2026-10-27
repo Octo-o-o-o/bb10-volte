@@ -8,7 +8,7 @@ All 43 local Windows tests passed, covering compatibility rejection, SIM changes
 
 All six device Python files compiled on the Q10's **Python 3.2.2**. Preflight matched Q10 / SQN100-3 / OS 10.3.3.3216, pinned native hashes, 460-01 USIM, LTE and 3gnet. The existing v0.1.0 payload was intact and busy, so installation/update/repeated activation were blocked. Only temporary probe files were staged; telephony configuration was unchanged and the service was neither stopped nor upgraded.
 
-**Full hardware installation, update and restoration acceptance of the new GUI/workflow is pending.** Earlier calling evidence below is separate. Synthetic cases for other provinces/carriers test decisions, not hardware compatibility. See [the machine-readable record](../materials/desktop-workflow-validation-2026-10-27.json).
+**At this v0.2.0 checkpoint, full hardware installation, update and restoration acceptance of the new GUI/workflow was pending.** Later 0.3.1 device acceptance is recorded at the end of this document. Earlier calling evidence below is separate. Synthetic cases for other provinces/carriers test decisions, not hardware compatibility. See [the machine-readable record](../materials/desktop-workflow-validation-2026-10-27.json).
 
 ## Recorded Q10 call trial — October 27, 2026
 
@@ -76,7 +76,7 @@ After selected applications were removed and the phone rebooted, version 0.1.0 t
 
 After restoring the failed state and rebooting normally, with no application reinstallation or firmware flash, 0.1.0 obtained a new REGISTER 200 at 22:48:49.980. The owner confirmed incoming/outgoing calls, both audio directions and LTE. The private capture independently verifies one answered incoming call lasting approximately 7.134 seconds; it does not establish the requested 20-second duration.
 
-Version 0.3.1 passed 85 local tests and public-file checks. On this Q10 it passed stop/restoration, previous-payload verification, Python 3.2 compilation, upgrade readback and fresh registration on LTE. Python-based staging cleanup also passed on-device. The hardened version then passed automatic recovery after a normal reboot and short calls in both directions; see the [structured record](../materials/startup-hardening-2026-10-27.json).
+The 0.3.1 device-hardening branch passed 85 tests; the desktop package integration passed **95 tests**, with public-file checks passing. On this Q10 it passed stop/restoration, previous-payload verification, Python 3.2 compilation, upgrade readback and fresh registration on LTE. Python-based staging cleanup also passed on-device. The hardened version then passed automatic recovery after a normal reboot and short calls in both directions; see the [structured record](../materials/startup-hardening-2026-10-27.json) and [desktop package acceptance](../materials/desktop-package-acceptance.json).
 
 - The addon ran automatically at 23:21:30, Root was ready at 23:21:45, and the owned IMS registered at **23:26:27.291**. AppWorld was not opened manually and the service was not started again from the computer. Root-ready to registration was approximately **4 minutes 42 seconds**; the full boot duration was not measured in this run.
 - Outgoing: INVITE at 23:30:18.753, INVITE 200 at 23:30:23.103, ACK at 23:30:23.117, BYE at 23:30:30.465, followed by BYE 200. Established duration was approximately **7.362 seconds**.

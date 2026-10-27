@@ -7,7 +7,7 @@
   "root_source_downloads_verified": 4,
   "usb_driver_parts_verified": 7,
   "usb_bundle_and_catalog_signatures": "Valid",
-  "local_regression_tests_passed": 85,
+  "local_regression_tests_passed": 95,
   "temporary_native_call": {
     "outgoing_invite_200_ack_bye": true,
     "incoming_ringing": true,
@@ -28,9 +28,12 @@
     "service_left_enabled": true,
     "installed_version": "0.3.1",
     "hardened_normal_reboot": "passed",
-    "hardened_native_calls": "passed; 7.362 s outgoing and 4.674 s incoming with owner-confirmed two-way audio and LTE"
+    "hardened_native_calls": "passed; 7.362 s outgoing and 4.674 s incoming with owner-confirmed two-way audio and LTE",
+    "usb_independence_evidence": "Afternoon acceptance in call-acceptance-2026-10-27.json; hardened-version call acceptance kept USB connected."
   },
   "publication_state": "Single-device experimental release; original device logs remain private",
   "call_acceptance_report": "call-acceptance-2026-10-27.json",
-  "startup_hardening_acceptance_report": "startup-hardening-2026-10-27.json"
+  "startup_hardening_acceptance_report": "startup-hardening-2026-10-27.json",
+  "device_hardening_branch_tests_passed": 85,
+  "desktop_package_acceptance_report": "desktop-package-acceptance.json"
 }

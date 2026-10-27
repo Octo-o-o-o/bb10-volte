@@ -28,10 +28,10 @@
     "existing_running_installation_not_overwritten": true,
     "installation_or_service_changes_performed": false,
     "temporary_probe_cleanup": "attempted by workflow; result not recorded by CLI report",
-    "scope": "Transport verified before startup-hardening integration; final integrated EXE phone test remains delegated to the device session"
+    "scope": "Transport verified before startup-hardening integration. Final integrated EXE phone invocation was not repeated; revised device payload acceptance is separately recorded."
   },
   "q20_q30_hardware": "not_run",
-  "new_payload_full_phone_install": "Device session reports Python 3.2 compilation, upgrade/readback and registration passed; hardened normal reboot/calls pending. See startup-hardening-2026-10-27.json.",
+  "new_payload_full_phone_install": "Device session passed Python 3.2 compilation, upgrade/readback, registration, automatic normal-reboot recovery and short calls with two-way audio/LTE. USB connected; 7.362 s outgoing and 4.674 s incoming. See startup-hardening-2026-10-27.json.",
   "runtime_downloads": [],
   "included": [
     "Python",
@@ -66,5 +66,7 @@
     "real_q10_ssh_scp_preflight": "passed"
   },
   "integrated_startup_fix": "54a0a89998d361b3e2576fbfb0d452bd53bc338c",
-  "exact_executable_evidence": "Release self-test JSON records the final EXE SHA-256; no claim of a clean Windows VM or final EXE phone-install acceptance."
+  "exact_executable_evidence": "Release self-test JSON records the final EXE SHA-256; no claim of a clean Windows VM or final EXE phone-install acceptance.",
+  "final_device_acceptance_source_commit": "ac874acb75024c11dc69107d251b5504256b7c7d",
+  "device_acceptance_complete_for_recorded_scope": true
 }
