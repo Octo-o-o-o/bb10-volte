@@ -2,7 +2,7 @@
 
 **简体中文** | [English](INSTALL.en.md)
 
-本文面向 Windows。当前常驻代码尚在实机验收，具体完成项以 [VALIDATION.md](VALIDATION.md) 为准。
+本文面向 Windows。常驻版已完成单机正常重启、脱离电脑和双向短通话验证，仍属于实验版本；具体证据和限制以 [VALIDATION.md](VALIDATION.md) 为准。
 
 ## 1. 核对设备与基线
 
@@ -75,7 +75,7 @@ python tools/q10.py status --ssh-config private/root-kit/ssh_config
 
 应看到 `phase=running`、`manager_alive=true`、`register_status="200 OK"`、`ran="LTE"`。注册成功后仍要完成 [通话验收](VALIDATION.md)：呼入接听、呼出、每次两个方向的声音、全程 4G，以及重启后复测。
 
-启动入口在 Root 就绪后运行。若重启后 Root/SSH 尚未出现，先打开一次 BlackBerry World 等待；是否能完全自动恢复，以该机实际重启验收结果为准。
+启动入口在 Root 就绪后运行。本次正常重启后，无需打开 BlackBerry World 或电脑手动启动服务，从重启到 IMS 注册约 7 分 42 秒；USB、桌面、4G、Root 和 IMS 可能先后就绪。若另一台设备 Root/SSH 始终没有出现，核实启动阶段后可打开一次 BlackBerry World 等待；仍需按该机实际结果完成验收。
 
 ## 5. 停用、恢复与采集
 

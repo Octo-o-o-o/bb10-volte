@@ -1,0 +1,69 @@
+{
+  "recorded_utc": "2026-10-27T09:00:56.434931+00:00",
+  "date": "2026-10-27",
+  "timezone": "Asia/Shanghai",
+  "owner_answer": "一切完美 已插回",
+  "owner_test_requested": "After the verified normal reboot, unplug Q10 USB; answer an incoming call and make an outgoing call with the native dialer; check audio in both directions and 4G; reconnect USB.",
+  "owner_confirmed": {
+    "incoming_answered": true,
+    "outgoing_answered": true,
+    "audio_both_directions": true,
+    "four_g_during_calls": true,
+    "usb_disconnected_during_calls": true,
+    "usb_reconnected_afterward": true
+  },
+  "boot": {
+    "normal_reboot_at": "16:36:20",
+    "root_addon_invoked_at": "16:39:14",
+    "root_ready_at": "16:39:27",
+    "ims_registered_at": "16:44:02.121",
+    "seconds_boot_to_register": 462.121,
+    "manual_appworld_launch_required": false,
+    "desktop_service_start_after_reboot": false,
+    "automatic_start_verified": true
+  },
+  "calls": [
+    {
+      "direction": "incoming",
+      "invite_cseq": 78452,
+      "invite_at": "16:49:45.472",
+      "answer_200_at": "16:49:53.126",
+      "ack_at": "16:49:53.320",
+      "bye_cseq": 78457,
+      "bye_at": "16:50:07.352",
+      "bye_200_at": "16:50:07.592",
+      "established_seconds_to_bye": 14.226,
+      "invite_200_ack_bye_verified": true
+    },
+    {
+      "direction": "outgoing",
+      "invite_cseq": 33888,
+      "invite_at": "16:50:11.685",
+      "answer_200_at": "16:50:16.922",
+      "ack_at": "16:50:16.928",
+      "bye_cseq": 1,
+      "bye_at": "16:50:22.558",
+      "bye_200_at": "16:50:22.822",
+      "established_seconds_to_bye": 5.636,
+      "invite_200_ack_bye_verified": true
+    }
+  ],
+  "lte_samples": 64,
+  "all_samples_lte_and_ims_connected": true,
+  "after_reconnecting": {
+    "service_enabled": true,
+    "manager_alive": true,
+    "ims": "connected",
+    "registration": "200 OK",
+    "rat": "LTE"
+  },
+  "source_helper_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
+  "installed_payload_matches_public_sources": true,
+  "raw_capture_sha256": "2e11b2781f90cd4fa950306a42893f4feb23363b142cdfe7818d43fa72207d65",
+  "limits": [
+    "Only this exact device/firmware/Unicom46001 combination was tested.",
+    "These were short calls, about14 and6 seconds after INVITE200; sustained20-second or longer calls are not proven by this capture.",
+    "Abrupt power loss, roaming, cell handover and emergency calling have not been validated."
+  ],
+  "scope_complete": "Native LTE calling, normal-reboot automatic restoration, USB independence and reproducible local project preparation. GitHub has not been published."
+}

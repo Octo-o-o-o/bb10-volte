@@ -30,12 +30,24 @@ The raw evidence contains personal communications data and remains private. The 
 | Fresh keys and offline Root preparation | Passed without replacing the active phone's keys |
 | Offline Root image rebuild | Passed; original IFS/RCFS/SIG2/MBR and radio hashes preserved |
 | Windows USB extraction and signatures | BlackBerry EXE and Microsoft CAT signatures Valid; MSI verified against the signed bundle contents |
-| Revised addon after reboot | **Pending** |
-| Calls with the computer disconnected | **Pending** |
-| Answered incoming and outgoing calls for 20 seconds with both audio directions | **Pending separate recording** |
-| Both calls remain on LTE with the persistent service | **Pending** |
+| Revised addon after a normal reboot | Passed; reboot at 16:36:20, registered at 16:44:02.121 |
+| Calls with the computer disconnected | Passed; owner confirmed both calls and two-way audio with USB disconnected |
+| Answered incoming and outgoing calls with both audio directions | Short calls passed, approximately 14.226 and 5.636 seconds; 20-second or longer calls still need testing |
+| Both calls remain on LTE with the persistent service | Confirmed by owner; all 64 samples were LTE / IMS connected |
 
-The first reboot reached the desktop and LTE and started Root, according to the owner. It exposed startup-entry trust and empty-PPS-object handling problems. Those were fixed and regression-checked; the revised service registered on LTE at 15:35 and 15:50. Acceptance after a second reboot remains outstanding. The failures and bounded recovery are described in [the troubleshooting archive (Chinese)](archive/PITFALLS.md).
+The first reboot reached the desktop and LTE and started Root, according to the owner. It exposed startup-entry trust and empty-PPS-object handling problems. Those were fixed and regression-checked; the revised service registered on LTE at 15:35 and 15:50. The second normal reboot and short calls subsequently passed as described below. The failures and bounded recovery are described in [the troubleshooting archive (Chinese)](archive/PITFALLS.md).
+
+## Latest reboot and unplugged call acceptance
+
+The [acceptance record](../materials/call-acceptance-2026-10-27.json) was recorded at 17:00:56 (UTC+8) on October 27, 2026, with the same device, firmware and China Unicom SIM.
+
+- Normal reboot: **16:36:20**. Root addon ran at 16:39:14, Root was ready at 16:39:27, and IMS registered at **16:44:02.121**. Boot-to-registration was approximately **7 minutes 42 seconds**, without manually opening AppWorld or starting the service from the computer.
+- The owner disconnected USB, made and answered calls with the system dialer, confirmed two-way audio and 4G, then reconnected USB and reported success.
+- Incoming: INVITE at 16:49:45.472, answer 200 at 16:49:53.126, ACK at 16:49:53.320, BYE at 16:50:07.352 and BYE 200 at 16:50:07.592. Established duration was approximately **14.226 seconds**.
+- Outgoing: INVITE at 16:50:11.685, INVITE 200 at 16:50:16.922, ACK at 16:50:16.928, BYE at 16:50:22.558 and BYE 200 at 16:50:22.822. Established duration was approximately **5.636 seconds**.
+- All **64 status samples showed LTE / IMS connected**. After reconnection the service remained enabled with a live manager, IMS connected, REGISTER 200 and LTE. The installed payload matched the repository sources.
+
+This establishes short calls and normal-reboot recovery on this one device. It does not establish the suggested 20-second duration below, sustained stability, abrupt-power-loss recovery or emergency calling. Raw communications captures remain private.
 
 ## Manual acceptance checklist
 

@@ -43,4 +43,6 @@ The ZIP in `dist/` contains only allowlisted source, documentation, manifests, w
 
 Downloads, proprietary firmware, owner-specific Root images, SSH keys, private phone logs and intermediate build output are excluded. GitHub Actions repeats source tests and packaging on Windows and Linux; it does not run device integration tests or prove macOS/Linux deployment compatibility.
 
-Until the remaining [hardware acceptance checks](VALIDATION.en.md) pass, keep releases explicitly marked **experimental / prerelease**. Extending model or firmware support requires native ABI, patch and actual-call validation, not bypassing hashes.
+The hosted Windows/Linux jobs on October 27, 2026 could not start because the account's Actions budget prevented further use. The 19 local tests passed; no hosted pass is claimed.
+
+Only single-device normal-reboot and short-call acceptance is established. Keep releases explicitly marked **experimental / prerelease**, and the repository temporarily **Private**, while longer-term validation continues. Extending model or firmware support requires native ABI, patch and actual-call validation, not bypassing hashes.

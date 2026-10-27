@@ -84,7 +84,7 @@ python tools/q10.py status --ssh-config private/root-kit/ssh_config
 
 Expect `phase=running`, `manager_alive=true`, `register_status="200 OK"` and `ran="LTE"`. Confirm the current native process is alive and IMS is connected. Complete [incoming, outgoing, audio, reboot and unplugged acceptance](VALIDATION.en.md).
 
-The startup entry runs after Root is ready. If Root/SSH has not appeared after a reboot, open BlackBerry World once and wait. Fully automatic recovery of the revised service remains pending hardware acceptance.
+The startup entry runs after Root is ready. In the recorded normal-reboot trial, IMS registered about 7 minutes 42 seconds after reboot without opening BlackBerry World or manually starting the service. USB, desktop, LTE, Root and IMS can become ready at different times. If another device never brings up Root/SSH, check its startup stage, then open BlackBerry World once and wait if needed; validate the outcome on that device.
 
 ## 6. Stop, restore, update and collect
 

@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-10-27T07:57:20.166623+00:00",
+  "recorded_utc": "2026-10-27T09:00:56.434931+00:00",
   "single_device_scope": "Q10 SQN100-3 / BB10 10.3.3.3216 / Unicom46001",
   "source_helper_rebuilt_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
   "offline_root_images_built": true,
@@ -22,8 +22,11 @@
     "restart_after_stop": true,
     "first_reboot_exposed_issues": true,
     "revised_service_registers": true,
-    "second_reboot_acceptance": "pending owner action",
-    "answered_calls_with_each_audio_direction": "pending"
+    "second_reboot_acceptance": "passed",
+    "answered_calls_with_each_audio_direction": "passed; short-call durations in call acceptance report",
+    "usb_independence": "passed",
+    "service_left_enabled": true
   },
-  "publication_state": "experimental draft; original device logs remain private"
+  "publication_state": "Single-device experimental release; original device logs remain private",
+  "call_acceptance_report": "call-acceptance-2026-10-27.json"
 }

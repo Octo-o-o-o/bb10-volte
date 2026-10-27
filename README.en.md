@@ -6,7 +6,7 @@
 
 An open-source toolkit for enabling native VoLTE / 4G voice calling on BlackBerry 10, using the phone's own SIM, IMS stack and system dialer. The implementation and hardware validation currently cover **BlackBerry Q10 SQN100-3, BB10 10.3.3.3216, and China Unicom 460-01 in Beijing**.
 
-**Tested on a real Q10 on October 27, 2026.** Outgoing calls completed an IMS `INVITE 200 / ACK / BYE` exchange, incoming calls reached ringing, and all 366 sampled radio states remained LTE. The owner reported successful use. Answered incoming calls and audio in each direction were not separately recorded. This is an **experimental release**: the revised persistent service still needs reboot, unplugged operation and full call acceptance. Other BB10 devices, firmware versions and carriers are untested.
+**Tested on a real Q10 on October 27, 2026.** The latest trial confirmed automatic recovery after a normal reboot, answered incoming and outgoing calls with the system dialer while USB was disconnected, two-way audio and continued 4G. Both calls have `INVITE 200 / ACK / BYE` evidence. Established call durations were approximately **14.2 and 5.6 seconds**, with all 64 status samples showing LTE and connected IMS. This remains a **single-device experimental release**; longer calls, long-term standby and other devices, firmware versions or carriers have not been validated.
 
 [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
@@ -95,15 +95,17 @@ Wait for `stopped`, no live manager or project IMS process, original voice polic
 | --- | --- |
 | Dedicated IMS APN, AKA/IPsec, `REGISTER 200 OK` | Verified on Q10 |
 | System-dialer outgoing call | Verified `INVITE 200`, `ACK`, normal `BYE` on 2026-10-27 |
-| Incoming call | Verified ringing; the captured call was cancelled by the caller |
+| Answered incoming call | Latest persistent-service trial completed `INVITE 200 / ACK / BYE`, approximately 14.2 seconds after answer |
 | LTE during the original call trial | All 366 sampled states were LTE |
-| Overall owner feedback | Successful use reported; each audio direction not separately documented |
+| Two-way audio and operation without a computer | Owner completed both calls with USB disconnected, confirmed audio in both directions and 4G, then reconnected |
 | Persistent service installation, registration, stop/restore and restart | Verified on Q10 |
 | Persistent service beyond the old 30-minute trial window | Same instance remained registered on LTE from 15:34 to 16:32 (UTC+8) |
-| Revised service after reboot, calls without a computer, full persistent-service call/audio checks | **Pending** |
+| Revised service after a normal reboot | Reboot at 16:36:20, registered at 16:44:02.121; no manual AppWorld launch or desktop service start |
+| Latest persistent-service outgoing call | `INVITE 200 / ACK / BYE`, approximately 5.6 seconds after answer; all 64 trial samples showed LTE / IMS connected |
+| Calls of at least 20 seconds, longer calls and long-term stability | **Further validation needed** |
 | Other models, versions, carriers, roaming, handover, long-term standby and emergency calls | **Not tested** |
 
-See [validation details](docs/VALIDATION.en.md) and the [machine-readable evidence summary](materials/validation-summary.json). The original logs contain private communications data and are not distributed. Automated tests do not replace hardware acceptance.
+See [validation details](docs/VALIDATION.en.md), the [latest reboot/call evidence](materials/call-acceptance-2026-10-27.json) and the [machine-readable summary](materials/validation-summary.json). The original logs contain private communications data and are not distributed. Automated tests do not replace hardware acceptance.
 
 ## How it works
 
