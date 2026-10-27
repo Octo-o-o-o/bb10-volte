@@ -54,7 +54,7 @@ def main():
     (sshdir/'sshd_config').write_text(config,encoding='ascii')
     host=(kit/'q10_host_rsa.pub').read_text().split()
     (kit/'known_hosts').write_text('169.254.0.1 '+' '.join(host[:2])+'\n',encoding='ascii')
-    (kit/'ssh_config').write_text('Host q10-root\n    HostName 169.254.0.1\n    User root\n'
+    (kit/'ssh_config').write_text('Host bb10-root q10-root\n    HostName 169.254.0.1\n    User root\n'
         +'    IdentityFile "'+(kit/'q10_root_rsa').as_posix()+'"\n'
         +'    UserKnownHostsFile "'+(kit/'known_hosts').as_posix()+'"\n'
         +'    IdentitiesOnly yes\n    StrictHostKeyChecking yes\n    PasswordAuthentication no\n    BatchMode yes\n    ConnectTimeout 5\n'

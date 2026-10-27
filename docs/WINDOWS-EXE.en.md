@@ -2,13 +2,13 @@
 
 [简体中文](WINDOWS-EXE.md) · [GUI controls](GUI.en.md) · [macOS / DMG](MACOS.en.md)
 
-Double-click `bb10-volte-0.3.1-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; it does not need administrator privileges.
+Double-click `bb10-volte-0.3.2-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; it does not need administrator privileges.
 
 The target is Windows 10/11 x64; packaging and launch validation used Windows 11 x64. The EXE is currently unsigned. A matching SHA-256 file is provided. An Apple Developer ID cannot sign a Windows executable.
 
 ## Test distribution
 
-Send the EXE and its `.exe.sha256` directly, or grant repository access for the private Release download. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `q10-root` is only a customizable SSH alias, not a forced device identity.
+Send the EXE and its `.exe.sha256` directly, or grant repository access for the private Release download. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `bb10-root` is only a customizable SSH alias, not a forced device identity.
 
 Choose/edit an operator profile, run preflight, then follow the fixed install/read-back/start/registration process. Q20/Q30 require explicit experimental opt-in and every technical check passing. OS **10.3.3.3216**, ARM32, exact native hashes, SIM/APN and stock carrier configuration remain mandatory. Q20/Q30 hardware has not been validated. Never flash a Q10 root image onto either device.
 
@@ -47,7 +47,7 @@ The builder obtains the pinned official OpenSSH ZIP and Tcl/Tk licenses from [wi
 `tools/build_windows.py --offline` requires cached build inputs and never downloads missing materials. The installed build packages must also be available beforehand. The builder reads the resulting EXE archive back, verifies every bundled resource, and excludes personal files and download/preparation tools.
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.1-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.3.2-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 

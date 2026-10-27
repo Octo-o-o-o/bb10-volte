@@ -1,27 +1,39 @@
-# macOS / DMG feasibility
+# macOS app and DMG
 
 [简体中文](MACOS.md) · [Windows EXE](WINDOWS-EXE.en.md)
 
-The same GUI can be frozen as a macOS `.app` and distributed in a `.dmg`. This requires a native Mac build; wrapping the Windows EXE does not produce a Mac application. **No Mac DMG has been built or validated for this release.**
+`bb10-volte` can be built as a universal Apple Silicon / Intel macOS `.app` and signed DMG. Consult the release and its acceptance record for actual signing, notarization and test status. Drag the app to Applications; users do not install Python separately.
 
-A read-only check on October 27, 2026 found one valid Developer ID Application signing identity and `notarytool` on the maintainer's Apple Silicon MacBook Pro. The Mac mini returned no such identity. No key was exported, keychain changed or notarization submitted. The MacBook Pro's default Xcode Python is 3.9.6; use an independent Python 3.14 + Tk build environment. Finding an identity does not prove successful signing or availability of notarization credentials.
+The app uses system `/usr/bin/ssh` and `/usr/bin/scp`, and stores private state in `~/Library/Application Support/bb10-volte/private`. A device-specific root SSH key and verified host key are required. The default alias is `bb10-root`; enter `q10-root` for an older configuration that defines only that alias.
 
-The GUI/workflow is largely portable. An [ICNS icon](../assets/app.icns) is included. Frozen Mac execution selects `/usr/bin/ssh` and `/usr/bin/scp`, and stores private state in `~/Library/Application Support/bb10-volte/private`. AES-CTR/legacy RSA negotiation is scoped to the old QNX server with strict known-host verification. Actual Mac-to-phone transport is still untested.
+Q10 SQN100-3 / OS 10.3.3.3216 / Beijing Unicom 460-01 is the only hardware calling record. Q20/Q30 are experimental and require opt-in and all technical checks. Starting the desktop app does not establish direct Mac-to-phone USB networking or calling support. Initial rooting and flashing require the firmware and method specific to each model; never flash Q10 images onto another model.
 
-Root-image preparation, flashing and Windows USB drivers remain separate Windows workflows. Modern macOS USB networking support for this BB10 device must be verified independently. Application launch alone cannot establish USB or calling compatibility. An already reachable SSH connection can validate the GUI before testing direct USB.
+## Isolated build environment
 
-## Distribution workflow
+On the Mac, choose a new build directory. The preparation script obtains the Python Software Foundation Python 3.14.9 installer from the [pinned manifest](../materials/macos-runtime.json), verifies its SHA-256 and Installer signature, and only extracts it into the user-owned directory. It does not run the system installer or replace system Python. It creates a venv and installs the [pinned build dependencies](../tools/macos-freeze-requirements.txt). The installer includes Tcl/Tk and universal2 binaries; initial dependency downloads require the Internet.
 
-1. Prepare pinned Python/Tk/PyInstaller in an isolated Mac build directory. Run source tests and the GUI. Do not reuse a Windows virtual environment or native binaries.
-2. Build `bb10-volte.app` with PyInstaller `--onedir --windowed`, ICNS and an explicit resource allowlist matching the Windows workflow, excluding Windows SSH/runtime materials. Include the actual Mac Python/Tk and PyInstaller licenses; never bundle the whole working directory.
-3. Pass the Developer ID Application identity through `--codesign-identity` so embedded Mach-O files are signed and Hardened Runtime is enabled. Apple Development is not the identity for normal distribution outside the App Store. Do not sign only the outer application or disable Gatekeeper.
-4. Verify with `codesign --verify --deep --strict --verbose=2 bb10-volte.app`; test Tk, profiles, help and phone preflight. Build ARM64 first; Intel needs a separate x86_64 build, or universal2-compatible Python and every native dependency.
-5. Stage the app and an `/Applications` shortcut in a fresh directory, create a compressed DMG with `hdiutil create -format UDZO -srcfolder <staging> bb10-volte.dmg`, then sign the DMG with Developer ID.
-6. Submit with `xcrun notarytool submit bb10-volte.dmg --keychain-profile <profile> --wait`. Require **Accepted**, then run `xcrun stapler staple` and `xcrun stapler validate` on the DMG. Staple the app too if distributing it outside the DMG.
-7. Assess the DMG with `spctl --assess --type open --context context:primary-signature --verbose=2`, then validate a quarantined download/install and offline first launch on another Mac. Publish SHA-256 alongside the signed artifact.
+```bash
+python3 tools/prepare_macos_runtime.py --build-root "$HOME/WorkSpace/bb10-volte-build"
+```
 
-Build downloads, signing timestamps and Apple notarization require the maintainer to be online. Stapled tickets allow recipients to obtain notarization evidence offline. Runtime still needs phone connectivity and carrier service. Minimum supported macOS must be established from the final Python/Tk build and testing.
+Use a new directory; existing files are not overwritten. `--installer /path/to/python-3.14.9-macos11.pkg` reuses a previously downloaded package with the same verification. Python's native binaries target Intel macOS 10.15 / Apple Silicon macOS 11 or newer; confirm the final application's minimum OS through actual packaging and testing.
 
-Application build, signing, notarization, direct USB and Mac phone acceptance are **not run**. Keep signing keys and notarization credentials in the Mac keychain, never in the repository or EXE.
+## Build, sign and notarize
 
-Primary references: [PyInstaller macOS support](https://pyinstaller.org/en/stable/feature-notes.html#macos-multi-arch-support), [build options](https://pyinstaller.org/en/stable/usage.html), [Apple Developer ID](https://developer.apple.com/developer-id/), [custom notarization](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow).
+1. Ensure the keychain has a **Developer ID Application** identity and a configured `notarytool` Keychain profile. Keep private keys and notarization credentials out of the repository.
+2. Build in the logged-in user's GUI session; an SSH session may not have data-protection keychain access. `macos_session_job.py` creates an isolated job directory with an output log and exit status:
+
+   ```bash
+   build="$HOME/WorkSpace/bb10-volte-build"
+   python3 tools/macos_session_job.py --job-root "$build" --cwd "$PWD" \
+     --environment "$build/build-environment.json" -- \
+     "$build/venv/bin/python" "$PWD/tools/build_macos.py" --identity 'Developer ID Application: YOUR NAME (TEAMID)'
+   ```
+
+   The builder uses an explicit resource allowlist, creates a universal2 app, signs embedded components with Hardened Runtime, and verifies bundled resources and notices.
+3. Verify the app with `codesign --verify --deep --strict --verbose=2 dist/bb10-volte.app`. ZIP it with `ditto -c -k --keepParent` and submit it using `xcrun notarytool submit --keychain-profile <profile>`. Require **Accepted**, then run `xcrun stapler staple` and `validate` on the app.
+4. Stage the stapled app and an `/Applications` shortcut in a new directory, create a DMG with `hdiutil create -format UDZO -srcfolder <staging>`, sign it with the same Developer ID, submit it for notarization and staple/validate the accepted DMG ticket.
+5. Verify both signatures and tickets using `codesign`, `spctl` and `stapler`. Mount the DMG read-only and run its app's `--self-test` in a process sandbox that denies network connections. Check icon, profile editor, help and included files. The sandbox limits the app process, not the whole Mac's network.
+6. Publish the DMG, SHA-256, build and acceptance records. Keep any phone-side steps not actually run marked unverified. The maintainer needs the Internet for signing timestamps and notarization; a stapled ticket supplies offline notarization evidence to recipients.
+
+[PyInstaller architecture and signing](https://pyinstaller.org/en/stable/feature-notes.html#macos-multi-arch-support) · [Apple Developer ID](https://developer.apple.com/developer-id/) · [Apple notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)

@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import desktop_paths as paths
 import workflow as w
 import build_windows
+import profile_editor
 
 
 class DesktopPackageTests(unittest.TestCase):
@@ -112,6 +113,21 @@ class DesktopPackageTests(unittest.TestCase):
         self.assertIn('PubkeyAcceptedAlgorithms=+ssh-rsa', options)
         self.assertIn('StrictHostKeyChecking=yes', options)
         self.assertIn('BatchMode=yes', options)
+
+    def test_generic_default_and_legacy_explicit_ssh_alias(self):
+        with patch.object(w, 'frozen', return_value=False), patch.object(w.shutil, 'which', side_effect=lambda n: n):
+            self.assertEqual(w.Client().host, 'bb10-root')
+            self.assertEqual(w.Client('q10-root').host, 'q10-root')
+
+    def test_displayed_bb10_baseline_preserves_installed_profile_fingerprint(self):
+        profile = w.profiles.default()
+        visible = profile_editor.display_label(profile['label'])
+        self.assertIn('BB10', visible)
+        original = profile['label']
+        profile['label'] = profile_editor.stored_label(visible, original)
+        self.assertEqual(w.profiles.fingerprint(w.profiles.request(profile, False)),
+                         w.profiles.fingerprint(w.profiles.request(w.profiles.default(), False)))
+        self.assertEqual(profile_editor.stored_label('Custom BB10 carrier', original), 'Custom BB10 carrier')
 
 
 if __name__ == '__main__':

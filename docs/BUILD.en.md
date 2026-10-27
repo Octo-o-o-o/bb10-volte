@@ -14,7 +14,7 @@ python tools/check_release.py
 
 For a Git checkout, also use `python tools/check_release.py --check-git` after staging intended changes. This requires tracked paths to equal the public release allowlist. Release checks verify payload hashes, scan for common private identifiers and credentials, check syntax and local Markdown links, and require LF in shell scripts.
 
-When a device payload is intentionally changed, regenerate `materials/payload-manifest.json` with `python tools/q10.py manifest`, review the changed hashes, and repeat validation. Do not regenerate it merely to hide an unexpected mismatch.
+When a device payload is intentionally changed, regenerate `materials/payload-manifest.json` with `python tools/bb10.py manifest`, review the changed hashes, and repeat validation. Do not regenerate it merely to hide an unexpected mismatch.
 
 ## Reproduce the helper
 

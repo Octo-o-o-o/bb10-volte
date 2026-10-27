@@ -40,7 +40,7 @@
 
 ## 桌面预检与安装流程
 
-`tools/gui.py` 与 `tools/q10.py` 都调用 `tools/workflow.py`。兼容性档案、文件集合与判断位于手机可执行的 `device/compatibility.py`，避免 CLI、GUI 和安装器各自维护不同的运营商判断。
+`tools/gui.py` 与 `tools/bb10.py` 都调用 `tools/workflow.py`。兼容性档案、文件集合与判断位于手机可执行的 `device/compatibility.py`，避免 CLI、GUI 和安装器各自维护不同的运营商判断。
 
 桌面只核验随版本发布的载荷清单。修改清单是维护者显式操作，普通安装不自行批准修改过的文件。探针读取手机属性、SIM、LTE/APN 及既有安装；完整 SIM 身份不离开手机。临时文件逐一授权，成功后仅删除本次精确文件列表；异常时保留，避免 SSH 超时后移除仍在被手机使用的输入。
 

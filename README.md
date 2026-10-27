@@ -14,7 +14,7 @@
 
 ## 项目功能
 
-- 创建独立 `ims` APN，从 Q10 本机 USIM 派生 IMS 身份，由 SIM 和原生 IMS 完成认证。
+- 创建独立 `ims` APN，从 BB10 设备本机 USIM 派生 IMS 身份，由 SIM 和原生 IMS 完成认证。
 - 生成经过哈希校验的原生 IMS 副本，使用隔离的平台配置，并修改普通语音 VoPS 判断的两个字节。
 - 启用 QNX 已有的软件加密提供器，通过原生无线接口选择 IMS 优先语音。
 - 安装手机端常驻服务，提供状态、启动、停止、更新、停用、采集及恢复命令。
@@ -45,7 +45,7 @@
 
 ### 双击 Windows EXE（推荐）
 
-从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取 `bb10-volte-0.3.1-windows-x64.exe`，或由维护者直接发送文件。内置 Python、Tk、SSH、配置和载荷，双击启动即可；已有匹配机型 Root、USB 网络和个人 SSH 配置后，电脑无需联网即可执行预检与安装。首次 Root / USB 驱动仍需另行准备，手机通话需要运营商网络。详见 [离线边界与测试步骤](docs/WINDOWS-EXE.md)。下文为源码方式。
+从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取 `bb10-volte-0.3.2-windows-x64.exe`，或由维护者直接发送文件。内置 Python、Tk、SSH、配置和载荷，双击启动即可；已有匹配机型 Root、USB 网络和个人 SSH 配置后，电脑无需联网即可执行预检与安装。首次 Root / USB 驱动仍需另行准备，手机通话需要运营商网络。详见 [离线边界与测试步骤](docs/WINDOWS-EXE.md)。下文为源码方式。
 
 ### 1. 获取源码
 
@@ -60,9 +60,9 @@ python tools/check_release.py
 
 ### 2. 准备手机连接
 
-已有匹配 Root、USB 网络和 SSH 的 Q10，可以直接使用原来的已验证 SSH 配置。下文以 `private/root-kit/ssh_config` 和 `q10-root` 别名为例；使用另一份配置时替换路径，必要时加 `--host` 指定自己的别名。
+已有匹配 Root、USB 网络和 SSH 的 BB10 设备，可以直接使用原来的已验证 SSH 配置。下文以 `private/root-kit/ssh_config` 和 `bb10-root` 别名为例；旧配置可通过 `--host q10-root` 指定兼容别名；使用另一份配置时替换路径，必要时加 `--host` 指定自己的别名。
 
-原版手机请先按 [完整安装指南](docs/INSTALL.md) 核验 USB 驱动、获取材料、生成个人密钥并构建 Root 镜像。**首次 Root 刷写会清空用户数据**，先备份并保留对应的原版恢复镜像。离线材料准备脚本本身不会刷写手机。
+尚未 Root 的 Q10 请先按 [完整安装指南](docs/INSTALL.md) 准备驱动、个人密钥与对应镜像；其他 BB10 机型必须使用各自机型的固件和 Root 方法。**首次 Root 刷写会清空用户数据**，先备份并保留对应的原版恢复镜像。离线材料准备脚本本身不会刷写手机。
 
 ### 3. 安装并启动 VoLTE
 
@@ -71,11 +71,11 @@ python tools/check_release.py
 或在仓库根目录执行同一套流程：
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 
 # 如注册仍待确认，稍后查看状态：
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 ```
 
 `setup` 固定执行安装、回读、启动和可配置的注册观察（默认 180 秒）。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
@@ -91,12 +91,12 @@ v0.3.1 修订手机端已通过 Q10 升级回读、正常重启自动恢复和�
 挂断电话后，停止并恢复本项目的配置：
 
 ```powershell
-python tools/q10.py stop --ssh-config private/root-kit/ssh_config
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
+python tools/bb10.py stop --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py check --ssh-config private/root-kit/ssh_config
 
 # 同时禁止下次 Root 启动时自动运行：
-python tools/q10.py disable --ssh-config private/root-kit/ssh_config
+python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 ```
 
 停止命令等待恢复，并返回 `restored=true`；预检的 `baseline` 项应通过，表示已回读原语音策略 `0`、软件提供器 `-1`、无 IMS/VPN 和覆盖冲突。`cleanup_required` 表示恢复需要排查。更新、私有诊断采集和移除启动入口的步骤见 [安装指南](docs/INSTALL.md)。
@@ -125,7 +125,7 @@ python tools/q10.py disable --ssh-config private/root-kit/ssh_config
 ```mermaid
 flowchart LR
   A[系统拨号器] --> B[经过哈希校验的原生 IMS 副本]
-  U[Q10 本机 USIM] -->|身份与 AKA| B
+  U[BB10 设备本机 USIM] -->|身份与 AKA| B
   V[IMS 优先语音策略] --> B
   B --> I[原生 IPsec]
   S[已有软件加密提供器] --> I

@@ -12,7 +12,7 @@
 
 新电脑还需按 [Windows USB 驱动步骤](WINDOWS-USB.md) 准备并验证连接，再执行初次 Root。
 
-## 2. 初次 Root 与自有 SSH 身份
+## 2. Q10 初次 Root 与自有 SSH 身份（其他机型需使用各自方法）
 
 1. 进入本项目目录；按 [材料清单](../materials/README.md) 下载文件到 `downloads/`。
 2. 运行材料检查：
@@ -44,7 +44,7 @@
 7. 电脑 USB 地址应为 `169.254.0.2`，Q10 为 `169.254.0.1`。准备脚本的授权仅允许这一 USB 电脑地址。测试：
 
    ```powershell
-   ssh -F private/root-kit/ssh_config q10-root "echo connected"
+   ssh -F private/root-kit/ssh_config bb10-root "echo connected"
    ```
 
    主机密钥使用自己准备镜像时生成的已知公钥固定校验。若手机已由另一套密钥 Root，使用那套经过验证的配置，勿替换本机信任记录来掩盖不匹配。
@@ -56,8 +56,8 @@
 也可以双击 [Start-GUI.cmd](../Start-GUI.cmd)，按 [GUI 指南](GUI.md) 使用相同流程。首次 Root 不在 GUI 内执行。
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 ```
 
 安装器在修改网络配置前校验原生文件、原始策略 `00`、既有 IMS/VPN 与软件算法提供器。若提示已有实验进程或配置，先收尾原实验，不能删除未知对象来强行通过。
@@ -73,7 +73,7 @@ v0.3.0 支持机型自动识别、运营商配置和明确实验试用，见 [�
 `setup` / `start` 按配置观察 IMS 注册（默认 180 秒）。若返回 `registration=pending`，稍后检查：
 
 ```powershell
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 ```
 
 应看到顶层 `registered=true`、`status.phase=running`、管理器与原生进程存活，`status.current` 中 IMS connected / 200 OK / LTE。注册成功后仍要完成 [通话验收](VALIDATION.md)：呼入接听、呼出、每次两个方向的声音、全程 4G，以及重启后复测。
@@ -86,24 +86,24 @@ python tools/q10.py status --ssh-config private/root-kit/ssh_config
 
 ```powershell
 # 正常停止并恢复原语音策略、APN 和自有 VPN/软件提供器
-python tools/q10.py stop --ssh-config private/root-kit/ssh_config
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py stop --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 
 # 停止并禁止下次 Root 启动时自动运行
-python tools/q10.py disable --ssh-config private/root-kit/ssh_config
+python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 
 # 保存私有日志，便于自己排障
-python tools/q10.py collect --ssh-config private/root-kit/ssh_config
+python tools/bb10.py collect --ssh-config private/root-kit/ssh_config
 
 # 移除自动启动入口；保留恢复记录与程序，方便核对
-python tools/q10.py uninstall --ssh-config private/root-kit/ssh_config
+python tools/bb10.py uninstall --ssh-config private/root-kit/ssh_config
 ```
 
 停止不是瞬间完成；命令等待恢复并返回 `restored=true`。`check` 的 `baseline` 检查应通过，其诊断数据应显示原语音策略 `0`、软件提供器 `-1`，且没有 IMS/VPN 和覆盖配置冲突。`cleanup_required` 表示恢复遇到冲突，需要保留现场排查；不要重复安装覆盖日志。
 
 若原生 IMS 自己退出，`native_exited` 会保留恢复记录，不在可能的系统关机过程中重载基带。设备稳定开机后先采集，再用显式 `stop` 恢复并核对。正常重启则由 addon 接续。
 
-更新本项目脚本前，先 `stop`，等待上述恢复检查通过，再运行 `python tools/q10.py update --ssh-config private/root-kit/ssh_config`，然后 `start`。更新会校验旧文件仍与安装清单一致，并保留原恢复记录。若只安装、还没有启动，直接停用或卸载也可以。
+更新本项目脚本前，先 `stop`，等待上述恢复检查通过，再运行 `python tools/bb10.py update --ssh-config private/root-kit/ssh_config`，然后 `start`。更新会校验旧文件仍与安装清单一致，并保留原恢复记录。若只安装、还没有启动，直接停用或卸载也可以。
 
 更新期间关闭自动启动，完成后按所选配置设置开关。改参数需先停用恢复，再预检、更新、通话验收；不能直接启动配置不一致的旧安装。中断保留事务记录并阻止覆盖，尚无任意中断点自动修复。保持 USB 连接，不并行安装。v0.3.0 全流程实机安装验收仍待补充；原有通话证据独立保留。
 

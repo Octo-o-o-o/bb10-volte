@@ -19,7 +19,7 @@ Do not attach `private/`, Root images, SSH keys, raw SIP traces, phone numbers, 
 1. Keep device code compatible with **Python 3.2**. Desktop tools use Python 3.14.
 2. Preserve original-file hash checks, process/configuration ownership checks and recoverability. Support for another device requires separate native ABI, patch and hardware validation; removing a hash guard is not evidence of compatibility.
 3. Update both [README.md](README.md) and [README.en.md](README.en.md) when requirements, commands or validation claims change.
-4. Run the tests and [build/release checks](docs/BUILD.en.md). If a device payload changes, regenerate its manifest using `python tools/q10.py manifest` and review the diff.
+4. Run the tests and [build/release checks](docs/BUILD.en.md). If a device payload changes, regenerate its manifest using `python tools/bb10.py manifest` and review the diff.
 5. Keep public additions in the explicit allowlist in `tools/check_release.py`. Stage them, then run `python tools/check_release.py --check-git` before committing.
 6. Describe what changed, why, the validation performed and the remaining hardware limitations in the pull request.
 

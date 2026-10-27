@@ -2,7 +2,7 @@
 
 [English](WINDOWS-EXE.en.md) · [GUI 操作](GUI.md) · [macOS / DMG](MACOS.md)
 
-下载 `bb10-volte-0.3.1-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；不需要管理员权限。
+下载 `bb10-volte-0.3.2-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；不需要管理员权限。
 
 目标为 Windows 10 / 11 x64，实际打包与启动验证在 Windows 11 x64 上完成。当前 EXE 未做 Windows Authenticode 签名；发布页同时提供 SHA-256。Apple 开发者证书不能用来签 Windows EXE。
 
@@ -10,7 +10,7 @@
 
 1. 发 EXE 和对应 `.exe.sha256`。私有 GitHub Release 链接需要仓库访问权限；也可直接传送文件。
 2. 手机必须已有匹配机型的 Root SSH；Windows 已装好 BlackBerry USB 网络驱动。提供**这台手机自己的** SSH 配置、私钥和已核实的主机密钥，不要共用维护者密钥。
-3. 打开 EXE，选择个人 `ssh_config` 和正确别名。默认 `q10-root` 只是连接别名，设备型号会自动识别，可自行改名。
+3. 打开 EXE，选择个人 `ssh_config` 和正确别名。默认 `bb10-root` 只是连接别名，设备型号会自动识别，可自行改名。
 4. 选择运营商模板或编辑配置，然后运行预检。Q20 / Q30 显示“未实测适配 · 可实验试用”，需勾选试用且通过所有技术检查。
 5. 预检通过并确认备份后，安装、回读、启动、观察注册。最后用手机系统拨号器做真实呼入、呼出和声音验收。
 
@@ -55,7 +55,7 @@ python -m venv .venv
 材料和构建依赖均已缓存时，可以运行 `tools/build_windows.py --offline`；缓存缺失或散列不符立即停止，不自动替换。可用以下离线诊断验证发布文件：
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.1-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.3.2-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 

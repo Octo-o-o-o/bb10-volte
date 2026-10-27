@@ -1,6 +1,6 @@
 {
   "owner": "q10-unicom-volte-v1",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "files": {
     "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
     "device/compatibility.py": "3eff507a608931dd2f1462a49f73a935118602fdb1769e6d080824b53a8a2ac7",

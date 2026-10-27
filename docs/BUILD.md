@@ -26,7 +26,7 @@ python tools/build_helper.py --zig C:\Tools\zig-0.13.0\zig.exe
 
 ## 发布前
 
-有意修改手机载荷后，使用 `python tools/q10.py manifest` 更新清单并检查哈希差异。提交前暂存需要公开的文件，再运行 `--check-git`，确认 Git 跟踪集合与发布白名单完全一致。解压 ZIP 使用时省略该参数。
+有意修改手机载荷后，使用 `python tools/bb10.py manifest` 更新清单并检查哈希差异。提交前暂存需要公开的文件，再运行 `--check-git`，确认 Git 跟踪集合与发布白名单完全一致。解压 ZIP 使用时省略该参数。
 
 ```powershell
 python tools/check_release.py --check-git

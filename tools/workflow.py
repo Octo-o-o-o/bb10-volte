@@ -83,7 +83,7 @@ def public_status(raw):
 
 
 class Client:
-    def __init__(self, host='q10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False):
+    def __init__(self, host='bb10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', host):
             raise WorkflowError('invalid_host')
         self.host = host

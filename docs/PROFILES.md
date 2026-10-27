@@ -20,11 +20,11 @@ GUI 可选择 Q10 联通实测参数，或联通多 MNC、移动、电信公开�
 模板对应 [公开数据快照](../materials/carrier-data-sources.json)。移动、电信及其他联通 MNC 需勾选实验试用；这只允许全部技术检查通过后的安装，不保证入网或通话。JSON 顶层只允许 `schema`、`id`、`label`、`carrier`、`ims`、`runtime`；格式、类型和范围均在手机端重新验证，未知字段会被拒绝。
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 
 # Q20 / Q30 使用默认联通 460-01 参数的试用
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
 ```
 
 CLI 的 `setup`、`update`、`start`、`enable` 等操作需传入同一配置和试用选项。SSH 别名可用 `--host` 自定义。GUI 沿用当前选择。注册观察默认 180 秒，可改为 30–900 秒；超时只表示 pending。

@@ -11,7 +11,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from workflow import Client, ROOT, WorkflowError
 from desktop_paths import private_root, prepare_external_programs
-from profile_editor import ProfileEditor, presets, profiles
+from profile_editor import ProfileEditor, presets, profiles, display_label, FONT
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
 BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
@@ -54,7 +54,7 @@ ERRORS = {
     'profile_update_required': '所选配置与已装配置不同。先停用恢复，再预检和更新安装。',
     'invalid_host': 'SSH 别名只能使用字母、数字、点、下划线和短横线。',
     'config_missing': '找不到 SSH 配置文件，请重新选择。',
-    'openssh_missing': '缺少 Windows OpenSSH 客户端，请按安装文档准备 ssh 和 scp。',
+    'openssh_missing': '找不到 SSH 客户端，请按安装文档准备 ssh 和 scp。',
     'package_mismatch': '安装包与固定清单不一致。请使用完整发布包，不要在客户电脑重新生成清单。',
     'host_key_mismatch': '主机密钥校验失败。核对所选设备和个人 SSH 配置，保留原信任记录。',
     'authentication_failed': 'SSH 身份验证失败。请使用为这台手机准备的个人密钥配置。',
@@ -80,13 +80,13 @@ SERVICE_PHASES = {'waiting_for_native_ims': '等待系统 IMS 初始化结束',
 
 
 class App:
-    def __init__(self, root, host='q10-root', config=''):
+    def __init__(self, root, host='bb10-root', config=''):
         self.root, self.events = root, queue.Queue()
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
         self.presets = presets()
         self.profile = profiles.default()
-        self.profile_name = tk.StringVar(value=self.profile['label'])
+        self.profile_name = tk.StringVar(value=display_label(self.profile['label']))
         self.experimental = tk.BooleanVar(value=False)
         self.host = tk.StringVar(value=host)
         default = private_root() / 'root-kit/ssh_config'
@@ -102,14 +102,14 @@ class App:
         root.geometry('1200x900')
         root.minsize(1080, 840)
         root.configure(bg=BG)
-        root.option_add('*Font', ('Microsoft YaHei UI', 10))
+        root.option_add('*Font', (FONT, 10))
         root.protocol('WM_DELETE_WINDOW', self.close)
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background=BG)
         style.configure('TLabel', background=BG, foreground=INK)
         style.configure('TNotebook', background=BG)
-        style.configure('TButton', font=('Microsoft YaHei UI', 10), padding=(12, 9),
+        style.configure('TButton', font=(FONT, 10), padding=(12, 9),
                         background='white', foreground=INK, borderwidth=0)
         style.map('TButton', background=[('active', '#E9EFFA'), ('disabled', '#E9EDF3')],
                   foreground=[('disabled', '#98A3B4')])
@@ -118,9 +118,9 @@ class App:
                   foreground=[('disabled', '#7C8BA7')])
         style.configure('TEntry', padding=8, fieldbackground='white')
         style.configure('TCheckbutton', background=BG, foreground=INK)
-        style.configure('Treeview', font=('Microsoft YaHei UI', 9), rowheight=27,
+        style.configure('Treeview', font=(FONT, 9), rowheight=27,
                         background='white', fieldbackground='white', foreground=INK, borderwidth=0)
-        style.configure('Treeview.Heading', font=('Microsoft YaHei UI', 9, 'bold'),
+        style.configure('Treeview.Heading', font=(FONT, 9, 'bold'),
                         background='#EDF1F7', foreground=MUTED, padding=7, relief='flat')
         style.map('Treeview', background=[('selected', '#E4EDFF')], foreground=[('selected', INK)])
         style.configure('Horizontal.TProgressbar', background=BLUE, troughcolor='#E2E8F2', borderwidth=0)
@@ -132,7 +132,7 @@ class App:
         self.root.after(100, self.drain)
 
     def label(self, parent, text, size=10, fg=INK, bg=None, bold=False, **kwargs):
-        return tk.Label(parent, text=text, font=('Microsoft YaHei UI', size, 'bold' if bold else 'normal'),
+        return tk.Label(parent, text=text, font=(FONT, size, 'bold' if bold else 'normal'),
                         fg=fg, bg=bg or parent.cget('bg'), **kwargs)
 
     def build(self):
@@ -166,14 +166,14 @@ class App:
         self.label(header, '让每一步都可核验', 21, bold=True).pack(side='left')
         self.export_button = ttk.Button(header, text='导出脱敏报告', command=self.export, state='disabled')
         self.export_button.pack(side='right')
-        self.device_label = self.label(main, '自动识别 Q10 / Classic（Q20）/ Passport（Q30） · 待连接', 9, MUTED)
+        self.device_label = self.label(main, '自动识别 BlackBerry 10 设备 · 待连接', 9, MUTED)
         self.device_label.pack(anchor='w', pady=(4, 17))
 
         summary = tk.Frame(main, bg='white', padx=18, pady=13)
         summary.pack(fill='x')
         self.summary = self.label(summary, '先连接设备，运行兼容性预检', 14, bold=True)
         self.summary.pack(anchor='w')
-        self.detail = self.label(summary, '预检不会修改通话配置。初次 Root 请先按指南完成备份和刷写。', 9, MUTED,
+        self.detail = self.label(summary, '预检不会修改通话配置。初次 Root 请使用对应机型的方法并先备份。', 9, MUTED,
                                  wraplength=800, justify='left')
         self.detail.pack(anchor='w', pady=(5, 0))
 
@@ -193,7 +193,7 @@ class App:
         settings.pack(fill='x', pady=(0, 10))
         self.label(settings, '运营商配置', 9, MUTED).pack(side='left', padx=(0, 10))
         self.profile_picker = ttk.Combobox(settings, textvariable=self.profile_name,
-                                          values=[p['label'] for p in self.presets], state='readonly', width=47)
+                                          values=[display_label(p['label']) for p in self.presets], state='readonly', width=47)
         self.profile_picker.pack(side='left', fill='x', expand=True)
         self.profile_picker.bind('<<ComboboxSelected>>', self.select_profile)
         self.edit_button = ttk.Button(settings, text='编辑 / 导入配置', command=self.edit_profile)
@@ -248,7 +248,7 @@ class App:
 
     def set_profile(self, profile):
         self.profile = profiles.validate(profile)
-        self.profile_name.set(self.profile['label'])
+        self.profile_name.set(display_label(self.profile['label']))
         self.connection_changed()
 
     def select_profile(self, _=None):
@@ -432,7 +432,7 @@ class App:
         popup = tk.Toplevel(self.root)
         popup.title(title)
         popup.geometry('760x580')
-        text = tk.Text(popup, wrap='word', font=('Microsoft YaHei UI', 11), padx=24, pady=20,
+        text = tk.Text(popup, wrap='word', font=(FONT, 11), padx=24, pady=20,
                        bg='white', fg=INK, relief='flat')
         bar = ttk.Scrollbar(popup, command=text.yview)
         bar.pack(side='right', fill='y')
@@ -450,7 +450,7 @@ class App:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--host', default='q10-root')
+    parser.add_argument('--host', default='bb10-root')
     parser.add_argument('--ssh-config', default='')
     parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
     parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')

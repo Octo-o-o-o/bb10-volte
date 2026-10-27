@@ -54,21 +54,21 @@ Once the phone boots, open **BlackBerry World** once and wait for Root. The stor
 The prepared authorization allows only the USB computer address `169.254.0.2`; the Q10 address is `169.254.0.1`. Test:
 
 ```powershell
-ssh -F private/root-kit/ssh_config q10-root "echo connected"
-ssh -F private/root-kit/ssh_config q10-root "id -u"
+ssh -F private/root-kit/ssh_config bb10-root "echo connected"
+ssh -F private/root-kit/ssh_config bb10-root "id -u"
 ```
 
 The host key is pinned to the key generated for your own images. If the phone was rooted with a different key set, use that verified configuration instead. A key mismatch needs investigation rather than disabling host-key checks.
 
 ## 4. Install and start the VoLTE service
 
-Keep the phone powered on with USB connected and its own SIM inserted. Replace the SSH configuration path if yours differs; use `--host` if the alias is not `q10-root`.
+Keep the phone powered on with USB connected and its own SIM inserted. Replace the SSH configuration path if yours differs; use `--host` if the alias is not `bb10-root`.
 
 Alternatively, launch [Start-GUI.cmd](../Start-GUI.cmd) and follow [the GUI guide](GUI.en.md). Initial Root flashing is separate.
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 ```
 
 Before changing network configuration, the installer checks native hashes, the original voice policy `00`, existing IMS/VPN state and software provider state. Finish any previous experiment before proceeding; do not delete unknown objects to pass preflight.
@@ -82,7 +82,7 @@ Files are installed under `/var/rootdata/q10_volte`; the startup entry is `/var/
 `setup` / `start` observe IMS registration for the configured duration (180 seconds by default). If registration is pending, check again later:
 
 ```powershell
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 ```
 
 Expect top-level `registered=true`, `status.phase=running`, live manager/native process, and connected IMS / 200 OK / LTE under `status.current`. Complete [incoming, outgoing, audio, reboot and unplugged acceptance](VALIDATION.en.md).
@@ -95,18 +95,18 @@ Hang up before stopping. These commands manage only this project's processes and
 
 ```powershell
 # Stop and restore original voice policy, APN and owned VPN/provider state.
-python tools/q10.py stop --ssh-config private/root-kit/ssh_config
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
+python tools/bb10.py stop --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py check --ssh-config private/root-kit/ssh_config
 
 # Stop and disable startup on the next Root initialization.
-python tools/q10.py disable --ssh-config private/root-kit/ssh_config
+python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 
 # Save private diagnostic data locally.
-python tools/q10.py collect --ssh-config private/root-kit/ssh_config
+python tools/bb10.py collect --ssh-config private/root-kit/ssh_config
 
 # Remove the startup entry; keep programs and recovery records for inspection.
-python tools/q10.py uninstall --ssh-config private/root-kit/ssh_config
+python tools/bb10.py uninstall --ssh-config private/root-kit/ssh_config
 ```
 
 Stop waits for restoration and returns `restored=true`. The preflight baseline check must pass; its diagnostics show policy 0, provider -1 and no IMS/VPN or override conflicts. A leftover PPS `register_status="200 OK"` can be stale after stop. `cleanup_required` indicates a recovery conflict; preserve diagnostics rather than repeatedly reinstalling.
@@ -116,8 +116,8 @@ If native IMS exits independently, `native_exited` retains the journal and avoid
 For an update, first stop and complete the restoration checks above, then run:
 
 ```powershell
-python tools/q10.py update --ssh-config private/root-kit/ssh_config
-python tools/q10.py start --ssh-config private/root-kit/ssh_config
+python tools/bb10.py update --ssh-config private/root-kit/ssh_config
+python tools/bb10.py start --ssh-config private/root-kit/ssh_config
 ```
 
 Update checks the previous installation's file ownership and preserves the recovery journal. Collected logs go under ignored `private/` and may contain phone numbers, SIM identifiers and authentication data. Do not attach them directly to public issues; see [CONTRIBUTING.md](../CONTRIBUTING.md).

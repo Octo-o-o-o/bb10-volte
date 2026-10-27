@@ -20,11 +20,11 @@ The GUI offers the recorded Q10/Unicom parameters and public-data Unicom, Mobile
 Templates cite a [pinned snapshot](../materials/carrier-data-sources.json). Mobile, Telecom and other Unicom MNCs require experimental opt-in and all technical gates. JSON accepts only `schema`, `id`, `label`, `carrier`, `ims`, `runtime`; phone-side checks enforce types and ranges and reject unknown fields.
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 
 # Q20/Q30 trial with default Unicom 460-01 parameters
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
 ```
 
 Pass the same profile and opt-in to subsequent CLI setup/update/start/enable commands. Set the SSH alias with `--host`. The GUI carries its selection. Registration observation defaults to 180 seconds and accepts 30–900 seconds; timeout means pending.

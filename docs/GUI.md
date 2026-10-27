@@ -2,13 +2,13 @@
 
 [English](GUI.en.md)
 
-这是 Windows 桌面界面，与命令行共用固定流程。推荐双击独立 [Windows EXE](WINDOWS-EXE.md)，已内置 Python、Tk 和 SSH；测试者无需安装这些组件。源码方式需要 Python 3.14（含 Tk）和 OpenSSH。两种方式都需要已准备好的个人 Root SSH 配置及 USB 网络，不需要 Codex、其他 AI 工具或云端账号。
+这是面向 BlackBerry 10 设备的桌面界面，与命令行共用固定流程。Windows 可使用独立 [EXE](WINDOWS-EXE.md)，macOS 可按 [DMG 指南](MACOS.md) 使用 `.app`；用户无需单独安装 Python。源码方式需要 Python 3.14（含 Tk）和 OpenSSH。两种方式都需要已准备好的个人 Root SSH 配置及可用网络连接，不需要 Codex、其他 AI 工具或云端账号。Mac 直连手机的 USB 网络需要单独验证。
 
 使用源码时，从完整解压后的发布目录双击 `Start-GUI.cmd`，或运行 `python tools/gui.py`。请保留整个目录；不能只复制界面脚本。安装包校验不符时应换回完整发布包，客户不能通过重新生成清单跳过检查。
 
 ## 1. 连接与预检
 
-选择这台手机的个人 `ssh_config`，默认别名为 `q10-root`。也可以留空配置路径，使用本机已配置的 OpenSSH 别名。工具强制校验已知主机密钥，不会接受未知主机、替换密钥或修改网卡设置。
+选择这台手机的个人 `ssh_config`，默认别名为 `bb10-root`。已有旧配置若只定义 `q10-root`，请在别名栏填入 `q10-root`。也可以留空配置路径，使用本机已配置的 OpenSSH 别名。工具强制校验已知主机密钥，不会接受未知主机、替换密钥或修改网卡设置。
 
 选择运营商配置或点击“编辑 / 导入配置”，可编辑 MCC/MNC、数据及 IMS APN、IP 类型、域名、等待时长和自动启动，支持 JSON 导入导出。Q20 / Q30 或未实测运营商需勾选实验试用；配置变化使旧预检失效。详见 [配置指南](PROFILES.md)。
 

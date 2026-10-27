@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "python": "3.14.9",
+  "python_installer": {
+    "file": "python-3.14.9-macos11.pkg",
+    "url": "https://www.python.org/ftp/python/3.14.9/python-3.14.9-macos11.pkg",
+    "sha256": "08e312f20844b524c2f8c5e5b2e7f49608c22e8c7cb194f5834d385c94383462",
+    "signer": "Developer ID Installer: Python Software Foundation"
+  },
+  "tcl": "9.0.4",
+  "tk": "9.0.5",
+  "pyinstaller": "6.22.3",
+  "architecture": "universal2",
+  "python_minimum_macos": {"arm64": "11.0", "x86_64": "10.15"}
+}

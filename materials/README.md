@@ -2,15 +2,15 @@
 
 机器可读的版本、来源和 SHA-256 在 [sources.json](sources.json)。安装载荷的逐文件哈希在 [payload-manifest.json](payload-manifest.json)。
 
-## 已有匹配 Root 的 Q10
+## 已有匹配 Root 的 BB10 设备
 
-只需本仓库、Windows OpenSSH 客户端、电脑端 Python、Q10 的自有 Root SSH 密钥和 USB 数据线。手机端使用 BB10 自带 Python 3.2。安装器会在手机上读取并核验原厂文件，再生成 IMS 副本和 APN 文件。
+需要已验证的 BB10 设备 Root SSH 密钥、SSH 配置和 USB 网络。Windows EXE 已内置 Python 与 SSH；源码运行则需自行准备。手机端使用 BB10 自带 Python 3.2。安装器会在手机上读取并核验原厂文件，再生成 IMS 副本和 APN 文件。
 
 `driver/devnp-volte_swcrypto_probe.so` 是本项目由 C 源码构建的 5,264 字节模块。SHA-256：
 
 `504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254`
 
-## 从原版系统开始
+## 从原版 Q10 系统开始（其他机型需对应固件与 Root）
 
 | 材料 | 固定版本 / 用途 |
 | --- | --- |

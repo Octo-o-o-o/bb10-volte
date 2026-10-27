@@ -1,9 +1,25 @@
 """Local JSON profile editor; all changes pass the same device-side validator."""
 import json
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from workflow import ROOT, profiles
+
+FONT = 'PingFang SC' if sys.platform == 'darwin' else 'Microsoft YaHei UI'
+LEGACY_BASELINE_LABEL = profiles.default()['label']
+BB10_BASELINE_LABEL = '中国联通 460-01 / BB10（Q10 已验证）'
+
+
+def display_label(label):
+    # Keep the serialized legacy label and fingerprint for installed profiles.
+    return BB10_BASELINE_LABEL if label == LEGACY_BASELINE_LABEL else label
+
+
+def stored_label(label, original):
+    if original == LEGACY_BASELINE_LABEL and label == BB10_BASELINE_LABEL:
+        return original
+    return label
 
 
 def presets():
@@ -22,7 +38,7 @@ class ProfileEditor(tk.Toplevel):
         self.fields = {}
         body = ttk.Frame(self, padding=22)
         body.pack(fill='both', expand=True)
-        ttk.Label(body, text='配置保存在本机；应用后必须重新预检。', font=('Microsoft YaHei UI', 12, 'bold')).pack(anchor='w')
+        ttk.Label(body, text='配置保存在本机；应用后必须重新预检。', font=(FONT, 12, 'bold')).pack(anchor='w')
         ttk.Label(body, text='修改已装配置：先停用恢复 → 更新配置并预检 → 更新安装 → 通话验收。').pack(anchor='w', pady=(8, 15))
         tabs = ttk.Notebook(body)
         tabs.pack(fill='both', expand=True)
@@ -75,9 +91,12 @@ class ProfileEditor(tk.Toplevel):
 
     def populate(self, profile):
         p = profiles.validate(profile)
+        self.original_label = p['label']
         for key, variable in self.fields.items():
             section, _, field = key.partition('.')
             value = p[section][field] if field else p[section]
+            if key == 'label':
+                value = display_label(value)
             variable.set(', '.join(value) if isinstance(value, list) else value)
 
     def value(self):
@@ -87,6 +106,8 @@ class ProfileEditor(tk.Toplevel):
             value = variable.get()
             if isinstance(value, str):
                 value = value.strip()
+            if key == 'label':
+                value = stored_label(value, self.original_label)
             if key in ('carrier.mncs', 'carrier.data_apns'):
                 value = [item.strip() for item in value.split(',')]
             elif section == 'runtime' and field != 'autostart':

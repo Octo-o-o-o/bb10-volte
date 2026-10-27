@@ -14,7 +14,7 @@ An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS st
 
 ## What it does
 
-- Creates a dedicated `ims` APN and derives IMS identities from the Q10's own USIM. Authentication stays with the SIM and native IMS implementation.
+- Creates a dedicated `ims` APN and derives IMS identities from the BB10 device's own USIM. Authentication stays with the SIM and native IMS implementation.
 - Builds a hash-checked copy of the stock IMS program with an isolated platform configuration and a two-byte change to the ordinary voice VoPS decision.
 - Enables the existing QNX software crypto provider and selects IMS-preferred voice through the native radio API.
 - Installs a phone-side service with status, start, stop, update, disable, collection and recovery commands.
@@ -45,7 +45,7 @@ Exact filenames, original download URLs and SHA-256 values are in [sources.json]
 
 ### Run the Windows EXE (recommended)
 
-Obtain `bb10-volte-0.3.1-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
+Obtain `bb10-volte-0.3.2-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
 
 ### 1. Obtain the source
 
@@ -60,7 +60,7 @@ You can also extract the experimental ZIP from [Releases](https://github.com/Oct
 
 ### 2. Prepare the phone connection
 
-If the matching Q10 already has working root SSH and USB networking, use its existing verified SSH configuration. The examples below use `private/root-kit/ssh_config` and the alias `q10-root`; substitute your own configuration path and `--host` alias when necessary.
+If the BB10 device already has matching root SSH and USB networking, use its existing verified SSH configuration. The examples below use `private/root-kit/ssh_config` and the alias `bb10-root`; older configurations may use `--host q10-root`. Substitute your own configuration path and `--host` alias when necessary.
 
 For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to verify the USB drivers, obtain the pinned materials, create your own keys and build the Root images. **Initial Root flashing erases user data.** Back up the phone and keep a matching stock recovery image. The offline preparation scripts do not flash a phone.
 
@@ -71,11 +71,11 @@ Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, 
 Alternatively, run the same workflow from the repository root:
 
 ```powershell
-python tools/q10.py preflight --ssh-config private/root-kit/ssh_config
-python tools/q10.py setup --ssh-config private/root-kit/ssh_config
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
+python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 
 # If registration is pending, check again later:
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 ```
 
 `setup` installs, reads back the release, starts it and observes registration for a configurable duration (180 seconds by default). Look for `registration=verified`; `status` returns `registered=true` only with a live manager/native process and current connected IMS / 200 OK / LTE. A timeout reports pending, without reinstalling. First activation may briefly reload the radio. Registration alone does not establish working calls.
@@ -91,12 +91,12 @@ Use the system dialer to make and answer calls, verify sound in both directions,
 After hanging up, stop and restore the project's changes with:
 
 ```powershell
-python tools/q10.py stop --ssh-config private/root-kit/ssh_config
-python tools/q10.py status --ssh-config private/root-kit/ssh_config
-python tools/q10.py check --ssh-config private/root-kit/ssh_config
+python tools/bb10.py stop --ssh-config private/root-kit/ssh_config
+python tools/bb10.py status --ssh-config private/root-kit/ssh_config
+python tools/bb10.py check --ssh-config private/root-kit/ssh_config
 
 # Also prevent the service from starting at the next Root startup:
-python tools/q10.py disable --ssh-config private/root-kit/ssh_config
+python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 ```
 
 Stop waits for restoration and returns `restored=true`. The preflight `baseline` check must pass, confirming policy 0, provider -1 and no IMS/VPN or override conflicts. `cleanup_required` means recovery needs investigation. See the [installation guide](docs/INSTALL.en.md) for updating, collecting private diagnostics and removing the startup entry.
@@ -125,7 +125,7 @@ See [validation details](docs/VALIDATION.en.md), the [afternoon unplugged-call e
 ```mermaid
 flowchart LR
   A[System dialer] --> B[Hash-checked native IMS copy]
-  U[Q10 USIM] -->|Identity and AKA| B
+  U[BB10 device USIM] -->|Identity and AKA| B
   V[IMS-preferred voice selection] --> B
   B --> I[Native IPsec]
   S[Existing software crypto provider] --> I
