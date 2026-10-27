@@ -78,7 +78,9 @@ python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 
 应看到顶层 `registered=true`、`status.phase=running`、管理器与原生进程存活，`status.current` 中 IMS connected / 200 OK / LTE。注册成功后仍要完成 [通话验收](VALIDATION.md)：呼入接听、呼出、每次两个方向的声音、全程 4G，以及重启后复测。
 
-启动入口在 Root 就绪后运行。本次正常重启后，无需打开 BlackBerry World 或电脑手动启动服务，从重启到 IMS 注册约 7 分 42 秒；USB、桌面、4G、Root 和 IMS 可能先后就绪。若另一台设备 Root/SSH 始终没有出现，核实启动阶段后可打开一次 BlackBerry World 等待；仍需按该机实际结果完成验收。
+**安装成功后的重启等待：** 启动入口在 Root 就绪后运行。2026-10-28 的 v0.3.2 Q10 正常重启实测，无需打开 BlackBerry World 或电脑手动启动服务，从系统启动到 IMS 注册共约 **3 分 48 秒**；其中 BB10 和 Root 启动约 **3 分钟**，Root 就绪后到 IMS 注册约 **45 秒**（实测 44.7 秒）。**45 秒不是整机开机时长。** 这是北京联通单机记录，实际耗时以本机和网络状态为准。
+
+USB、桌面、4G、Root 和 IMS 可能先后就绪；看到桌面、4G 或 Root 成功提示时，请继续等 IMS 注册通过再测试通话。若另一台设备 Root/SSH 始终没有出现，核实启动阶段后可打开一次 BlackBerry World 等待；仍需按该机实际结果完成验收。
 
 ## 5. 停用、恢复与采集
 

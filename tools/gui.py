@@ -181,7 +181,8 @@ class App:
         self.summary.pack(anchor='w')
         self.detail = self.label(summary, '预检不会修改通话配置。初次 Root 请使用对应机型的方法并先备份。', 9, MUTED,
                                  wraplength=800, justify='left')
-        self.detail.pack(anchor='w', pady=(5, 0))
+        self.detail.pack(anchor='w', fill='x', pady=(5, 0))
+        self.detail.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width - 4)))
 
         connection = tk.Frame(main, bg=BG)
         connection.pack(fill='x', pady=(15, 12))
@@ -211,7 +212,7 @@ class App:
         self.label(main, '兼容性检查', 12, bold=True).pack(anchor='w', pady=(2, 8))
         table_frame = tk.Frame(main, bg='white')
         table_frame.pack(fill='both', expand=True)
-        self.table = ttk.Treeview(table_frame, columns=('item', 'state', 'detail'), show='headings', selectmode='browse', height=12)
+        self.table = ttk.Treeview(table_frame, columns=('item', 'state', 'detail'), show='headings', selectmode='browse', height=1)
         for col, label, width in [('item', '检查项目', 145), ('state', '结果', 100), ('detail', '说明与下一步（双击查看）', 460)]:
             self.table.heading(col, text=label, anchor='w')
             self.table.column(col, width=width, minwidth=width if col != 'detail' else 300, stretch=col == 'detail')

@@ -87,7 +87,9 @@ python tools/bb10.py status --ssh-config private/root-kit/ssh_config
 
 Expect top-level `registered=true`, `status.phase=running`, live manager/native process, and connected IMS / 200 OK / LTE under `status.current`. Complete [incoming, outgoing, audio, reboot and unplugged acceptance](VALIDATION.en.md).
 
-The startup entry runs after Root is ready. In the recorded normal-reboot trial, IMS registered about 7 minutes 42 seconds after reboot without opening BlackBerry World or manually starting the service. USB, desktop, LTE, Root and IMS can become ready at different times. If another device never brings up Root/SSH, check its startup stage, then open BlackBerry World once and wait if needed; validate the outcome on that device.
+**Reboot timing after successful installation:** The startup entry runs after Root is ready. In the v0.3.2 Q10 normal-reboot trial on 2026-10-28, system startup to IMS registration took approximately **3 minutes 48 seconds**, without opening BlackBerry World or manually starting the service from the computer. BB10 and Root startup accounted for about **3 minutes**; registration took about **45 seconds after Root was ready** (44.7 seconds measured). **45 seconds is not the total boot time.** This is one Beijing Unicom device's result; timing varies with the device and network.
+
+USB, desktop, LTE, Root and IMS can become ready at different times. After the desktop, 4G indicator or Root success notice appears, wait for verified IMS registration before testing calls. If another device never brings up Root/SSH, check its startup stage, then open BlackBerry World once and wait if needed; validate the outcome on that device.
 
 ## 6. Stop, restore, update and collect
 
