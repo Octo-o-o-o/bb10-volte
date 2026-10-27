@@ -142,21 +142,24 @@ class WorkflowTests(unittest.TestCase):
 
     def test_unknown_remote_outcome_preserves_stage_inputs(self):
         client = self.client()
-        with patch.object(client, 'remote', return_value='') as remote, patch.object(client, 'process', return_value=''):
+        with patch.object(client, 'remote', return_value=''), patch.object(client, 'process', return_value=''), \
+             patch.object(client, 'execute') as cleanup:
             with self.assertRaises(w.WorkflowError):
                 with client.stage(payload=True):
                     raise w.WorkflowError('connection_timeout_state_unknown')
-            self.assertFalse(any('rm -f' in call.args[0] for call in remote.call_args_list))
+            cleanup.assert_not_called()
 
     def test_successful_preflight_removes_only_its_exact_stage(self):
         client = self.client()
-        with patch.object(client, 'remote', return_value='') as remote, patch.object(client, 'process', return_value=''):
+        with patch.object(client, 'remote', return_value=''), patch.object(client, 'process', return_value=''), \
+             patch.object(client, 'execute', return_value={'stage_removed': True}) as cleanup:
             with client.stage() as stage:
                 self.assertTrue(stage.startswith('/var/rootdata/q10_volte_stage_'))
-            cleanup = remote.call_args_list[-1].args[0]
-            self.assertIn('rmdir', cleanup)
-            self.assertIn(stage + '/device/compatibility.py', cleanup)
-            self.assertNotIn('rm -r', cleanup)
+            cleanup.assert_called_once()
+            self.assertEqual(cleanup.call_args.args[0], stage + '/stage-cleanup.py')
+            self.assertIn('device/compatibility.py', cleanup.call_args.args[1])
+            self.assertIn('profile-request.json', cleanup.call_args.args[1])
+            self.assertNotIn('/var/rootdata/q10_volte/device', cleanup.call_args.args[1])
 
     def test_clean_install_readback_precedes_activation(self):
         client = self.client(); events = []

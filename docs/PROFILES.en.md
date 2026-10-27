@@ -13,7 +13,7 @@ The GUI offers the recorded Q10/Unicom parameters and public-data Unicom, Mobile
 | IMS APN / IP family | Dedicated IMS service using IPv4, IPv6 or IPv4v6 |
 | Home domain | `auto` derives from actual SIM MCC/MNC, padding MNC to three digits; validated custom domains allowed |
 | SMS capability | Advertise IMS SMS; does not establish working SMS |
-| SIM, IMS APN and existing-IMS waits | Bounded phone readiness waits |
+| SIM, IMS APN and existing-IMS waits | Bounded phone readiness waits; the IMS APN value applies per round, with at most three rounds |
 | Registration wait / poll interval | Desktop observation duration and runtime polling |
 | Autostart | Set boot startup; explicit manual start still works when disabled |
 

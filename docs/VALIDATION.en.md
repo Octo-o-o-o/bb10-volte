@@ -69,3 +69,11 @@ This establishes short calls and normal-reboot recovery on this one device. It d
 A `200` for REGISTER, SUBSCRIBE, UPDATE or PRACK is not an INVITE `200`. Confirm the INVITE transaction, ACK, session termination and human audio observations together.
 
 Other models, firmware versions, carriers, roaming, cell handover, long-term standby, emergency calling and future network-policy changes have not been tested. Publishing the source does not change these evidence boundaries.
+
+## Evening recovery and 0.3.1 hardening, 2026-10-27
+
+After selected applications were removed and the phone rebooted, version 0.1.0 timed out waiting 45 seconds for its dedicated IMS APN, restored its configuration and exited. Native dependencies, every installed payload and the Root addon still matched their recorded hashes. A REGISTER 500 also existed before application removal; no causal link to a removed application has been established.
+
+After restoring the failed state and rebooting normally, with no application reinstallation or firmware flash, 0.1.0 obtained a new REGISTER 200 at 22:48:49.980. The owner confirmed incoming/outgoing calls, both audio directions and LTE. The private capture independently verifies one answered incoming call lasting approximately 7.134 seconds; it does not establish the requested 20-second duration.
+
+Version 0.3.1 passed 85 local tests and public-file checks. On this Q10 it passed stop/restoration, previous-payload verification, Python 3.2 compilation, upgrade readback and fresh registration on LTE. Python-based staging cleanup also passed on-device. Normal reboot and calls after the hardened reboot remain pending; see the [structured record](../materials/startup-hardening-2026-10-27.json).

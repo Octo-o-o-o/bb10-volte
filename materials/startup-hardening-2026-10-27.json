@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-27",
+  "timezone": "Asia/Shanghai",
+  "device": "Q10 SQN100-3 / BB10 10.3.3.3216 / China Unicom 460-01",
+  "previous_version": "0.1.0",
+  "installed_version": "0.3.1",
+  "incident": {
+    "failure": "Dedicated IMS APN did not connect within the original 45-second window; the manager restored its changes and exited.",
+    "native_and_payload_hashes_verified": true,
+    "removed_apps_restored": false,
+    "firmware_reflashed": false,
+    "app_removal_causation_established": false,
+    "register_500_predated_app_removal": true
+  },
+  "recovery_before_hardening": {
+    "register_200_local": "22:48:49.980",
+    "incoming_outgoing_audio_lte_owner_confirmed": true,
+    "independently_captured_incoming_seconds": 7.134,
+    "twenty_second_calls_established_by_capture": false
+  },
+  "hardening": {
+    "network_rechecked_after_stock_ims_exit": true,
+    "ims_apn_wait_attempts": 3,
+    "default_seconds_per_attempt": 45,
+    "retry_reloads_modem": false,
+    "retry_changes_identity_or_rewrites_config": false,
+    "status_scoped_to_current_boot": true,
+    "qnx_stage_cleanup_uses_python_empty_directory_removal": true
+  },
+  "validation": {
+    "local_tests_passed": 85,
+    "public_file_checks_passed": true,
+    "phone_python_32_compile_and_payload_readback_passed": true,
+    "upgrade_from_01_passed": true,
+    "new_service_register_200_lte": true,
+    "phone_stage_cleanup_passed": true,
+    "hardened_normal_reboot": "pending",
+    "calls_after_hardened_reboot": "pending"
+  }
+}

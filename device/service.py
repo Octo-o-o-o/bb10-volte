@@ -84,9 +84,14 @@ def live():
             'power': n.value(radio, 'power_status')}
 
 
-def status(phase, error=None):
+def status(phase, error=None, details=None):
     result = {'phase': phase, 'at': time.time(), 'manager_pid': os.getpid(),
-              'native_pid': j.get('native_pid') if j else None, 'error': error}
+              'native_pid': j.get('native_pid') if j else None, 'error': error,
+              'boot': boot_token(),
+              'ims_observation_scope': 'owned_native' if phase in ('running', 'registering')
+              and j and j.get('native_pid') else 'system_status_only'}
+    if details is not None:
+        result['startup_wait'] = details
     try:
         result.update(live())
     except Exception:
@@ -98,15 +103,34 @@ def stopping():
     return shutdown or os.path.exists(STOP)
 
 
-def wait_until(predicate, timeout, label):
+def wait_until(predicate, timeout, label, phase=None):
     deadline = time.time() + timeout
     while time.time() < deadline:
-        if predicate():
-            return
         if stopping():
             raise RuntimeError('Stopped while ' + label)
+        if predicate():
+            return
+        if phase is not None:
+            status(phase)
         time.sleep(1)
     raise RuntimeError('Timeout: ' + label)
+
+
+def read_status():
+    result = load(STATUS) if os.path.isfile(STATUS) else {'phase': 'not_started'}
+    lock = load(LOCK) if os.path.isfile(LOCK) else {}
+    token = boot_token()
+    same_boot = result.get('boot', lock.get('boot')) == token
+    result['status_from_current_boot'] = same_boot
+    result['enabled'] = os.path.isfile(BASE + '/enabled')
+    result['manager_alive'] = bool(lock.get('boot') == token and alive(lock['pid']))
+    result['current'] = live()
+    result['native_alive'] = bool(same_boot and result['manager_alive'] and
+                                  result.get('native_pid') in n.ims_pids())
+    if not same_boot:
+        result.update(phase='not_started_this_boot', error=None, native_pid=None,
+                      ims_observation_scope='system_status_only')
+    return result
 
 
 def current_usim():
@@ -155,6 +179,39 @@ def profile_updates(profile, mcc, mnc):
                   'IMS_services': 'json:' + json.dumps(services, separators=(',', ':')),
                   'Home_network_domain_name': ':' + profiles.home_domain(profile, mcc, mnc)},
             CDSC: {'cdsc_xml': ':' + APN}}
+
+
+def wait_for_ims_apn(expected_imsi):
+    """Let the native AlwaysOn bearer recover through three bounded wait rounds.
+
+    Retrying here only observes the already requested connection. It never
+    toggles the modem, repeats configuration, or interrupts an IMS process.
+    A changed SIM/configuration is a conflict, not a retryable network outage.
+    """
+    attempts = 3
+    timeout = ACTIVE_PROFILE['runtime']['ims_apn_wait_seconds']
+    for attempt in range(1, attempts + 1):
+        assert n.digest(n.read(APN)) == j['managed_files'][APN], 'Owned IMS APN file changed'
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            if stopping():
+                raise RuntimeError('Stopped while waiting for dedicated IMS APN')
+            assert n.attrs(n.read(CDSC)).get('cdsc_xml') == applied_updates()[CDSC]['cdsc_xml'], 'IMS APN override changed'
+            network = compatibility.read_network(ACTIVE_PROFILE)
+            if compatibility.network_state(network, ACTIVE_PROFILE) == 'needs_adaptation':
+                raise RuntimeError('SIM/carrier changed while waiting for dedicated IMS APN')
+            sim_ready = network.get('sim_state') == 'READY' and not network.get('sim_read_error')
+            if sim_ready and current_usim() != expected_imsi:
+                raise RuntimeError('SIM changed while waiting for dedicated IMS APN')
+            item = n.value(n.attrs(n.read(DATA)), 'ims', {})
+            if (sim_ready and network.get('radio_on') and network.get('lte') and
+                    item.get('apn') == ACTIVE_PROFILE['ims']['apn'] and item.get('connected') is True):
+                return
+            status('waiting_for_ims_apn', details={'attempt': attempt, 'max_attempts': attempts,
+                   'seconds_per_attempt': timeout, 'sim_ready': bool(sim_ready),
+                   'lte_ready': bool(network.get('radio_on') and network.get('lte'))})
+            time.sleep(ACTIVE_PROFILE['runtime']['poll_seconds'])
+    raise RuntimeError('Timeout: dedicated IMS APN after 3 bounded attempts')
 
 
 def applied_updates():
@@ -408,12 +465,26 @@ def configure():
         assert j.get('crypto_boot') == boot_token() and crypto['swcr_id'] == j.get('provider'), 'Unowned crypto provider'
     assert 0 <= j['provider'] <= 127
     apply_fields(CDSC)
-    wait_until(lambda: n.value(n.attrs(n.read(DATA)), 'ims', {}).get('apn') == ACTIVE_PROFILE['ims']['apn'] and
-               n.value(n.attrs(n.read(DATA)), 'ims', {}).get('connected'),
-               ACTIVE_PROFILE['runtime']['ims_apn_wait_seconds'], 'dedicated IMS APN')
+    wait_for_ims_apn(imsi)
     apply_fields(IMS)
     n.command(['/proc/boot/pathtrust', '!' + BIN])
     save_journal()
+
+
+def prepare_connection():
+    n.verify_stock()
+    if not wait_for_network():
+        return False
+    wait_until(lambda: not n.ims_pids(), ACTIVE_PROFILE['runtime']['existing_ims_wait_seconds'],
+               'pre-existing native IMS instance', phase='waiting_for_native_ims')
+    # The stock process can take several minutes to exit. Its initial LTE
+    # snapshot is no longer enough to authorize carrier configuration.
+    if not wait_for_network():
+        return False
+    status('configuring')
+    configure()
+    assert not n.ims_pids(), 'A new native IMS instance appeared during configuration'
+    return True
 
 
 def serve():
@@ -434,11 +505,8 @@ def serve():
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGINT, terminate)
     try:
-        n.verify_stock()
-        if not wait_for_network():
+        if not prepare_connection():
             return
-        wait_until(lambda: not n.ims_pids(), ACTIVE_PROFILE['runtime']['existing_ims_wait_seconds'], 'pre-existing native IMS instance')
-        configure()
         stdout_fd = os.open(STATE + '/native.log', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_APPEND, 0o600)
         with os.fdopen(stdout_fd, 'wb') as output:
             child = subprocess.Popen([BIN, '-U', '453:31,80,387,427,521,1001'], stdout=output,
@@ -490,12 +558,7 @@ def main():
     assert os.geteuid() == 0 and len(sys.argv) == 2
     action = sys.argv[1]
     if action == 'status':
-        result = load(STATUS) if os.path.isfile(STATUS) else {'phase': 'not_started'}
-        result['enabled'] = os.path.isfile(BASE + '/enabled')
-        result['manager_alive'] = (os.path.isfile(LOCK) and load(LOCK).get('boot') == boot_token() and alive(load(LOCK)['pid']))
-        result['current'] = live()
-        result['native_alive'] = result.get('native_pid') in n.ims_pids()
-        print(json.dumps(result))
+        print(json.dumps(read_status()))
     elif action == 'start':
         ACTIVE_REQUEST = profiles.installed_request(BASE)
         ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
