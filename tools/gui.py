@@ -99,29 +99,32 @@ class App:
         if (ROOT / 'assets/icon.png').is_file():
             self.icon = tk.PhotoImage(file=str(ROOT / 'assets/icon.png'))
             root.iconphoto(True, self.icon)
-        root.geometry('1200x900')
-        root.minsize(1080, 840)
+        width = min(1240, max(960, root.winfo_screenwidth() - 48))
+        height = min(900, max(700, root.winfo_screenheight() - 80))
+        root.geometry('{}x{}'.format(width, height))
+        root.minsize(960, 700)
         root.configure(bg=BG)
-        root.option_add('*Font', (FONT, 10))
+        root.option_add('*Font', (FONT, 11))
         root.protocol('WM_DELETE_WINDOW', self.close)
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background=BG)
-        style.configure('TLabel', background=BG, foreground=INK)
+        style.configure('TLabel', background=BG, foreground=INK, font=(FONT, 11))
         style.configure('TNotebook', background=BG)
-        style.configure('TButton', font=(FONT, 10), padding=(12, 9),
+        style.configure('TButton', font=(FONT, 11), padding=(12, 9),
                         background='white', foreground=INK, borderwidth=0)
         style.map('TButton', background=[('active', '#E9EFFA'), ('disabled', '#E9EDF3')],
                   foreground=[('disabled', '#98A3B4')])
         style.configure('Accent.TButton', background=BLUE, foreground='white')
         style.map('Accent.TButton', background=[('active', '#194BB7'), ('disabled', '#CCD7ED')],
                   foreground=[('disabled', '#7C8BA7')])
-        style.configure('TEntry', padding=8, fieldbackground='white')
-        style.configure('TCheckbutton', background=BG, foreground=INK)
-        style.configure('Treeview', font=(FONT, 9), rowheight=27,
+        style.configure('TEntry', padding=8, fieldbackground='white', font=(FONT, 11))
+        style.configure('TCombobox', font=(FONT, 11))
+        style.configure('TCheckbutton', background=BG, foreground=INK, font=(FONT, 11))
+        style.configure('Treeview', font=(FONT, 12), rowheight=34,
                         background='white', fieldbackground='white', foreground=INK, borderwidth=0)
-        style.configure('Treeview.Heading', font=(FONT, 9, 'bold'),
-                        background='#EDF1F7', foreground=MUTED, padding=7, relief='flat')
+        style.configure('Treeview.Heading', font=(FONT, 11, 'bold'),
+                        background='#EDF1F7', foreground=INK, padding=9, relief='flat')
         style.map('Treeview', background=[('selected', '#E4EDFF')], foreground=[('selected', INK)])
         style.configure('Horizontal.TProgressbar', background=BLUE, troughcolor='#E2E8F2', borderwidth=0)
         self.build()
@@ -132,28 +135,31 @@ class App:
         self.root.after(100, self.drain)
 
     def label(self, parent, text, size=10, fg=INK, bg=None, bold=False, **kwargs):
-        return tk.Label(parent, text=text, font=(FONT, size, 'bold' if bold else 'normal'),
+        return tk.Label(parent, text=text, font=(FONT, max(size, 11), 'bold' if bold else 'normal'),
                         fg=fg, bg=bg or parent.cget('bg'), **kwargs)
 
     def build(self):
-        sidebar = tk.Frame(self.root, bg='#172740', width=178)
+        sidebar = tk.Frame(self.root, bg='#172740', width=202)
         sidebar.pack(side='left', fill='y')
         sidebar.pack_propagate(False)
+        brand = tk.Frame(sidebar, bg='#172740')
+        brand.pack(fill='x', padx=20, pady=(24, 18))
         if self.icon:
-            self.sidebar_icon = tk.PhotoImage(file=str(ROOT / 'assets/icon-96.png'))
-            tk.Label(sidebar, image=self.sidebar_icon, bg='#172740', bd=0).pack(anchor='w', padx=25, pady=(25, 12))
-        self.label(sidebar, 'bb10-volte', 14, 'white', bold=True).pack(anchor='w', padx=23, pady=(8, 0))
-        self.label(sidebar, '设备服务工具', 10, '#9BAFCD').pack(anchor='w', padx=27, pady=(8, 35))
+            icon = tk.PhotoImage(file=str(ROOT / 'assets/icon-96.png'))
+            self.sidebar_icon = icon.subsample(2, 2)
+            tk.Label(brand, image=self.sidebar_icon, bg='#172740', bd=0).pack(side='left', padx=(0, 12))
+        self.label(brand, '设备工作台', 12, 'white', bold=True).pack(side='left')
+        tk.Frame(sidebar, bg='#31445F', height=1).pack(fill='x', padx=20, pady=(0, 16))
         for number, title, detail in [('01', '连接与预检', '确认设备适用条件'),
                                       ('02', '安装与验证', '固定版本 · 回读检查'),
                                       ('03', '通话验收', '手机拨号器实测')]:
-            self.label(sidebar, number + '  ' + title, 11, 'white', bold=True).pack(anchor='w', padx=23, pady=(15, 4))
-            self.label(sidebar, detail, 9, '#9BAFCD').pack(anchor='w', padx=23)
+            self.label(sidebar, number + '  ' + title, 12, 'white', bold=True).pack(anchor='w', padx=20, pady=(13, 4))
+            self.label(sidebar, detail, 11, '#AFBDD2').pack(anchor='w', padx=20)
         footer = tk.Frame(sidebar, bg='#172740')
         footer.pack(side='bottom', fill='x', padx=20, pady=24)
-        tk.Button(footer, text='使用与恢复指南  ↗', bg='#223956', fg='white', relief='flat',
+        tk.Button(footer, text='使用与恢复指南  ↗', bg='#223956', fg='white', font=(FONT, 11), relief='flat',
                   activebackground='#30496B', activeforeground='white', bd=0, pady=9, command=self.guide).pack(fill='x')
-        tk.Button(footer, text='版本与开源许可', bg='#172740', fg='#AFC6EA', relief='flat',
+        tk.Button(footer, text='版本与开源许可', bg='#172740', fg='#AFC6EA', font=(FONT, 11), relief='flat',
                   activebackground='#223956', activeforeground='white', bd=0, pady=8, command=self.licenses).pack(fill='x')
         version = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))['version']
         self.label(footer, 'v' + version + ' · 实验版本', 9, '#9BAFCD').pack(anchor='w', pady=(17, 5))
@@ -163,7 +169,7 @@ class App:
         main.pack(side='left', fill='both', expand=True, padx=28, pady=22)
         header = tk.Frame(main, bg=BG)
         header.pack(fill='x')
-        self.label(header, '让每一步都可核验', 21, bold=True).pack(side='left')
+        self.label(header, '设备连接与兼容性', 21, bold=True).pack(side='left')
         self.export_button = ttk.Button(header, text='导出脱敏报告', command=self.export, state='disabled')
         self.export_button.pack(side='right')
         self.device_label = self.label(main, '自动识别 BlackBerry 10 设备 · 待连接', 9, MUTED)
@@ -171,7 +177,7 @@ class App:
 
         summary = tk.Frame(main, bg='white', padx=18, pady=13)
         summary.pack(fill='x')
-        self.summary = self.label(summary, '先连接设备，运行兼容性预检', 14, bold=True)
+        self.summary = self.label(summary, '先连接设备，运行兼容性预检', 16, bold=True)
         self.summary.pack(anchor='w')
         self.detail = self.label(summary, '预检不会修改通话配置。初次 Root 请使用对应机型的方法并先备份。', 9, MUTED,
                                  wraplength=800, justify='left')
@@ -202,10 +208,11 @@ class App:
                                                 variable=self.experimental)
         self.experiment_check.pack(anchor='w', pady=(0, 12))
 
+        self.label(main, '兼容性检查', 12, bold=True).pack(anchor='w', pady=(2, 8))
         table_frame = tk.Frame(main, bg='white')
         table_frame.pack(fill='both', expand=True)
         self.table = ttk.Treeview(table_frame, columns=('item', 'state', 'detail'), show='headings', selectmode='browse', height=12)
-        for col, label, width in [('item', '检查项目', 116), ('state', '结果', 76), ('detail', '说明与下一步（双击查看）', 590)]:
+        for col, label, width in [('item', '检查项目', 145), ('state', '结果', 100), ('detail', '说明与下一步（双击查看）', 460)]:
             self.table.heading(col, text=label, anchor='w')
             self.table.column(col, width=width, minwidth=width if col != 'detail' else 300, stretch=col == 'detail')
         scroll = ttk.Scrollbar(table_frame, orient='vertical', command=self.table.yview)
@@ -382,7 +389,12 @@ class App:
                         self.detail.configure(text='恢复检查通过。再次安装或更新前，请重新预检。')
                     elif result.get('registration') == 'verified' or result.get('registered'):
                         self.summary.configure(text='IMS 注册通过，待通话验收', fg=GREEN)
-                        self.detail.configure(text='请用系统拨号器验证呼入、呼出、双向声音和全程 4G，再完成重启后复测。')
+                        self.detail.configure(text=(
+                            '请用系统拨号器验证呼入、呼出、双向声音和全程 4G，再完成重启后复测。\n'
+                            '重启等待说明（Q10 单机实测）：从系统启动到 IMS 注册共约 3 分 48 秒，'
+                            '其中 BB10 和 Root 启动约 3 分钟，Root 就绪后注册约 45 秒。'
+                            '45 秒不代表整机开机用时，实际耗时以本机为准。\n'
+                            '重启后看到桌面、4G 或 Root 成功提示时，请继续等 IMS 注册通过再测试通话。'))
                     elif action in ('install', 'start'):
                         self.summary.configure(text='服务已启动，注册仍待确认', fg=AMBER)
                         self.detail.configure(text='等待窗口已结束。稍后重新预检并查看状态；尚不能判断为安装通话成功。')

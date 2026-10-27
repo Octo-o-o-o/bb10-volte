@@ -66,6 +66,18 @@ def main():
                '--additional-hooks-dir', str(hooks), '--icon', str(ROOT/'assets/app.icns'),
                '--target-architecture', spec['architecture'], '--osx-bundle-identifier', 'org.bb10volte.desktop',
                '--codesign-identity', args.identity, '--exclude-module', 'pip', '--exclude-module', 'setuptools']
+    # In an extracted official Python framework PyInstaller can misidentify
+    # Tcl/Tk as system frameworks. Include the signed runtime and scripts
+    # explicitly so the app runs without the build machine's frameworks.
+    tcl_root = base/'Frameworks/Tcl.framework/Versions/9.0'
+    tk_root = base/'Frameworks/Tk.framework/Versions/9.0'
+    for library in (tcl_root/'Tcl', tk_root/'Tk'):
+        assert library.is_file()
+        command += ['--add-binary', str(library)+':.']
+    for folder, destination in ((tcl_root/'Resources/Scripts', '_tcl_data'),
+                                (tk_root/'Resources/Scripts', '_tk_data')):
+        assert folder.is_dir()
+        command += ['--add-data', str(folder)+':'+destination]
     for name, source in sorted(resources.items()):
         command += ['--add-data', str(source)+':'+str(Path(name).parent)]
     command.append(str(ROOT/'tools/macos_main.py'))
@@ -85,6 +97,12 @@ def main():
     for name, source in resources.items():
         paths = [app/'Contents/Resources'/name, app/'Contents/Frameworks'/name]
         assert any(p.is_file() and sha(p) == sha(source) for p in paths), 'Bundled resource mismatch: '+name
+    for name in ('Tcl', 'Tk'):
+        assert (app/'Contents/Frameworks'/name).is_file(), 'Missing bundled '+name
+    for destination, source in (('_tcl_data/init.tcl', tcl_root/'Resources/Scripts/init.tcl'),
+                                ('_tk_data/tk.tcl', tk_root/'Resources/Scripts/tk.tcl')):
+        assert any(p.is_file() and sha(p) == sha(source) for p in
+                   (app/'Contents/Resources'/destination, app/'Contents/Frameworks'/destination))
     forbidden = {'private', 'downloads', 'ssh_config', 'known_hosts', 'q10_root_rsa', 'q10_host_rsa'}
     assert not any(any(part in forbidden for part in p.relative_to(app).parts) for p in app.rglob('*'))
     exe = app/'Contents/MacOS/bb10-volte'
