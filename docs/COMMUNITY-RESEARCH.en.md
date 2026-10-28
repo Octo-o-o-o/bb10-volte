@@ -20,7 +20,7 @@ Community observations never establish project hardware acceptance or relax hash
 | Exact combination, OS 10.3.3.3216 | Evidence origin | Reported result | Still unestablished |
 | --- | --- | --- | --- |
 | Classic AT&T / CLASSICATT / Mobile 460-00 | Upstream author's local experiment | Registration, manual outgoing call, session observations of bidirectional RTP | Incoming calls, boot recovery, installation through this project |
-| Classic Verizon / CLASSICVZW / Unicom 460-01 | Contributed report collected upstream | Registration | Independently validated incoming/outgoing calls |
+| Classic Verizon / CLASSICVZW / Unicom 460-01 | Upstream contribution plus author issue clarification | Archive: registration; later author statement: incoming/outgoing success | Independent project acceptance; no new raw call evidence supplied |
 | Passport / WINDERMERE4ROW / Unicom 460-01 | Contributed report collected upstream | Outgoing and normal-handset incoming calls | Universal Passport support, isolated parameter causality, this project's safe rollback |
 | Z30 STA100-3 / Mobile 460-00 | Upstream local negative test | No LTE attachment on the tested network; reported bands B4/B13 | Results for all Z30 variants or a remedy through IMS settings |
 
@@ -46,6 +46,14 @@ Navigator dots are retained as an optional feature candidate. No monitor or Navi
 
 ## Provenance and licensing
 
-Upstream NOTICE states that no project-wide license has been chosen and the archive includes other contributors' material. Following the author's invitation, our [confirmation request](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217) asks for explicit reusable files, licensing terms and contributed-material permissions.
+Upstream NOTICE states that no project-wide license has been chosen and the archive includes other contributors' material. The author explicitly permitted reuse in an [issue reply](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806); upstream has not added a project-wide license and separate contributor permissions remain unconfirmed. Our [confirmation request](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217) records questions about reusable files, licensing terms and contributed-material permissions.
 
 New code here is written for this project; evidence entries are independently summarized facts and source links. Upstream materials are not relicensed as MIT or redistributed. Any later code/binary reuse must retain the confirmed licenses, notices and attribution. Both READMEs acknowledge the project at the bottom.
+
+## Author clarification and autostart restriction
+
+The [author reply](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806) confirms outgoing-only operation for the Mobile device, described as sqc-2, and incoming/outgoing success for the other two devices. This is an attributed author statement, not independent project acceptance or a new exact model mapping.
+
+The author also warns that autostart can hang at the boot animation, without yet identifying the exact device or startup hook. Experimental device/carrier combinations therefore require runtime.autostart=false and manual start; all three experimental presets default to it. Q20 users choosing the default Unicom profile must turn off autostart in Customize → Runtime options and repeat preflight. Desktop enable and phone entry points cannot bypass the restriction. The previously accepted Q10 SQN100-3/default Unicom combination retains autostart. Passport remains subject to its separate provider-lifecycle hold even with autostart off.
+
+Updating the desktop does not migrate old phone settings. Restore eligible old configurations before updating with a manual-start request; preserve Passport installations for an individually assessed recovery. Our [follow-up](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554) asks which hardware and startup mechanism were involved, without requesting a new failure experiment.

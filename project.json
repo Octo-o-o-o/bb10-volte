@@ -5,5 +5,5 @@
   "state": "community_research_integration_hardware_validation_pending",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Q10 has prior hardware acceptance; Classic remains experimental; Passport automatic operations paused pending provider lifecycle validation; exact OS/ABI/native hashes required"
+  "scope": "Q10 baseline has prior hardware acceptance; experimental combinations require manual start; Passport automatic operations paused pending provider lifecycle validation; exact OS/ABI/native hashes required"
 }

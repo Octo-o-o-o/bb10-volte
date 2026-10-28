@@ -3,15 +3,15 @@
   "version": "0.3.3",
   "files": {
     "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
-    "device/compatibility.py": "82fcbbb85a253d064a33c8918fa76e87842bccc43130b7454801c0468079d4a4",
+    "device/compatibility.py": "cd739ffe3970293beb685652fd78dbf4fa8e3ca8c536ac6078da9f2d74146481",
     "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
     "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
-    "device/install.py": "0c1474c55b813d57918853f68e53acc2fa4fa993725d781145ffbdec02de8d56",
+    "device/install.py": "c5b4f29d550f28b23e17b453bea87be79d6e48a0e7c59b13aa0e465d7a55ade9",
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
     "device/profiles.py": "fc5d4aaf469876aab33dce50938025bce80e3598b448a0d0537afda846b6a1db",
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
     "device/run.sh": "5e980fc9799f05d7c0b70a018e4b6148184c105d1806c3a7d809bfe83707e878",
-    "device/service.py": "3487734317917ca35812c5140d30d94bed546ee0ec968e2fcc04adaeae51facb",
+    "device/service.py": "5d76780cdf3b36cfcb3b7031b7e29029202c9fede0145f3be041a10ba1922858",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
   }
 }

@@ -35,6 +35,7 @@ class ProfileTests(unittest.TestCase):
         for path in (ROOT / 'profiles').glob('*.json'):
             profile = p.validate(p.read_json(str(path)))
             self.assertFalse(p.baseline_parameters(profile))
+            self.assertFalse(profile['runtime']['autostart'])
             self.assertEqual(p.validate(json.loads(p.canonical(profile))), profile)
 
     def test_untrusted_values_cannot_become_xml_paths_or_commands(self):
@@ -134,7 +135,8 @@ class DeviceTests(unittest.TestCase):
                 facts = baseline(); facts.update(model=model, variant=variant)
                 self.assertEqual(d.identify(facts)['family'], family)
                 self.assertFalse(c.evaluate(facts)['can_install'])
-                report = c.evaluate(facts, allow_experimental=True)
+                manual = p.default(); manual['runtime']['autostart'] = False
+                report = c.evaluate(facts, manual, allow_experimental=True)
                 self.assertEqual(report['outcome'], 'needs_adaptation' if family == 'passport' else 'experimental')
                 self.assertEqual(report['can_install'], family != 'passport')
                 self.assertEqual(report['hardware_validation'], 'not_hardware_validated')

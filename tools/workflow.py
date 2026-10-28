@@ -292,6 +292,8 @@ class Client:
             return {'status': result, 'registered': registered(result), 'preflight': report}
         if report.get('can_restore') is False:
             raise WorkflowError('provider_lifecycle_needs_adaptation', report)
+        if action == 'enable' and not report.get('can_enable'):
+            raise WorkflowError('preflight_blocked', report)
         if action in ('start', 'enable'):
             if report['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request):
                 raise WorkflowError('profile_update_required', report)

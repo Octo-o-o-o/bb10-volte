@@ -694,6 +694,8 @@ def main():
         assert device['recognized'] and identity['os_version'] == device_info.OS_VERSION, 'Device/OS needs adaptation'
         if not device_info.provider_lifecycle_supported(device):
             raise RuntimeError('Passport provider lifecycle needs validation; see issue #1')
+        if ACTIVE_PROFILE['runtime']['autostart'] and not compatibility.autostart_supported(device, ACTIVE_PROFILE):
+            raise RuntimeError('Experimental combinations require autostart=false; see issue #1 boot report')
         assert (device['hardware_tested'] and profiles.baseline_parameters(ACTIVE_PROFILE)) or ACTIVE_REQUEST['allow_experimental'], 'Experimental opt-in is required'
         if os.path.isfile(LOCK):
             lock = load(LOCK)

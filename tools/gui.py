@@ -20,7 +20,7 @@ NAMES = {'model': '手机型号', 'os': '系统版本', 'root': 'Root 环境', '
          'sim': 'SIM 就绪', 'carrier': '运营商', 'sim_route': 'SIM 路线', 'identity': '身份格式',
          'lte': '4G 网络', 'apn': '数据 APN', 'carrier_config': '原厂数据配置', 'experiment': '实测与试用',
          'installation': '已装服务', 'baseline': '安装前状态', 'saved_profile': '已装配置',
-         'provider_lifecycle': '机型恢复验证'}
+         'provider_lifecycle': '机型恢复验证', 'autostart_policy': '开机启动验证'}
 NOTES = {
     'device_identified': '已自动识别型号和硬件变体；实测状态见顶部',
     'passport_provider_lifecycle_unvalidated': 'Passport 有停用后网络栈重启的社区报告；恢复策略验证前暂停安装、启动及自动恢复，实验试用不能绕过。见社区研究说明。',
@@ -33,6 +33,7 @@ NOTES = {
     'carrier_not_profiled': 'SIM 与当前配置不一致；请选择或编辑运营商配置',
     'carrier_template_required': '按实际 SIM 匹配原厂配置、数据 APN 和 IMS 结构；失败时需适配',
     'experimental_opt_in': '未实测适配；勾选实验试用后，仍须通过全部技术检查',
+    'experimental_manual_start_required': '社区报告自启动可能卡在开机动画；请在“自定义 → 运行选项”关闭自动启动后重新检查。实验组合仅允许手动启动。',
     'recorded_baseline': '有 Q10 SQN100-3 北京联通单机记录；本机仍须验收',
     'saved_profile_matches': '所选配置与手机已装配置一致',
     'profile_update_required': '新安装将保存所选配置；已装配置有变更时先停用恢复，再更新',

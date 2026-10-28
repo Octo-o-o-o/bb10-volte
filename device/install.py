@@ -98,6 +98,8 @@ def main():
         manifest = json.loads(n.read(BASE+'/installation.json').decode('ascii'))
         assert manifest['owner'] == 'q10-unicom-volte-v1'
         if action == 'enable':
+            request = profiles.installed_request(BASE)
+            compatibility.require('enable', request['profile'], request['allow_experimental'])
             assert os.path.isfile(ADDON+'/init/start.sh'), 'Boot addon has been uninstalled'
             n.atomic(BASE+'/enabled', b'enabled by owner\n')
         else:

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "date": "2026-10-28",
+  "version": "0.3.3",
+  "desktop_revision": 1,
+  "base_commit": "f4a97d6c1d2491da887c2025d520552d3b3e03d3",
+  "environment": {
+    "platform": "Windows",
+    "python": "3.14.9",
+    "tk": "9.0.4"
+  },
+  "checks": {
+    "unittest": {
+      "command": "python -m unittest discover -s tests -v",
+      "tests": 175,
+      "result": "passed"
+    },
+    "syntax": {
+      "command": "python -m compileall -q device tools tests",
+      "result": "passed",
+      "interpreter": "desktop Python 3.14.9"
+    },
+    "gui": {
+      "mode": "source",
+      "result": "passed",
+      "python_network_disabled": true,
+      "phone_contacted": false,
+      "minimum_window_actions_visible": true,
+      "offline_staging_inputs_verified": 6
+    }
+  },
+  "not_performed": [
+    "Device Python 3.2 execution",
+    "Phone installation/update",
+    "Calls or reboot acceptance",
+    "Windows EXE build",
+    "macOS DMG build"
+  ],
+  "evidence_scope": "Software regression and offline source GUI checks only; existing phone acceptance remains tied to earlier versions.",
+  "community_permission": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+  "pending_details": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554"
+}

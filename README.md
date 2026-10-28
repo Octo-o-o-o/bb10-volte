@@ -10,7 +10,7 @@
 
 **手机无需改动硬件，但需要通过 AutoRoot 获得 Root 权限。** 启用后继续使用手机自己的 SIM、原生 IMS 协议栈和系统拨号器。VoLTE 功能由本项目提供，无需再安装其他 VoLTE 项目或手机通话 App；EXE / DMG 用户无需另装 Python。首次 Root 和连接准备的实际范围见[使用方式](#使用方式)及[完整安装指南](docs/INSTALL.md)。
 
-**本项目已有实机验收的组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 0.3.2 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、其他 Q10 版本和运营商仍需通过兼容性检查后实验试用，不能保证可用。**0.3.3 新增社区证据与只读来电诊断，尚未实机复测；Passport 因提供器停用后的网络栈重启报告，暂缓自动安装、启动和恢复操作。** 社区 Q20 呼出、Passport 双向通话报告与本工具验收分开记录，见[社区研究与适配进展](docs/COMMUNITY-RESEARCH.md)。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
+**本项目已有实机验收的组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 0.3.2 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、其他 Q10 版本和运营商仍需通过兼容性检查后实验试用，不能保证可用。**0.3.3 新增社区证据与只读来电诊断，尚未实机复测；未验收组合仅允许手动启动；Passport 因提供器停用后的网络栈重启报告，暂缓自动安装、启动和恢复操作。** 社区 Q20 呼出、Passport 双向通话报告与本工具验收分开记录，见[社区研究与适配进展](docs/COMMUNITY-RESEARCH.md)。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
 
 [Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 

@@ -52,7 +52,8 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(len(value['records']), 4)
         for record in value['records']:
             self.assertTrue(record['limitations'])
-            self.assertTrue(all(value['source']['commit'] in url for url in record['sources']))
+            self.assertTrue(all(value['source']['commit'] in url or
+                                url == value['source']['permission_url'] for url in record['sources']))
         facts = baseline()
         facts.update(model='Z30', variant='STA100-3', mnc='00')
         report = c.evaluate(facts, allow_experimental=True)
@@ -176,6 +177,61 @@ class PassportLifecycleTests(unittest.TestCase):
                     install.main()
             write.assert_not_called(); command.assert_not_called()
             fork.assert_not_called(); unlink.assert_not_called()
+
+
+class ExperimentalAutostartTests(unittest.TestCase):
+    def classic(self):
+        facts = baseline()
+        facts.update(model='Classic', variant='SQC100-2', board_type='CLASSICATT')
+        return facts
+
+    def test_only_verified_combination_keeps_autostart(self):
+        self.assertTrue(c.evaluate(baseline())['can_install'])
+        report = c.evaluate(self.classic(), allow_experimental=True)
+        self.assertFalse(report['can_install'])
+        self.assertIn('experimental_manual_start_required', [item['code'] for item in report['checks']])
+        manual = profiles.default(); manual['runtime']['autostart'] = False
+        report = c.evaluate(self.classic(), manual, True)
+        self.assertTrue(report['can_install'])
+        self.assertFalse(report['can_enable'])
+
+    def test_explicit_enable_cannot_override_manual_only_installed_profile(self):
+        manual = profiles.default(); manual['runtime']['autostart'] = False
+        request = profiles.request(manual, True)
+        facts = self.classic()
+        facts['installation'] = {'state': 'stopped', 'current_profile': True,
+                                'carrier_profile_sha256': profiles.fingerprint(request)}
+        report = c.evaluate(facts, manual, True)
+        self.assertTrue(report['can_start']); self.assertFalse(report['can_enable'])
+        with patch.object(w.shutil, 'which', return_value='ssh'):
+            client = w.Client(profile=manual, allow_experimental=True)
+        with patch.object(client, 'preflight', return_value=report), \
+             patch.object(client, 'execute') as write, patch.object(client, 'service') as remote:
+            with self.assertRaisesRegex(w.WorkflowError, 'preflight_blocked'):
+                client.action('enable')
+            write.assert_not_called(); remote.assert_not_called()
+        with patch.object(d, 'read_identity', return_value=facts), \
+             patch.object(install.os, 'geteuid', return_value=0, create=True), \
+             patch.object(sys, 'argv', ['install.py', 'enable']), \
+             patch.object(n, 'read', return_value=json.dumps({'owner': c.OWNER}).encode()), \
+             patch.object(profiles, 'installed_request', return_value=request), \
+             patch.object(c, 'probe', return_value=report), patch.object(n, 'atomic') as write:
+            with self.assertRaisesRegex(RuntimeError, 'Preflight blocked enable'):
+                install.main()
+            write.assert_not_called()
+
+    def test_old_experimental_autostart_request_fails_before_fork(self):
+        with patch.object(d, 'read_identity', return_value=self.classic()), \
+             patch.object(n, 'verify_stock'), patch.object(n, 'atomic') as write, \
+             patch.object(profiles, 'installed_request', return_value=profiles.request(allow_experimental=True)), \
+             patch.object(service, 'ACTIVE_REQUEST', profiles.request()), \
+             patch.object(service, 'ACTIVE_PROFILE', profiles.default()), \
+             patch.object(service.os, 'geteuid', return_value=0, create=True), \
+             patch.object(service.os, 'fork', create=True) as fork, \
+             patch.object(sys, 'argv', ['service.py', 'start']):
+            with self.assertRaisesRegex(RuntimeError, 'autostart=false'):
+                service.main()
+            write.assert_not_called(); fork.assert_not_called()
 
 
 if __name__ == '__main__':

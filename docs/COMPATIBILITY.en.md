@@ -28,3 +28,5 @@ P-CSCF comes from network PCO; no Beijing address is hardcoded. Province is not 
 Ask customers for model/variant/full OS and root readiness; operator, home/current province and porting/roaming status; whether the same SIM supports two-way VoLTE in a supported phone; selected JSON and sanitized preflight; per-device call results/failure stage. Full phone numbers or SIM identities are unnecessary.
 
 Reports do not automatically collect full IMSI, IMEI, ICCID, PIN, SIM secrets, authentication material or SSH keys. Keep personal details out of profile labels. Configuration edits invalidate preflight; stop and restore before updating. Issues and PRs for other builds, models and carriers are welcome; see [reporting guidance](ISSUES.md).
+
+Experimental device/carrier combinations must also set runtime.autostart=false and use manual start. Opt-in cannot bypass this restriction after the author reported boot-animation hangs. The accepted Q10 baseline retains autostart.

@@ -44,6 +44,12 @@ def public_incoming_diagnostics(values):
     return result
 
 
+def autostart_supported(device, profile):
+    # Issue #1 reports a boot-animation hang on community variants. Only the
+    # existing Q10/carrier baseline has this project's normal-reboot acceptance.
+    return device.get('hardware_tested') is True and profiles.baseline_parameters(profile)
+
+
 def incoming_diagnostics():
     """Read configuration hints only; never infer incoming-call readiness.
 
@@ -255,8 +261,11 @@ def evaluate(s, profile=None, allow_experimental=False):
     check('native', set(hashes) == set(n.STOCK_HASHES) and all(hashes.values()), 'native_hashes_required')
     checks.extend(network_checks(s, p))
     check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
-    experimental = not device['hardware_tested'] or not profiles.baseline_parameters(p)
+    experimental = not autostart_supported(device, p)
     check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else 'recorded_baseline', 'wait')
+    if experimental:
+        check('autostart_policy', not p['runtime']['autostart'],
+              'experimental_manual_start_required', 'wait')
     statuses = [c['status'] for c in checks]
     outcome = ('unsupported' if 'block' in statuses else 'needs_adaptation' if 'adapt' in statuses
                else 'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
@@ -288,6 +297,7 @@ def evaluate(s, profile=None, allow_experimental=False):
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
             'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
+            'can_enable': allowed and not experimental and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
             'can_restore': device_info.provider_lifecycle_supported(device),
             'hardware_validation': 'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',
             'carrier_provisioning': 'requires_user_confirmation_and_real_calls'}
