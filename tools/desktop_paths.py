@@ -4,6 +4,13 @@ from pathlib import Path
 import sys
 
 
+def desktop_release_version(project):
+    revision = project.get('desktop_revision')
+    if revision is not None and (type(revision) is not int or revision < 1):
+        raise ValueError('Invalid desktop revision')
+    return project['version'] + ('-r' + str(revision) if revision else '')
+
+
 def frozen():
     return bool(getattr(sys, 'frozen', False))
 

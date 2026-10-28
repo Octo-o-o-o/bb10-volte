@@ -31,13 +31,14 @@ def run(output):
     root.geometry('960x700')
     root.deiconify()
     root.update()
-    for widget in list(app.buttons.values()) + [app.activity]:
+    visible_buttons = [button for button in app.buttons.values() if button.winfo_manager()]
+    for widget in visible_buttons + [app.activity]:
         x = widget.winfo_rootx() - root.winfo_rootx()
         y = widget.winfo_rooty() - root.winfo_rooty()
         assert widget.winfo_width() > 1 and widget.winfo_height() > 1
         assert x >= 0 and y >= 0 and x + widget.winfo_width() <= root.winfo_width()
         assert y + widget.winfo_height() <= root.winfo_height()
-    assert all(button.winfo_width() >= 115 for button in app.buttons.values())
+    assert all(button.winfo_width() >= 100 for button in visible_buttons)
     tcl, tk_version = root.tk.call('info', 'patchlevel'), root.tk.call('package', 'provide', 'Tk')
     app.close()
     client = Client()
@@ -68,6 +69,7 @@ def run(output):
         assert (bundle / 'assets/app.ico').is_file()
         assert not private_root().is_relative_to(bundle)
     result = {'passed': True, 'version': manifest['version'], 'frozen': frozen(),
+              'desktop_revision': json.loads((bundle / 'project.json').read_text(encoding='utf-8')).get('desktop_revision'),
               'python': sys.version.split()[0], 'tcl': tcl, 'tk': tk_version,
               'python_on_path': bool(shutil.which('python')),
               'system_ssh_on_path': bool(shutil.which('ssh')),

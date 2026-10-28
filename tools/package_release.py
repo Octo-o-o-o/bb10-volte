@@ -3,12 +3,13 @@ import hashlib
 import json
 import zipfile
 from check_release import ROOT, check
+from desktop_paths import desktop_release_version
 
 
 def main():
     report = check()
     project = json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
-    name = project['name'] + '-' + project['version'] + '-experimental'
+    name = project['name'] + '-' + desktop_release_version(project) + '-experimental'
     folder = ROOT/'dist'
     folder.mkdir(exist_ok=True)
     output = folder/(name+'.zip')

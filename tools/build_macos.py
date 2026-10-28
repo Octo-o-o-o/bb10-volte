@@ -15,6 +15,7 @@ import tkinter as tk
 from check_release import ROOT, check
 from workflow import verify_package
 from build_windows import runtime_data
+from desktop_paths import desktop_release_version
 
 
 def sha(path):
@@ -88,6 +89,7 @@ def main():
         info = plistlib.load(f)
     info.update(CFBundleName='bb10-volte', CFBundleDisplayName='bb10-volte',
                 CFBundleShortVersionString=project['version'], CFBundleVersion=project['version'],
+                BB10DesktopRevision=project.get('desktop_revision', 1),
                 NSHighResolutionCapable=True)
     with info_path.open('wb') as f:
         plistlib.dump(info, f)
@@ -109,11 +111,12 @@ def main():
     archs = subprocess.check_output(['/usr/bin/lipo', '-archs', str(exe)], text=True).split()
     assert set(archs) == {'arm64', 'x86_64'}, archs
     result = {'project': project['name'], 'version': project['version'], 'app': app.name,
+              'desktop_revision': project.get('desktop_revision'),
               'architecture': archs, 'python': spec['python'], 'tcl': tcl_version, 'tk': tk_version,
               'pyinstaller': spec['pyinstaller'], 'bundled_data_files': len(resources),
               'bundled_data_hashes_verified': True, 'private_inputs_excluded': True,
               'source_files': report['files'], 'signed_developer_id': True, 'notarized': False}
-    (ROOT/'dist'/('bb10-volte-'+project['version']+'-macos-build.json')).write_text(
+    (ROOT/'dist'/('bb10-volte-'+desktop_release_version(project)+'-macos-build.json')).write_text(
         json.dumps(result, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({k: v for k, v in result.items() if k != 'source_files'}, indent=2))
 

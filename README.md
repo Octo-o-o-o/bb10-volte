@@ -45,7 +45,7 @@
 
 ### 双击 Windows EXE（推荐）
 
-从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取 `bb10-volte-0.3.2-windows-x64.exe`，或由维护者直接发送文件。内置 Python、Tk、SSH、配置和载荷，双击启动即可；已有匹配机型 Root、USB 网络和个人 SSH 配置后，电脑无需联网即可执行预检与安装。首次 Root / USB 驱动仍需另行准备，手机通话需要运营商网络。详见 [离线边界与测试步骤](docs/WINDOWS-EXE.md)。下文为源码方式。
+从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取 `bb10-volte-0.3.2-r2-windows-x64.exe`，或由维护者直接发送文件。内置 Python、Tk、SSH、配置和载荷，双击启动即可；已有匹配机型 Root、USB 网络和个人 SSH 配置后，电脑无需联网即可执行预检与安装。首次 Root / USB 驱动仍需另行准备，手机通话需要运营商网络。详见 [离线边界与测试步骤](docs/WINDOWS-EXE.md)。下文为源码方式。
 
 ### 1. 获取源码
 
@@ -66,7 +66,7 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，选择个人 SSH 配置后点击“运行预检”。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 仍按完整安装文档操作。
+源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，选择个人 SSH 配置后点击“检查设备”。桌面构建 `0.3.2-r2` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.2`。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 仍按完整安装文档操作。
 
 或在仓库根目录执行同一套流程：
 

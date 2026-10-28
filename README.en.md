@@ -45,7 +45,7 @@ Exact filenames, original download URLs and SHA-256 values are in [sources.json]
 
 ### Run the Windows EXE (recommended)
 
-Obtain `bb10-volte-0.3.2-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
+Obtain `bb10-volte-0.3.2-r2-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
 
 ### 1. Obtain the source
 
@@ -66,7 +66,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and run preflight. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); initial Root flashing remains a separate procedure.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and choose Check device. Desktop build `0.3.2-r2` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); initial Root flashing remains a separate procedure.
 
 Alternatively, run the same workflow from the repository root:
 

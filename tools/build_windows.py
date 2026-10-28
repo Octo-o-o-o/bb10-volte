@@ -14,6 +14,7 @@ import zipfile
 
 from check_release import ROOT, check
 from workflow import FILES, verify_package
+from desktop_paths import desktop_release_version
 
 
 def digest(path):
@@ -54,7 +55,10 @@ def runtime_data():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--offline', action='store_true', help='Require cached, hash-verified build inputs; no downloads')
+    parser.add_argument('--output-dir', type=Path, default=ROOT / 'dist', help='Destination for this build and its records')
     args = parser.parse_args()
+    output_dir = args.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
     assert sys.platform == 'win32' and platform.machine().lower() in ('amd64', 'x86_64')
     spec = json.loads((ROOT / 'materials/windows-runtime.json').read_text(encoding='utf-8'))
     assert platform.python_version() == spec['python'], 'Use the pinned Python build'
@@ -101,7 +105,7 @@ def main():
     notices = work / 'THIRD-PARTY-NOTICES.txt'
     notices.write_text('\n\n'.join(title + '\n' + '=' * len(title) + '\n' +
                                   path.read_text(encoding='utf-8') for title, path in license_parts), encoding='utf-8')
-    version = tuple(int(p) for p in project['version'].split('.')) + (0,)
+    version = tuple(int(p) for p in project['version'].split('.')) + (project.get('desktop_revision', 0),)
     version_file = work / 'version.txt'
     version_file.write_text(
         'VSVersionInfo(ffi=FixedFileInfo(filevers={0!r}, prodvers={0!r}, mask=0x3f, flags=0, OS=0x40004, '
@@ -109,10 +113,10 @@ def main():
         'StringStruct("FileDescription", "bb10-volte"), StringStruct("ProductName", "bb10-volte"),'
         'StringStruct("FileVersion", "{1}"), StringStruct("ProductVersion", "{1}"),'
         'StringStruct("OriginalFilename", "bb10-volte.exe")])]), VarFileInfo([VarStruct("Translation", [1033,1200])])])'
-        .format(version, project['version']), encoding='utf-8')
-    name = project['name'] + '-' + project['version'] + '-windows-x64'
+        .format(version, desktop_release_version(project)), encoding='utf-8')
+    build_name = project['name'] + '-' + desktop_release_version(project) + '-windows-x64'
     command = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--onefile', '--windowed', '--noupx',
-               '--name', name, '--distpath', str(ROOT / 'dist'), '--workpath', str(work / 'pyinstaller'),
+               '--name', build_name, '--distpath', str(output_dir), '--workpath', str(work / 'pyinstaller'),
                '--specpath', str(work), '--paths', str(ROOT / 'tools'), '--paths', str(ROOT / 'device'),
                '--additional-hooks-dir', str(hooks),
                '--icon', str(ROOT / 'assets/app.ico'), '--version-file', str(version_file),
@@ -124,7 +128,7 @@ def main():
         command += ['--add-data', str(source) + ':' + str(Path(name).parent)]
     command.append(str(ROOT / 'tools/windows_main.py'))
     subprocess.run(command, cwd=ROOT, check=True)
-    output = ROOT / 'dist' / (project['name'] + '-' + project['version'] + '-windows-x64.exe')
+    output = output_dir / (build_name + '.exe')
     from PyInstaller.archive.readers import CArchiveReader
     reader = CArchiveReader(str(output))
     index = {n.replace('\\', '/'): n for n in reader.toc}
@@ -137,6 +141,7 @@ def main():
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')
     report = {'project': project['name'], 'version': project['version'], 'artifact': output.name,
+              'desktop_revision': project.get('desktop_revision'),
               'sha256': sha, 'bytes': output.stat().st_size, 'python': spec['python'],
               'pyinstaller': spec['pyinstaller'], 'openssh': spec['openssh']['version'],
               'source_files': source_report['files'], 'bundled_data_files': len(bundled),

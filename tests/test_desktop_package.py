@@ -15,6 +15,15 @@ import profile_editor
 
 
 class DesktopPackageTests(unittest.TestCase):
+    def test_desktop_revision_is_distinct_from_phone_payload_version(self):
+        project = {'version': '0.3.2', 'desktop_revision': 2}
+        self.assertEqual(paths.desktop_release_version(project), '0.3.2-r2')
+        self.assertEqual(project['version'], '0.3.2')
+        self.assertEqual(paths.desktop_release_version({'version': '0.3.2'}), '0.3.2')
+        for revision in (True, '2', 0, -1):
+            with self.assertRaises(ValueError):
+                paths.desktop_release_version({'version': '0.3.2', 'desktop_revision': revision})
+
     def test_source_paths_remain_in_checkout(self):
         with patch.object(paths.sys, 'frozen', False, create=True):
             self.assertEqual(paths.private_root(), paths.resource_root() / 'private')
