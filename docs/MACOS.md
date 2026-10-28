@@ -2,7 +2,7 @@
 
 [English](MACOS.en.md) · [Windows EXE](WINDOWS-EXE.md)
 
-`bb10-volte` 可构建为 Apple Silicon / Intel 通用的 macOS `.app` 和签名 DMG。发布附件的签名、公证与实测状态以 Release 和对应验收记录为准。将 DMG 中的应用拖到“应用程序”后启动，不需要用户安装 Python。
+从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 下载 macOS 通用 `.dmg` 和同名 `.dmg.sha256`，核对 SHA-256 后打开 DMG，将 `bb10-volte.app` 拖到“应用程序”后启动。不需要另装 Python、Tk 或 OpenSSH，也不需要自行构建应用。发布附件的签名、公证与实测状态以 Release 和对应验收记录为准；应用包含 Apple Silicon / Intel 架构，Intel 实机尚未测试。下文的构建步骤面向开发者。
 
 应用使用系统 `/usr/bin/ssh` 和 `/usr/bin/scp`，私有记录保存在 `~/Library/Application Support/bb10-volte/private`。需要针对手机本人配置已验证的 Root SSH 密钥和主机密钥。默认连接别名为 `bb10-root`；历史配置若只定义 `q10-root`，请在界面中输入该旧别名。
 

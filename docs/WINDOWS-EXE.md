@@ -8,7 +8,7 @@
 
 ## 发给测试者
 
-1. 发 EXE 和对应 `.exe.sha256`。私有 GitHub Release 链接需要仓库访问权限；也可直接传送文件。
+1. 从公开的 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 下载 EXE 和对应 `.exe.sha256`，也可直接传送这两个文件。
 2. 手机必须已有匹配机型的 Root SSH；Windows 已装好 BlackBerry USB 网络驱动。提供**这台手机自己的** SSH 配置、私钥和已核实的主机密钥，不要共用维护者密钥。
 3. 打开 EXE，选择个人 `ssh_config` 和正确别名。默认 `bb10-root` 只是连接别名，设备型号会自动识别，可自行改名。
 4. 选择运营商模板或编辑配置，然后运行预检。Q20 / Q30 显示“未实测适配 · 可实验试用”，需勾选试用且通过所有技术检查。

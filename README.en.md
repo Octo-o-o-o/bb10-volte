@@ -1,14 +1,16 @@
-# bb10-volte — Experimental 4G Calling on BlackBerry 10
+# bb10-volte — 4G Calling on BlackBerry 10
 
 <img src="assets/icon.png" width="96" alt="bb10-volte: black berry emblem with 4G at the upper right">
 
 [简体中文](README.md) | **English**
 
-**Repository status: temporarily Private. The maintainer will make it Public after stabilization.** The source uses the MIT license; these documents also prepare for that future public release.
+A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, including **Q10, Classic (Q20) and Passport (often called Q30)**. It provides source code, a Windows EXE and a macOS DMG; original project code uses the [MIT license](LICENSE).
 
-An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS stack and system dialer. Hardware call evidence covers **Q10 SQN100-3, BB10 OS 10.3.3.3216 and Beijing Unicom 460-01**. v0.3.0 recognizes Q10, Classic (Q20) and Passport (Q30) and supports editable operator JSON profiles. Q20/Q30 display “Not hardware validated; experimental use available.” Installation requires explicit opt-in and every technical gate passing.
+**Background:** These 4G phones could use messaging and data on 4G while voice calls fell back to 2G/3G; as carriers retire those networks in users' regions, default voice calling may stop working, which motivated this project.
 
-**Tested on a real Q10.** The latest 0.3.2 version passed normal reboot from the phone's power menu, automatic IMS registration, and answered native-dialer calls with USB disconnected, two-way audio and continued 4G. Established calls lasted approximately **6.088 seconds incoming** and **5.894 seconds outgoing**, with all 163 samples showing LTE / connected IMS. Root-ready to registration took **44.7 seconds**; system boot to registration was about **3 minutes 48 seconds**, so 45 seconds is not total startup time. An earlier computer-triggered reboot resulted in a black screen for an undetermined reason; use the phone's power menu for normal reboots. See the [device acceptance](materials/startup-latency-2026-10-28.json). This remains a **single-device experimental release**; 20-second or longer calls, long-term stability and other devices, firmware versions or carriers have not been validated.
+**No hardware modification is needed, but the phone needs root access through AutoRoot.** Calling uses the phone's own SIM, native IMS stack and system dialer. No separate VoLTE project or calling app is needed; EXE/DMG users do not install Python separately. See [ways to run](#ways-to-run) and the [installation guide](docs/INSTALL.en.md) for the actual initial-root and connection requirements.
+
+**The only hardware-tested combination is Q10 SQN100-3 + BB10 OS 10.3.3.3216 + China Unicom in Beijing (460-01).** Automatic registration after a phone-menu reboot and native incoming/outgoing calls with USB disconnected, two-way audio and continued 4G passed; see the [device acceptance](materials/startup-latency-2026-10-28.json). Q20, Passport, other Q10 variants and carriers may also work, but remain untested and require experimental opt-in and passing compatibility checks. Please [report your results](https://github.com/Octo-o-o-o/bb10-volte/issues): **both working and non-working combinations are welcome**. Releases remain experimental; longer calls and long-term stability need further validation.
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
@@ -18,7 +20,7 @@ An open-source toolkit enabling native VoLTE through the phone's own SIM, IMS st
 - Builds a hash-checked copy of the stock IMS program with an isolated platform configuration and a two-byte change to the ordinary voice VoPS decision.
 - Enables the existing QNX software crypto provider and selects IMS-preferred voice through the native radio API.
 - Installs a phone-side service with status, start, stop, update, disable, collection and recovery commands.
-- Provides a Windows GUI, sanitized compatibility reports and a fixed workflow with a fresh phone-side gate before writing.
+- Provides a Windows/macOS desktop GUI, sanitized compatibility reports and a fixed workflow with a fresh phone-side gate before writing.
 - Provides complete Python, shell and C source, a reproducible 5,264-byte helper, pinned material manifests and regression tests.
 
 The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must match the published SHA-256 values. The toolkit does not unlock a SIM, obtain free service or provide a separate calling account; it needs an active VoLTE-capable subscription.
@@ -32,7 +34,7 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 | SIM and network | **China Unicom 460-01 USIM in Beijing**, working LTE data and a subscription confirmed to support VoLTE; the tested SIM had no ISIM |
 | Phone access | Working **root SSH**, the owner's private key and a verified host key; the service uses the AutoRoot v4 addon mechanism |
 | Computer | **Windows 11 x64** was used; the Root preparation and USB driver workflows require Windows. macOS/Linux deployment has not been validated |
-| Desktop Python | **Not required for EXE users**; source execution / full Root preparation uses Python 3.14 (tested 3.14.9), including Tk and Zstandard tar support |
+| Desktop Python | **Not required for EXE/DMG users**; source execution / full Root preparation uses Python 3.14 (tested 3.14.9), including Tk and Zstandard tar support |
 | Device Python | BB10's built-in **Python 3.2**, with the native libraries checked by the installer |
 | Connection | Reliable USB cable and BlackBerry USB networking; the EXE bundles SSH/SCP. Source execution and initial key preparation require OpenSSH separately |
 | USB drivers | **BlackBerry USB Drivers 5.0.0.2 x64**; preparation checks file hashes and package/catalog signatures |
@@ -43,9 +45,19 @@ Exact filenames, original download URLs and SHA-256 values are in [sources.json]
 
 ## Quick start
 
-### Run the Windows EXE (recommended)
+### Ways to run
 
-Obtain `bb10-volte-0.3.2-r2-windows-x64.exe` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or receive the file directly from the maintainer. Python, Tk, SSH, profiles and payload are embedded. Once model-specific root, USB networking and personal SSH configuration are prepared, preflight and installation need no desktop Internet connection. Initial rooting/drivers remain separate, and calls need carrier service. See [offline scope and test steps](docs/WINDOWS-EXE.en.md). The following instructions describe source execution.
+Download the matching application or source archive from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) and verify its accompanying `.sha256` file.
+
+| Method | Launch | Requirements |
+| --- | --- | --- |
+| **Windows EXE** | Download the Windows x64 `.exe` and double-click it | Python, Tk, SSH/SCP, profiles and phone payload are embedded; no separate Python or OpenSSH installation. See the [EXE guide](docs/WINDOWS-EXE.en.md) |
+| **macOS DMG** | Download the `.dmg` and drag the app to Applications | Python and Tk are embedded; uses macOS's built-in SSH/SCP. See the [Mac guide](docs/MACOS.en.md) for signing, notarization and validation scope |
+| **Source** | Clone the repository or extract its source ZIP, then run `python tools/gui.py` | Requires Python 3.14 with Tk and OpenSSH; Windows users can also double-click `Start-GUI.cmd`. No extra pip packages |
+
+All three use the same model detection, operator profiles, preflight and VoLTE installation workflow. **A model-specific root SSH setup, personal credentials and USB networking must currently be prepared first; initial rooting is not integrated into the EXE/DMG.** Source scripts fetch materials and prepare/build Windows Q10 Root images; see the [installation guide](docs/INSTALL.en.md) for steps and dependencies. Q20/Passport require rooting methods for their own model: never flash Q10 images onto them. Direct Mac-to-phone USB networking and calling have not been validated.
+
+Initial Root flashing erases phone data; back up first. With matching root and connection files already prepared, open the app, check the device, choose the carrier and install VoLTE. Prepared preflight and installation need no desktop Internet connection; registration and calls still need carrier service. The following instructions describe source execution.
 
 ### 1. Obtain the source
 
@@ -165,9 +177,14 @@ python tools/build_helper.py --zig C:\Tools\zig-0.13.0\zig.exe
 
 ## Contributing and license
 
-**If you use another BB10 OS version, Q10 variant or device model and encounter problems, please open an [Issue](https://github.com/Octo-o-o-o/bb10-volte/issues). [Pull requests](https://github.com/Octo-o-o-o/bb10-volte/pulls) with ports, fixes and test results are welcome.** The tested baseline remains Q10 SQN100-3 / BB10 OS 10.3.3.3216. New support requires independent validation rather than skipping firmware hash checks.
+**Reports from Q10, Q20, Passport and other BB10 devices, regions and carriers are welcome, whether they work or fail.** Open an [Issue](https://github.com/Octo-o-o-o/bb10-volte/issues) with:
 
-English and Chinese are both welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Provide model, full OS version, carrier MCC/MNC, project version and redacted status fields. Keep phone numbers, SIM/device identifiers, keys and raw SIP logs out of public issues.
+- Phone model/variant, full BB10 version, project version, source/EXE/DMG method and desktop OS.
+- Carrier, region and MCC/MNC if available, including roaming or number-porting status.
+- Whether it works. For success, describe incoming/outgoing calls, audio in both directions, continued 4G, USB-disconnected use and reboot recovery; for failure, include the stage and error message.
+- Optionally, the GUI's redacted preflight report. Exclude phone numbers, SIM/device identifiers, keys and raw SIP logs.
+
+English and Chinese are both welcome; see the [reporting guide](docs/ISSUES.md) and [CONTRIBUTING.md](CONTRIBUTING.md). [Pull requests](https://github.com/Octo-o-o-o/bb10-volte/pulls) with ports and fixes are welcome. New support requires independent validation and must preserve firmware hash checks.
 
 Original project code, documentation and the source-built helper are released under the **[MIT License](LICENSE)**. BlackBerry/QNX firmware, stock IMS binaries, third-party Root tools and USB packages remain under their respective terms and are obtained separately from the pinned sources. See [NOTICE.md](NOTICE.md) for attribution and distribution boundaries.
 
