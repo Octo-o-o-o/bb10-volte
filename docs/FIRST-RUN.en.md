@@ -2,11 +2,11 @@
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
-Desktop revision `0.3.2-r5` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
+Desktop revision `0.3.2-r6` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
 
 ## First connection on a Mac
 
-Start with the [Mac phone guide](MACOS.en.md). For an unrooted Q10, this branch adds experimental native preparation and separately confirmed staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5. A rooted phone with personal connection materials can import them or use Check device. A rooted phone with no old Windows files can authorize a fresh Mac key in an existing working phone Root terminal. With neither valid materials nor a working Root terminal, direct connection is unavailable. New authorization persistently appends a public key to phone SSH access and requires the owner's explicit `PAIR`; development mode does not grant Root.
+Start with the [Mac phone guide](MACOS.en.md). For an unrooted Q10, r6 adds experimental native preparation and separately confirmed staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5. A rooted phone with personal connection materials can import them or use Check device. A rooted phone with no old Windows files can authorize a fresh Mac key in an existing working phone Root terminal. With neither valid materials nor a working Root terminal, direct connection is unavailable. New authorization persistently appends a public key to phone SSH access and requires the owner's explicit `PAIR`; development mode does not grant Root.
 
 An existing microSD card, Mac card reader and phone file manager can transfer the public script/result without assuming Finder can mount internal phone storage or requiring old Link. See the [recovery transfer steps](RECOVER-CONNECTION.en.md#mac-transfer-without-old-connection-files) and their untested limits.
 
@@ -26,7 +26,7 @@ On initial use, unlock and connect the phone. Use the wizard's USB/driver checks
 
 ## Experimental Mac initial preparation and execution
 
-On macOS 14+, this branch adds **First use → Initial Root** for private Q10 materials/images. The app obtains pinned architecture-matched bb10mt/7-Zip and private libusb/LZO libraries without a Homebrew installation. Preparation does not touch BootROM or flash; it preserves AppWorld and verifies stock partitions. Staged execution requires rechecking one phone, its variant, USB `169.254.0.2`, backup acknowledgement and the extra Mac acknowledgement that the phone is not rooted and first flashing is not hardware validated. A separate erase confirmation is still required before opening Terminal.
+On macOS 14+, r6 adds **First use → Initial Root** for private Q10 materials/images. The app obtains pinned architecture-matched bb10mt/7-Zip and private libusb/LZO libraries without a Homebrew installation. Preparation does not touch BootROM or flash; it preserves AppWorld and verifies stock partitions. Staged execution requires rechecking one phone, its variant, USB `169.254.0.2`, backup acknowledgement and the extra Mac acknowledgement that the phone is not rooted and first flashing is not hardware validated. A separate erase confirmation is still required before opening Terminal.
 
 Unrooted Passport (Q30)/Q20 phones currently lack matching integrated initial-flash materials. Their actual `SQW100-*` / `SQC100-*` variant, firmware, loader and method need separate integration. Selecting a Q10 variant, editing configuration or enabling experimental VoLTE cannot make Q10 images valid for them. Already-rooted Q30 VoLTE recognition and initial Root are separate workflows.
 
@@ -40,7 +40,7 @@ Flashing requires a separate, explicit data-erasure confirmation. The workflow r
 
 Windows driver preparation downloads and verifies the BlackBerry bundle, embedded MSI and Microsoft-signed catalog. Actual installation requests standard Windows UAC. Existing working drivers need no replacement.
 
-The Windows and experimental Mac initial-Root recipes are Q10-only. Q20/Passport need their own verified firmware; Q10 images are prohibited. The Mac app supports already-rooted workflows. This branch also adds experimental native initial preparation/staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5; see [scope](MACOS.en.md#can-a-mac-perform-initial-root). Actual Mac-to-phone acceptance remains separate from desktop startup testing.
+The Windows and experimental Mac initial-Root recipes are Q10-only. Q20/Passport need their own verified firmware; Q10 images are prohibited. The Mac app supports already-rooted workflows. r6 also adds experimental native initial preparation/staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5; see [scope](MACOS.en.md#can-a-mac-perform-initial-root). Actual Mac-to-phone acceptance remains separate from desktop startup testing.
 
 This iteration verified portable inputs, personal-key generation, construction and hash checks of both Root images, driver extraction/signatures, and read-only access to an already-rooted Q10. The flashing branch has simulated regression coverage but **has not been exercised on an unrooted phone**, and the current working phone was not reflashed. The wizard remains experimental. First preparation needs Internet access or correctly cached materials; normal prepared use has no activation, billing or AI dependency.
 

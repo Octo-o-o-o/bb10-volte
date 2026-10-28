@@ -1,7 +1,7 @@
 {
   "name": "bb10-volte",
   "version": "0.3.2",
-  "desktop_revision": 5,
+  "desktop_revision": 6,
   "state": "startup_latency_menu_reboot_and_unplugged_short_calls_verified",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",

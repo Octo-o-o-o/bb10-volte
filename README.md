@@ -33,7 +33,7 @@
 | 手机系统（OS） | **BlackBerry 10 OS 10.3.3.3216**；固件包文件名写作 `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，安装器严格检查原生文件哈希 |
 | SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
 | 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
-| 电脑 | **Windows 11 x64**；Mac mini / **Apple M6、macOS 27.2** 已验证既有 Root/VoLTE 的连接、状态与通话；本分支新增 macOS 14+ 实验首次 Root 流程，未实机首刷；Linux 部署未验证 |
+| 电脑 | **Windows 11 x64**；Mac mini / **Apple M6、macOS 27.2** 已验证既有 Root/VoLTE 的连接、状态与通话；r6新增 macOS 14+ 实验首次 Root 流程，未实机首刷；Linux 部署未验证 |
 | 电脑 Python | **EXE / DMG 用户无需安装**；源码运行 / 完整 Root 准备使用 Python 3.14（本次 3.14.9），含 Tk 和 Zstandard tar 支持 |
 | 手机 Python | BB10 自带 **Python 3.2**，以及安装器校验的原生库 |
 | 连接 | 稳定的 USB 数据线与 BlackBerry USB 网络；EXE 内置 `ssh` / `scp`，Windows 源码用户缺少 SSH 时，向导可自动获取连接组件 |
@@ -55,7 +55,7 @@
 | **macOS DMG** | 下载 macOS `.dmg`，将应用拖入“应用程序”后启动 | 内置 Python 和 Tk，使用 macOS 自带 SSH/SCP；发布包签名、公证及实测范围见 [Mac 指南](docs/MACOS.md) |
 | **源码** | 克隆仓库或解压源码 ZIP，运行 `python tools/gui.py` | 需要 Python 3.14（含 Tk）；Windows 向导可自动获取 SSH，macOS 使用系统 SSH；Windows 也可双击 `Start-GUI.cmd`，无需额外 pip 包 |
 
-三种方式共用机型识别、运营商配置、预检与 VoLTE 安装流程。**Windows 的“首次使用”向导可自动获取、校验工具和 Q10 固件，生成个人密钥、构建 Root 镜像，并在用户单独确认清空数据后顺序刷写；无需另装其他 Root 项目、Git 或 7-Zip。** 初次刷写分支仍属实验功能，未在未 Root 手机上实刷验收。本分支新增 macOS 14+ 原生首次准备与确认后的分阶段刷写实验入口，基于上游工具链；**没有进行 Mac 实机首刷，已发布 r5 DMG 不包含新集成**，见[Mac 首次 Root 范围与步骤](docs/MACOS.md#mac-能否首次-root)。Q20 / Passport 的首次 Root 仍需匹配机型的方法，禁止刷入 Q10 镜像。详见[首次使用指南](docs/FIRST-RUN.md)。Mac 直连当前 Q10 的日常连接与双向通话已实测；首次授权、初次 Root 和手机重启不在本次 Mac 验收内，详见[Mac 使用步骤与三种手机现状](docs/MACOS.md)。
+三种方式共用机型识别、运营商配置、预检与 VoLTE 安装流程。**Windows 的“首次使用”向导可自动获取、校验工具和 Q10 固件，生成个人密钥、构建 Root 镜像，并在用户单独确认清空数据后顺序刷写；无需另装其他 Root 项目、Git 或 7-Zip。** 初次刷写分支仍属实验功能，未在未 Root 手机上实刷验收。r6新增 macOS 14+ 原生首次准备与确认后的分阶段刷写实验入口，基于上游工具链；**没有进行 Mac 实机首刷，已发布 r5 DMG 不包含新集成**，见[Mac 首次 Root 范围与步骤](docs/MACOS.md#mac-能否首次-root)。Q20 / Passport 的首次 Root 仍需匹配机型的方法，禁止刷入 Q10 镜像。详见[首次使用指南](docs/FIRST-RUN.md)。Mac 直连当前 Q10 的日常连接与双向通话已实测；首次授权、初次 Root 和手机重启不在本次 Mac 验收内，详见[Mac 使用步骤与三种手机现状](docs/MACOS.md)。
 
 首次 Root 刷写会清空手机数据，请先备份。已有匹配 Root 和连接配置时，可以直接打开应用检查设备、选择运营商并安装 VoLTE 服务；准备完成后的预检与安装不需要电脑联网，手机注册与通话仍需要运营商服务。以下为源码方式。
 
@@ -78,7 +78,7 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“检查设备”自动查找并填写个人 SSH 配置，也可手动选择。桌面构建 `0.3.2-r5` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.2`。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
+源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“检查设备”自动查找并填写个人 SSH 配置，也可手动选择。桌面构建 `0.3.2-r6` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.2`。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
 
 或在仓库根目录执行同一套流程：
 

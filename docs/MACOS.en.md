@@ -17,7 +17,7 @@ On 2026-10-28, one Mac mini / Apple M6 / macOS 27.2 and Q10 SQN100-3 / BB10 10.3
 
 ### The phone is not rooted
 
-This branch integrates native initial Root preparation and separately confirmed staged execution on macOS 14+, as an **experimental feature without hardware first-flash acceptance**. Published r5 does not contain this flow; it needs review and a new package. Back up and verify the matching model first. The recipe is Q10-only; see [Mac initial Root](#can-a-mac-perform-initial-root) for steps and pause conditions. **Unrooted Q20/Passport (Q30) phones have no matching initial-flash materials integrated here and cannot use the Q10 automated recipe.** Their exact hardware variant, matching firmware, loader and Root method need separate integration. Never flash Q10 images onto them. Initial Root erases data; see [First use](FIRST-RUN.en.md). USB networking and development mode do not grant Root.
+r6 integrates native initial Root preparation and separately confirmed staged execution on macOS 14+, as an **experimental feature without hardware first-flash acceptance**. Use `0.3.2-r6` or newer; the old r5 DMG does not contain this flow. Back up and verify the matching model first. The recipe is Q10-only; see [Mac initial Root](#can-a-mac-perform-initial-root) for steps and pause conditions. **Unrooted Q20/Passport (Q30) phones have no matching initial-flash materials integrated here and cannot use the Q10 automated recipe.** Their exact hardware variant, matching firmware, loader and Root method need separate integration. Never flash Q10 images onto them. Initial Root erases data; see [First use](FIRST-RUN.en.md). USB networking and development mode do not grant Root.
 
 ### The phone is rooted and you have your own connection materials
 
@@ -46,13 +46,13 @@ The app checks result origin, request ID, computer public key and phone host key
 
 The real-device run used a DMG byte-identical to the GitHub `v0.3.2-r5` asset. Signature/notarization, actual Apple Silicon execution, strict SSH/effective UID 0, device and existing-service reads, owner-operated two-way calls and USB reconnection passed. The owner confirmed both audio directions and continued LTE; actual call durations were not recorded, and the phone was not rebooted in this run. Intel binaries were inspected, without Intel hardware testing.
 
-**Published r5 still has a known First use defect**: its Python `-c` Root check is rejected by the current phone's security policy and misreported as a connection problem; USB fields may remain unconfirmed. The main window's daily Check device workflow passed. Source fixes and UI guidance in the current repository require independent review, testing and a new package; this record does not claim the old r5 DMG includes them, and no new DMG was published. New pairing, initial Root, service installation/reinstallation, sustained stability and other phone/carrier combinations remain outside this Mac acceptance.
+**Published r5 still has a known First use defect**: its Python `-c` Root check is rejected by the current phone's security policy and misreported as a connection problem; USB fields may remain unconfirmed. The main window's daily Check device workflow passed. r6 includes the source fixes and UI guidance; build, self-test and notarization records accompany its Release. The historical r5 phone run does not establish phone acceptance of the new r6 package. New pairing, initial Root, service installation/reinstallation, sustained stability and other phone/carrier combinations remain outside this Mac acceptance.
 
 See the [layered acceptance record](VALIDATION.en.md#mac-package-and-q10-daily-connection--october-28-2026) and [sanitized evidence](../materials/macos-device-validation-2026-10-28.json). The developer build instructions below are unnecessary for ordinary use.
 
 ## Can a Mac perform initial Root?
 
-Upstream provides a native Mac path. **This branch integrates experimental initial preparation and staged flashing, without Mac hardware first-flash acceptance.** Published `0.3.2-r5` does not contain this code; the guide does not add features to that DMG.
+Upstream provides a native Mac path. **r6 integrates experimental initial preparation and staged flashing, without Mac hardware first-flash acceptance.** Published `0.3.2-r5` does not contain this code; the guide does not add features to that DMG.
 
 ### Experimental flow and requirements
 

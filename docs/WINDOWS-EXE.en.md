@@ -2,7 +2,7 @@
 
 [简体中文](WINDOWS-EXE.md) · [GUI controls](GUI.en.md) · [macOS / DMG](MACOS.en.md)
 
-Double-click `bb10-volte-0.3.2-r5-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; normal use does not need administrator privileges; optional driver installation requests Windows UAC.
+Double-click `bb10-volte-0.3.2-r6-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; normal use does not need administrator privileges; optional driver installation requests Windows UAC.
 
 The target is Windows 10/11 x64; packaging and launch validation used Windows 11 x64. The EXE is currently unsigned. A matching SHA-256 file is provided. An Apple Developer ID cannot sign a Windows executable.
 
@@ -47,7 +47,7 @@ The builder obtains the pinned official OpenSSH ZIP and Tcl/Tk licenses from [wi
 `tools/build_windows.py --offline` requires cached build inputs and never downloads missing materials. The installed build packages must also be available beforehand. The builder reads the resulting EXE archive back, verifies every bundled resource, and excludes personal keys, firmware and generated owner-specific images while including the first-use workflow.
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.2-r5-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.3.2-r6-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 
