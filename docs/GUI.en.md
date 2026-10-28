@@ -2,6 +2,8 @@
 
 [简体中文](GUI.md)
 
+Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. Passport automatic installation, start and restore are paused; see [community research](COMMUNITY-RESEARCH.en.md).
+
 The BlackBerry 10 desktop GUI uses the same fixed workflow as the CLI. Windows users can use the [standalone EXE](WINDOWS-EXE.en.md); macOS users can use the `.app` described in the [DMG guide](MACOS.en.md). Users do not need to install Python separately. Source execution requires Python 3.14 with Tk and OpenSSH. Both require a reachable device and your own verified root SSH configuration. Direct Mac USB networking still needs hardware validation. No AI account or cloud service is needed. The first UI is in Chinese; this guide describes its controls.
 
 For source execution, extract the complete release and double-click `Start-GUI.cmd`, or run `python tools/gui.py`. Keep the complete directory. Do not regenerate a manifest on a customer's machine to bypass a package mismatch.
@@ -20,4 +22,4 @@ Desktop revision 2 removes the permanent sidebar and technical checklist from fi
 
 After a connection failure, recheck before retrying. Interrupted writes leave an installation transaction receipt or an incomplete directory and block replacement. Arbitrary interrupted installs do not yet have automatic repair; preserve the files for maintainer inspection. First use provides Windows Q10 image preparation and separately confirmed data-erasing flashing; see [setup scope](FIRST-RUN.en.md). Other models and Mac initial flashing remain outside that recipe.
 
-Q20/Q30 show “Not hardware validated; experimental use available.” Explicit opt-in never bypasses OS/native hashes or SIM compatibility. Only one Beijing Unicom Q10 has call evidence. Public-data Mobile, Telecom and other Unicom templates are untested; ISIM remains unsupported. Reports include selected profile and file fingerprints; keep personal details out of profile labels. See [compatibility](COMPATIBILITY.en.md). Never flash the bundled Q10 Root images onto Q20/Q30.
+Q20 remains experimental. Passport shows a provider-lifecycle hold and automatic mutations are paused. Explicit opt-in never bypasses OS/native hashes or SIM compatibility. Only one Beijing Unicom Q10 has call evidence. Public-data Mobile, Telecom and other Unicom templates are untested; ISIM remains unsupported. Reports include selected profile and file fingerprints; keep personal details out of profile labels. See [compatibility](COMPATIBILITY.en.md). Never flash the bundled Q10 Root images onto Q20/Q30.

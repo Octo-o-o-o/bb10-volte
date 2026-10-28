@@ -7,6 +7,7 @@ import time
 import native as n
 import compatibility as compatibility
 import profiles
+import device_info
 
 BASE = '/var/rootdata/q10_volte'
 ADDON = '/var/addons/q10-unicom-volte'
@@ -92,6 +93,8 @@ def main():
         assert len(sys.argv) == 3
         install(sys.argv[2], action == 'update')
     elif action in ('enable', 'disable', 'uninstall'):
+        if not device_info.provider_lifecycle_supported(device_info.identify(device_info.read_identity())):
+            raise RuntimeError('Provider lifecycle needs validation; preserve state and see issue #1')
         manifest = json.loads(n.read(BASE+'/installation.json').decode('ascii'))
         assert manifest['owner'] == 'q10-unicom-volte-v1'
         if action == 'enable':

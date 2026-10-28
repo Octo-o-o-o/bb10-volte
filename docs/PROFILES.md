@@ -2,6 +2,8 @@
 
 [English](PROFILES.en.md)
 
+0.3.3 的实验试用选项不能绕过 Passport 恢复策略限制。上游来电参数只作为诊断线索，不是可导入的运行配置，也不会自动写入。见[社区研究](COMMUNITY-RESEARCH.md)。
+
 GUI 可选择 Q10 联通实测参数，或联通多 MNC、移动、电信公开资料模板。“编辑 / 导入配置”提供三组字段，支持 JSON 导入、导出和应用。字段会参与手机预检、安装回读和运行。
 
 | 配置 | 行为 |
@@ -23,7 +25,7 @@ GUI 可选择 Q10 联通实测参数，或联通多 MNC、移动、电信公开�
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 python tools/bb10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 
-# Q20 / Q30 使用默认联通 460-01 参数的试用
+# Q20 使用默认联通 460-01 参数的试用；Passport 仅可预检
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
 ```
 

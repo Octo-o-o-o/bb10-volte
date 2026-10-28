@@ -692,6 +692,8 @@ def main():
         identity = device_info.read_identity()
         device = device_info.identify(identity)
         assert device['recognized'] and identity['os_version'] == device_info.OS_VERSION, 'Device/OS needs adaptation'
+        if not device_info.provider_lifecycle_supported(device):
+            raise RuntimeError('Passport provider lifecycle needs validation; see issue #1')
         assert (device['hardware_tested'] and profiles.baseline_parameters(ACTIVE_PROFILE)) or ACTIVE_REQUEST['allow_experimental'], 'Experimental opt-in is required'
         if os.path.isfile(LOCK):
             lock = load(LOCK)
@@ -715,6 +717,8 @@ def main():
         finally:
             os._exit(0)
     elif action == 'stop':
+        if not device_info.provider_lifecycle_supported(device_info.identify(device_info.read_identity())):
+            raise RuntimeError('Provider lifecycle needs validation; preserve state and see issue #1')
         if os.path.isfile(LOCK) and load(LOCK).get('boot') == boot_token() and alive(load(LOCK)['pid']):
             n.atomic(STOP, b'explicit owner stop\n')
             print(json.dumps({'stop_requested': True}))

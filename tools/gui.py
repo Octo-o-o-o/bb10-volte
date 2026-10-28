@@ -19,9 +19,11 @@ BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
 NAMES = {'model': '手机型号', 'os': '系统版本', 'root': 'Root 环境', 'native': '原生文件',
          'sim': 'SIM 就绪', 'carrier': '运营商', 'sim_route': 'SIM 路线', 'identity': '身份格式',
          'lte': '4G 网络', 'apn': '数据 APN', 'carrier_config': '原厂数据配置', 'experiment': '实测与试用',
-         'installation': '已装服务', 'baseline': '安装前状态', 'saved_profile': '已装配置'}
+         'installation': '已装服务', 'baseline': '安装前状态', 'saved_profile': '已装配置',
+         'provider_lifecycle': '机型恢复验证'}
 NOTES = {
     'device_identified': '已自动识别型号和硬件变体；实测状态见顶部',
+    'passport_provider_lifecycle_unvalidated': 'Passport 有停用后网络栈重启的社区报告；恢复策略验证前暂停安装、启动及自动恢复，实验试用不能绕过。见社区研究说明。',
     'device_identity_unknown': '型号未知或与硬件变体冲突，请导出报告协助适配',
     'os_3216_required': '要求 BB10 OS 10.3.3.3216',
     'root_qnx_arm32_required': '要求 AutoRoot 已就绪、有效 root 和 QNX ARM32',
@@ -50,6 +52,7 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
+    'provider_lifecycle_needs_adaptation': '此机型的提供器停用策略尚未验证。请保留当前状态并导出报告，参阅“社区研究与适配进展”。',
     'connection_setup_required': '尚未找到连接配置。手机已 Root：打开“首次使用 → 恢复连接”；尚未 Root：进入首次 Root 准备。',
     'hostname_unresolved': '连接别名没有对应配置。请选择已有配置，或打开“首次使用”。',
     'ssh_algorithm_mismatch': '手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新检查。',
@@ -170,6 +173,8 @@ class App:
         self.menu.add_command(label='连接选项', command=self.toggle_connection_options)
         self.menu.add_separator()
         self.menu.add_command(label='使用与恢复指南', command=self.guide)
+        self.menu.add_command(label='社区研究与适配进展', command=lambda: self.show_document(
+            '社区研究与适配进展', ROOT / 'docs/COMMUNITY-RESEARCH.md'))
         self.menu.add_command(label='关于与开源许可', command=self.licenses)
         self.device_label = self.label(main, 'BlackBerry 10 设备 · 等待连接', 11, MUTED, anchor='w')
         self.device_label.pack(fill='x', pady=(5, 22))
@@ -288,7 +293,8 @@ class App:
         allowed = {'preflight': True,
                    'install': current and (r.get('can_install') or r.get('can_update')) and self.ack.get(),
                    'start': current and r.get('can_start') and self.ack.get(),
-                   'status': current and owned, 'disable': current and owned and self.ack.get()}
+                   'status': current and owned,
+                   'disable': current and owned and r.get('can_restore', True) and self.ack.get()}
         return {key: bool(value) and not self.busy for key, value in allowed.items()}
 
     def refresh_buttons(self):
@@ -354,6 +360,8 @@ class App:
         badge = 'Q10 已有实测记录' if device.get('hardware_tested') else '未实测 · 可实验试用'
         if not device.get('recognized'):
             badge = '机型待识别'
+        elif any(c['code'] == 'passport_provider_lifecycle_unvalidated' for c in report['checks']):
+            badge = 'Passport 恢复策略待验证'
         self.device_label.configure(text='{}  /  {}  /  OS {}  ·  {}'.format(
             device.get('display_name', '未知设备'), device.get('variant', '?'), device.get('os_version', '?'), badge))
         self.table.delete(*self.table.get_children())
@@ -380,9 +388,11 @@ class App:
         outcome = report['outcome']
         title, color = {'compatible': ('符合当前适配条件', GREEN), 'not_ready': ('有条件尚未就绪', AMBER),
                         'experimental': ('未实测适配 · 可实验试用', AMBER),
-                        'needs_adaptation': ('此 SIM 或运营商配置需要适配', AMBER), 'unsupported': ('关键技术条件未通过', RED)}[outcome]
+                        'needs_adaptation': ('设备或运营商配置需要适配', AMBER), 'unsupported': ('关键技术条件未通过', RED)}[outcome]
         state = report['installation']['state']
-        if state == 'busy':
+        if report.get('can_restore') is False:
+            detail = '此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。'
+        elif state == 'busy':
             detail = '已有服务正在运行或持有锁。更新前请先停用并恢复；本次不会覆盖安装。'
         elif report.get('can_install') or report.get('can_update'):
             detail = '可进入安装流程。运营商开通情况和双向通话效果仍需真实通话确认。'
@@ -390,6 +400,9 @@ class App:
             detail = '安装或恢复状态需要处理。请保留现场，按检查表处理后重新预检。'
         else:
             detail = '请按下方提示处理后重新检查。'
+        research = report.get('community_research', {})
+        if research.get('records'):
+            detail += ' 有相同硬件与运营商的社区研究记录，尚不代表本工具已验收；可在“更多”查看。'
         self.summary.configure(text=title, fg=color)
         self.detail.configure(text=detail)
         self.refresh_buttons()
@@ -499,7 +512,8 @@ class App:
                             self.detail.configure(text=SERVICE_PHASES.get(phase, '等待注册') + '。请稍后重新检查，等待注册通过后再测试通话。')
                         elif phase == 'stopped':
                             self.summary.configure(text='服务已安装，当前未启动', fg=INK)
-                            self.detail.configure(text='确认下方事项后，可以启动并验证服务。')
+                            self.detail.configure(text='确认下方事项后，可以启动并验证服务。' if report.get('can_start') else
+                                                  '当前条件未允许启动。请按检查表处理；机型适配限制不能用实验试用绕过。')
                         else:
                             self.summary.configure(text='已检测到安装，服务状态需核对', fg=AMBER)
                             self.detail.configure(text='请查看检查详情或导出报告，再按实际状态处理。')
@@ -555,6 +569,23 @@ class App:
             table.insert('', 'end', values=(NAMES.get(check['id'], '其他检查'), '运行中（预期）' if expected else labels[check['status']],
                                            '服务正在使用配置；更新前先停用并恢复。' if expected else
                                            NOTES.get(check['code'], '请导出报告协助检查')))
+
+        diagnostic_names = {'ims_state': 'IMS 状态', 'ims_ran': 'IMS 网络',
+                            'allow_volte_provisioning': 'VoLTE provisioning',
+                            'engineering_voice_override': '工程语音域',
+                            'dca_voice_preference': 'DCA 语音域', 'use_preconditions': 'IR92 preconditions'}
+        diagnostics = self.display_report.get('incoming_diagnostics', {})
+        for key, title in diagnostic_names.items():
+            if key in diagnostics:
+                value = diagnostics[key]
+                table.insert('', 'end', values=(title, '只读观察',
+                    ('未知' if value is None else str(value)) + '；配置快照，不能证明来电可用'))
+        levels = {'upstream_local_experiment': '上游作者本地实验',
+                  'upstream_contributed_report': '上游收录的贡献者报告',
+                  'upstream_local_negative_test': '上游作者失败记录'}
+        for entry in self.display_report.get('community_research', {}).get('records', []):
+            table.insert('', 'end', values=('社区记录', '参考', entry['id'] + ' · ' +
+                levels.get(entry['evidence_level'], '来源待核对') + '；非本工具验收，来源见社区研究说明'))
 
         def explain(_):
             rows = table.selection()

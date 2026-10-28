@@ -126,7 +126,7 @@ class ProfileTests(unittest.TestCase):
 
 
 class DeviceTests(unittest.TestCase):
-    def test_classic_passport_and_other_q10_variants_require_opt_in(self):
+    def test_classic_and_other_q10_variants_require_opt_in_passport_stays_paused(self):
         for model, variant, family in [('Q20', 'SQC100-1', 'classic'), ('Classic', 'SQC100-2', 'classic'),
                                       ('Q30', 'SQW100-1', 'passport'), ('Passport', 'SQW100-3', 'passport'),
                                       ('Q10', 'SQN100-1', 'q10')]:
@@ -135,8 +135,8 @@ class DeviceTests(unittest.TestCase):
                 self.assertEqual(d.identify(facts)['family'], family)
                 self.assertFalse(c.evaluate(facts)['can_install'])
                 report = c.evaluate(facts, allow_experimental=True)
-                self.assertEqual(report['outcome'], 'experimental')
-                self.assertTrue(report['can_install'])
+                self.assertEqual(report['outcome'], 'needs_adaptation' if family == 'passport' else 'experimental')
+                self.assertEqual(report['can_install'], family != 'passport')
                 self.assertEqual(report['hardware_validation'], 'not_hardware_validated')
 
     def test_experimental_never_bypasses_native_os_abi_sim_or_carrier_guards(self):

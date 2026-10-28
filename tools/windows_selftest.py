@@ -60,6 +60,9 @@ def run(output):
     assert ssh.returncode == 0 and 'OpenSSH' in ssh.stderr
     assert scp.returncode == 1 and 'usage:' in scp.stderr
     assert (bundle / 'docs/GUI.md').is_file()
+    from community_research import catalog
+    assert catalog()['project_acceptance'] == 'not_established'
+    assert (bundle / 'docs/COMMUNITY-RESEARCH.md').is_file()
     assert (bundle / 'tools/stage_cleanup.py').is_file()
     transferred = []
     def local_transfer(args, timeout):

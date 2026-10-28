@@ -104,3 +104,7 @@ The owner disconnected USB, tested incoming/outgoing calls, both audio direction
 An earlier computer-requested reboot stalled at an unresponsive black screen. The owner recovered it by holding the power key. Its cause remains unresolved, and it is documented separately rather than counted as successful normal-reboot acceptance. The subsequent phone-menu reboot and calls above passed. Use the phone power menu for routine rebooting.
 
 These were short calls, not verified 20-second or longer calls. The 44.698-second figure measures **registration after Root readiness**, not total device boot time or the earliest possible successful call at the precise registration instant. Long-term stability, roaming, handover and emergency calling remain untested.
+
+## October 28, 2026: 0.3.3 community research integration
+
+Adds community evidence matching, read-only diagnostics, LTE/lte handling and the Passport provider-lifecycle hold. [Community observations](COMMUNITY-RESEARCH.en.md) remain separate from this project's hardware acceptance. No phone connection, payload deployment, call or reboot retest was performed for this change; earlier Q10 results belong to their recorded historical versions.

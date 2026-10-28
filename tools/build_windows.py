@@ -50,7 +50,8 @@ def runtime_data():
                          'tools/phone_pairing.py',
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
                          'materials/sources.json', 'materials/stock-partitions.json',
-                         'materials/usb-drivers.json', 'materials/first-run-tools.json'}
+                         'materials/usb-drivers.json', 'materials/first-run-tools.json',
+                         'materials/community-research.json'}
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*.md'))
     return sorted(names)

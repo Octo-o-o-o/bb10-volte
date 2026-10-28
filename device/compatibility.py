@@ -25,6 +25,57 @@ V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
 FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
+DIAGNOSTIC_VALUES = {
+    'ims_state': (str, ('connected', 'disconnected', 'idle')),
+    'ims_ran': (str, ('LTE', 'WLAN')),
+    'allow_volte_provisioning': (int, (0, 1)),
+    'engineering_voice_override': (str, ('2', '3', '4', '5', '6')),
+    'dca_voice_preference': (int, (0, 1, 2, 3)),
+    'use_preconditions': (int, (0, 1)),
+}
+
+
+def public_incoming_diagnostics(values):
+    values = values if isinstance(values, dict) else {}
+    result = {'scope': 'configuration_observation_only', 'call_acceptance': 'not_assessed'}
+    for key, (kind, allowed) in DIAGNOSTIC_VALUES.items():
+        value = values.get(key)
+        result[key] = value if type(value) is kind and value in allowed else None
+    return result
+
+
+def incoming_diagnostics():
+    """Read configuration hints only; never infer incoming-call readiness.
+
+    Fixed enums keep identities, arbitrary PPS text and exception details out
+    of exported reports. An absent/malformed field is unknown, not disabled.
+    """
+    def object_at(path):
+        try:
+            return n.attrs(n.read(path))
+        except (OSError, ValueError, TypeError):
+            return {}
+
+    def field(attrs, key, allowed, kind):
+        try:
+            value = n.value(attrs, key)
+            return value if type(value) is kind and value in allowed else None
+        except (ValueError, TypeError, AttributeError):
+            return None
+
+    ims = object_at('/pps/services/ims/status_public')
+    engineering = object_at('/pps/services/escreens/config')
+    dca = object_at('/pps/services/carrier_config/radio_common/cellular_protocol_configuration')
+    ir92 = object_at('/pps/services/carrier_config/ims/ir92')
+    ran = field(ims, 'default_ran', ('LTE', 'lte', 'WLAN', 'wlan'), str)
+    return {'scope': 'configuration_observation_only', 'call_acceptance': 'not_assessed',
+            'ims_state': field(ims, 'status', ('connected', 'disconnected', 'idle'), str),
+            'ims_ran': ran.upper() if ran else None,
+            'allow_volte_provisioning': field(ims, 'allowVoLteProvisioning', (0, 1), int),
+            'engineering_voice_override': field(engineering, 'voice_domain_preference_EUTRAN_override',
+                                                ('2', '3', '4', '5', '6'), str),
+            'dca_voice_preference': field(dca, 'voice_domain_preference_EUTRAN', (0, 1, 2, 3), int),
+            'use_preconditions': field(ir92, 'UsePreconditions', (0, 1), int)}
 
 
 def read_network(profile=None):
@@ -160,6 +211,7 @@ def observe(profile=None):
         s.update(device_info.read_identity())
     except (OSError, ValueError, TypeError):
         pass
+    s['incoming_diagnostics'] = incoming_diagnostics()
     s['native_hashes'] = {}
     s['native_sha256'] = {}
     for path, expected in n.STOCK_HASHES.items():
@@ -194,6 +246,9 @@ def evaluate(s, profile=None, allow_experimental=False):
     def check(key, passed, code, failure='block'):
         checks.append({'id': key, 'status': 'pass' if passed else failure, 'code': code})
     check('model', device['recognized'], 'device_identified' if device['recognized'] else 'device_identity_unknown')
+    if device['family'] == 'passport':
+        check('provider_lifecycle', device_info.provider_lifecycle_supported(device),
+              'passport_provider_lifecycle_unvalidated', 'adapt')
     check('os', s.get('os_version') == device_info.OS_VERSION, 'os_3216_required')
     check('root', s.get('root_ready') and s.get('arm32_qnx'), 'root_qnx_arm32_required', 'wait')
     hashes = s.get('native_hashes', {})
@@ -223,6 +278,7 @@ def evaluate(s, profile=None, allow_experimental=False):
     return {'schema': 2, 'profile': p['id'], 'profile_sha256': request_sha,
             'profile_parameters': p, 'experimental': experimental, 'experimental_allowed': allow_experimental,
             'device': device, 'native_sha256': s.get('native_sha256', {}),
+            'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),
             'carrier_template': s.get('carrier_template'), 'checked_at': int(time.time()),
             'outcome': outcome, 'checks': checks,
             'facts': {key: s.get(key) for key in ('model', 'variant', 'os_version', 'mcc', 'mnc')},
@@ -232,6 +288,7 @@ def evaluate(s, profile=None, allow_experimental=False):
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
             'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
+            'can_restore': device_info.provider_lifecycle_supported(device),
             'hardware_validation': 'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',
             'carrier_provisioning': 'requires_user_confirmation_and_real_calls'}
 

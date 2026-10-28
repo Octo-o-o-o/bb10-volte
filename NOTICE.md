@@ -2,6 +2,12 @@
 
 Original Python, shell and C code, documentation and tests in this repository are licensed under MIT. The bundled helper is built from the complete source in `driver/volte_swcrypto.c`.
 
+## Community research / 社区研究
+
+[imqinyu/BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch), pinned at `376f492ade10efad371dca64d49fe39549820844`, is acknowledged as a source of device observations and research leads. Its NOTICE does not grant a project-wide license. This integration contains independently written code, factual summaries and links; no upstream source snapshots, binaries, distribution archives or carrier XML are redistributed. Contributed-material permissions and any future code reuse remain subject to the [issue #1 confirmation request](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217). See [integration scope](docs/COMMUNITY-RESEARCH.en.md).
+
+感谢 imqinyu 及其项目贡献者提供其他机型的实验记录、来电排查和移植限制。本次收录自行整理的事实与来源，并由本项目编写诊断和检查代码；未复制其源码、二进制、发行包或运营商 XML，也未将第三方材料重新声明为 MIT。后续代码复用的许可和贡献者授权范围正在 issue #1 确认，见[整合说明](docs/COMMUNITY-RESEARCH.md)。
+
 BlackBerry/QNX firmware, stock IMS binaries and carrier XML are supplied by the owner/device and are not distributed in this repository. The toolkit checks their hashes and creates a dedicated copy on the phone. AutoRoot v4 and bb10mt belong to their original authors; obtain them from the [author's release page](https://bb10.root.sx/blog/autoroot-v4) and [bb10mt repository](https://github.com/bb10root/bb10mt) under their respective terms. MIT licensing of this toolkit does not relicense third-party materials.
 
 libusb, LZO, OpenSSL, Git for Windows, Zig and 7-Zip retain their respective licenses. Preparation scripts use pinned sources or verified installed files and retain the associated local license files where implemented. The [design notes](docs/DESIGN.md) identify the public standards and implementation references used in the investigation; offsets and ABI details were validated against the actual device files.

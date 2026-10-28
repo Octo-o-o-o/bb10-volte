@@ -10,7 +10,7 @@
 
 **手机无需改动硬件，但需要通过 AutoRoot 获得 Root 权限。** 启用后继续使用手机自己的 SIM、原生 IMS 协议栈和系统拨号器。VoLTE 功能由本项目提供，无需再安装其他 VoLTE 项目或手机通话 App；EXE / DMG 用户无需另装 Python。首次 Root 和连接准备的实际范围见[使用方式](#使用方式)及[完整安装指南](docs/INSTALL.md)。
 
-**目前唯一实测组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、Passport、其他 Q10 版本和运营商也有望使用，但尚未实测，需要通过兼容性检查后实验试用，不能保证可用。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
+**本项目已有实机验收的组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 0.3.2 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、其他 Q10 版本和运营商仍需通过兼容性检查后实验试用，不能保证可用。**0.3.3 新增社区证据与只读来电诊断，尚未实机复测；Passport 因提供器停用后的网络栈重启报告，暂缓自动安装、启动和恢复操作。** 社区 Q20 呼出、Passport 双向通话报告与本工具验收分开记录，见[社区研究与适配进展](docs/COMMUNITY-RESEARCH.md)。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
 
 [Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 
@@ -29,7 +29,7 @@
 
 | 组件 | 要求 / 已记录的测试环境 |
 | --- | --- |
-| 手机 | **Q10 SQN100-3** 已实测；其他 Q10 变体、Q20 / Q30 仅在全部技术检查通过后允许实验试用 |
+| 手机 | **Q10 SQN100-3** 已实测；其他 Q10 变体、Q20 在全部检查通过后可实验试用；Passport / Q30 自动操作暂缓，仍可预检与导出报告 |
 | 手机系统（OS） | **BlackBerry 10 OS 10.3.3.3216**；固件包文件名写作 `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，安装器严格检查原生文件哈希 |
 | SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
 | 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
@@ -78,7 +78,7 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“检查设备”自动查找并填写个人 SSH 配置，也可手动选择。桌面构建 `0.3.2-r5` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.2`。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
+源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“检查设备”自动查找并填写个人 SSH 配置，也可手动选择。当前源码版本 `0.3.3-r1` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.3`。已发布 EXE / DMG 的版本与验收范围以对应 Release 为准。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
 
 或在仓库根目录执行同一套流程：
 
@@ -191,3 +191,5 @@ python tools/build_helper.py --zig C:\Tools\zig-0.13.0\zig.exe
 ## 致谢
 
 特别感谢 **[AutoRoot v4](https://bb10.root.sx/blog/autoroot-v4)** 自动 Root 项目及 **[bb10root / BB10 MultiTool（bb10mt）](https://github.com/bb10root/bb10mt)** 的作者与贡献者。他们提供的 BB10 Root、SSH 和固件构建基础，使本项目能够在真实 Q10 上开展原生 IMS 排查与通话验证。本项目的初次 Root 准备流程建立在这些工具之上，请支持原项目并保留其署名与许可证说明。
+
+感谢 **[imqinyu](https://github.com/imqinyu)** 及 **[BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch)** 的贡献者，通过 [issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) 分享 Classic / Passport / Z30 的实验记录、原生 IMS 与软件加密研究、来电配置线索及黑莓状态栏指示方案。这些资料帮助本项目补充社区证据、只读诊断和跨机型恢复检查。具体整合范围与证据等级见[社区研究说明](docs/COMMUNITY-RESEARCH.md)；第三方材料保留其来源与许可边界。

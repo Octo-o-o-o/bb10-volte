@@ -118,6 +118,23 @@ class GuiTests(unittest.TestCase):
         self.assertIsNone(self.app.report)
         self.assertFalse(self.app.allowed_actions()['install'])
 
+    def test_passport_hold_keeps_status_but_disables_automatic_restore(self):
+        value = report(tested=False, installed=True)
+        value['device'].update(display_name='BlackBerry Passport', variant='SQW100-1')
+        value.update(outcome='needs_adaptation', can_install=False, can_update=False,
+                     can_start=False, can_restore=False)
+        value['checks'].append({'id': 'provider_lifecycle', 'status': 'adapt',
+                                'code': 'passport_provider_lifecycle_unvalidated'})
+        value['incoming_diagnostics'] = {'allow_volte_provisioning': 1, 'use_preconditions': None}
+        self.app.render_report(value)
+        self.app.ack.set(True)
+        self.assertIn('provider_lifecycle', self.app.table.get_children())
+        self.assertIn('恢复策略待验证', self.app.device_label.cget('text'))
+        self.assertTrue(self.app.allowed_actions()['status'])
+        self.assertFalse(any(self.app.allowed_actions()[key] for key in ('install', 'start', 'disable')))
+        self.app.show_checks()
+        self.root.update_idletasks()
+
     def test_stopped_installation_offers_start_and_retains_update_in_menu(self):
         self.app.render_report(report(installed=True))
         self.app.ack.set(True)

@@ -12,6 +12,7 @@ import time
 import uuid
 from pathlib import Path
 from desktop_paths import resource_root, private_root, frozen
+from community_research import evidence_for
 
 ROOT = resource_root()
 sys.path.insert(0, str(ROOT / 'device'))
@@ -63,7 +64,7 @@ def registered(status):
     current = status.get('current', {})
     return (status.get('phase') == 'running' and status.get('manager_alive') is True and status.get('native_alive') is True and
             current.get('ims') == 'connected' and current.get('register_status') == '200 OK' and
-            current.get('ran') == 'LTE' and current.get('radio') == ['lte'])
+            current.get('ran') in ('LTE', 'lte') and current.get('radio') == ['lte'])
 
 
 def public_status(raw):
@@ -218,6 +219,7 @@ class Client:
         report = self.execute(path + '/device/compatibility.py', '--request ' + shlex.quote(path + '/profile-request.json'))
         if report.get('schema') != 2 or report.get('profile_sha256') != profiles.fingerprint(self.request):
             raise WorkflowError('invalid_device_response')
+        report['community_research'] = evidence_for(report)
         self.progress('preflight', 'done')
         return report
 
@@ -288,6 +290,8 @@ class Client:
         if action == 'status':
             result = public_status(self.service('status'))
             return {'status': result, 'registered': registered(result), 'preflight': report}
+        if report.get('can_restore') is False:
+            raise WorkflowError('provider_lifecycle_needs_adaptation', report)
         if action in ('start', 'enable'):
             if report['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request):
                 raise WorkflowError('profile_update_required', report)
