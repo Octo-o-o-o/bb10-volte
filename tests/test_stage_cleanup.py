@@ -12,13 +12,15 @@ class CleanupTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.base = Path(self.tmp.name) / 'q10_volte_stage_123456abcdef'
+        # macOS temporary roots can use /var, a symlink to /private/var.
+        temp_root = Path(self.tmp.name).resolve()
+        self.base = temp_root / 'q10_volte_stage_123456abcdef'
         for p in (self.base / 'device', self.base / 'driver'):
             p.mkdir(parents=True)
         self.names = ['stage-cleanup.py', 'profile-request.json', 'device/native.py']
         for name in self.names:
             (self.base / name).write_text('generated file')
-        self.parent = patch.object(c, 'ROOT_PARENT', str(Path(self.tmp.name)))
+        self.parent = patch.object(c, 'ROOT_PARENT', str(temp_root))
         self.parent.start()
         self.addCleanup(self.parent.stop)
 
