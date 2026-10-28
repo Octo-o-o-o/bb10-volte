@@ -1,6 +1,7 @@
 """Compatibility boundaries and safe failure paths; no phone is contacted."""
 import copy
 import json
+import shlex
 import sys
 import tempfile
 import unittest
@@ -160,6 +161,37 @@ class WorkflowTests(unittest.TestCase):
             self.assertIn('device/compatibility.py', cleanup.call_args.args[1])
             self.assertIn('profile-request.json', cleanup.call_args.args[1])
             self.assertNotIn('/var/rootdata/q10_volte/device', cleanup.call_args.args[1])
+
+    def test_root_diagnostic_transfers_only_probe_and_exact_cleanup_inputs(self):
+        client = self.client()
+        with tempfile.TemporaryDirectory() as folder, patch.object(w, 'private_root', return_value=Path(folder)), \
+                patch.object(client, 'remote', return_value='') as remote, \
+                patch.object(client, 'process', return_value='') as transfer, \
+                patch.object(client, 'execute', return_value={'stage_removed': True}) as cleanup:
+            with client.stage(diagnostic='root') as stage:
+                pass
+            names = [call.args[0][-1].split(stage + '/')[1] for call in transfer.call_args_list]
+            self.assertEqual(names, ['root-probe.py', 'profile-request.json', 'stage-cleanup.py'])
+            self.assertIn(stage + '/device', remote.call_args.args[0])
+            self.assertIn(stage + '/driver', remote.call_args.args[0])
+            self.assertEqual(json.loads(shlex.split(cleanup.call_args.args[1])[0]), names)
+            self.assertEqual(list(Path(folder).iterdir()), [])
+
+    def test_tampered_desktop_probe_is_rejected_before_remote_write(self):
+        client = self.client()
+        for name in ('tools/root_probe.py', 'tools/stage_cleanup.py'):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                for entry in ('materials/desktop-diagnostics.json', 'tools/root_probe.py', 'tools/stage_cleanup.py'):
+                    target = root / entry
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes((ROOT / entry).read_bytes())
+                (root / name).write_text('modified diagnostic')
+                with patch.object(w, 'ROOT', root), patch.object(w, 'verify_package'), patch.object(client, 'remote') as remote:
+                    with self.assertRaisesRegex(w.WorkflowError, 'package_mismatch'):
+                        with client.stage(diagnostic='root'):
+                            self.fail('Must reject before yielding')
+                    remote.assert_not_called()
 
     def test_clean_install_readback_precedes_activation(self):
         client = self.client(); events = []

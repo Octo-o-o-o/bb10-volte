@@ -28,6 +28,17 @@ class CleanupTests(unittest.TestCase):
         self.assertTrue(c.cleanup(str(self.base), self.names)['stage_removed'])
         self.assertFalse(self.base.exists())
 
+    def test_minimal_root_diagnostic_keeps_empty_directories_in_exact_tree(self):
+        base = self.base.parent / 'q10_volte_stage_abcdef123456'
+        for name in ('device', 'driver'):
+            (base / name).mkdir(parents=True)
+        names = ['root-probe.py', 'profile-request.json', 'stage-cleanup.py']
+        for name in names:
+            (base / name).write_text('generated diagnostic input')
+        self.assertTrue(c.cleanup(str(base), names)['stage_removed'])
+        self.assertFalse(base.exists())
+        self.assertTrue(self.base.exists())
+
     def test_unknown_file_preserves_every_file(self):
         (self.base / 'device/owner.txt').write_text('keep')
         with self.assertRaises(AssertionError):

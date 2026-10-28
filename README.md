@@ -33,12 +33,12 @@
 | 手机系统（OS） | **BlackBerry 10 OS 10.3.3.3216**；固件包文件名写作 `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，安装器严格检查原生文件哈希 |
 | SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
 | 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
-| 电脑 | 实测 **Windows 11 x64**；Root 准备与 USB 驱动流程需要 Windows，macOS/Linux 部署未验证 |
+| 电脑 | **Windows 11 x64**；Mac mini / **Apple M6、macOS 27.2** 已验证既有 Root/VoLTE 的连接、状态与通话；本分支新增 macOS 14+ 实验首次 Root 流程，未实机首刷；Linux 部署未验证 |
 | 电脑 Python | **EXE / DMG 用户无需安装**；源码运行 / 完整 Root 准备使用 Python 3.14（本次 3.14.9），含 Tk 和 Zstandard tar 支持 |
 | 手机 Python | BB10 自带 **Python 3.2**，以及安装器校验的原生库 |
 | 连接 | 稳定的 USB 数据线与 BlackBerry USB 网络；EXE 内置 `ssh` / `scp`，Windows 源码用户缺少 SSH 时，向导可自动获取连接组件 |
-| USB 驱动 | **BlackBerry USB Drivers 5.0.0.2 x64**，准备流程核验文件哈希和安装包 / CAT 签名 |
-| 仅首次 Root 所需 | AutoRoot v4、Q10 原版固件、**7-Zip**、libusb **1.0.30**、LZO **2.10-3**、**MinGit 2.55.0.5 / OpenSSL 3.5.7** 中的固定 DLL；向导自动获取，建议预留约 **15 GB** |
+| USB 驱动 | Windows：**BlackBerry USB Drivers 5.0.0.2 x64**，核验文件哈希和安装包 / CAT 签名；本轮 Mac 使用内置 CDC-NCM，无额外安装，不能泛化到所有 Mac |
+| 仅首次 Root 所需 | 向导获取固定 AutoRoot v4、Q10 固件和 7-Zip，预留约 **15 GB**；Windows 使用 libusb/LZO/MinGit 固定 DLL，Mac 使用原生 bb10mt 与私有 libusb/LZO，见 [Mac 工具清单](materials/macos-root-tools.json) |
 | 可选辅助模块重建 | **Zig 0.13.0**；安装随仓库提供的模块无需 QNX SDK |
 
 精确文件名、原始下载地址及 SHA-256 见 [sources.json](materials/sources.json)、[usb-drivers.json](materials/usb-drivers.json)、[stock-partitions.json](materials/stock-partitions.json)。这些是已经记录的可工作版本，不应直接用最新版替换；散列不匹配时准备流程会停止。
@@ -55,7 +55,7 @@
 | **macOS DMG** | 下载 macOS `.dmg`，将应用拖入“应用程序”后启动 | 内置 Python 和 Tk，使用 macOS 自带 SSH/SCP；发布包签名、公证及实测范围见 [Mac 指南](docs/MACOS.md) |
 | **源码** | 克隆仓库或解压源码 ZIP，运行 `python tools/gui.py` | 需要 Python 3.14（含 Tk）；Windows 向导可自动获取 SSH，macOS 使用系统 SSH；Windows 也可双击 `Start-GUI.cmd`，无需额外 pip 包 |
 
-三种方式共用机型识别、运营商配置、预检与 VoLTE 安装流程。**Windows 的“首次使用”向导可自动获取、校验工具和 Q10 固件，生成个人密钥、构建 Root 镜像，并在用户单独确认清空数据后顺序刷写；无需另装其他 Root 项目、Git 或 7-Zip。** 初次刷写分支仍属实验功能，未在未 Root 手机上实刷验收。Mac 当前支持已 Root 手机的连接与使用提示，首次 Root 请先在 Windows 完成。Q20 / Passport 的首次 Root 仍需匹配机型的方法，禁止刷入 Q10 镜像。详见[首次使用指南](docs/FIRST-RUN.md)。Mac 直连手机通话仍未验收。
+三种方式共用机型识别、运营商配置、预检与 VoLTE 安装流程。**Windows 的“首次使用”向导可自动获取、校验工具和 Q10 固件，生成个人密钥、构建 Root 镜像，并在用户单独确认清空数据后顺序刷写；无需另装其他 Root 项目、Git 或 7-Zip。** 初次刷写分支仍属实验功能，未在未 Root 手机上实刷验收。本分支新增 macOS 14+ 原生首次准备与确认后的分阶段刷写实验入口，基于上游工具链；**没有进行 Mac 实机首刷，已发布 r5 DMG 不包含新集成**，见[Mac 首次 Root 范围与步骤](docs/MACOS.md#mac-能否首次-root)。Q20 / Passport 的首次 Root 仍需匹配机型的方法，禁止刷入 Q10 镜像。详见[首次使用指南](docs/FIRST-RUN.md)。Mac 直连当前 Q10 的日常连接与双向通话已实测；首次授权、初次 Root 和手机重启不在本次 Mac 验收内，详见[Mac 使用步骤与三种手机现状](docs/MACOS.md)。
 
 首次 Root 刷写会清空手机数据，请先备份。已有匹配 Root 和连接配置时，可以直接打开应用检查设备、选择运营商并安装 VoLTE 服务；准备完成后的预检与安装不需要电脑联网，手机注册与通话仍需要运营商服务。以下为源码方式。
 
@@ -128,6 +128,7 @@ python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
 | 下午常驻版呼出 | `INVITE 200 / ACK / BYE`，接通后约 5.6 秒；本轮 64 个状态样本全部为 LTE / IMS connected |
 | 0.3.1 加固版重启与双向通话 | 自动恢复通过；呼出 7.362 秒、呼入 4.674 秒，208 个样本保持 LTE / IMS connected；本轮 USB 连接 |
 | 0.3.2 提速版重启与双向通话 | 手机菜单重启后自动恢复；拔 USB 呼入 6.088 秒、呼出 5.894 秒；163 个样本 LTE / IMS connected |
+| Mac `0.3.2-r5` 日常连接 | 单台 M6/macOS 27.2 + 当前 Q10：内置 CDC-NCM、严格 SSH/Root、状态、机主确认双向声音/LTE、USB 重连通过；首次向导有已知缺陷，见 [Mac 记录](materials/macos-device-validation-2026-10-28.json) |
 | 至少 20 秒及更长通话、长期稳定性 | **仍需补充验证** |
 | 其他机型、系统、运营商、漫游、切换小区、长期待机、紧急呼叫 | **未测试** |
 

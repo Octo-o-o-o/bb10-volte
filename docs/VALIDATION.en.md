@@ -2,6 +2,34 @@
 
 [简体中文](VALIDATION.md) | **English**
 
+## Mac package and Q10 daily connection — October 28, 2026
+
+This run used an owner-provided DMG byte-identical to the GitHub `v0.3.2-r5` asset, not a source build. A Mac mini / Apple M6 / macOS 27.2 (26B123) ran arm64. The Q10 SQN100-3 / BB10 10.3.3.3216 / Unicom 460-01 already had service 0.3.2 running. See the [sanitized record](../materials/macos-device-validation-2026-10-28.json) for the SHA-256, methods and layered outcomes. All times use UTC+8 (Asia/Shanghai).
+
+| Layer | Result and evidence |
+| --- | --- |
+| Package | SHA-256 matched Release; app/DMG codesign, spctl and stapler checks passed; both architectures inspected, Intel hardware not run |
+| USB | VID/PID `0fca:8017`; device and corresponding interfaces disappeared/reappeared in two unplug/replug comparisons; IORegistry showed Apple CDC-NCM binding |
+| USB network | DHCP `169.254.0.2/30`; route to `169.254.0.1` and actual TCP source belonged to the identified USB interface. No added driver or manual IP change |
+| SSH / Root | Owner explicitly authorized reuse of personal connection materials. Pinned host identity matched, public-key authentication and effective UID 0 passed |
+| GUI / service | Main window identified model/OS and read existing running / IMS connected / 200 OK / LTE. Installation blocking while active was expected |
+| Manual incoming/outgoing calls | Owner confirmed both answered, audio in both directions and continued 4G/LTE. All 23 status samples, approximately 5.2 seconds apart, showed running / 200 OK / LTE. Exact call start/end/durations were not recorded; samples are not continuous radio capture |
+| USB reconnection / app restart | Strict SSH, Root and IMS checks recovered after reconnection; restarting the app restored the successful configuration |
+| First use | **Published r5 failed**: phone EUID 0 policy rejected Python `-c`, but the wizard misreported a connection problem; Mac USB facts were incomplete |
+| Not tested | Phone reboot (owner declined this run), Intel hardware, fresh-Mac new authorization writes, microSD transfer, initial Root, service installation/reinstallation, other combinations and long-term stability |
+
+No project implementation, phone authorization/telephony/system setting or adapter configuration was changed. Existing diagnostics staged and cleaned temporary probe files. Owner-authorized personal materials were retained in protected Mac storage. The public record excludes personal paths, host fingerprints, device identifiers and keys; original logs/screenshots remain private.
+
+Current repository changes separately fix First use permission probing, Mac USB facts and connection guidance. They do not alter the published r5 DMG. This record neither establishes publication of a new package nor treats local/simulated authorization tests as successful persistent phone writes. See the [Mac instructions](MACOS.en.md).
+
+## This branch: Mac initial Root integration without first-flash acceptance
+
+Current source adds native Q10 preparation on macOS 14+, pinned tools/dependencies, personal keys/image construction and separately confirmed Terminal OS/radio execution. Inputs come from the author's v4 archive, official 7-Zip and pinned Homebrew bottles, extracted into the private kit without installing Homebrew, global libraries or system extensions. See [pinned Mac tools](../materials/macos-root-tools.json).
+
+On the current arm64 Mac, the maintainer verified actual tool architectures/dependencies and ran native `--help` successfully. Already-started Q10 offline preparation and `batch` construction completed naturally: all four unchanged stock partitions matched size/hash, the original radio hash matched, personal keys/AppWorld preservation were confirmed, and unsigned OS/original signed radio outputs were produced. The source Root probe verified effective UID 0 through existing trusted SSH; before/after stage listings preserved the same 22 directories, while Mac USB collection identified the actual NCM interface and `169.254.0.2`. See [development evidence](../materials/macos-development-2026-10-29.json). These are source, offline-build and existing-Root connection checks, **not successful first flashing**. Native classifier tests only establish that their known inputs pause on errors/missing evidence and never apply the Windows exit-73 exception on Mac.
+
+**This branch did not run phone `info`, `loader` or `flash`, reboot/reflash the current working Q10 or establish a Mac hardware first flash.** Native flashing, password interaction, OS/radio handoff and Root recovery need a separately authorized test phone trial. Source integration, offline construction and package self-tests cannot replace it. Published r5 does not include this branch's integration. The owner subsequently requested development without further testing; after existing operations finished, no new test or device action was started. The unrooted Q30's exact variant and matching initial-flash materials remain unconfirmed and require separate preparation, never Q10 firmware.
+
 ## v0.2.0 preflight and desktop UI — October 27, 2026
 
 All 43 local Windows tests passed, covering compatibility rejection, SIM changes, no retry after an unknown installation outcome, retention of in-flight transfer inputs, no activation after failed readback and report privacy. The GUI ran a real phone preflight and correctly disabled installation/update while the existing service was active.

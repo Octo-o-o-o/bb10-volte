@@ -47,7 +47,9 @@ def runtime_data():
     names = set(FILES) | {'project.json', 'materials/payload-manifest.json',
                          'materials/windows-runtime.json', 'LICENSE', 'NOTICE.md',
                          'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py',
-                         'tools/phone_pairing.py',
+                         'tools/phone_pairing.py', 'tools/root_probe.py', 'materials/desktop-diagnostics.json',
+                         'materials/macos-root-tools.json', 'materials/macos-device-validation-2026-10-28.json',
+                         'materials/macos-development-2026-10-29.json',
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
                          'materials/sources.json', 'materials/stock-partitions.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json'}

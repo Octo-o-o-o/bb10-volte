@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import queue
+import sys
 import threading
 import time
 import tkinter as tk
@@ -13,6 +14,7 @@ from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
+from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
 BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
@@ -195,6 +197,18 @@ class App:
         self.profile_picker.bind('<<ComboboxSelected>>', self.select_profile)
         self.edit_button = ttk.Button(settings, text='自定义', command=self.edit_profile)
         self.edit_button.grid(row=0, column=2, padx=(10, 0))
+        self.mac_connection_help = None
+        self.mac_guide_button = None
+        if sys.platform == 'darwin':
+            self.mac_connection_help = tk.Frame(self.connection_card, bg='white')
+            self.mac_connection_help.pack(fill='x', pady=(12, 0))
+            self.mac_guide_button = ttk.Button(self.mac_connection_help, text='Mac 连接说明',
+                                               command=lambda: show_mac_guide(self.root))
+            self.mac_guide_button.pack(side='right', padx=(12, 0))
+            hint = self.label(self.mac_connection_help, CONNECTION_HINT, 11, MUTED,
+                              wraplength=650, justify='left', anchor='w')
+            hint.pack(side='left', fill='x', expand=True)
+            hint.bind('<Configure>', lambda event: hint.configure(wraplength=max(1, event.width - 4)))
         self.connection_options = tk.Frame(self.connection_card, bg='white')
         self.label(self.connection_options, 'SSH 别名', 11, MUTED).pack(side='left', padx=(0, 14))
         self.host_entry = ttk.Entry(self.connection_options, textvariable=self.host, width=20)

@@ -18,6 +18,9 @@ def classify_output(phase, exit_code, writing_complete, failed_to_load, security
 
 
 def run_stage(folder, phase, token):
+    if sys.platform == 'darwin':
+        from macos_root_flash import run_stage as run_macos_stage
+        return run_macos_stage(folder, phase, token)
     from root_setup import prepared_images, SetupError
     state, images = prepared_images(folder, allowed_stages=(phase + '_started',))
     if not token or state.get('confirmation_token') != token or phase not in ('os', 'radio'):

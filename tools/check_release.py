@@ -53,6 +53,11 @@ def check(check_git=False):
     manifest = json.loads((ROOT/'materials/payload-manifest.json').read_text(encoding='utf-8'))
     for name, digest in manifest['files'].items():
         assert name in names and hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, 'Stale payload manifest: ' + name
+    diagnostics = json.loads((ROOT/'materials/desktop-diagnostics.json').read_text(encoding='utf-8'))
+    assert diagnostics.get('schema') == 1
+    assert set(diagnostics['files']) == {'tools/root_probe.py', 'tools/stage_cleanup.py'}
+    for name, digest in diagnostics['files'].items():
+        assert name in names and hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, 'Stale diagnostic manifest: ' + name
     issues = []
     hashes = {}
     for path in files:

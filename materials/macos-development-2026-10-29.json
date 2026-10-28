@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "date": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "scope": "Development branch checks; distinct from published-r5 hardware acceptance and from first flashing a phone.",
+  "historical_package_record": "macos-device-validation-2026-10-28.json",
+  "tool_manifest": "macos-root-tools.json",
+  "mac": {
+    "architecture_actually_run": "arm64",
+    "toolchain_minimum_macos": "14.0",
+    "intel_hardware_tested": false
+  },
+  "native_tooling": {
+    "official_archive_and_pinned_dependencies_verified": true,
+    "native_bb10mt_help": "passed",
+    "homebrew_installed": false,
+    "global_libraries_installed": false,
+    "system_security_changed": false,
+    "library_loading": "Kit-local libraries, with environment scoped to the native child process."
+  },
+  "q10_offline_preparation_and_build": {
+    "result": "passed_source_native_offline_only",
+    "native_batch_completed": true,
+    "independent_personal_keys_generated": true,
+    "default_shared_authorization_replaced": true,
+    "appworld_preserved": true,
+    "unchanged_stock_partitions_verified_by_size_and_hash": 4,
+    "original_radio_hash_verified": true,
+    "outputs": [
+      "personal-key unsigned OS payload",
+      "original signed radio payload"
+    ],
+    "bootrom_contacted": false,
+    "phone_flashed": false
+  },
+  "existing_root_connection_source_checks": {
+    "result": "passed_read_only_existing_phone",
+    "trusted_personal_ssh_configuration_reused": true,
+    "host_key_verification_retained": true,
+    "effective_uid": 0,
+    "mac_usb_collector": "Identified actual BlackBerry NCM interface through IORegistry ancestry; host address 169.254.0.2.",
+    "existing_stage_directories_before": 22,
+    "existing_stage_directories_after": 22,
+    "existing_stages_preserved": true,
+    "new_phone_authorization": false,
+    "phone_service_reinstalled_or_reconfigured": false
+  },
+  "native_flash_classifier_scope": "Offline cases reject native errors/missing per-file completion evidence and do not apply Windows exit-73 continuation. They do not establish USB flashing success.",
+  "not_executed": [
+    "native info",
+    "native loader",
+    "native connect",
+    "native flash",
+    "phone reboot or Root reflash",
+    "phone PAIR authorization writes",
+    "new service installation"
+  ],
+  "not_accepted": [
+    "Mac hardware first flashing",
+    "Native password entry on a real flash",
+    "Real OS-to-radio handoff",
+    "Root after a Mac first flash",
+    "Q30 first flashing",
+    "Intel Mac hardware",
+    "A new DMG release"
+  ],
+  "q30": {
+    "phone_variant_confirmed": false,
+    "matching_initial_flash_materials_integrated": false,
+    "q10_firmware_reuse_allowed": false,
+    "next_step": "Identify the actual SQW100 variant, then separately prepare matching firmware/loader/Root materials before any device trial."
+  },
+  "user_requested_no_further_testing": true,
+  "execution_boundary": "Operations already started before the user requested development without testing were allowed to finish naturally; subsequent work did not start further tests or device actions.",
+  "publication": "Source changes await review. No new DMG was published; original v0.3.2-r5 package acceptance remains separate.",
+  "privacy": "No private keys, host fingerprints, personal paths, full phone/device/SIM identifiers or raw device logs are included."
+}

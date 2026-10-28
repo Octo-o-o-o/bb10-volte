@@ -6,7 +6,7 @@ import sys
 import tkinter as tk
 
 from desktop_paths import frozen, private_root, resource_root
-from workflow import Client, verify_package, CREATE_NO_WINDOW
+from workflow import Client, verify_package, verify_diagnostics, CREATE_NO_WINDOW
 from profile_editor import presets, ProfileEditor
 from setup_wizard import SetupWizard
 from recovery_gui import RecoveryDialog
@@ -20,6 +20,7 @@ def run(output):
     from gui import App
     bundle = resource_root()
     manifest = verify_package()
+    verify_diagnostics()
     root = tk.Tk()
     root.withdraw()
     app = App(root)
@@ -75,6 +76,10 @@ def run(output):
         pass
     assert bundle / 'tools/stage_cleanup.py' in transferred
     assert len(transferred) == 6
+    with client.stage(diagnostic='root'):
+        pass
+    assert bundle / 'tools/root_probe.py' in transferred
+    assert len(transferred) == 9
     if frozen():
         assert (bundle / 'licenses/THIRD-PARTY-NOTICES.txt').stat().st_size > 1000
         assert (bundle / 'assets/app.ico').is_file()
@@ -93,6 +98,7 @@ def run(output):
               'first_run_wizard_without_probe_verified': True,
               'existing_root_recovery_ui_verified': True,
               'phone_pairing_resource_present': True,
+              'root_probe_resource_verified': True,
               'minimum_window_actions_visible': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
