@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import stat
 import sys
@@ -61,7 +62,10 @@ class NativeFlashTests(unittest.TestCase):
             def terminal(args, **_):
                 self.assertEqual(args[:3], ['/usr/bin/open', '-a', 'Terminal'])
                 script = Path(args[3])
-                self.assertEqual(stat.S_IMODE(script.stat().st_mode), 0o700)
+                # Windows chmod only controls the read-only flag; the native
+                # permission check applies on the POSIX hosts that run it.
+                if os.name != 'nt':
+                    self.assertEqual(stat.S_IMODE(script.stat().st_mode), 0o700)
                 self.assertIn('--token confirmation-token', script.read_text())
                 (root / 'flash-os.json').write_text(json.dumps({'stage': 'os', 'platform': 'darwin', 'completed': True}))
                 return SimpleNamespace(returncode=0)
