@@ -51,11 +51,18 @@ def save_connection(host, config):
     temporary.replace(path)
 
 
+def root_kit_configs(folder):
+    # First-use preparation creates a fresh root-kit-<id> for each attempt.
+    # Inspect only this application's immediate kit directories, never the disk.
+    return ([folder / 'root-kit/ssh_config'] + sorted(folder.glob('root-kit-*/ssh_config'))
+            + sorted(folder.glob('recovery-*/ssh_config')))
+
+
 def candidate_connections():
     saved = saved_connection()
     result = [dict(saved, saved=True)] if saved else []
-    paths = [private_root() / 'root-kit/ssh_config', Path.home() / '.ssh/config',
-             Path(sys.executable).parent / 'ssh_config']
+    paths = root_kit_configs(private_root())
+    paths += [Path.home() / '.ssh/config', Path(sys.executable).parent / 'ssh_config']
     roots = [resource_root()] if not frozen() else []
     # A portable executable next to its source checkout can reuse that owner's
     # prepared kit. Do not recursively search the user's disk for credentials.
@@ -66,7 +73,7 @@ def candidate_connections():
         except (OSError, ValueError, AttributeError):
             pass
     for root in roots:
-        paths.append(root / 'private/root-kit/ssh_config')
+        paths.extend(root_kit_configs(root / 'private'))
         if root.parent.name == 'opensource':
             paths.append(root.parent.parent / 'tools/volte_session/private/ssh_config')
     seen = {(item['host'], item['config']) for item in result}

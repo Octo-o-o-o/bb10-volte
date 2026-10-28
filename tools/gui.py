@@ -50,7 +50,7 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
-    'connection_setup_required': '尚未找到可用连接配置。请打开“首次使用”，检查连接或准备 Root。',
+    'connection_setup_required': '尚未找到连接配置。手机已 Root：打开“首次使用 → 恢复连接”；尚未 Root：进入首次 Root 准备。',
     'hostname_unresolved': '连接别名没有对应配置。请选择已有配置，或打开“首次使用”。',
     'ssh_algorithm_mismatch': '手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新检查。',
     'connection_refused': '手机尚未提供 SSH 连接。请解锁手机，并按“首次使用”中的提示检查 Root 和 SSH。',
@@ -62,7 +62,7 @@ ERRORS = {
     'openssh_missing': '找不到 SSH 客户端，请按安装文档准备 ssh 和 scp。',
     'package_mismatch': '安装包与固定清单不一致。请使用完整发布包，不要在客户电脑重新生成清单。',
     'host_key_mismatch': '主机密钥校验失败。核对所选设备和个人 SSH 配置，保留原信任记录。',
-    'authentication_failed': 'SSH 身份验证失败。请使用为这台手机准备的个人密钥配置。',
+    'authentication_failed': '密钥未获手机授权。请打开“首次使用 → 恢复连接”，导入原密钥或在手机端重新授权。',
     'connection_failed': '无法连接。检查 USB、手机 Root 状态、驱动和 SSH 配置。',
     'connection_timeout_state_unknown': '连接超时，设备状态尚未确认。重新预检并查看状态，不要盲目重复安装。',
     'remote_operation_failed': '设备拒绝了操作。请重新预检并保留现场，必要时采集私有日志。',
@@ -97,8 +97,9 @@ class App:
         self.profile_name = tk.StringVar(value=picker_label(self.profile['label']))
         self.experimental = tk.BooleanVar(value=False)
         saved = saved_connection() if not config and host == 'bb10-root' else None
-        default = private_root() / 'root-kit/ssh_config'
-        selected_config = config or (saved['config'] if saved else str(default) if default.is_file() else '')
+        # An unverified default kit must not bypass discovery of the kit that
+        # actually matches the connected phone. Check device fills it on success.
+        selected_config = config or (saved['config'] if saved else '')
         selected_host = saved['host'] if saved else matching_alias(selected_config, host) if selected_config else host
         self.host = tk.StringVar(value=selected_host)
         self.config = tk.StringVar(value=selected_config)
@@ -181,7 +182,7 @@ class App:
         self.label(connection, '连接配置', 11, MUTED).grid(row=0, column=0, sticky='w', padx=(0, 14))
         self.config_entry = ttk.Entry(connection, textvariable=self.config)
         self.config_entry.grid(row=0, column=1, sticky='ew')
-        self.browse_button = ttk.Button(connection, text='选择文件', command=self.browse)
+        self.browse_button = ttk.Button(connection, text='手动选择', command=self.browse)
         self.browse_button.grid(row=0, column=2, padx=(10, 0))
 
         settings = tk.Frame(self.connection_card, bg='white')
@@ -228,7 +229,7 @@ class App:
         self.summary.pack(side='left')
         self.details_button = ttk.Button(heading, text='检查详情', command=self.show_checks, state='disabled')
         self.details_button.pack(side='right')
-        self.detail = self.label(summary, '连接手机后检查设备；已有配置会自动查找。首次准备请打开“首次使用”。', 11, MUTED,
+        self.detail = self.label(summary, '连接配置可留空，点击“检查设备”自动查找并填写。首次准备请打开“首次使用”。', 11, MUTED,
                                  wraplength=850, justify='left', anchor='w')
         self.detail.pack(fill='x', pady=(10, 12))
         self.detail.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width - 4)))

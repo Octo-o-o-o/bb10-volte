@@ -1,11 +1,15 @@
 """Desktop presentation and action gates; no transport or phone operations."""
 from pathlib import Path
 import sys
+import tempfile
 import tkinter as tk
+from types import SimpleNamespace
 import unittest
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import gui
+import connection
 
 
 def report(ready=True, tested=True, installed=False):
@@ -24,6 +28,13 @@ def report(ready=True, tested=True, installed=False):
 
 class GuiTests(unittest.TestCase):
     def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.private = Path(self.temp.name)
+        for module in (gui, connection):
+            private_patch = patch.object(module, 'private_root', return_value=self.private)
+            private_patch.start()
+            self.addCleanup(private_patch.stop)
         try:
             self.root = tk.Tk()
         except tk.TclError as error:
@@ -35,6 +46,40 @@ class GuiTests(unittest.TestCase):
         if hasattr(self, 'app'):
             self.app.busy = False
             self.app.close()
+
+    def test_check_device_selects_matching_kit_and_restores_it_on_restart(self):
+        old = self.private / 'root-kit/ssh_config'
+        current = self.private / 'root-kit-123abc/ssh_config'
+        for config in (old, current):
+            config.parent.mkdir(parents=True)
+            config.write_text('Host bb10-root\n')
+        self.app.close()
+        self.root = tk.Tk()
+        self.root.withdraw()
+        self.app = gui.App(self.root)
+        self.assertEqual(self.app.config.get(), '')
+        choices = [{'host': 'bb10-root', 'config': str(path), 'saved': False}
+                   for path in (old, current)]
+        stale, matched = MagicMock(), MagicMock()
+        for client in (stale, matched):
+            client.process.return_value = 'hostname 169.254.0.1\nuser root\n'
+        stale.remote.side_effect = gui.WorkflowError('host_key_mismatch')
+        matched.remote.return_value = 'BB10_CONNECTION_READY\n'
+        matched.preflight.return_value = report()
+        with patch.object(connection, 'candidate_connections', return_value=choices), \
+                patch.object(connection, 'Client', side_effect=[stale, matched]), \
+                patch.object(gui.threading, 'Thread', side_effect=lambda target, **_: SimpleNamespace(start=target)):
+            self.app.run('preflight')
+            self.root.after_cancel(self.app._drain_job)
+            self.app.drain()
+        self.assertEqual(self.app.config.get(), str(current))
+        self.assertEqual(self.app.report, report())
+        self.assertEqual(connection.saved_connection(), {'host': 'bb10-root', 'config': str(current)})
+        self.app.close()
+        self.root = tk.Tk()
+        self.root.withdraw()
+        self.app = gui.App(self.root)
+        self.assertEqual(self.app.config.get(), str(current))
 
     def test_first_launch_has_one_action_and_no_technical_rows(self):
         self.assertEqual(self.app.table.get_children(), ())

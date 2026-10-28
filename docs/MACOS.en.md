@@ -6,6 +6,8 @@ Download the universal macOS `.dmg` and matching `.dmg.sha256` from [Releases](h
 
 The app uses system `/usr/bin/ssh` and `/usr/bin/scp`, and stores private state in `~/Library/Application Support/bb10-volte/private`. A device-specific root SSH key and verified host key are required. The default alias is `bb10-root`; explicit legacy `q10-root` profiles are matched automatically. First use provides guidance; initial Root flashing currently requires Windows. See [setup scope](FIRST-RUN.en.md).
 
+For an already-rooted phone without connection files, First use → Recover connection can rebuild a profile or generate an owner-run pairing script. See [connection recovery](RECOVER-CONNECTION.en.md). This flow does not require Windows or reflashing; without login materials it still requires an existing phone Root terminal.
+
 Q10 SQN100-3 / OS 10.3.3.3216 / Beijing Unicom 460-01 is the only hardware calling record. Q20/Q30 are experimental and require opt-in and all technical checks. Starting the desktop app does not establish direct Mac-to-phone USB networking or calling support. Initial rooting and flashing require the firmware and method specific to each model; never flash Q10 images onto another model.
 
 ## Isolated build environment

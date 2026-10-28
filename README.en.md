@@ -78,7 +78,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and choose Check device. Desktop build `0.3.2-r3` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Check device to discover and fill your own SSH configuration, or select it manually. Desktop build `0.3.2-r5` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
 
 Alternatively, run the same workflow from the repository root:
 

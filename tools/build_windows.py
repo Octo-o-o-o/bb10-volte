@@ -47,6 +47,7 @@ def runtime_data():
     names = set(FILES) | {'project.json', 'materials/payload-manifest.json',
                          'materials/windows-runtime.json', 'LICENSE', 'NOTICE.md',
                          'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py',
+                         'tools/phone_pairing.py',
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
                          'materials/sources.json', 'materials/stock-partitions.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json'}
@@ -140,7 +141,8 @@ def main():
     forbidden = ('private/', 'downloads/', 'ssh_config', 'known_hosts', 'q10_root_rsa', 'q10_host_rsa')
     assert not any(any(token in name for token in forbidden) for name in index)
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
-    assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root'} <= set(archive_modules)
+    assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
+            'connection_recovery', 'recovery_gui', 'phone_pairing'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')

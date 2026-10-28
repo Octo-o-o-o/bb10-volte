@@ -9,6 +9,7 @@ from desktop_paths import frozen, private_root, resource_root
 from workflow import Client, verify_package, CREATE_NO_WINDOW
 from profile_editor import presets, ProfileEditor
 from setup_wizard import SetupWizard
+from recovery_gui import RecoveryDialog
 
 
 def run(output):
@@ -30,6 +31,11 @@ def run(output):
     wizard.withdraw()
     assert not wizard.busy and wizard.choice is None
     wizard.close()
+    recovery = RecoveryDialog(root, lambda *_: None)
+    recovery.withdraw()
+    assert not recovery.busy and not recovery.verified and len(recovery.tabs.tabs()) == 2
+    recovery.close()
+    assert (bundle / 'tools/phone_pairing.py').is_file()
     # Map an invisible minimum-sized window so Tk computes actual geometry.
     # Check that the complete action row and status stay inside the viewport.
     root.attributes('-alpha', 0.0)
@@ -85,6 +91,8 @@ def run(output):
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
               'first_run_wizard_without_probe_verified': True,
+              'existing_root_recovery_ui_verified': True,
+              'phone_pairing_resource_present': True,
               'minimum_window_actions_visible': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,

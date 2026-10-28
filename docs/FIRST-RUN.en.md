@@ -2,9 +2,13 @@
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
-Desktop revision `0.3.2-r3` adds a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
+Desktop revision `0.3.2-r5` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
 
 Already-rooted devices can use Check device directly. The app discovers saved references, known owner-created kits, a configuration next to a portable executable and explicit `bb10-root` / `q10-root` aliases. Unsaved automatic discovery is limited to the direct USB address and keeps strict host verification. Other addresses require an explicitly imported configuration. Only configuration references are saved; private keys stay in their original kit.
+
+Already-rooted phones without connection files can use Recover connection to import a login key or authorize this computer through an existing phone Root terminal. The flow is shared by Windows and macOS; see [connection recovery](RECOVER-CONNECTION.en.md).
+
+**The connection field may remain empty.** Check device discovers both `root-kit/ssh_config` and `root-kit-*/ssh_config` in the owner's private directory, verifies the connection and fills the field. A successful selection is restored on the next launch. Auto preparation creates these files; after flashing and Root verification the wizard passes the configuration to the main window. Numbered kits remain discoverable after restarting before a connection has been saved. Multiple kits are selected by verified access, never merely by which file is newest. An already-rooted phone without its matching key still requires its original configuration.
 
 An installed service is read as an existing installation. Normal registration/LTE displays enabled; startup displays pending. Its active configuration is expected rather than an installation failure. USB, development mode, SSH, Root and IMS are distinct. Development mode being disabled does not establish missing Root, and working Root SSH does not require development mode to remain enabled. Anonymous USB discovery reads only allowlisted model, OS and development-mode fields. Diagnostic checks do not open and abandon development sessions or raw SSH sockets.
 

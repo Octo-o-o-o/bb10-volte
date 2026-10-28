@@ -80,6 +80,8 @@ class SetupWizard(tk.Toplevel):
             self.components_button.pack(side='left')
         self.continue_button = ttk.Button(connection, text='返回主界面并检查', style='Accent.TButton', command=self.continue_to_app, state='disabled')
         self.continue_button.pack(anchor='e', pady=(20, 0))
+        self.recovery_button = ttk.Button(connection, text='已 Root 但没有连接配置？恢复连接', command=self.recover_connection)
+        self.recovery_button.pack(anchor='w', pady=(10, 0))
 
         ttk.Label(root_tab, text='自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写', wraplength=740,
                   font=(FONT, 11, 'bold')).pack(anchor='w')
@@ -128,7 +130,7 @@ class SetupWizard(tk.Toplevel):
             self.detect()
 
     def refresh(self):
-        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button):
+        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button):
             button.configure(state='disabled' if self.busy else 'normal')
         self.prepare_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
@@ -175,6 +177,14 @@ class SetupWizard(tk.Toplevel):
         if path:
             self.host, self.config = matching_alias(path, 'bb10-root'), path
             self.detect()
+
+    def recover_connection(self):
+        from recovery_gui import RecoveryDialog
+        def ready(host, config):
+            self.host, self.config = host, config
+            self.grab_set()
+            self.detect()
+        RecoveryDialog(self, ready)
 
     def prepare_root(self):
         variant, proxy = self.variant.get(), self.proxy.get().strip() or None
@@ -233,7 +243,7 @@ class SetupWizard(tk.Toplevel):
                             self.host, self.config = self.choice['host'], self.choice['config']
                     elif action == 'prepare':
                         self.kit = result
-                        self.status.configure(text='Root 镜像已构建并校验。确认备份后，才能进入会清空数据的刷写步骤。')
+                        self.status.configure(text='Root 镜像与连接配置已准备。确认备份后才能刷写；刷写完成并验证 Root 后会自动选用配置。')
                     elif action == 'flash':
                         self.host, self.config = result['host'], result['config']
                         self.tabs.select(0)

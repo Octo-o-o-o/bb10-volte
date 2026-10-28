@@ -128,7 +128,7 @@ class DesktopPackageTests(unittest.TestCase):
         self.assertIn('materials/payload-manifest.json', names)
         self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
         self.assertEqual({name for name in names if name.startswith('tools/')},
-                         {'tools/stage_cleanup.py', 'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
+                         {'tools/stage_cleanup.py', 'tools/phone_pairing.py', 'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
         self.assertIn('materials/first-run-tools.json', names)
 
     def test_legacy_device_transport_keeps_strict_host_verification(self):
