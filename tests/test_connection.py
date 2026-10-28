@@ -120,3 +120,11 @@ class ConnectionTests(unittest.TestCase):
                     client.process(['ssh'], 1)
         self.assertIn('MACs=hmac-sha1', client.options)
         self.assertIn('StrictHostKeyChecking=yes', client.options)
+
+    def test_known_python_security_rejection_is_not_reported_as_network_failure(self):
+        with patch.object(w.shutil, 'which', side_effect=lambda name: name):
+            client = w.Client()
+        result = MagicMock(returncode=255, stderr='/usr/bin/python3.2: -c option disabled for euid 0\n')
+        with patch.object(w.subprocess, 'run', return_value=result):
+            with self.assertRaisesRegex(w.WorkflowError, 'remote_operation_failed'):
+                client.process(['ssh'], 1)

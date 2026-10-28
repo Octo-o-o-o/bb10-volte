@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "recorded_local": "2026-10-28T23:31:58+08:00",
+  "timezone": "Asia/Shanghai",
+  "scope": "One already-rooted Q10 and one Mac; existing service reads and owner-operated calls, without phone service installation or new authorization.",
+  "package": {
+    "release_tag": "v0.3.2-r5",
+    "release_url": "https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.3.2-r5",
+    "file": "bb10-volte-0.3.2-r5-macos-universal.dmg",
+    "bytes": 20938643,
+    "sha256": "0fee8a16f3435968db06ff44f0f4df1340ac4544653a9b1bc711f54619fc0762",
+    "provenance": "Owner-provided file matched GitHub Release asset digest and independently retrieved sha256 file; original download channel was not independently established.",
+    "phone_payload_version": "0.3.2",
+    "desktop_revision": 5,
+    "source_commit": "f4a97d6c1d2491da887c2025d520552d3b3e03d3",
+    "source_build_substituted": false,
+    "codesign_app_and_dmg": "passed",
+    "spctl_app_and_dmg": "passed",
+    "stapler_app_and_dmg": "passed",
+    "architectures_inspected": [
+      "arm64",
+      "x86_64"
+    ],
+    "actual_runtime": "arm64",
+    "intel_hardware_tested": false,
+    "gatekeeper_disabled": false,
+    "quarantine_removed": false,
+    "clean_mac_first_launch_acceptance": false
+  },
+  "mac": {
+    "model": "Mac mini",
+    "chip": "Apple M6",
+    "architecture": "arm64",
+    "os": "macOS 27.2",
+    "build": "26B123",
+    "ssh_scp": "system /usr/bin/ssh and /usr/bin/scp"
+  },
+  "phone": {
+    "model": "Q10",
+    "variant": "SQN100-3",
+    "os": "10.3.3.3216",
+    "mcc_mnc": "460-01",
+    "sim": "USIM without ISIM",
+    "existing_service_version": "0.3.2",
+    "geographic_province_independently_verified_this_run": false
+  },
+  "layers": {
+    "usb": {
+      "result": "passed",
+      "vid": "0x0fca",
+      "pid": "0x8017",
+      "manufacturer": "Research In Motion, Ltd.",
+      "device": "BlackBerry",
+      "binding": "AppleUSBCDCCompositeDevice / AppleUSBNCMControl / AppleUSBNCMData / IOEthernetInterface",
+      "unplug_replug_comparisons": 2,
+      "interface_ownership_confirmed_by_comparison": true,
+      "phone_usb_menu_value_independently_recorded": false,
+      "connection_used_existing_usb_hub": true
+    },
+    "network": {
+      "result": "passed",
+      "driver_bundle": "com.apple.driver.usb.cdc.ncm",
+      "driver_version": "5.0.0",
+      "host_address": "169.254.0.2",
+      "prefix": 30,
+      "phone_address": "169.254.0.1",
+      "address_method": "DHCP",
+      "route_to_phone_on_confirmed_usb_interface": true,
+      "actual_tcp_source_address": "169.254.0.2",
+      "additional_driver_installed": false,
+      "manual_ip_route_gateway_dns_change": false,
+      "scope": "Built-in CDC-NCM worked for this Mac and current phone USB mode; other macOS versions/modes remain unverified."
+    },
+    "ssh_root": {
+      "result": "passed",
+      "personal_materials_reused_with_explicit_owner_authorization": true,
+      "pinned_host_identity_matched": true,
+      "public_key_authenticated": true,
+      "effective_uid": 0,
+      "shared_private_key_used": false,
+      "host_verification_disabled": false,
+      "new_phone_authorization_written": false
+    },
+    "main_gui": {
+      "result": "passed",
+      "model_os_identified": true,
+      "existing_service_read": true,
+      "running_baseline_wait_expected": true,
+      "successful_profile_restored_after_app_restart": true,
+      "offline_package_selftest": "passed; separately from real phone checks"
+    },
+    "ims_lte": {
+      "result": "passed",
+      "phase": "running",
+      "manager_alive": true,
+      "native_alive": true,
+      "ims_connected": true,
+      "register_status": "200 OK",
+      "ran": "LTE",
+      "observation_scope": "owned_native",
+      "successful_samples": 23,
+      "approximate_interval_seconds": 5.2,
+      "first_success_local": "2026-10-28T23:19:58.902447+08:00",
+      "last_success_local": "2026-10-28T23:21:58.831213+08:00",
+      "later_ssh_failures_during_deliberate_unplug": 8,
+      "scope": "Discrete read-only snapshots, not continuous radio capture or exact call timing."
+    },
+    "manual_calls": {
+      "result": "passed",
+      "source": "Owner explicitly confirmed outgoing and incoming answered, audio in both directions, and 4G/LTE throughout.",
+      "automatically_dialed": false,
+      "outgoing_answered": true,
+      "incoming_answered": true,
+      "two_way_audio": true,
+      "owner_confirmed_lte_throughout": true,
+      "exact_start_end_times_recorded": false,
+      "duration_seconds": null,
+      "at_least_twenty_seconds_verified": false,
+      "audio_recorded": false
+    },
+    "usb_reconnection": {
+      "result": "passed",
+      "device_and_interfaces_removed_when_unplugged": true,
+      "ssh_root_service_recovered_after_replug": true,
+      "new_authorization_required": false,
+      "service_restart_or_reinstall_required": false
+    },
+    "first_use_wizard": {
+      "result": "failed_in_published_r5",
+      "root_probe": "Python -c rejected by existing phone policy with -c option disabled for euid 0; authenticated command failure misreported as connection failure.",
+      "mac_usb_fields": "unconfirmed despite verified USB/network",
+      "recovery_ui_opened": true,
+      "full_new_pairing_performed": false
+    },
+    "phone_reboot": {
+      "result": "not_tested",
+      "reason": "Owner chose not to reboot in this Mac run."
+    }
+  },
+  "changes_and_cleanup": {
+    "project_implementation_changed_during_hardware_run": false,
+    "phone_telephony_radio_ims_or_system_changed": false,
+    "phone_root_or_service_reinstalled": false,
+    "mac_network_or_security_changed": false,
+    "owner_personal_connection_copy_retained_in_protected_storage": true,
+    "temporary_diagnostic_files": "Existing preflight staged and cleaned its own files; controlled before/after check preserved all 22 existing stage directories.",
+    "private_original_logs_and_screenshots": "Retained locally; not included in the public repository."
+  },
+  "not_tested": [
+    "Intel hardware",
+    "Other Mac models, macOS versions or USB modes",
+    "Clean Mac first launch",
+    "New authorization PAIR writes and START on the phone",
+    "microSD script/result transfer",
+    "Third-party Root SSH layout acceptance",
+    "Initial Root or flashing",
+    "VoLTE installation or reinstallation from the Mac",
+    "Phone reboot in this run",
+    "Exact call durations or at least 20-second calls",
+    "Sustained stability, other models/carriers, roaming, handover, emergency calls"
+  ],
+  "repository_fix_scope": "Source changes for Root probing, Mac USB facts and UI/docs are separate from this published-r5 hardware record. No new DMG is published by this record.",
+  "privacy": "No private keys, host key fingerprints, personal paths, phone numbers, serial numbers, MAC addresses or full device/SIM identifiers are included.",
+  "upstream_macos_rooting": {
+    "status": "source_and_offline_tool_review_not_on_device",
+    "autoroot_v4": "https://bb10.root.sx/blog/autoroot-v4",
+    "bb10mt_commit": "d45b66ba9594a2912dd005e3607da1d4825fb06e",
+    "sources": {
+      "README.md": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/README.md",
+      "bb10mt.lpi": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/bb10mt.lpi",
+      "uflash.pas": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/uflash.pas"
+    },
+    "findings": [
+      "AutoRoot v4 documents Linux/macOS batch image construction.",
+      "bb10mt contains native Apple Silicon/Intel Darwin build targets and USB flash/BootROM implementation."
+    ],
+    "macos_initial_flashing_hardware_acceptance": false,
+    "scope": "Upstream technical support does not establish this app or Mac as accepted for initial Root. Image construction is distinct from USB flashing and Root after boot; Windows autoloader exe is not a native Mac executable.",
+    "tested_r5_package_contains_macos_initial_flashing": false,
+    "native_info_loader_flash_executed_this_run": false
+  },
+  "repository_macos_rooting": {
+    "status": "experimental_source_integration_without_hardware_first_flash_acceptance",
+    "minimum_macos": "14.0",
+    "tool_manifest": "macos-root-tools.json",
+    "private_tools_and_libraries": true,
+    "homebrew_install_required": false,
+    "native_help_execution": "passed",
+    "offline_image_build_and_partition_verification": "passed_source_native_offline_only",
+    "native_info_loader_flash_executed_on_phone": false,
+    "hardware_first_flash_accepted": false,
+    "new_dmg_published": false,
+    "native_failure_policy": "Require per-file ordered progress/signature/completion evidence; reject any native error or unknown outcome without retry or radio continuation. Never apply Windows exit-73 exception.",
+    "development_record": "macos-development-2026-10-29.json"
+  }
+}

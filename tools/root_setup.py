@@ -4,7 +4,6 @@ import hashlib
 import os
 from pathlib import Path
 import re
-import shlex
 import shutil
 import subprocess
 import sys
@@ -16,7 +15,7 @@ import zipfile
 from desktop_paths import resource_root, private_root, download_root, frozen
 from fetch_materials import fetch_entries, sha
 from connection import resolve_connection, save_connection
-from workflow import ENV, WorkflowError
+from workflow import WorkflowError
 
 ROOT = resource_root()
 NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
@@ -69,6 +68,9 @@ $adapters=@(Get-NetAdapter -IncludeHidden | Where-Object { $_.InterfaceDescripti
                 result.update(json.loads(raw.stdout))
         except (OSError, ValueError, subprocess.TimeoutExpired):
             pass
+    elif sys.platform == 'darwin':
+        from macos_usb import read_state
+        result.update(read_state())
     result['device'] = discovery()
     # Do not open and abandon QNX development sessions or raw SSH sockets.
     # SSH availability is established by the ordinary, authenticated client.
@@ -78,8 +80,20 @@ $adapters=@(Get-NetAdapter -IncludeHidden | Where-Object { $_.InterfaceDescripti
 
 def verify_root(host='bb10-root', config=''):
     client, choice = resolve_connection(host, config)
-    command = ENV + '/usr/bin/python3.2 -c ' + shlex.quote('import os; print(os.geteuid())')
-    if client.remote(command, timeout=15).strip() != '0':
+    try:
+        # BB10 deliberately disables Python -c for EUID 0. A hash-checked,
+        # individually trusted script respects that restriction.
+        with client.stage(diagnostic='root') as path:
+            result = client.execute(path + '/root-probe.py', timeout=15)
+    except WorkflowError as error:
+        if error.code in ('remote_operation_failed', 'invalid_device_response'):
+            raise SetupError('root_probe_failed') from None
+        raise
+    if (not isinstance(result, dict) or type(result.get('schema')) is not int or result['schema'] != 1 or
+            type(result.get('euid')) is not int or result['euid'] < 0):
+        raise SetupError('root_probe_failed')
+    # Outside the context: a completed non-root diagnostic is cleaned too.
+    if result['euid'] != 0:
         raise SetupError('root_not_ready')
     save_connection(choice['host'], choice['config'])
     return choice
@@ -150,6 +164,9 @@ def ensure_tools(progress, proxy=None, cache_dir=None, offline=False):
 def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=False):
     if variant not in catalog()['auto_root_variants']:
         raise SetupError('root_model_unsupported')
+    if sys.platform == 'darwin':
+        from macos_root import prepare_root_kit_macos
+        return prepare_root_kit_macos(variant, progress, proxy, cache_dir, offline)
     private_root().mkdir(parents=True, exist_ok=True)
     if shutil.disk_usage(private_root()).free < 15 * 1024 ** 3:
         raise SetupError('insufficient_disk')
@@ -178,7 +195,8 @@ def prepared_images(folder, allowed_stages=('prepared',)):
     if build.get('offline_build_verified') is not True or len(build.get('images', [])) != 2:
         raise SetupError('image_not_verified')
     images = []
-    for suffix in ('_os.exe', '_radio.exe'):
+    suffixes = ('_os.unsigned', '_radio.signed') if state.get('platform') == 'darwin' else ('_os.exe', '_radio.exe')
+    for suffix in suffixes:
         items = [item for item in build['images'] if item['file'].endswith(suffix)]
         if len(items) != 1 or Path(items[0]['file']).name != items[0]['file']:
             raise SetupError('image_not_verified')
@@ -191,6 +209,9 @@ def prepared_images(folder, allowed_stages=('prepared',)):
 
 
 def run_flash_stage(folder, stage, token):
+    if sys.platform == 'darwin':
+        from macos_root_flash import launch_stage
+        return launch_stage(folder, stage, token)
     args = ['--stage', stage, '--kit', str(folder), '--token', token]
     command = ([sys.executable, '--flash-stage', stage, '--root-kit', str(folder), '--flash-token', token]
                if frozen() else [sys.executable, str(ROOT / 'tools/root_flash.py')] + args)
@@ -210,12 +231,16 @@ def root_lock_path():
 
 
 def flash_root(folder, confirmed, progress):
-    if sys.platform != 'win32' or confirmed is not True:
+    if sys.platform not in ('win32', 'darwin') or confirmed is not True:
         raise SetupError('flash_confirmation_required')
     state, images = prepared_images(folder)
+    if state.get('platform', 'win32') != sys.platform:
+        raise SetupError('root_platform_mismatch')
     usb = local_usb_state()
     if usb.get('usb_count') != 1 or usb['device'].get('ModelName') != state['variant']:
         raise SetupError('device_model_not_verified')
+    if sys.platform == 'darwin' and usb.get('usb_address_ready') is not True:
+        raise SetupError('usb_source_address_required')
     try:
         verify_root()
     except WorkflowError as error:

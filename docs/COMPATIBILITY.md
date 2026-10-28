@@ -14,6 +14,8 @@ v0.3.0 将机型识别、运营商配置和原生补丁兼容性分开判断。G
 | 未知或冲突的机型身份、OS 不同、任一原生哈希不符 | 禁止安装，可导出报告供适配 | 试用开关不能绕过 |
 | SIM、Root、LTE、数据 APN 未就绪，或已有服务未恢复 | 处理后重新预检 | 不覆盖现场 |
 
+电脑平台另按连接链路验收：2026-10-28，Mac mini / Apple M6 / macOS 27.2 与上述 Q10 组合通过内置 CDC-NCM USB 网络、严格 SSH/有效 UID 0、既有服务读取、机主手动双向声音/LTE 及 USB 重连；没有安装额外驱动。仅此单机组合，Intel、其他 macOS/USB 模式、首次授权写入、Mac 初次 Root 和本轮手机重启未测。发布 r5 的首次向导有已知误报，源码修复与发布包分开记录。见[Mac 使用说明](MACOS.md)和[脱敏实测记录](../materials/macos-device-validation-2026-10-28.json)。
+
 机型名称和硬件变体来自 `/pps/services/deviceproperties`，系统版本来自 `/etc/os.version`。可用变体前缀识别名称缺失的手机；名称与变体冲突则拒绝。Q20 / Q30 对应 Classic / Passport，官方型号例见 [Classic SQC100-2 手册](https://www.att.com/support_static_files/manuals/BlackBerry_Classic_SQC100-2.pdf)和 [Passport SQW100-3 手册](https://www.att.com/support_static_files/manuals/BlackBerry_Passport_SQW100-3.pdf)。识别成功不表示射频、驱动和 IMS 已验证。
 
 试用始终要求 **OS 10.3.3.3216、Root、QNX ARM32、4 个原生文件 SHA-256 完全匹配**、实际 SIM 与配置一致、原厂数据配置可核验、LTE 与数据 APN 在线，以及安装前无冲突。不同文件不能靠编辑 JSON 或开启试用跳过。原生引擎为 `qnx-arm32-os3216-native-v1`；新增哈希或系统版本需要代码适配和实机验收。

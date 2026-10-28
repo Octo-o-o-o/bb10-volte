@@ -11,12 +11,23 @@ from profile_editor import FONT
 from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh)
 from workflow import WorkflowError
+from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
     'openssh_missing': '本机缺少 SSH 客户端。Windows 源码用户可点击“准备连接组件”，由本项目自动获取。',
     'root_model_unsupported': '当前自动 Root 配方仅支持 Q10。Q20 / Q30 必须使用各自的固件，不能套用 Q10 镜像。',
-    'windows_root_required': '首次 Root 刷写目前需要 Windows。此 Mac 应用可连接已 Root 的设备；请先在 Windows 完成首次准备。',
+    'windows_root_required': '本应用首次 Root 准备仅支持 Windows 和 Mac；其他平台请参考原作者方法。',
     'root_not_ready': 'SSH 已连通，但尚未取得有效 Root。请按已有 Root 方法完成启动，再重新检测。',
+    'root_probe_failed': '已建立 SSH，但 Root 诊断未完成。请保留现场核对诊断结果，不要因此重新刷写或更改手机安全设置。',
+    'root_platform_mismatch': '镜像包与本机平台不符。Mac 原生流程不能直接运行 Windows EXE，请在本机重新准备匹配的个人镜像包。',
+    'usb_source_address_required': '尚未确认黑莓 USB 接口使用 169.254.0.2。请先核对 USB 网络；现有授权可能限制这个来源地址。',
+    'native_console_unavailable': '未能打开可交互的 Terminal 刷写窗口，已停止。请保留当前阶段，不要重复启动刷写。',
+    'path_unsupported': '个人目录路径含当前工具不支持的字符。请保留现有材料，改用不含等号、换行或引号的目录重新准备。',
+    'macos_root_architecture_unsupported': '原生 Mac 首次 Root 工具仅提供 Apple Silicon 和 Intel Mac 版本。',
+    'macos_root_version_unsupported': '原生首次 Root 工具需要 macOS 14 或更新版本；这不影响已有可用 SSH 的日常连接。',
+    'macos_root_input_missing': '离线缓存缺少固定材料。请允许本次准备下载，或提供完整且校验通过的缓存。',
+    'macos_root_runtime_unavailable': 'Mac 原生 Root 工具未能启动。请核对工具和私有依赖，不要为此降低系统安全设置。',
+    'macos_root_build_failed': '原生镜像构建失败，尚未刷写手机。请保留本机 root-build.log，核对失败原因后再准备。',
     'already_rooted': '已检测到可用 Root，已阻止重复刷写。请直接返回主界面检查设备。',
     'ssh_access_needs_repair': '手机已提供 SSH，但未能验证当前密钥。请导入原有个人配置，不要用重新刷写修复密钥问题。',
     'insufficient_disk': '可用磁盘空间不足，请至少预留 15 GB 后重试。',
@@ -46,6 +57,7 @@ class SetupWizard(tk.Toplevel):
         self.variant = tk.StringVar()
         self.proxy = tk.StringVar()
         self.ack = tk.BooleanVar()
+        self.mac_flash_ack = tk.BooleanVar()
         body = ttk.Frame(self, padding=24)
         body.pack(fill='both', expand=True)
         ttk.Label(body, text='准备好设备，再继续开通', font=(FONT, 17, 'bold')).pack(anchor='w')
@@ -53,22 +65,28 @@ class SetupWizard(tk.Toplevel):
         self.status.pack(anchor='w', pady=(8, 18))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
-        connection = ttk.Frame(self.tabs, padding=20)
-        root_tab = ttk.Frame(self.tabs, padding=20)
+        if sys.platform == 'darwin':
+            connection_page, connection = scrolled_page(self.tabs, padding=20)
+            root_page, root_tab = scrolled_page(self.tabs, padding=20)
+        else:
+            connection_page = connection = ttk.Frame(self.tabs, padding=20)
+            root_page = root_tab = ttk.Frame(self.tabs, padding=20)
         drivers = ttk.Frame(self.tabs, padding=20)
-        for frame, title in [(connection, '连接检查'), (root_tab, '首次 Root'), (drivers, 'Windows 驱动')]:
+        for frame, title in [(connection_page, '连接检查'), (root_page, '首次 Root'), (drivers, 'Windows 驱动')]:
             self.tabs.add(frame, text=title)
         self.device = ttk.Label(connection, text='设备型号与系统将在检测后显示', font=(FONT, 12, 'bold'))
         self.device.pack(anchor='w', pady=(0, 12))
         self.facts = ttk.Label(connection, text='等待检测 USB、开发模式、SSH 与 Root。', wraplength=730, justify='left')
         self.facts.pack(anchor='w', pady=(0, 20))
-        ttk.Label(connection, text='需要在手机上配合时', font=(FONT, 12, 'bold')).pack(anchor='w')
-        ttk.Label(connection, text='1. 解锁手机，用数据线连接电脑。\n'
+        ttk.Label(connection, text='按手机现状准备连接' if sys.platform == 'darwin' else '需要在手机上配合时',
+                  font=(FONT, 12, 'bold')).pack(anchor='w')
+        phone_steps = PHONE_STEPS if sys.platform == 'darwin' else ('1. 解锁手机，用数据线连接电脑。\n'
                   '2. 首次开发连接：设置 → 安全和隐私 → 开发模式，按手机提示开启。\n'
                   '3. 已有 AutoRoot：必要时打开一次 BlackBerry World，等待 Root / SSH 就绪。商店提示无网络不等于 Root 失败。\n'
                   '4. 已有个人 SSH 配置可直接导入。连接失败不能单独证明手机没有 Root。\n\n'
-                  '已有可用 Root SSH 时，开发模式无需为了本应用一直开启。重启后 Root 与 IMS 会先后就绪，请等待注册完成。',
-                  wraplength=730, justify='left').pack(anchor='w', pady=(8, 18))
+                  '已有可用 Root SSH 时，开发模式无需为了本应用一直开启。重启后 Root 与 IMS 会先后就绪，请等待注册完成。')
+        self.phone_steps = ttk.Label(connection, text=phone_steps, wraplength=730, justify='left')
+        self.phone_steps.pack(anchor='w', pady=(8, 18))
         actions = ttk.Frame(connection)
         actions.pack(fill='x')
         self.detect_button = ttk.Button(actions, text='重新检测', command=self.detect)
@@ -78,6 +96,10 @@ class SetupWizard(tk.Toplevel):
         self.components_button = ttk.Button(actions, text='准备连接组件', command=self.components)
         if sys.platform == 'win32':
             self.components_button.pack(side='left')
+        self.mac_guide_button = None
+        if sys.platform == 'darwin':
+            self.mac_guide_button = ttk.Button(actions, text='Mac 连接说明', command=lambda: show_mac_guide(self))
+            self.mac_guide_button.pack(side='left')
         self.continue_button = ttk.Button(connection, text='返回主界面并检查', style='Accent.TButton', command=self.continue_to_app, state='disabled')
         self.continue_button.pack(anchor='e', pady=(20, 0))
         self.recovery_button = ttk.Button(connection, text='已 Root 但没有连接配置？恢复连接', command=self.recover_connection)
@@ -85,9 +107,10 @@ class SetupWizard(tk.Toplevel):
 
         ttk.Label(root_tab, text='自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写', wraplength=740,
                   font=(FONT, 11, 'bold')).pack(anchor='w')
-        if sys.platform != 'win32':
-            ttk.Label(root_tab, text='本机支持连接已 Root 的 BB10 设备；首次 Root 刷写目前请在 Windows 完成。',
+        if sys.platform == 'darwin':
+            ttk.Label(root_tab, text='macOS 14+ 原生实验流程：先在本机准备并校验，再经双重确认打开 Terminal 刷写。真实首刷尚未验收；Q30 / Q20 尚无匹配首刷材料。',
                       wraplength=740).pack(anchor='w', pady=(12, 0))
+        if sys.platform != 'win32':
             self.tabs.tab(drivers, state='disabled')
         ttk.Label(root_tab, text='当前自动配方支持 Q10；首次刷写会清空手机数据。Q20 / Q30 请使用匹配机型的 Root 方法。\n'
                   '应用自动下载固定版本工具和固件，无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。',
@@ -102,6 +125,12 @@ class SetupWizard(tk.Toplevel):
         self.ack_check = ttk.Checkbutton(root_tab, text='已备份并核对机型，同意清空手机数据', variable=self.ack)
         self.ack_check.pack(anchor='w')
         self.ack.trace_add('write', lambda *_: self.refresh())
+        self.mac_flash_check = None
+        if sys.platform == 'darwin':
+            self.mac_flash_check = ttk.Checkbutton(root_tab, text='已核对手机尚未 Root，理解 Mac 首刷尚未实机验收',
+                                                   variable=self.mac_flash_ack)
+            self.mac_flash_check.pack(anchor='w', pady=(6, 0))
+            self.mac_flash_ack.trace_add('write', lambda *_: self.refresh())
         self.flash_button = ttk.Button(root_tab, text='开始刷写 Root（清空数据）', command=self.flash, state='disabled')
         self.flash_button.pack(anchor='w', pady=(12, 14))
         ttk.Label(root_tab, text='刷写后完成手机首次设置，打开一次 BlackBerry World，再到“连接检查”验证 Root。\n'
@@ -132,13 +161,16 @@ class SetupWizard(tk.Toplevel):
     def refresh(self):
         for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button):
             button.configure(state='disabled' if self.busy else 'normal')
-        self.prepare_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.choice else 'disabled')
+        self.prepare_button.configure(state='normal' if not self.busy and sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
-        self.flash_button.configure(state='normal' if self.kit and self.ack.get() and not self.busy and not self.choice else 'disabled')
+        mac_confirmed = sys.platform != 'darwin' or self.mac_flash_ack.get()
+        self.flash_button.configure(state='normal' if self.kit and self.ack.get() and mac_confirmed and not self.busy and not self.choice else 'disabled')
         self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         self.model_picker.configure(state='disabled' if self.busy or self.kit else 'readonly')
         self.proxy_entry.configure(state='disabled' if self.busy else 'normal')
         self.ack_check.configure(state='disabled' if self.busy else 'normal')
+        if self.mac_flash_check is not None:
+            self.mac_flash_check.configure(state='disabled' if self.busy else 'normal')
 
     def start(self, action, function):
         if self.busy:
@@ -167,7 +199,7 @@ class SetupWizard(tk.Toplevel):
                 choice, error = None, str(exc)
                 if error == 'connection_refused':
                     usb['ssh_port'] = False
-                elif error in ('authentication_failed', 'host_key_mismatch', 'root_not_ready'):
+                elif error in ('authentication_failed', 'host_key_mismatch', 'root_not_ready', 'root_probe_failed'):
                     usb['ssh_port'] = True
             return {'usb': usb, 'choice': choice, 'error': error}
         self.start('detect', work)
@@ -194,7 +226,8 @@ class SetupWizard(tk.Toplevel):
         self.start('prepare', lambda progress: prepare_root_kit(variant, progress, proxy))
 
     def flash(self):
-        if not self.kit or not self.ack.get() or self.busy:
+        if (not self.kit or not self.ack.get() or self.busy or
+                sys.platform == 'darwin' and not self.mac_flash_ack.get()):
             return
         if messagebox.askyesno('确认清空并刷写', '此操作会清空手机数据，并写入对应 Q10 的 Root 系统与无线固件。\n\n'
                               '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？', parent=self):
@@ -237,6 +270,12 @@ class SetupWizard(tk.Toplevel):
                             yesno(self.usb['usb_present']), yesno(self.usb['usb_network']),
                             '已开启' if development == '1' else '未开启' if development == '0' else '待确认',
                             ssh_state, '已验证' if self.choice else '未能验证（不等于未 Root）'))
+                        if sys.platform == 'darwin' and self.usb.get('network_interfaces'):
+                            interfaces = self.usb['network_interfaces']
+                            rows = ['{} {}'.format(item['name'], ', '.join(item.get('ipv4', [])) or '无 IPv4')
+                                    for item in interfaces if item.get('active')]
+                            network = '；'.join(rows) if rows else '关联接口尚未启用'
+                            self.facts.configure(text=self.facts.cget('text') + '\n电脑 USB 网络：' + network)
                         self.status.configure(text='Root 连接已验证，可以继续。开发模式无需为此保持开启。' if self.choice else
                                               MESSAGES.get(result['error'], '请按手机上的准备步骤操作，再重新检测。'))
                         if self.choice:

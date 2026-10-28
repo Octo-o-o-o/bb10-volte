@@ -33,12 +33,12 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 | Phone operating system | **BlackBerry 10 OS 10.3.3.3216**; the firmware archive is named `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`. Exact native file hashes are enforced by the installer |
 | SIM and network | **China Unicom 460-01 USIM in Beijing**, working LTE data and a subscription confirmed to support VoLTE; the tested SIM had no ISIM |
 | Phone access | Working **root SSH**, the owner's private key and a verified host key; the service uses the AutoRoot v4 addon mechanism |
-| Computer | **Windows 11 x64** was used; the Root preparation and USB driver workflows require Windows. macOS/Linux deployment has not been validated |
+| Computer | **Windows 11 x64**; a Mac mini / **Apple M6, macOS 27.2** passed existing Root/VoLTE connection, status and calling checks. This branch adds experimental initial Root on macOS 14+, without hardware first-flash acceptance. Linux deployment remains untested |
 | Desktop Python | **Not required for EXE/DMG users**; source execution / full Root preparation uses Python 3.14 (tested 3.14.9), including Tk and Zstandard tar support |
 | Device Python | BB10's built-in **Python 3.2**, with the native libraries checked by the installer |
 | Connection | Reliable USB cable and BlackBerry USB networking; the EXE bundles SSH/SCP. Source execution and initial key preparation require OpenSSH separately |
-| USB drivers | **BlackBerry USB Drivers 5.0.0.2 x64**; preparation checks file hashes and package/catalog signatures |
-| Initial Root only | AutoRoot v4, Q10 stock firmware, **7-Zip**, libusb **1.0.30**, LZO **2.10-3**, and the pinned OpenSSL DLLs from **Git for Windows 2.55.0.windows.5 / OpenSSL 3.5.7**; allow about **15 GB** of workspace |
+| USB drivers | Windows: **BlackBerry USB Drivers 5.0.0.2 x64**, with hashes and package/catalog signatures checked. This Mac used built-in CDC-NCM with no added driver; not a claim for every Mac |
+| Initial Root only | The wizard obtains pinned AutoRoot v4, Q10 firmware and 7-Zip; allow about **15 GB**. Windows uses pinned libusb/LZO/MinGit DLLs; Mac uses native bb10mt and private libusb/LZO libraries; see [Mac tools](materials/macos-root-tools.json) |
 | Optional helper rebuild | **Zig 0.13.0**; no QNX SDK is needed to install the supplied helper |
 
 Exact filenames, original download URLs and SHA-256 values are in [sources.json](materials/sources.json), [usb-drivers.json](materials/usb-drivers.json) and [stock-partitions.json](materials/stock-partitions.json). These are recorded working versions, not a request to use whichever version is newest. A hash mismatch stops preparation.
@@ -55,7 +55,7 @@ Download the matching application or source archive from [Releases](https://gith
 | **macOS DMG** | Download the `.dmg` and drag the app to Applications | Python and Tk are embedded; uses macOS's built-in SSH/SCP. See the [Mac guide](docs/MACOS.en.md) for signing, notarization and validation scope |
 | **Source** | Clone the repository or extract its source ZIP, then run `python tools/gui.py` | Requires Python 3.14 with Tk; Windows can obtain SSH through the wizard, macOS uses system SSH. Windows users can also double-click `Start-GUI.cmd`. No extra pip packages |
 
-All three share model detection, profiles, preflight and VoLTE installation. **On Windows, First use automatically downloads and verifies portable tools and Q10 firmware, generates personal keys, builds Root images and runs the ordered flashing stages only after a separate data-erasure confirmation. Users do not separately install another Root project, Git or 7-Zip.** The new flashing branch is experimental and has not been exercised on an unrooted phone. The Mac app currently supports already-rooted connections and guidance; perform initial Root on Windows. Q20/Passport need their own model-specific Root method; never use Q10 images. See [First use](docs/FIRST-RUN.en.md). Direct Mac-to-phone calling remains unverified.
+All three share model detection, profiles, preflight and VoLTE installation. **On Windows, First use automatically downloads and verifies portable tools and Q10 firmware, generates personal keys, builds Root images and runs the ordered flashing stages only after a separate data-erasure confirmation. Users do not separately install another Root project, Git or 7-Zip.** The new flashing branch is experimental and has not been exercised on an unrooted phone. This branch adds experimental native preparation and separately confirmed staged flashing for macOS 14+, using upstream tools. **No Mac hardware first flash was performed, and published r5 does not include the integration**; see [Mac Root scope and steps](docs/MACOS.en.md#can-a-mac-perform-initial-root). Q20/Passport need their own model-specific Root method; never use Q10 images. See [First use](docs/FIRST-RUN.en.md). Daily direct Mac connection and two-way calls passed on the current Q10. New pairing, initial Root and a phone reboot were outside this Mac run; see the [Mac steps for all three phone situations](docs/MACOS.en.md).
 
 Initial Root flashing erases phone data; back up first. With matching root and connection files already prepared, open the app, check the device, choose the carrier and install VoLTE. Prepared preflight and installation need no desktop Internet connection; registration and calls still need carrier service. The following instructions describe source execution.
 
@@ -128,6 +128,7 @@ Stop waits for restoration and returns `restored=true`. The preflight `baseline`
 | Afternoon persistent-service outgoing call | `INVITE 200 / ACK / BYE`, approximately 5.6 seconds after answer; all 64 trial samples showed LTE / IMS connected |
 | Hardened 0.3.1 reboot and two-way calls | Automatic recovery passed; 7.362 s outgoing, 4.674 s incoming, all 208 samples LTE / IMS connected; USB connected in this run |
 | 0.3.2 fast-start reboot and calls | Phone-menu recovery passed; USB disconnected, 6.088 s incoming and 5.894 s outgoing, all 163 samples LTE / IMS connected |
+| Mac `0.3.2-r5` daily connection | One M6/macOS 27.2 and the current Q10 passed built-in CDC-NCM, strict SSH/Root, status, owner-confirmed two-way audio/LTE and USB reconnection. First use has known defects; see [Mac evidence](materials/macos-device-validation-2026-10-28.json) |
 | Calls of at least 20 seconds, longer calls and long-term stability | **Further validation needed** |
 | Other models, versions, carriers, roaming, handover, long-term standby and emergency calls | **Not tested** |
 

@@ -23,6 +23,7 @@ ENV = ('LD_LIBRARY_PATH=/base/usr/lib:/base/lib:/base/lib/dll:/radio/lib:/radio/
        'PYTHONDONTWRITEBYTECODE=1 PYTHONHOME=/usr PYTHONPATH=/usr/lib/python32.zip:/usr/lib/python3.2/lib-dynload ')
 FILES = sorted(compat.FILES)
 MANIFEST = 'materials/payload-manifest.json'
+DIAGNOSTICS_MANIFEST = 'materials/desktop-diagnostics.json'
 CREATE_NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 
@@ -54,6 +55,22 @@ def verify_package():
             path = ROOT / name
             if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
                 raise ValueError('hash')
+        return manifest
+    except (OSError, ValueError, KeyError, TypeError):
+        raise WorkflowError('package_mismatch') from None
+
+
+def verify_diagnostics():
+    """Keep desktop-only probes separate from the installed phone payload."""
+    try:
+        manifest = json.loads((ROOT / DIAGNOSTICS_MANIFEST).read_text(encoding='utf-8'))
+        if (not isinstance(manifest, dict) or type(manifest.get('schema')) is not int or manifest['schema'] != 1 or
+                set(manifest['files']) != {'tools/root_probe.py', 'tools/stage_cleanup.py'}):
+            raise ValueError('diagnostics manifest')
+        for name, expected in manifest['files'].items():
+            path = ROOT / name
+            if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                raise ValueError('diagnostic hash')
         return manifest
     except (OSError, ValueError, KeyError, TypeError):
         raise WorkflowError('package_mismatch') from None
@@ -144,7 +161,8 @@ class Client:
             raise WorkflowError('connection_timeout_state_unknown') from None
         if result.returncode:
             message = result.stderr.lower()
-            code = ('hostname_unresolved' if 'could not resolve hostname' in message else
+            code = ('remote_operation_failed' if '-c option disabled for euid 0' in message else
+                    'hostname_unresolved' if 'could not resolve hostname' in message else
                     'ssh_algorithm_mismatch' if 'no matching' in message or 'no mutual' in message else
                     'connection_refused' if 'connection refused' in message else
                     'host_key_mismatch' if 'host key' in message else
@@ -169,12 +187,17 @@ class Client:
             raise WorkflowError('invalid_device_response') from None
 
     @contextlib.contextmanager
-    def stage(self, payload=False):
+    def stage(self, payload=False, diagnostic=None):
+        if diagnostic not in (None, 'root') or (diagnostic and payload):
+            raise WorkflowError('invalid_action')
         self.progress('package', 'working')
         verify_package()
+        if diagnostic:
+            verify_diagnostics()
         self.progress('package', 'done')
         path = '/var/rootdata/q10_volte_stage_' + uuid.uuid4().hex[:12]
-        names = (FILES + ['payload-manifest.json'] if payload else
+        names = (['root-probe.py'] if diagnostic == 'root' else
+                 FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py'])
         names += ['profile-request.json', 'stage-cleanup.py']
         local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
@@ -191,6 +214,7 @@ class Client:
             self.progress('transfer', 'working')
             for name in names:
                 source = (local_request if name == 'profile-request.json' else
+                          ROOT / 'tools/root_probe.py' if name == 'root-probe.py' else
                           ROOT / 'tools/stage_cleanup.py' if name == 'stage-cleanup.py' else
                           ROOT / (MANIFEST if name == 'payload-manifest.json' else name))
                 self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options + [str(source), self.host + ':' + path + '/' + name], 40)

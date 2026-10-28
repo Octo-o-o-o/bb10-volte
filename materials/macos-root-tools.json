@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "minimum_macos": "14.0",
+  "upstream_source_commit": "d45b66ba9594a2912dd005e3607da1d4825fb06e",
+  "scope": "Experimental native preparation and guarded staged execution; real first flash not accepted",
+  "architectures": {
+    "arm64": {
+      "bb10mt": {
+        "entry": "bb10mt_aarch64_darwin",
+        "sha256": "e8f91adbda9cfd373f7c7334a1e436b6991e978b23eb4344bb746db746f18515"
+      },
+      "libraries": [
+        {
+          "file": "libusb-arm64_sonoma.tar.gz",
+          "url": "https://ghcr.io/v2/homebrew/core/libusb/blobs/sha256:74fa9ed0291e2d3e7827a06ea836a57c96d8861a7079544d47be231f08eb4c02",
+          "sha256": "74fa9ed0291e2d3e7827a06ea836a57c96d8861a7079544d47be231f08eb4c02",
+          "member": "libusb/1.0.30/lib/libusb-1.0.0.dylib",
+          "library_name": "libusb-1.0.dylib",
+          "library_sha256": "59644bed86d641b47dc24792dc52cf1b93cfd1f93e383137e4ba47a815191868",
+          "license_member": "libusb/1.0.30/COPYING",
+          "license_file": "libusb-COPYING.txt",
+          "license_sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+          "license": "LGPL-2.1-or-later",
+          "source_api": "https://formulae.brew.sh/api/formula/libusb.json"
+        },
+        {
+          "file": "lzo-arm64_sonoma.tar.gz",
+          "url": "https://ghcr.io/v2/homebrew/core/lzo/blobs/sha256:167749edd2052e4c577f27c79a41eb1cb4b79302b1e4bef1e4cfb29bd50aedd9",
+          "sha256": "167749edd2052e4c577f27c79a41eb1cb4b79302b1e4bef1e4cfb29bd50aedd9",
+          "member": "lzo/2.10/lib/liblzo2.2.dylib",
+          "library_name": "liblzo2.dylib",
+          "library_sha256": "1c1441b6a68db5d3006b2e713e5b94828c5c144722e33c5a9bb207cd33b0799f",
+          "license_member": "lzo/2.10/COPYING",
+          "license_file": "lzo-COPYING.txt",
+          "license_sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "license": "GPL-2.0-or-later",
+          "source_api": "https://formulae.brew.sh/api/formula/lzo.json"
+        }
+      ]
+    },
+    "x86_64": {
+      "bb10mt": {
+        "entry": "bb10mt_x64_darwin",
+        "sha256": "5bbe2e72c9b36971fa8abc986a08b19a35bf1a6e3289007e486c0e766b23371f"
+      },
+      "libraries": [
+        {
+          "file": "libusb-sonoma.tar.gz",
+          "url": "https://ghcr.io/v2/homebrew/core/libusb/blobs/sha256:1387aea9bbed3a1e57884b5b43166fc83cfdae415e5f3803a8259ff77a4ba613",
+          "sha256": "1387aea9bbed3a1e57884b5b43166fc83cfdae415e5f3803a8259ff77a4ba613",
+          "member": "libusb/1.0.30/lib/libusb-1.0.0.dylib",
+          "library_name": "libusb-1.0.dylib",
+          "library_sha256": "53e6b188649a4302ba099673e2840c4d09c0475b59bfa967270175d171e2d4fc",
+          "license_member": "libusb/1.0.30/COPYING",
+          "license_file": "libusb-COPYING.txt",
+          "license_sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+          "license": "LGPL-2.1-or-later",
+          "source_api": "https://formulae.brew.sh/api/formula/libusb.json"
+        },
+        {
+          "file": "lzo-sonoma.tar.gz",
+          "url": "https://ghcr.io/v2/homebrew/core/lzo/blobs/sha256:11b8557744feb28974cb4caa92a16a89f3ead77468778cc17c2f349502df495e",
+          "sha256": "11b8557744feb28974cb4caa92a16a89f3ead77468778cc17c2f349502df495e",
+          "member": "lzo/2.10/lib/liblzo2.2.dylib",
+          "library_name": "liblzo2.dylib",
+          "library_sha256": "d2139e5af34dba07523b4767ef2188003fd9e32208d9a2dd47708296e2978c78",
+          "license_member": "lzo/2.10/COPYING",
+          "license_file": "lzo-COPYING.txt",
+          "license_sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "license": "GPL-2.0-or-later",
+          "source_api": "https://formulae.brew.sh/api/formula/lzo.json"
+        }
+      ]
+    }
+  },
+  "shared_files": {
+    "bb10mt.ini": "c66bbd7066bef57ad164bf872234570bbc9886a309f24a03f69303b9268c7a05",
+    "loaders.dat": "37e34cb65bbeef615bc6c84913a38c5935fcbbaab41202df5c51c5746ee907f9",
+    "loaders.ini": "8b25da3f32148e9df3be886bbf0d5ef082cac81fd0b067f2089ee139fc0b3956",
+    "cap.exe": "3a50b7703155e7edafc5bd51abcadc764b94b95eb0d8b2ee0d444ae3710fb70d"
+  },
+  "seven_zip": {
+    "file": "7z2605-mac.tar.xz",
+    "url": "https://github.com/ip7z/7zip/releases/download/26.05/7z2605-mac.tar.xz",
+    "sha256": "12ef6830317743cfd3f0ab1724bde43fcc270d8b6d8564f8c12c2a2b7f993570",
+    "member": "7zz",
+    "binary_sha256": "8e495531e1b2b8cb169ca583493922d4ab386007756418c15b95f07f642c35fb",
+    "license_member": "License.txt",
+    "license_sha256": "1790374e5352329cedb46ee3808930a88e9ca2f08b82b10fcf5cf605d2c301b1"
+  }
+}

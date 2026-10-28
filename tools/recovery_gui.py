@@ -1,6 +1,7 @@
 """Shared Windows/macOS recovery UI for devices that already have Root."""
 from pathlib import Path
 import queue
+import sys
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -10,6 +11,7 @@ from connection_recovery import (RecoveryError, read_host_key, fingerprint, impo
 from root_setup import verify_root, SetupError
 from workflow import WorkflowError
 from profile_editor import FONT
+from mac_help import TRANSFER_HINT, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
     'keygen_missing': '缺少密钥工具。Windows 源码用户请先准备连接组件；Mac 使用系统 OpenSSH。',
@@ -26,6 +28,7 @@ MESSAGES = {
     'connection_failed': '尚未连通手机。检查 USB 网络、手机解锁与 SSH 是否已启动，再点击验证。',
     'connection_timeout_state_unknown': '连接超时。请核对 USB 网络与手机 SSH 状态后重新验证。',
     'root_not_ready': 'SSH 已连接，但不是有效 Root。请先用原 Root 工具完成启动，再验证。',
+    'root_probe_failed': '已建立 SSH，但 Root 诊断未完成。请保留连接材料检查诊断结果，不要因此重新刷写或更改手机安全设置。',
 }
 
 
@@ -47,9 +50,14 @@ class RecoveryDialog(tk.Toplevel):
                   wraplength=800).pack(anchor='w', pady=(8, 14))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
-        existing, missing = ttk.Frame(self.tabs, padding=18), ttk.Frame(self.tabs, padding=18)
+        existing = ttk.Frame(self.tabs, padding=18)
         self.tabs.add(existing, text='有登录私钥')
-        self.tabs.add(missing, text='没有连接文件')
+        if sys.platform == 'darwin':
+            missing_page, missing = scrolled_page(self.tabs)
+            self.tabs.add(missing_page, text='没有连接文件')
+        else:
+            missing = ttk.Frame(self.tabs, padding=18)
+            self.tabs.add(missing, text='没有连接文件')
         ttk.Label(existing, text='用于原刷机包提供了登录私钥，但没有 ssh_config 的情况。', wraplength=750).pack(anchor='w')
         self.buttons = []
         for title, variable, callback in [('登录私钥', self.identity, self.select_identity),
@@ -68,12 +76,14 @@ class RecoveryDialog(tk.Toplevel):
         button = ttk.Button(existing, text='补建配置并验证', command=self.import_key)
         button.pack(anchor='w')
         self.buttons.append(button)
-        ttk.Label(missing, text='需要手机已有可用的 Root 终端（如 Term49 + __root）。只有图标、开发模式或 Root 提示还不够。\n'
+        missing_steps = ('需要手机已有可用的 Root 终端（如 Term49 + __root）。只有图标、开发模式或 Root 提示还不够。\n'
+                  '全新电脑无需 Windows 上的旧文件：本机生成独立密钥，私钥保留在本机。\n'
                   '1. 生成并导出授权脚本，只把此 .py 文件复制到手机 Downloads；私钥保留在电脑。\n'
                   '2. 在手机终端执行下方命令；脚本确认有效 Root 后，输入 PAIR 授权这台电脑。\n'
                   '3. 若 SSH 未开启，可按脚本提示输入 START 临时启动；已有会话无需重复启动。\n'
-                  '4. 将手机 Downloads 中同编号的 result.json 复制回电脑，导入并验证。',
-                  wraplength=740, justify='left').pack(anchor='w')
+                  '4. 将手机内部 Downloads 中同编号的 result.json 复制回原电脑，核对来源后导入并验证。')
+        self.missing_steps = ttk.Label(missing, text=missing_steps, wraplength=740, justify='left')
+        self.missing_steps.pack(anchor='w')
         row = ttk.Frame(missing)
         row.pack(fill='x', pady=12)
         for title, callback in [('生成并导出授权文件', self.generate), ('导入手机授权结果', self.import_result)]:
@@ -86,6 +96,10 @@ class RecoveryDialog(tk.Toplevel):
         ttk.Label(missing, text='脚本保留原授权并备份，不改 Root 固件。临时启动 SSH 不保证重启后仍开启。\n'
                   '若 __root / u_root 不存在或仍无 Root 权限，请先在手机原有 Root 工具中恢复权限；电脑端无法越过这一步。',
                   wraplength=740, justify='left').pack(anchor='w', pady=(12, 0))
+        self.mac_transfer_help = None
+        if sys.platform == 'darwin':
+            self.mac_transfer_help = ttk.Label(missing, text=TRANSFER_HINT, wraplength=740, justify='left')
+            self.mac_transfer_help.pack(anchor='w', pady=(10, 0))
         self.status = ttk.Label(body, text='请选择适合当前情况的路径。', wraplength=800)
         self.status.pack(fill='x', pady=14)
         bottom = ttk.Frame(body)
@@ -95,6 +109,8 @@ class RecoveryDialog(tk.Toplevel):
         self.continue_button = ttk.Button(bottom, text='使用此连接', command=self.finish, state='disabled')
         self.continue_button.pack(side='right')
         ttk.Button(bottom, text='关闭', command=self.close).pack(side='right', padx=10)
+        if sys.platform == 'darwin':
+            ttk.Button(bottom, text='Mac 连接说明', command=lambda: show_mac_guide(self)).pack(side='left', padx=10)
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
         self.grab_set()
@@ -190,7 +206,7 @@ class RecoveryDialog(tk.Toplevel):
                     self.show_error(result)
                 elif action == 'script':
                     phone_path = '/accounts/1000/shared/downloads/' + result.name
-                    self.set_commands('__root\nid -u\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
+                    self.set_commands('__root\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
                     self.status.configure(text='已导出 ' + result.name + '。复制到手机 Downloads，再按上面的步骤授权；此时尚未建立连接。')
                 elif action == 'config':
                     self.choice = result

@@ -128,8 +128,23 @@ class DesktopPackageTests(unittest.TestCase):
         self.assertIn('materials/payload-manifest.json', names)
         self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
         self.assertEqual({name for name in names if name.startswith('tools/')},
-                         {'tools/stage_cleanup.py', 'tools/phone_pairing.py', 'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
+                         {'tools/stage_cleanup.py', 'tools/phone_pairing.py', 'tools/root_probe.py',
+                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
         self.assertIn('materials/first-run-tools.json', names)
+        self.assertIn('materials/desktop-diagnostics.json', names)
+
+    def test_frozen_root_probe_is_hashed_and_staged_from_bundle_resources(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(w.shutil, 'which', return_value='ssh'), \
+                patch.object(w, 'private_root', return_value=Path(folder)):
+            client = w.Client()
+            with patch.object(w, 'frozen', return_value=True), patch.object(client, 'remote', return_value=''), \
+                    patch.object(client, 'process', return_value='') as transfer, \
+                    patch.object(client, 'execute', return_value={'stage_removed': True}):
+                with client.stage(diagnostic='root'):
+                    pass
+            self.assertEqual(transfer.call_count, 3)
+            self.assertEqual(transfer.call_args_list[0].args[0][-2], str(w.ROOT / 'tools/root_probe.py'))
+            self.assertIn('tools/root_probe.py', w.verify_diagnostics()['files'])
 
     def test_legacy_device_transport_keeps_strict_host_verification(self):
         with patch.object(w, 'frozen', return_value=False), patch.object(w.shutil, 'which', side_effect=lambda n: n):
