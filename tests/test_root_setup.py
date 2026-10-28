@@ -128,12 +128,14 @@ class RootSetupTests(unittest.TestCase):
 
     def test_mac_os_failure_never_reaches_radio_or_retries(self):
         usb = self.mac_kit()
+        progress = []
         with patch.object(r.sys, 'platform', 'darwin'), patch.object(r, 'local_usb_state', return_value=usb), \
                 patch.object(r, 'verify_root', side_effect=WorkflowError('connection_refused')), \
                 patch.object(r, 'run_flash_stage', side_effect=r.SetupError('flash_state_unknown')) as flash:
             with self.assertRaisesRegex(r.SetupError, 'flash_state_unknown'):
-                r.flash_root(self.kit, True, print)
+                r.flash_root(self.kit, True, progress.append)
             flash.assert_called_once()
+        self.assertEqual(len(progress), 1)
         self.assertEqual(json.loads(self.state.read_text())['stage'], 'os_uncertain')
         self.assertTrue(r.root_lock_path().is_file())
 
