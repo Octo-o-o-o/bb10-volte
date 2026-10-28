@@ -9,9 +9,10 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from workflow import Client, ROOT, WorkflowError
+from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
+from connection import matching_alias, saved_connection, resolve_connection, save_connection
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
 BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
@@ -49,6 +50,10 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
+    'connection_setup_required': '尚未找到可用连接配置。请打开“首次使用”，检查连接或准备 Root。',
+    'hostname_unresolved': '连接别名没有对应配置。请选择已有配置，或打开“首次使用”。',
+    'ssh_algorithm_mismatch': '手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新检查。',
+    'connection_refused': '手机尚未提供 SSH 连接。请解锁手机，并按“首次使用”中的提示检查 Root 和 SSH。',
     'bundled_ssh_mismatch': '内置 SSH 文件校验失败，请重新获取完整 EXE。',
     'invalid_profile': '配置格式或参数不符合要求，请在配置编辑器中检查。',
     'profile_update_required': '所选配置与已装配置不同。先停用恢复，再预检和更新安装。',
@@ -85,14 +90,18 @@ class App:
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
         self.display_report, self.device_info = None, {}
+        self.running_baseline_expected = False
         self.connection_options_visible = False
         self.presets = presets()
         self.profile = profiles.default()
         self.profile_name = tk.StringVar(value=picker_label(self.profile['label']))
         self.experimental = tk.BooleanVar(value=False)
-        self.host = tk.StringVar(value=host)
+        saved = saved_connection() if not config and host == 'bb10-root' else None
         default = private_root() / 'root-kit/ssh_config'
-        self.config = tk.StringVar(value=config or (str(default) if default.is_file() else ''))
+        selected_config = config or (saved['config'] if saved else str(default) if default.is_file() else '')
+        selected_host = saved['host'] if saved else matching_alias(selected_config, host) if selected_config else host
+        self.host = tk.StringVar(value=selected_host)
+        self.config = tk.StringVar(value=selected_config)
         self.ack = tk.BooleanVar()
         root.title('bb10-volte')
         if os.name == 'nt' and (ROOT / 'assets/app.ico').is_file():
@@ -191,8 +200,6 @@ class App:
         self.host_entry.pack(side='left')
         self.experiment_check = ttk.Checkbutton(self.connection_card, text='允许未实测设备或运营商实验试用',
                                                 variable=self.experimental)
-        if self.host.get() != 'bb10-root':
-            self.toggle_connection_options()
 
         # Reserve the action area before giving the results card spare height.
         footer = tk.Frame(main, bg=BG)
@@ -206,6 +213,8 @@ class App:
         self.primary_button.pack(side='right')
         self.check_button = ttk.Button(toolbar, text='检查设备', command=lambda: self.run('preflight'))
         self.check_button.pack(side='right', padx=(0, 10))
+        self.setup_button = ttk.Button(toolbar, text='首次使用', command=self.setup)
+        self.setup_button.pack(side='left', padx=(0, 16))
         self.activity = self.label(toolbar, '准备就绪', 11, MUTED, anchor='w')
         self.activity.pack(side='left', fill='x', expand=True, padx=(0, 16))
         self.buttons = {'preflight': self.check_button, 'primary': self.primary_button}
@@ -219,7 +228,7 @@ class App:
         self.summary.pack(side='left')
         self.details_button = ttk.Button(heading, text='检查详情', command=self.show_checks, state='disabled')
         self.details_button.pack(side='right')
-        self.detail = self.label(summary, '选择手机的连接配置，然后检查设备。检查不会修改通话配置。', 11, MUTED,
+        self.detail = self.label(summary, '连接手机后检查设备；已有配置会自动查找。首次准备请打开“首次使用”。', 11, MUTED,
                                  wraplength=850, justify='left', anchor='w')
         self.detail.pack(fill='x', pady=(10, 12))
         self.detail.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width - 4)))
@@ -242,6 +251,7 @@ class App:
     def connection_changed(self, *_, preserve_device=False):
         self.report, self.report_connection, self.last_result = None, None, None
         self.display_report = None
+        self.running_baseline_expected = False
         if not preserve_device:
             self.device_info = {}
             self.device_label.configure(text='BlackBerry 10 设备 · 等待连接')
@@ -302,7 +312,7 @@ class App:
         for action, index in self.menu_actions.items():
             self.menu.entryconfigure(index, state='normal' if allowed[action] else 'disabled')
         for widget in (self.config_entry, self.host_entry, self.browse_button, self.edit_button,
-                       self.experiment_check, self.ack_check):
+                       self.experiment_check, self.ack_check, self.setup_button):
             widget.configure(state='disabled' if self.busy else 'normal')
         self.profile_picker.configure(state='disabled' if self.busy else 'readonly')
         self.menu.entryconfigure(self.export_index, state='normal' if self.last_result and not self.busy else 'disabled')
@@ -331,12 +341,15 @@ class App:
         path = filedialog.askopenfilename(title='选择这台手机的 SSH 配置', initialdir=str(initial), filetypes=[('SSH config', '*')])
         if path:
             self.config.set(path)
+            self.host.set(matching_alias(path, self.host.get()))
 
-    def render_report(self, report):
+    def render_report(self, report, service_status=None):
         self.report = report
         self.report_connection = self.selection()
         device = report.get('device', {})
         self.display_report, self.device_info = report, device
+        self.running_baseline_expected = (report.get('installation', {}).get('state') == 'busy' and
+                                          bool((service_status or {}).get('manager_alive')))
         badge = 'Q10 已有实测记录' if device.get('hardware_tested') else '未实测 · 可实验试用'
         if not device.get('recognized'):
             badge = '机型待识别'
@@ -347,13 +360,17 @@ class App:
         problems = []
         for check in report['checks']:
             key, state = check['id'], check['status']
-            if key in NAMES and state != 'pass':
+            expected = self.running_baseline_expected and key == 'baseline' and check['code'] == 'baseline_not_clean'
+            if key in NAMES and state != 'pass' and not expected:
                 problems.append(check)
                 self.table.insert('', 'end', iid=key,
                                   values=(NAMES[key], labels[state], NOTES.get(check['code'], '请导出报告协助检查')),
                                   tags=(state,))
-        self.check_count.configure(text='已检查 {} 项 · {} 项通过{}'.format(
+        expected_count = sum(self.running_baseline_expected and check['id'] == 'baseline' and
+                             check['code'] == 'baseline_not_clean' for check in report['checks'])
+        self.check_count.configure(text='已检查 {} 项 · {} 项通过{}{}'.format(
             len(report['checks']), sum(check['status'] == 'pass' for check in report['checks']),
+            ' · {} 项为服务运行状态'.format(expected_count) if expected_count else '',
             ' · {} 项待处理'.format(len(problems)) if problems else ''))
         if problems:
             self.table_frame.pack(fill='both', expand=True)
@@ -400,10 +417,21 @@ class App:
 
         def work():
             try:
-                client = Client(host, config or None, lambda phase, state: self.events.put(('progress', (phase, state))),
-                                profile=profile, allow_experimental=experimental)
-                result = (client.preflight() if action == 'preflight' else
-                          client.install(mode, start=True) if action == 'install' else client.action(action))
+                client, choice = resolve_connection(host, config,
+                    progress=lambda phase, state: self.events.put(('progress', (phase, state))),
+                    profile=profile, allow_experimental=experimental)
+                self.events.put(('connection', choice))
+                if action == 'preflight':
+                    report = client.preflight()
+                    result = {'preflight': report}
+                    if report['installation']['state'] in ('busy', 'stopped', 'recovery_required'):
+                        try:
+                            state = public_status(client.service('status'))
+                            result.update(status=state, registered=registered(state))
+                        except WorkflowError as error:
+                            result['status_error'] = error.code
+                else:
+                    result = client.install(mode, start=True) if action == 'install' else client.action(action)
                 self.events.put(('result', (action, result)))
             except WorkflowError as error:
                 self.events.put(('error', (error.code, error.report)))
@@ -416,6 +444,12 @@ class App:
         try:
             while True:
                 kind, payload = self.events.get_nowait()
+                if kind == 'connection':
+                    if self.host.get() != payload['host']:
+                        self.host.set(payload['host'])
+                    if self.config.get() != payload['config']:
+                        self.config.set(payload['config'])
+                    continue
                 if kind == 'progress':
                     phase, state = payload
                     self.activity.configure(text=PHASES.get(phase, '处理设备') + ' · ' + {'working': '进行中', 'done': '完成', 'pending': '待确认'}[state])
@@ -439,9 +473,13 @@ class App:
                 else:
                     action, result = payload
                     self.last_result = result
+                    try:
+                        save_connection(self.host.get(), self.config.get())
+                    except OSError:
+                        pass
                     report = result if 'checks' in result else result.get('preflight')
                     if report:
-                        self.render_report(report)
+                        self.render_report(report, result.get('status'))
                     if action != 'preflight':
                         # Every device action invalidates previously enabled mutation buttons.
                         self.report, self.report_connection = None, None
@@ -449,8 +487,21 @@ class App:
                         self.summary.configure(text='已停用并确认恢复', fg=GREEN)
                         self.detail.configure(text='恢复检查通过。再次安装或更新前，请重新预检。')
                     elif result.get('registration') == 'verified' or result.get('registered'):
-                        self.summary.configure(text='IMS 注册通过，待通话验收', fg=GREEN)
-                        self.detail.configure(text='请在手机上验证呼入、呼出、双向声音和全程 4G。重启后需等待服务注册，再复测通话。')
+                        self.summary.configure(text='4G 通话服务已启用' if action == 'preflight' else '服务注册正常，待通话验收', fg=GREEN)
+                        self.detail.configure(text='已检测到安装的服务，当前 IMS 注册与 LTE 正常。' if action == 'preflight' else
+                                              '请在手机上验证呼入、呼出、双向声音和全程 4G。重启后等待服务注册，再复测通话。')
+                    elif action == 'preflight' and result.get('status'):
+                        state = result['status']
+                        phase = state.get('phase', 'unknown')
+                        if state.get('manager_alive') and phase in ('waiting_for_native_ims', 'configuring', 'waiting_for_ims_apn', 'running', 'registering'):
+                            self.summary.configure(text='服务已安装，正在准备通话', fg=AMBER)
+                            self.detail.configure(text=SERVICE_PHASES.get(phase, '等待注册') + '。请稍后重新检查，等待注册通过后再测试通话。')
+                        elif phase == 'stopped':
+                            self.summary.configure(text='服务已安装，当前未启动', fg=INK)
+                            self.detail.configure(text='确认下方事项后，可以启动并验证服务。')
+                        else:
+                            self.summary.configure(text='已检测到安装，服务状态需核对', fg=AMBER)
+                            self.detail.configure(text='请查看检查详情或导出报告，再按实际状态处理。')
                     elif action in ('install', 'start'):
                         self.summary.configure(text='服务已启动，注册仍待确认', fg=AMBER)
                         self.detail.configure(text='等待窗口已结束。稍后重新预检并查看状态；尚不能判断为安装通话成功。')
@@ -499,7 +550,9 @@ class App:
         table.pack(fill='both', expand=True)
         labels = {'pass': '通过', 'wait': '待处理', 'adapt': '需适配', 'block': '不支持'}
         for check in self.display_report['checks']:
-            table.insert('', 'end', values=(NAMES.get(check['id'], '其他检查'), labels[check['status']],
+            expected = self.running_baseline_expected and check['id'] == 'baseline' and check['code'] == 'baseline_not_clean'
+            table.insert('', 'end', values=(NAMES.get(check['id'], '其他检查'), '运行中（预期）' if expected else labels[check['status']],
+                                           '服务正在使用配置；更新前先停用并恢复。' if expected else
                                            NOTES.get(check['code'], '请导出报告协助检查')))
 
         def explain(_):
@@ -523,6 +576,15 @@ class App:
 
     def guide(self):
         self.show_document('使用与恢复指南', ROOT / 'docs/GUI.md')
+
+    def setup(self):
+        if not self.busy:
+            from setup_wizard import SetupWizard
+            def ready(host, config):
+                self.host.set(host)
+                self.config.set(config)
+                self.run('preflight')
+            SetupWizard(self.root, ready)
 
     def licenses(self):
         path = ROOT / 'licenses/THIRD-PARTY-NOTICES.txt'
@@ -559,14 +621,42 @@ def main():
     parser.add_argument('--ssh-config', default='')
     parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
     parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')
+    parser.add_argument('--flash-stage', choices=('os', 'radio'), help=argparse.SUPPRESS)
+    parser.add_argument('--root-kit', type=Path, help=argparse.SUPPRESS)
+    parser.add_argument('--flash-token', help=argparse.SUPPRESS)
+    parser.add_argument('--prepare-root-report', type=Path, help='Prepare and verify Root images only; never contacts or flashes a phone')
+    parser.add_argument('--root-variant', help='Explicit Q10 hardware variant for image preparation')
+    parser.add_argument('--root-cache', type=Path, help='Optional directory of pinned, already downloaded Root materials')
+    parser.add_argument('--root-offline', action='store_true', help='Require cached Root inputs without any Python download')
+    parser.add_argument('--download-proxy', help='Optional proxy for missing preparation inputs')
     args = parser.parse_args()
     prepare_external_programs()
+    if args.flash_stage:
+        if not args.root_kit or not args.flash_token:
+            parser.error('A confirmed Root kit is required')
+        from root_flash import run_stage
+        return run_stage(args.root_kit, args.flash_stage, args.flash_token)
+    if args.prepare_root_report:
+        if not args.root_variant:
+            parser.error('--root-variant is required for image preparation')
+        from root_setup import prepare_root_kit, prepared_images
+        folder = prepare_root_kit(args.root_variant, lambda *_: None, args.download_proxy, args.root_cache, args.root_offline)
+        state, images = prepared_images(folder)
+        result = {'prepared': True, 'variant': state['variant'], 'root_kit': folder,
+                  'images_verified': len(images), 'offline_inputs_only': args.root_offline,
+                  'phone_contacted': False, 'phone_flashed': False}
+        args.prepare_root_report.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+        return 0
     if args.self_test:
         from windows_selftest import run
         return run(args.self_test)
     if args.preflight_report:
         try:
-            report = Client(args.host, args.ssh_config or None).preflight()
+            client, _ = resolve_connection(args.host, args.ssh_config)
+            report = client.preflight()
+            if report['installation']['state'] in ('busy', 'stopped', 'recovery_required'):
+                status = public_status(client.service('status'))
+                report.update(status=status, registered=registered(status))
             code = 0 if report['outcome'] in ('compatible', 'experimental') else 2
         except WorkflowError as error:
             report, code = {'error': error.code}, 1

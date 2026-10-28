@@ -82,6 +82,20 @@ def public_status(raw):
     return result
 
 
+def verified_windows_client(vendor):
+    try:
+        pinned = json.loads((ROOT / 'materials/windows-runtime.json').read_text(encoding='utf-8'))['openssh']['files']
+        if set(pinned) != {'ssh.exe', 'scp.exe', 'ssh-keygen.exe', 'libcrypto.dll', 'LICENSE.txt', 'NOTICE.txt'}:
+            raise ValueError('incomplete SSH manifest')
+        for name, expected in pinned.items():
+            path = vendor / name
+            if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                raise ValueError('bundled SSH changed')
+        return str(vendor / 'ssh.exe'), str(vendor / 'scp.exe')
+    except (OSError, ValueError, KeyError, TypeError):
+        raise WorkflowError('bundled_ssh_mismatch') from None
+
+
 class Client:
     def __init__(self, host='bb10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', host):
@@ -100,6 +114,7 @@ class Client:
                         # when the new client prefers it. CTR is verified on Q10.
                         # RSA/SHA1 is scoped to this legacy device connection.
                         '-o', 'Ciphers=aes128-ctr,aes192-ctr,aes256-ctr',
+                        '-o', 'MACs=hmac-sha1',
                         '-o', 'HostKeyAlgorithms=+ssh-rsa', '-o', 'PubkeyAcceptedAlgorithms=+ssh-rsa']
         if ssh_config:
             path = Path(ssh_config).resolve()
@@ -107,18 +122,7 @@ class Client:
                 raise WorkflowError('config_missing')
             self.options += ['-F', str(path)]
         if frozen() and sys.platform == 'win32':
-            try:
-                vendor = ROOT / 'vendor/openssh'
-                pinned = json.loads((ROOT / 'materials/windows-runtime.json').read_text(encoding='utf-8'))['openssh']['files']
-                if set(pinned) != {'ssh.exe', 'scp.exe', 'libcrypto.dll', 'LICENSE.txt', 'NOTICE.txt'}:
-                    raise ValueError('incomplete SSH manifest')
-                for name, expected in pinned.items():
-                    path = vendor / name
-                    if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
-                        raise ValueError('bundled SSH changed')
-                self.ssh, self.scp = str(vendor / 'ssh.exe'), str(vendor / 'scp.exe')
-            except (OSError, ValueError, KeyError, TypeError):
-                raise WorkflowError('bundled_ssh_mismatch') from None
+            self.ssh, self.scp = verified_windows_client(ROOT / 'vendor/openssh')
         elif frozen() and sys.platform == 'darwin':
             self.ssh, self.scp = '/usr/bin/ssh', '/usr/bin/scp'
             if not Path(self.ssh).is_file() or not Path(self.scp).is_file():
@@ -126,6 +130,9 @@ class Client:
         else:
             self.ssh = shutil.which('ssh') or shutil.which('ssh.exe')
             self.scp = shutil.which('scp') or shutil.which('scp.exe')
+            cached = private_root() / 'first-run-tools/openssh'
+            if sys.platform == 'win32' and (not self.ssh or not self.scp) and (cached / 'ssh.exe').is_file():
+                self.ssh, self.scp = verified_windows_client(cached)
         if not self.ssh or not self.scp:
             raise WorkflowError('openssh_missing')
 
@@ -137,7 +144,10 @@ class Client:
             raise WorkflowError('connection_timeout_state_unknown') from None
         if result.returncode:
             message = result.stderr.lower()
-            code = ('host_key_mismatch' if 'host key' in message else
+            code = ('hostname_unresolved' if 'could not resolve hostname' in message else
+                    'ssh_algorithm_mismatch' if 'no matching' in message or 'no mutual' in message else
+                    'connection_refused' if 'connection refused' in message else
+                    'host_key_mismatch' if 'host key' in message else
                     'authentication_failed' if 'permission denied' in message else
                     'connection_failed' if result.returncode == 255 else 'remote_operation_failed')
             raise WorkflowError(code)

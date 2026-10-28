@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "platform": "windows-x64",
+  "auto_root_models": ["Q10"],
+  "auto_root_variants": ["SQN100-1", "SQN100-2", "SQN100-3", "SQN100-4", "SQN100-5"],
+  "seven_zip_bootstrap": {
+    "file": "7zr-26.05.exe",
+    "url": "https://github.com/ip7z/7zip/releases/download/26.05/7zr.exe",
+    "sha256": "9bf582b894dfa665f852d7e9112b02290a1c303c2d95a21fcdc41ffcb03143b7"
+  },
+  "seven_zip_package": {
+    "file": "7z2605-x64.exe",
+    "url": "https://github.com/ip7z/7zip/releases/download/26.05/7z2605-x64.exe",
+    "sha256": "fd99e86f57d8f429ef5ed045bf98315af962e2309b0f1ba87a147a44c71647d0"
+  },
+  "seven_zip_files": {
+    "7z.exe": "94205cfc054dd3bbeb978905bc619a65b3f04e9e73bb2717841110b6f46d962e",
+    "7z.dll": "78bf6b668d75801e3aa180b4ccb16e6d8395fba80dec8a065055bb6f8dfabb82",
+    "License.txt": "519ac0a4bded9c18ea02e0afb71f663d8c47373bd9facd3ac96a79f51d77765d"
+  },
+  "openssl_package": {
+    "file": "MinGit-2.55.0.5-64-bit.zip",
+    "url": "https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/MinGit-2.55.0.5-64-bit.zip",
+    "sha256": "56d7b226b7693196cfc71fef26568f536c4a021ab6c37ff2db4287bed908e96e"
+  },
+  "openssl_license_sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+  "sources": [
+    "https://www.7-zip.org/download.html",
+    "https://github.com/ip7z/7zip/releases/tag/26.05",
+    "https://github.com/git-for-windows/git/releases/tag/v2.55.0.windows.5",
+    "https://bb10.root.sx/blog/autoroot-v4"
+  ]
+}

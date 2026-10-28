@@ -28,6 +28,10 @@ def private_root():
     return local / 'bb10-volte' / 'private'
 
 
+def download_root():
+    return private_root() / 'downloads' if frozen() else resource_root() / 'downloads'
+
+
 def prepare_external_programs():
     # PyInstaller sets a DLL search directory inherited by child processes.
     # Our signed SSH client must load its own adjacent crypto library.

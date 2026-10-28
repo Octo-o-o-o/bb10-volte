@@ -17,7 +17,8 @@
       "scp.exe": "41f0f40a823d3f1b105778492cf7d9c004b4e01fec3025aa7fe1140b4deec02b",
       "libcrypto.dll": "b4cbfd202d52ec0f094bfa328414c74b05b51234df95d2eb42e5fdb47160c9b5",
       "LICENSE.txt": "568c41f330a50a7d2d2eba9d3f7807caaaf4e091705ab6652ec26a3f9d1acfdb",
-      "NOTICE.txt": "2cd5f5d0064bc909dfe0f0fc8f4787882c7c379f2730d89e5faa0c2bc57c620b"
+      "NOTICE.txt": "2cd5f5d0064bc909dfe0f0fc8f4787882c7c379f2730d89e5faa0c2bc57c620b",
+      "ssh-keygen.exe": "a7370caccfe212af57f10f0b87e366a8977139dc08146106d2b80d1433b85b38"
     }
   },
   "licenses": [

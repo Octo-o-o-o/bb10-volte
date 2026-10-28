@@ -46,7 +46,10 @@ def runtime_data():
     """Include the QNX cleanup resource, never keys, root images or download tools."""
     names = set(FILES) | {'project.json', 'materials/payload-manifest.json',
                          'materials/windows-runtime.json', 'LICENSE', 'NOTICE.md',
-                         'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py'}
+                         'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py',
+                         'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
+                         'materials/sources.json', 'materials/stock-partitions.json',
+                         'materials/usb-drivers.json', 'materials/first-run-tools.json'}
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*.md'))
     return sorted(names)
@@ -84,7 +87,7 @@ def main():
     signatures = {}
     if not args.offline:
         powershell = str(Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
-        for name in ('ssh.exe', 'scp.exe', 'libcrypto.dll'):
+        for name in ('ssh.exe', 'scp.exe', 'ssh-keygen.exe', 'libcrypto.dll'):
             signatures[name] = json.loads(subprocess.check_output([
                 powershell, '-NoProfile', '-File', str(ROOT / 'tools/verify_signature.ps1'),
                 '-Path', str(vendor / name)], text=True))
@@ -137,7 +140,8 @@ def main():
     forbidden = ('private/', 'downloads/', 'ssh_config', 'known_hosts', 'q10_root_rsa', 'q10_host_rsa')
     assert not any(any(token in name for token in forbidden) for name in index)
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
-    assert not {'fetch_materials', 'prepare_root', 'prepare_usb_drivers', 'build_windows'} & set(archive_modules)
+    assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root'} <= set(archive_modules)
+    assert 'build_windows' not in archive_modules
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')
     report = {'project': project['name'], 'version': project['version'], 'artifact': output.name,
@@ -146,7 +150,8 @@ def main():
               'pyinstaller': spec['pyinstaller'], 'openssh': spec['openssh']['version'],
               'source_files': source_report['files'], 'bundled_data_files': len(bundled),
               'bundled_data_hashes_verified': True, 'private_inputs_excluded': True,
-              'download_tools_excluded': True, 'runtime_downloads': [], 'authenticode_signed': False,
+              'first_run_setup_included': True, 'normal_operation_runtime_downloads': [],
+              'first_run_downloads_require_user_action': True, 'authenticode_signed': False,
               'openssh_authenticode': signatures, 'build_inputs_from_cache_only': args.offline}
     output.with_suffix('.build.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({k: v for k, v in report.items() if k not in ('source_files', 'openssh_authenticode')}, indent=2))

@@ -2,7 +2,7 @@
 
 [简体中文](WINDOWS-EXE.md) · [GUI controls](GUI.en.md) · [macOS / DMG](MACOS.en.md)
 
-Double-click `bb10-volte-0.3.2-r2-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; it does not need administrator privileges.
+Double-click `bb10-volte-0.3.2-r3-windows-x64.exe`. Python 3.14.9, Tcl/Tk 9.0.4, SSH/SCP and its crypto library, operator templates, fixed phone payload, guides and third-party notices are embedded. Testers do not need Python, OpenSSH, Git, Codex or an AI account. This portable, single-file application extracts its runtime into a temporary directory and cleans it up on normal exit; normal use does not need administrator privileges; optional driver installation requests Windows UAC.
 
 The target is Windows 10/11 x64; packaging and launch validation used Windows 11 x64. The EXE is currently unsigned. A matching SHA-256 file is provided. An Apple Developer ID cannot sign a Windows executable.
 
@@ -14,7 +14,7 @@ Choose/edit an operator profile, run preflight, then follow the fixed install/re
 
 ## Offline operation
 
-**The prepared desktop workflow needs no Internet connection. Initial rooting and driver preparation are separate from this EXE.** The phone still needs its carrier network for IMS registration and real calls.
+**The prepared desktop workflow needs no Internet connection. First use obtains missing Root/driver materials only when the user enters that workflow; see [setup scope](FIRST-RUN.en.md).** The phone still needs its carrier network for IMS registration and real calls.
 
 | Component / stage | Embedded? | External preparation |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Choose/edit an operator profile, run preflight, then follow the fixed install/re
 | Active VoLTE SIM and LTE/IMS service | Not applicable | Required for registration and calls |
 | Activation, billing server, telemetry, updater, AI service | None | No such runtime dependency |
 
-Desktop business operations only connect through SSH/SCP to the selected device. A user-supplied SSH configuration may specify a proxy, jump host or remote address. Windows itself may perform security/reputation/certificate checks, so this is not a claim of zero network traffic from the entire computer.
+Normal operations use SSH/SCP and anonymous discovery on the direct USB link. First preparation downloads pinned HTTPS materials. A user-supplied SSH configuration may specify a proxy, jump host or remote address. Windows itself may perform security/reputation/certificate checks, so this is not a claim of zero network traffic from the entire computer.
 
 [sources.json](../materials/sources.json) and [usb-drivers.json](../materials/usb-drivers.json) pin initial-preparation downloads: AutoRoot v4, Q10 stock firmware, libusb, LZO, 7-Zip, the recorded Git for Windows/OpenSSL files and BlackBerry drivers. Q20/Q30 images still need model-specific verification. None is fetched on every EXE launch; all can be obtained and verified beforehand.
 
@@ -44,10 +44,10 @@ python -m venv .venv
 
 The builder obtains the pinned official OpenSSH ZIP and Tcl/Tk licenses from [windows-runtime.json](../materials/windows-runtime.json), checks hashes and, in online mode, Microsoft signatures. Only client binaries are selected; no SSH service is installed. The pinned upstream channel is explicitly **Preview**. AES-CTR is selected for the old QNX SSH server because its advertised GCM path closes the new client's handshake. Legacy RSA support is scoped to device connections and strict host verification stays enabled.
 
-`tools/build_windows.py --offline` requires cached build inputs and never downloads missing materials. The installed build packages must also be available beforehand. The builder reads the resulting EXE archive back, verifies every bundled resource, and excludes personal files and download/preparation tools.
+`tools/build_windows.py --offline` requires cached build inputs and never downloads missing materials. The installed build packages must also be available beforehand. The builder reads the resulting EXE archive back, verifies every bundled resource, and excludes personal keys, firmware and generated owner-specific images while including the first-use workflow.
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.2-r2-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.3.2-r3-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 

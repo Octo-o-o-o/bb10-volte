@@ -53,9 +53,9 @@ Download the matching application or source archive from [Releases](https://gith
 | --- | --- | --- |
 | **Windows EXE** | Download the Windows x64 `.exe` and double-click it | Python, Tk, SSH/SCP, profiles and phone payload are embedded; no separate Python or OpenSSH installation. See the [EXE guide](docs/WINDOWS-EXE.en.md) |
 | **macOS DMG** | Download the `.dmg` and drag the app to Applications | Python and Tk are embedded; uses macOS's built-in SSH/SCP. See the [Mac guide](docs/MACOS.en.md) for signing, notarization and validation scope |
-| **Source** | Clone the repository or extract its source ZIP, then run `python tools/gui.py` | Requires Python 3.14 with Tk and OpenSSH; Windows users can also double-click `Start-GUI.cmd`. No extra pip packages |
+| **Source** | Clone the repository or extract its source ZIP, then run `python tools/gui.py` | Requires Python 3.14 with Tk; Windows can obtain SSH through the wizard, macOS uses system SSH. Windows users can also double-click `Start-GUI.cmd`. No extra pip packages |
 
-All three use the same model detection, operator profiles, preflight and VoLTE installation workflow. **A model-specific root SSH setup, personal credentials and USB networking must currently be prepared first; initial rooting is not integrated into the EXE/DMG.** Source scripts fetch materials and prepare/build Windows Q10 Root images; see the [installation guide](docs/INSTALL.en.md) for steps and dependencies. Q20/Passport require rooting methods for their own model: never flash Q10 images onto them. Direct Mac-to-phone USB networking and calling have not been validated.
+All three share model detection, profiles, preflight and VoLTE installation. **On Windows, First use automatically downloads and verifies portable tools and Q10 firmware, generates personal keys, builds Root images and runs the ordered flashing stages only after a separate data-erasure confirmation. Users do not separately install another Root project, Git or 7-Zip.** The new flashing branch is experimental and has not been exercised on an unrooted phone. The Mac app currently supports already-rooted connections and guidance; perform initial Root on Windows. Q20/Passport need their own model-specific Root method; never use Q10 images. See [First use](docs/FIRST-RUN.en.md). Direct Mac-to-phone calling remains unverified.
 
 Initial Root flashing erases phone data; back up first. With matching root and connection files already prepared, open the app, check the device, choose the carrier and install VoLTE. Prepared preflight and installation need no desktop Internet connection; registration and calls still need carrier service. The following instructions describe source execution.
 
@@ -78,7 +78,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and choose Check device. Desktop build `0.3.2-r2` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); initial Root flashing remains a separate procedure.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release, select your own SSH configuration and choose Check device. Desktop build `0.3.2-r3` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
 
 Alternatively, run the same workflow from the repository root:
 

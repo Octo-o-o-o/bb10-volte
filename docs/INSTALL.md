@@ -4,6 +4,8 @@
 
 本文面向 Windows。常驻版已完成单机正常重启、脱离电脑和双向短通话验证，仍属于实验版本；具体证据和限制以 [VALIDATION.md](VALIDATION.md) 为准。
 
+Windows 用户可直接从源码 GUI 或 EXE 的“首次使用”完成自动准备与确认后的 Q10 刷写，详见[首次使用](FIRST-RUN.md)。以下保留手动脚本步骤，便于维护和核对。
+
 ## 1. 核对设备与基线
 
 测试组合是 Q10 **SQN100-3 / BB10 10.3.3.3216 / 中国联通 460-01 USIM**。先确认这张卡在支持 VoLTE 的设备上能够高清通话，并确认 Q10 原本能正常连接联通 4G。保留当前可用的原版恢复镜像。
@@ -53,7 +55,7 @@
 
 回到项目根目录，保持手机开机、USB 连接及原卡。使用自己的 SSH 配置路径：
 
-也可以双击 [Start-GUI.cmd](../Start-GUI.cmd)，按 [GUI 指南](GUI.md) 使用相同流程。首次 Root 不在 GUI 内执行。
+也可以双击 [Start-GUI.cmd](../Start-GUI.cmd)，按 [GUI 指南](GUI.md) 使用相同流程。Windows Q10 初次 Root 可在“首次使用”中准备并明确确认后刷写。
 
 ```powershell
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config

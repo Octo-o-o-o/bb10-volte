@@ -4,6 +4,8 @@
 
 This recipe was tested with a **Q10 SQN100-3, BB10 10.3.3.3216 and a China Unicom 460-01 USIM in Beijing**. The persistent service remains experimental; see the [validation record](VALIDATION.en.md). Run commands from the repository root with Python 3.14.
 
+The source GUI and Windows EXE include [First use](FIRST-RUN.en.md) for automated Q10 preparation and separately confirmed flashing. The manual script recipe below remains available for maintainers.
+
 ## 1. Check the baseline
 
 Confirm working LTE data on the Q10 and VoLTE service on the subscription, preferably by checking the SIM on a supported phone. Keep a matching stock recovery image, charge the Q10 and use a reliable USB data cable. Initial Root flashing erases user data; back it up first.
@@ -55,7 +57,7 @@ The prepared authorization allows only the USB computer address `169.254.0.2`; t
 
 ```powershell
 ssh -F private/root-kit/ssh_config bb10-root "echo connected"
-ssh -F private/root-kit/ssh_config bb10-root "id -u"
+python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
 ```
 
 The host key is pinned to the key generated for your own images. If the phone was rooted with a different key set, use that verified configuration instead. A key mismatch needs investigation rather than disabling host-key checks.
@@ -64,7 +66,7 @@ The host key is pinned to the key generated for your own images. If the phone wa
 
 Keep the phone powered on with USB connected and its own SIM inserted. Replace the SSH configuration path if yours differs; use `--host` if the alias is not `bb10-root`.
 
-Alternatively, launch [Start-GUI.cmd](../Start-GUI.cmd) and follow [the GUI guide](GUI.en.md). Initial Root flashing is separate.
+Alternatively, launch [Start-GUI.cmd](../Start-GUI.cmd) and follow [the GUI guide](GUI.en.md). Windows Q10 First use includes explicitly confirmed initial flashing.
 
 ```powershell
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config

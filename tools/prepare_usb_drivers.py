@@ -8,23 +8,27 @@ import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from fetch_materials import sha
+from desktop_paths import resource_root, private_root, download_root
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=resource_root()
 
 
-def main():
+def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seven-zip',type=Path,required=True)
-    args=parser.parse_args()
+    parser.add_argument('--output',type=Path,default=private_root()/'windows-usb')
+    parser.add_argument('--cache',type=Path,default=download_root())
+    args=parser.parse_args(argv)
     spec=json.loads((ROOT/'materials/usb-drivers.json').read_text())
     for item in spec['parts']:
-        assert sha(ROOT/'downloads'/item['file'])==item['sha256']
-    kit=ROOT/'private/windows-usb'
+        assert sha(args.cache/item['file'])==item['sha256']
+    kit=args.output.resolve()
     assert not kit.exists(),'Keep existing extracted drivers; choose a clean preparation directory'
     kit.mkdir(parents=True)
     def extract(source,target):
-        subprocess.run([str(args.seven_zip),'x',str(source),'-o'+str(target),'-y'],check=True,capture_output=True)
-    extract(ROOT/'downloads'/spec['parts'][0]['file'],kit/'package')
+        subprocess.run([str(args.seven_zip),'x',str(source),'-o'+str(target),'-y'],check=True,capture_output=True,
+                       creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    extract(args.cache/spec['parts'][0]['file'],kit/'package')
     bundle=kit/'package/BlackBerry-USBDrivers-5.0.0.2.exe'
     assert sha(bundle)==spec['bundle_sha256']
     def signature(path):

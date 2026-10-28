@@ -85,6 +85,18 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(any(self.app.allowed_actions().values()))
         self.assertEqual(str(self.app.host_entry.cget('state')), 'disabled')
 
+    def test_running_owned_service_does_not_display_expected_baseline_as_a_problem(self):
+        value = report(installed=True)
+        value.update(can_start=False, can_update=False)
+        value['installation']['state'] = 'busy'
+        value['checks'].append({'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'})
+        self.app.render_report(value, {'manager_alive': True})
+        self.assertNotIn('baseline', self.app.table.get_children())
+        self.assertEqual(self.app.primary_action, 'status')
+        self.assertTrue(self.app.allowed_actions()['status'])
+        self.assertFalse(self.app.allowed_actions()['install'])
+        self.assertEqual(value['checks'][-1]['status'], 'wait')
+
     def test_error_code_is_available_for_report_without_becoming_status_copy(self):
         self.root.after_cancel(self.app._drain_job)
         self.app.events.put(('error', ('untranslated_internal_code', None)))

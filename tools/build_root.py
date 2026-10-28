@@ -4,14 +4,15 @@ import json
 import subprocess
 from pathlib import Path
 from fetch_materials import sha
+from desktop_paths import resource_root, private_root
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=resource_root()
 
 
-def main():
+def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--kit',type=Path,default=ROOT/'private/root-kit')
-    args=p.parse_args()
+    p.add_argument('--kit',type=Path,default=private_root()/'root-kit')
+    args=p.parse_args(argv)
     kit=args.kit.resolve()
     preparation=json.loads((kit/'preparation.json').read_text())
     assert preparation['offline_preparation_complete']
@@ -23,7 +24,8 @@ def main():
     assert output.is_dir() and not any(output.iterdir()),'Use an empty output folder; preserve existing images'
     with (kit/'root-build.log').open('wb') as log:
         result=subprocess.run([str(kit/'autoroot/bb10mt.exe'),'batch','-i',str(original),
-            '-s','patch-owner.txt','-o',str(output)],cwd=kit/'autoroot',stdout=log,stderr=subprocess.STDOUT)
+            '-s','patch-owner.txt','-o',str(output)],cwd=kit/'autoroot',stdout=log,stderr=subprocess.STDOUT,
+            creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     assert result.returncode==0,'Image builder failed; inspect the private root-build.log'
     expected=json.loads((ROOT/'materials/stock-partitions.json').read_text())
     verified=[]

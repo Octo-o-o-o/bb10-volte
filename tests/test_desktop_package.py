@@ -47,7 +47,7 @@ class DesktopPackageTests(unittest.TestCase):
         vendor = root / 'vendor/openssh'
         vendor.mkdir(parents=True)
         files = {}
-        for name in ('ssh.exe', 'scp.exe', 'libcrypto.dll', 'LICENSE.txt', 'NOTICE.txt'):
+        for name in ('ssh.exe', 'scp.exe', 'ssh-keygen.exe', 'libcrypto.dll', 'LICENSE.txt', 'NOTICE.txt'):
             data = ('test fixture ' + name).encode()
             (vendor / name).write_bytes(data)
             files[name] = hashlib.sha256(data).hexdigest()
@@ -79,6 +79,21 @@ class DesktopPackageTests(unittest.TestCase):
                     with self.assertRaisesRegex(w.WorkflowError, 'bundled_ssh_mismatch'):
                         w.Client()
 
+    def test_source_can_use_verified_wizard_components_without_system_ssh(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            vendor = self.vendor(root)
+            cached = root / 'private/first-run-tools/openssh'
+            cached.parent.mkdir(parents=True)
+            vendor.rename(cached)
+            with patch.object(w, 'ROOT', root), patch.object(w, 'private_root', return_value=root / 'private'), \
+                    patch.object(w, 'frozen', return_value=False), patch.object(w.sys, 'platform', 'win32'), \
+                    patch.object(w.shutil, 'which', return_value=None):
+                self.assertEqual(w.Client().ssh, str(cached / 'ssh.exe'))
+                (cached / 'ssh-keygen.exe').write_text('changed')
+                with self.assertRaisesRegex(w.WorkflowError, 'bundled_ssh_mismatch'):
+                    w.Client()
+
     def test_empty_ssh_manifest_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -107,12 +122,14 @@ class DesktopPackageTests(unittest.TestCase):
                 for call in run.call_args_list:
                     self.assertEqual(call.args[0][:5], ['/test path/scp', '-S', '/test path/ssh', '-O', '-q'])
 
-    def test_bundle_data_does_not_include_root_preparation_or_private_materials(self):
+    def test_bundle_has_setup_manifests_but_never_private_kits_or_downloads(self):
         names = build_windows.runtime_data()
         self.assertIn('device/install.py', names)
         self.assertIn('materials/payload-manifest.json', names)
         self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
-        self.assertEqual({name for name in names if name.startswith('tools/')}, {'tools/stage_cleanup.py'})
+        self.assertEqual({name for name in names if name.startswith('tools/')},
+                         {'tools/stage_cleanup.py', 'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
+        self.assertIn('materials/first-run-tools.json', names)
 
     def test_legacy_device_transport_keeps_strict_host_verification(self):
         with patch.object(w, 'frozen', return_value=False), patch.object(w.shutil, 'which', side_effect=lambda n: n):
