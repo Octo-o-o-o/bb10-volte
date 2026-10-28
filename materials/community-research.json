@@ -12,7 +12,8 @@
     "import_policy": "Independently summarized facts and source links only; no upstream code, binaries, archives or carrier XML bundled.",
     "permission_url": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
     "contributed_material_rights": "not_separately_confirmed",
-    "follow_up": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554"
+    "follow_up": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554",
+    "boot_report": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859"
   },
   "records": [
     {
@@ -44,6 +45,14 @@
         "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
         "evidence_level": "author_issue_statement",
         "summary": "Author described the Mobile device as sqc-2 and confirmed outgoing only, with incoming not implemented."
+      },
+      "autostart_observation": {
+        "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859",
+        "evidence_level": "author_issue_statement",
+        "device_description": "Authors Mobile Classic, described as sqc-2",
+        "startup_mechanism": "addon",
+        "result": "stuck_at_boot_animation",
+        "cause": "unresolved; author suspects configuration and does not recommend reproducing it"
       }
     },
     {
@@ -161,8 +170,8 @@
     {
       "id": "boot-autostart",
       "status": "manual_only_for_experimental_combinations",
-      "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
-      "integration": "Community author warns of boot-animation hangs. Exact affected device and startup mechanism remain unspecified. Preserve prior Q10 baseline autostart; deny experimental enable and require autostart=false."
+      "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859",
+      "integration": "Author identifies the Mobile Classic (sqc-2) with an addon startup entry. Root cause remains unresolved, possibly configuration. Conservatively keep unvalidated combinations manual-only; preserve accepted Q10 baseline autostart. Do not generalize the observed failure to every model."
     }
   ]
 }
