@@ -45,6 +45,6 @@ Downloads, proprietary firmware, owner-specific Root images, SSH keys, private p
 
 Earlier hosted Windows/Linux jobs on October 27, 2026 could not start because the account's Actions budget prevented further use. v0.2.0 passed 43 local tests, compiled all six device Python files on the Q10's Python 3.2.2, and completed a real GUI preflight. Full hardware installation acceptance of the new workflow is pending; no hosted pass is claimed.
 
-Only single-device normal-reboot and short-call acceptance is established. Keep releases explicitly marked **experimental / prerelease**, and the repository temporarily **Private**, while longer-term validation continues. Extending model or firmware support requires native ABI, patch and actual-call validation, not bypassing hashes.
+Only single-device normal-reboot and short-call acceptance is established; see [validation details](VALIDATION.en.md) for each version. Source is published under MIT, while releases remain explicitly marked **experimental / prerelease**. Public availability does not establish other-device/carrier compatibility or long-term stability. Extending model or firmware support requires native ABI, patch and actual-call validation, not bypassing hashes.
 
 Current v0.3.0 evidence is in the [profile/device validation record](../materials/profiles-device-validation-2026-10-27.json): 66 local tests, eight modules compiled on phone Python 3.2.2, and real Q10 GUI preflight. Q20/Q30 and other carriers have simulated gate tests only; hardware calling acceptance is pending.

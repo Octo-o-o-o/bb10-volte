@@ -4,13 +4,13 @@ English and Chinese reports and pull requests are welcome.
 
 欢迎使用中文或英文提交问题和改进。中文问题说明见 [ISSUES.md](docs/ISSUES.md)。
 
-Other BB10 OS versions, Q10 variants and device models are welcome in issues and pull requests, including failure reports and proposed ports. State the full OS version and device variant so that compatibility can be evaluated. Only Q10 SQN100-3 / BB10 OS 10.3.3.3216 has been hardware-tested so far.
+Reports of both working and non-working combinations of BB10 devices, OS versions, regions and carriers are welcome, including Q10, Classic (Q20) and Passport (Q30). State the full OS version, device variant, carrier and region so that compatibility can be evaluated. Only Q10 SQN100-3 / BB10 OS 10.3.3.3216 / Beijing China Unicom 460-01 has been hardware-tested so far.
 
-其他系统版本、Q10 版本或机型遇到问题，也欢迎提交 issue；欢迎通过 PR 提供适配、修复和测试结果。请写明完整系统版本和具体机型，便于判断差异。当前仅有 Q10 SQN100-3 / BB10 OS 10.3.3.3216 的实机验证记录。
+欢迎 Q10、Classic（Q20）、Passport（Q30）和其他 BB10 机型、系统版本、地区与运营商的测试结果，可用和不可用都欢迎提交 issue；欢迎通过 PR 提供适配与修复。请写明完整系统版本、具体机型、运营商和地区，便于判断差异。当前仅有 Q10 SQN100-3 / BB10 OS 10.3.3.3216 / 北京中国联通 460-01 的实机验证记录。
 
 ## Report a problem
 
-Include the model and variant, BB10 version, carrier MCC/MNC, project version or commit, host OS/Python version, command/stage and the redacted error. For calls, state the time and timezone, incoming/outgoing direction, ringing/answering, audio in each direction and whether LTE remained active.
+Include whether it works or fails, the model and variant, BB10 version, carrier/region/MCC/MNC, project version or commit, source/EXE/DMG method, host OS, command/stage and the redacted error. For calls, state the time and timezone, incoming/outgoing direction, ringing/answering, audio in each direction, whether LTE remained active, USB-disconnected operation and reboot recovery. For source execution, also include the Python version.
 
 Do not attach `private/`, Root images, SSH keys, raw SIP traces, phone numbers, IMSI/ICCID/IMEI/PIN or authentication material. Share non-identifying status fields and firmware hashes. Review text before posting it publicly.
 

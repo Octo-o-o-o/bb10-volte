@@ -8,7 +8,7 @@ The target is Windows 10/11 x64; packaging and launch validation used Windows 11
 
 ## Test distribution
 
-Send the EXE and its `.exe.sha256` directly, or grant repository access for the private Release download. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `bb10-root` is only a customizable SSH alias, not a forced device identity.
+Download the EXE and matching `.exe.sha256` from the public [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), or share both files directly. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `bb10-root` is only a customizable SSH alias, not a forced device identity.
 
 Choose/edit an operator profile, run preflight, then follow the fixed install/read-back/start/registration process. Q20/Q30 require explicit experimental opt-in and every technical check passing. OS **10.3.3.3216**, ARM32, exact native hashes, SIM/APN and stock carrier configuration remain mandatory. Q20/Q30 hardware has not been validated. Never flash a Q10 root image onto either device.
 

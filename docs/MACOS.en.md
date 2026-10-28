@@ -2,7 +2,7 @@
 
 [简体中文](MACOS.md) · [Windows EXE](WINDOWS-EXE.en.md)
 
-`bb10-volte` can be built as a universal Apple Silicon / Intel macOS `.app` and signed DMG. Consult the release and its acceptance record for actual signing, notarization and test status. Drag the app to Applications; users do not install Python separately.
+Download the universal macOS `.dmg` and matching `.dmg.sha256` from [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases), verify SHA-256, open the DMG and drag `bb10-volte.app` to Applications. No separate Python, Tk or OpenSSH installation or application build is required. Consult the release and its acceptance record for signing, notarization and validation status. The app contains Apple Silicon and Intel architectures; Intel hardware has not been tested. The build steps below are for developers.
 
 The app uses system `/usr/bin/ssh` and `/usr/bin/scp`, and stores private state in `~/Library/Application Support/bb10-volte/private`. A device-specific root SSH key and verified host key are required. The default alias is `bb10-root`; enter `q10-root` for an older configuration that defines only that alias.
 
