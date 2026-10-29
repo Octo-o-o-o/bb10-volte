@@ -17,7 +17,12 @@
       "required_for": "initial root and recovery",
       "extracted_file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.exe",
       "extracted_sha256": "18ab9ab0da25ad4dfb0f2a885aad81ddf2119c484d5b9b0b392a3472eedfa207",
-      "manufacturer_signature_verified": false
+      "manufacturer_signature_verified": false,
+      "size": 1569051774,
+      "mirrors": [
+        "https://ia600407.us.archive.org/24/items/black-berry-q20/Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z",
+        "https://ia800407.us.archive.org/24/items/black-berry-q20/Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z"
+      ]
     },
     {
       "id": "libusb",
@@ -26,7 +31,11 @@
       "sha256": "7fb1dfec805b97983763d7d0ae244320da12add1003d4249c96cc4d586398c79",
       "extract": "VS2022/MS64/dll/libusb-1.0.dll",
       "dll_sha256": "7cbf37e76dae9c840c7e8dbf7348ee8897dcc86c8ba45e46ada60b89411569f7",
-      "required_for": "Windows root-image builder"
+      "required_for": "Windows root-image builder",
+      "size": 7484182,
+      "mirrors": [
+        "https://downloads.sourceforge.net/project/libusb/libusb-1.0/libusb-1.0.30/libusb-1.0.30.7z"
+      ]
     },
     {
       "id": "lzo",
@@ -36,7 +45,12 @@
       "extract": "mingw64/bin/liblzo2-2.dll",
       "rename": "lzo2.dll",
       "dll_sha256": "7c34ad01e75c97c6636a2f609089a85abdb50b75e13c5fda731352ec8aa053e9",
-      "required_for": "Windows root-image builder"
+      "required_for": "Windows root-image builder",
+      "size": 102358,
+      "mirrors": [
+        "https://mirrors.tuna.tsinghua.edu.cn/msys2/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-3-any.pkg.tar.zst",
+        "https://mirrors.ustc.edu.cn/msys2/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-3-any.pkg.tar.zst"
+      ]
     }
   ],
   "openssl": {

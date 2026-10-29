@@ -1,10 +1,10 @@
 # First use and connection setup
 
-`0.3.3-r1` starts with **Connect phone / Connection help**, with SSH paths under advanced settings. Released r6 and earlier applications may still use the older labels below; this flow is included in the new Windows EXE and Mac DMG. Reopening rechecks the last successful connection once. Pairing requests and completed image preparation can be resumed. Connection failure never establishes that a phone is unrooted.
+`0.3.3-r3` starts with **Connect phone / Connection help**, with SSH paths under advanced settings. Released r6 and earlier applications may still use the older labels below; this flow is included in the new Windows EXE and Mac DMG. Reopening rechecks the last successful connection once. Pairing requests and completed image preparation can be resumed. Connection failure never establishes that a phone is unrooted.
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
-Desktop version `0.3.3-r1` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
+Desktop version `0.3.3-r3` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
 
 ## First connection on a Mac
 
@@ -48,17 +48,18 @@ This iteration verified portable inputs, personal-key generation, construction a
 
 ## Interrupted or failing downloads
 
-Current source supports resumable downloads; an existing EXE/DMG needs a new build containing this change. The Q10 archive is approximately 1.57 GB. Status shows downloaded bytes, percentage when the server supplies a total, speed and retries.
+Desktop `0.3.3-r3` adds automatic mirror ranking, failover, cross-mirror resume and verified offline firmware import. Existing EXE/DMG installations need updating. The Q10 archive is about 1.57 GB; status shows the current host, bytes, percentage, speed and switch reason.
 
-- Timeouts, disconnections, HTTP 408/429 and common temporary server errors retry with increasing delays, up to five requests per preparation. Server `Retry-After` delays are capped at 60 seconds. After exhaustion, retry preparation or restart the app to resume saved progress.
-- Partial files are tied to the pinned SHA-256. The downloader also attempts to adopt old randomly named `.partial` files. Keep the download directory. Servers that ignore resume requests cause a safe restart from zero.
-- SHA-256 must match before extraction or tool execution. Corrupt files are retained as `.invalid-*`; a failed hash triggers at most one fresh full download. Concurrent applications cannot write the same download.
-- HTTP 403/404, certificate errors and disk/permission failures have specific messages. Resume helps interrupted transfers; a persistently inaccessible origin needs a working network or HTTP proxy configured in the wizard.
+- Uncached multi-source files probe up to 256 KiB per node concurrently, measuring payload speed including connection time. Ranking waits at most six seconds and prefers the fastest observed usable source; unsuccessful probes remain fallback candidates. A sample cannot guarantee the fastest sustained transfer.
+- Network, HTTP, certificate and invalid-response errors try another configured source. Multi-source transfers use a 15-second socket inactivity timeout. A 20-second window below 16 KiB/s triggers a switch, at most once per source, so slow connectivity does not cause endless switching.
+- Each file permits at most `max(5, source count × 2)` transfer attempts. Temporary errors back off and honor up to 60 seconds of Retry-After per node without delaying healthy alternatives. Exhaustion preserves partial progress for another preparation or application restart. Disk and permission failures stop immediately.
+- Partials remain bound to the pinned SHA-256. Cross-source resume compares up to 64 KiB of overlapping saved bytes and never sends another source's ETag. Servers ignoring ranges restart from zero. If all available sources disagree with a saved tail, the old partial is quarantined before one clean recovery. Only a complete matching SHA-256 can be extracted or executed; rejected bytes remain in `.invalid-*` files.
+- Verified cache entries never probe or connect; concurrent applications cannot write the same file. Q10 alternatives are still Internet Archive replicas. Selected tool mirrors are Tsinghua, USTC, Huawei Cloud or SourceForge. No maintainer server, unverified public proxy or different firmware version is used. If every source is unreachable, configure a working proxy or import manually.
 
-Current source adds an in-app manual download/import section; existing EXE/DMG releases need a build containing this feature:
+Manual browser download and import:
 
 1. Open **Connect phone / Connection help → Initial Root**, then the manual Q10 firmware download/import section.
-2. Use **Download firmware in browser** to open the original manifest URL for `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
+2. Select the original host or a backup in **Browser download source**, then use **Download firmware in browser** for `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
 3. Choose the local file or paste its full path, then use **Verify and import firmware**. Quoted Windows “Copy as path” values and browser-added `(1)` filename suffixes are supported. The content is verified and stored under the canonical cache name.
 4. After success, use **Auto prepare Root images**. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
 

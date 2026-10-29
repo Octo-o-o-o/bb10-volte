@@ -7,11 +7,14 @@ import http.client
 import json
 import os
 from pathlib import Path
+import queue
 import re
 import shutil
 import ssl
+import threading
 import time
 import urllib.error
+from urllib.parse import urlsplit
 import urllib.request
 import uuid
 
@@ -21,6 +24,14 @@ ROOT = resource_root()
 ATTEMPTS = 5
 TIMEOUT = 45  # Socket inactivity, not a deadline for the whole firmware.
 CHUNK_SIZE = 256 * 1024
+PROBE_BYTES = 256 * 1024
+PROBE_TIMEOUT = 3
+PROBE_DEADLINE = 6
+OVERLAP_BYTES = 64 * 1024
+MIRROR_TIMEOUT = 15
+SLOW_WINDOW = 20
+MIN_SPEED = 16 * 1024
+MAX_SOURCES = 6
 
 
 class DownloadError(RuntimeError):
@@ -32,6 +43,7 @@ class DownloadError(RuntimeError):
             'download_http_error': '下载服务器拒绝请求',
             'download_tls_error': '无法验证下载服务器的安全证书，请检查系统时间或代理',
             'download_invalid_response': '服务器返回了无效的下载范围或内容',
+            'download_resume_mismatch': '节点内容与已有下载进度不一致',
             'download_hash_mismatch': '文件 SHA-256 校验失败，已停止使用该文件',
             'download_cache_invalid': '下载缓存路径或材料清单无效',
             'download_busy': '另一个应用正在下载此文件，请等待其完成',
@@ -47,9 +59,10 @@ class DownloadError(RuntimeError):
 
 
 class _Retryable(Exception):
-    def __init__(self, reason, delay=0):
+    def __init__(self, reason, delay=0, slow=False):
         super().__init__(reason)
         self.delay = delay
+        self.slow = slow
 
 
 class MaterialImportError(RuntimeError):
@@ -85,6 +98,102 @@ def _input_paths(item, folder):
     target = folder / name
     partial = folder / (name + '.' + digest + '.partial')
     return target, partial
+
+
+def source_urls(item):
+    """Only explicit, pinned manifest alternatives; never public proxy discovery."""
+    mirrors = item.get('mirrors', [])
+    if not isinstance(mirrors, list):
+        raise DownloadError('download_cache_invalid')
+    urls = []
+    for url in [item['url']] + mirrors:
+        if not isinstance(url, str):
+            raise DownloadError('download_cache_invalid')
+        parsed = urlsplit(url)
+        if (parsed.scheme not in ('http', 'https') or not parsed.hostname or
+                parsed.username or parsed.password or parsed.fragment or re.search(r'[\r\n]', url)):
+            raise DownloadError('download_cache_invalid')
+        if url not in urls:
+            urls.append(url)
+    if len(urls) > MAX_SOURCES:
+        raise DownloadError('download_cache_invalid')
+    return urls
+
+
+def source_label(url):
+    # Do not put signed redirect queries, proxy credentials or tokens in the UI.
+    return urlsplit(url).hostname or '下载节点'
+
+
+def _headers_for(item, url, headers):
+    values = dict(headers or {})
+    primary, candidate = urlsplit(item['url']), urlsplit(url)
+    if (primary.scheme, primary.netloc) != (candidate.scheme, candidate.netloc):
+        values = {k: v for k, v in values.items()
+                  if k.lower() not in ('authorization', 'cookie', 'proxy-authorization')}
+    values['Accept-Encoding'] = 'identity'
+    return values
+
+
+def _probe_source(item, url, opener, headers):
+    """Bounded payload sample, including connection and first-byte latency."""
+    values = _headers_for(item, url, headers)
+    values['Range'] = f'bytes=0-{PROBE_BYTES - 1}'
+    started, count = time.monotonic(), 0
+    with opener.open(urllib.request.Request(url, headers=values), timeout=PROBE_TIMEOUT) as response:
+        if response.status not in (200, 206) or response.headers.get('Content-Encoding', 'identity') != 'identity':
+            return None
+        if response.status == 206:
+            match = re.fullmatch(r'bytes 0-([0-9]+)/([0-9]+)', response.headers.get('Content-Range', ''))
+            if not match:
+                return None
+            end, total = map(int, match.groups())
+            if end >= total or end >= PROBE_BYTES or item.get('size', total) != total:
+                return None
+        while count < PROBE_BYTES and time.monotonic() - started < PROBE_TIMEOUT:
+            chunk = response.read1(min(64 * 1024, PROBE_BYTES - count))
+            if not chunk:
+                break
+            count += len(chunk)
+    return count / max(time.monotonic() - started, 0.001) if count else None
+
+
+def _rank_sources(item, urls, make_opener, headers, progress):
+    progress(f'正在测速 {len(urls)} 个下载节点：' + item['file'])
+    results = queue.Queue()
+
+    def probe(url):
+        try:
+            speed = _probe_source(item, url, make_opener(), headers)
+        except urllib.error.HTTPError as error:
+            error.close()
+            speed = None
+        except (OSError, urllib.error.URLError, http.client.HTTPException, ValueError):
+            speed = None
+        results.put((url, speed))
+
+    deadline = time.monotonic() + PROBE_DEADLINE
+    for url in urls:
+        # DNS resolution may outlive a socket timeout. Daemon workers cannot
+        # hold the download or app shutdown; at most MAX_SOURCES are created.
+        threading.Thread(target=probe, args=(url,), daemon=True).start()
+    speeds = {}
+    for _ in urls:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        try:
+            url, speed = results.get(timeout=remaining)
+        except queue.Empty:
+            break
+        if speed is not None:
+            speeds[url] = speed
+    ranked = sorted(urls, key=lambda url: -speeds.get(url, 0))
+    if speeds:
+        progress(f'已选择节点 {source_label(ranked[0])} · 测速 {speeds[ranked[0]] / 1024 ** 2:.2f} MiB/s')
+    else:
+        progress('测速暂未成功，将依次尝试下载节点：' + item['file'])
+    return ranked
 
 
 def import_material(item, source, folder=None, progress=None):
@@ -185,11 +294,12 @@ def _metadata(path):
     try:
         value = json.loads(path.read_text(encoding='utf-8'))
         validator = value.get('validator')
-        if isinstance(validator, str) and len(validator) <= 256 and not re.search(r'[\r\n]', validator):
-            return validator
+        if not isinstance(validator, str) or len(validator) > 256 or re.search(r'[\r\n]', validator):
+            value['validator'] = None
+        return value
     except (FileNotFoundError, ValueError, AttributeError):
         pass
-    return None
+    return {}
 
 
 def _validator(headers):
@@ -224,20 +334,23 @@ def _show_progress(progress, name, count, total, started, initial):
     progress(('续传 ' if initial else '下载 ') + name + ' · ' + amount + speed)
 
 
-def _transfer(item, partial, meta, opener, progress, headers):
+def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multiple=False, switch_slow=False):
     name = item['file']
+    url = url or item['url']
     offset = partial.stat().st_size if partial.exists() else 0
-    request_headers = dict(headers or {})
-    request_headers['Accept-Encoding'] = 'identity'
-    validator = _metadata(meta)
+    request_headers = _headers_for(item, url, headers)
+    previous = _metadata(meta)
+    same_source = previous.get('url') == url or not multiple and not previous.get('url')
+    validator = previous.get('validator') if same_source else None
+    range_start = max(0, offset - OVERLAP_BYTES) if offset and not same_source else offset
     if offset:
-        request_headers['Range'] = f'bytes={offset}-'
+        request_headers['Range'] = f'bytes={range_start}-'
         if validator:
             request_headers['If-Range'] = validator
     progress(('连接服务器，准备续传 ' if offset else '连接服务器，准备下载 ') + name)
-    request = urllib.request.Request(item['url'], headers=request_headers)
+    request = urllib.request.Request(url, headers=request_headers)
     try:
-        response = opener.open(request, timeout=TIMEOUT)
+        response = opener.open(request, timeout=MIRROR_TIMEOUT if multiple else TIMEOUT)
     except urllib.error.HTTPError as error:
         status, retry_after = error.code, error.headers.get('Retry-After')
         error.close()
@@ -245,6 +358,8 @@ def _transfer(item, partial, meta, opener, progress, headers):
             # The final read may have failed after all bytes reached disk.
             if sha(partial) == item['sha256']:
                 return
+            if multiple:
+                raise DownloadError('download_invalid_response', name, '节点不接受已有下载范围') from None
             _quarantine(partial)
             meta.unlink(missing_ok=True)
             raise _Retryable('服务器不接受旧进度，将重新下载') from None
@@ -266,7 +381,7 @@ def _transfer(item, partial, meta, opener, progress, headers):
             if not match:
                 raise DownloadError('download_invalid_response', name)
             start, end, total = map(int, match.groups())
-            if start != offset or not start <= end < total or length is not None and length != end - start + 1:
+            if start != range_start or not start <= end < total or length is not None and length != end - start + 1:
                 raise DownloadError('download_invalid_response', name)
             current_validator = _validator(response.headers)
             if offset and validator and current_validator and validator != current_validator:
@@ -280,12 +395,31 @@ def _transfer(item, partial, meta, opener, progress, headers):
             offset, total, expected_end = 0, length, length
         else:
             raise DownloadError('download_invalid_response', name)
+        if item.get('size') is not None and total is not None and total != item['size']:
+            raise DownloadError('download_invalid_response', name, '节点文件大小与固定版本不符')
+        if status == 206 and offset and not same_source:
+            # ETags belong to one origin. Compare actual overlapping bytes
+            # before appending data from another mirror (also after restart).
+            overlap = bytearray()
+            while len(overlap) < offset - range_start:
+                try:
+                    chunk = response.read1(offset - range_start - len(overlap))
+                except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
+                    _network_error(error, name)
+                if not chunk:
+                    raise _Retryable('节点未返回完整的续传校验片段')
+                overlap.extend(chunk)
+            with partial.open('rb') as saved:
+                saved.seek(range_start)
+                if saved.read(len(overlap)) != overlap:
+                    raise DownloadError('download_resume_mismatch', name)
         started = last_progress = time.monotonic()
+        window_started, window_count = started, offset
         count = offset
         # Truncate before saving a new validator. A crash cannot leave old bytes
         # associated with a new representation. The pinned hash is authoritative.
         with partial.open('ab' if offset else 'wb') as output:
-            meta.write_text(json.dumps({'validator': _validator(response.headers)}), encoding='utf-8')
+            meta.write_text(json.dumps({'url': url, 'validator': _validator(response.headers)}), encoding='utf-8')
             _show_progress(progress, name, count, total, started, offset)
             while True:
                 incomplete = False
@@ -303,6 +437,11 @@ def _transfer(item, partial, meta, opener, progress, headers):
                 if time.monotonic() - last_progress >= 1:
                     _show_progress(progress, name, count, total, started, offset)
                     last_progress = time.monotonic()
+                if switch_slow and time.monotonic() - window_started >= SLOW_WINDOW:
+                    now = time.monotonic()
+                    if chunk and (expected_end is None or count < expected_end) and (count - window_count) / (now - window_started) < MIN_SPEED:
+                        raise _Retryable('节点持续低速，尝试其他节点', slow=True)
+                    window_started, window_count = now, count
                 if incomplete:
                     raise _Retryable('连接提前结束')
                 if not chunk:
@@ -314,7 +453,7 @@ def _transfer(item, partial, meta, opener, progress, headers):
             raise _Retryable('继续下载剩余内容')
 
 
-def _fetch(item, folder, opener, progress, verify_only, headers):
+def _fetch(item, folder, make_opener, progress, verify_only, headers):
     name, digest = item['file'], item['sha256']
     target, partial = _input_paths(item, folder)
     meta = partial.with_name(partial.name + '.json')
@@ -346,38 +485,104 @@ def _fetch(item, folder, opener, progress, verify_only, headers):
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
                 return
-        hash_failures = 0
-        for attempt in range(ATTEMPTS):
+            if item.get('size') is not None and partial.stat().st_size > item['size']:
+                _quarantine(partial)
+                meta.unlink(missing_ok=True)
+        urls = source_urls(item)
+        multiple = len(urls) > 1
+        if multiple:
+            urls = _rank_sources(item, urls, make_opener, headers, progress)
+        attempts = max(ATTEMPTS, len(urls) * 2) if multiple else ATTEMPTS
+        failures = {url: 0 for url in urls}
+        hash_failures = {url: 0 for url in urls}
+        ready_at = {url: 0 for url in urls}
+        blocked = set()
+        resume_conflicts = set()
+        slow_sources = set()
+        clean_restart = False
+        preferred = last_url = None
+        last_error = DownloadError('download_failed', name)
+        for attempt in range(attempts):
+            candidates = [url for url in urls if url not in blocked]
+            if not candidates and resume_conflicts and not clean_restart and partial.exists():
+                # All remaining sources disagree with the saved tail. Keep the
+                # rejected partial for diagnosis, and try one clean recovery.
+                _quarantine(partial)
+                meta.unlink(missing_ok=True)
+                blocked.difference_update(resume_conflicts)
+                candidates = [url for url in urls if url not in blocked]
+                clean_restart = True
+                progress('已有进度无法与可用节点匹配，已隔离旧进度，将重新下载 ' + name)
+            if not candidates:
+                break
+            eligible = [url for url in candidates if ready_at[url] <= time.monotonic()]
+            url = (preferred if preferred in candidates else
+                   min(eligible, key=lambda value: failures[value]) if eligible else
+                   min(candidates, key=lambda value: ready_at[value]))
+            preferred = None
+            delay = max(0, ready_at[url] - time.monotonic())
+            if delay:
+                progress(f'{name}：{delay:.0f} 秒后自动重试（{attempt + 1}/{attempts}），保留已下载进度')
+                time.sleep(delay)
+            if multiple:
+                progress(('切换节点 ' if last_url and last_url != url else '使用节点 ') + source_label(url) + '：' + name)
+            last_url = url
+            offset = partial.stat().st_size if partial.exists() else 0
+            show = (lambda text: progress('[' + source_label(url) + '] ' + text)) if multiple else progress
             try:
-                _transfer(item, partial, meta, opener, progress, headers)
+                _transfer(item, partial, meta, make_opener(), show, headers, url=url,
+                          multiple=multiple, switch_slow=multiple and len(candidates) > 1 and url not in slow_sources)
                 progress('校验 ' + name)
                 if sha(partial) != digest:
                     _quarantine(partial)
                     meta.unlink(missing_ok=True)
-                    hash_failures += 1
-                    if hash_failures > 1 or attempt == ATTEMPTS - 1:
+                    hash_failures[url] += 1
+                    if hash_failures[url] > 1 or multiple and not offset or attempt == attempts - 1:
                         raise DownloadError('download_hash_mismatch', name)
+                    # A bad old prefix must not condemn a healthy finishing
+                    # mirror. Give it one clean download after discarding it.
+                    preferred = url
                     raise _Retryable('文件校验失败，重新下载一次')
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
                 return
             except _Retryable as error:
-                if attempt == ATTEMPTS - 1:
-                    raise DownloadError('download_failed', name, str(error)) from None
-                delay = max(2 ** attempt, error.delay)
-                progress(f'{name}：{error}；{delay:g} 秒后自动重试（{attempt + 2}/{ATTEMPTS}），保留已下载进度')
-                time.sleep(delay)
+                last_error = DownloadError('download_failed', name, str(error))
+                if error.slow:
+                    # If every mirror is slow, settle on a previously tried
+                    # source instead of repeatedly interrupting useful progress.
+                    slow_sources.add(url)
+                failures[url] += 1
+                delay = max(2 ** min(failures[url] - 1, 5), error.delay)
+                if not multiple and attempt < attempts - 1:
+                    progress(f'{name}：{error}；{delay:g} 秒后自动重试（{attempt + 2}/{attempts}），保留已下载进度')
+                    time.sleep(delay)
+                else:
+                    ready_at[url] = time.monotonic() + delay
+                    progress(f'节点 {source_label(url)}：{error}；已保留下载进度')
+            except DownloadError as error:
+                if not multiple or error.code not in ('download_http_error', 'download_tls_error',
+                                                       'download_invalid_response', 'download_hash_mismatch',
+                                                       'download_resume_mismatch'):
+                    raise
+                blocked.add(url)
+                if error.code == 'download_resume_mismatch':
+                    resume_conflicts.add(url)
+                last_error = error
+                progress(f'节点 {source_label(url)} 本次不可用：{error.user_message.split("。")[0]}')
+        raise last_error
 
 
 def fetch_entries(entries, folder=None, progress=None, proxy=None, verify_only=False, *, headers=None):
     folder = Path(folder) if folder else download_root()
     progress = progress or (lambda text: print(text, flush=True))
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({'https': proxy, 'http': proxy})
-                                         if proxy else urllib.request.ProxyHandler())
+    def make_opener():
+        return urllib.request.build_opener(urllib.request.ProxyHandler({'https': proxy, 'http': proxy})
+                                          if proxy else urllib.request.ProxyHandler())
     try:
         folder.mkdir(parents=True, exist_ok=True)
         for item in entries:
-            _fetch(item, folder, opener, progress, verify_only, headers)
+            _fetch(item, folder, make_opener, progress, verify_only, headers)
     except FileNotFoundError:
         if verify_only:
             raise

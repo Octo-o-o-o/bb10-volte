@@ -14,7 +14,7 @@ from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepared_kit_history, prepared_images, root_lock_path,
                         stock_firmware, import_stock_firmware)
 from workflow import WorkflowError
-from fetch_materials import DownloadError, MaterialImportError
+from fetch_materials import DownloadError, MaterialImportError, source_urls, source_label
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
@@ -115,7 +115,7 @@ class SetupWizard(tk.Toplevel):
         if sys.platform != 'win32':
             self.tabs.tab(drivers, state='disabled')
         ttk.Label(root_tab, text='当前自动配方支持 Q10；首次刷写会清空手机数据。Q20 / Q30 请使用匹配机型的 Root 方法。\n'
-                  '应用自动下载固定版本工具和固件，无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。下载中断会自动重试，再次准备可接续已保存进度。',
+                  '应用自动测速选择下载节点，中断或持续低速时自动切换并续传。无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。',
                   wraplength=740, justify='left').pack(anchor='w', pady=(10, 18))
         line = ttk.Frame(root_tab)
         line.pack(fill='x')
@@ -142,6 +142,14 @@ class SetupWizard(tk.Toplevel):
         manual.pack(fill='x', pady=(0, 16))
         ttk.Label(manual, text='1. 用浏览器下载完整压缩包，不要解压：\n' + stock_firmware()['file'],
                   wraplength=680, justify='left').pack(anchor='w')
+        self.firmware_urls = source_urls(stock_firmware())
+        source_row = ttk.Frame(manual)
+        source_row.pack(fill='x', pady=(8, 0))
+        ttk.Label(source_row, text='浏览器下载来源').pack(side='left', padx=(0, 10))
+        self.firmware_source = ttk.Combobox(source_row, state='readonly', width=38,
+                                          values=[source_label(url) for url in self.firmware_urls])
+        self.firmware_source.pack(side='left', fill='x', expand=True)
+        self.firmware_source.current(0)
         links = ttk.Frame(manual)
         links.pack(fill='x', pady=(8, 12))
         self.browser_download_button = ttk.Button(links, text='在浏览器下载固件', command=self.open_firmware_download)
@@ -207,6 +215,7 @@ class SetupWizard(tk.Toplevel):
         self.model_picker.configure(state='disabled' if self.busy or self.kit else 'readonly')
         self.proxy_entry.configure(state='disabled' if self.busy else 'normal')
         self.firmware_entry.configure(state='disabled' if self.busy else 'normal')
+        self.firmware_source.configure(state='disabled' if self.busy else 'readonly')
         self.history_picker.configure(state='disabled' if self.busy else 'readonly')
         self.ack_check.configure(state='disabled' if self.busy else 'normal')
         if self.mac_flash_check is not None:
@@ -274,7 +283,7 @@ class SetupWizard(tk.Toplevel):
         if self.busy:
             return
         try:
-            opened = webbrowser.open(stock_firmware()['url'], new=2)
+            opened = webbrowser.open(self.firmware_urls[max(0, self.firmware_source.current())], new=2)
         except (OSError, webbrowser.Error):
             opened = False
         self.status.configure(text='已请求浏览器打开固件下载。下载完成后，选择文件并点击“校验并导入固件”。' if opened else
@@ -283,7 +292,7 @@ class SetupWizard(tk.Toplevel):
     def copy_firmware_link(self):
         if not self.busy:
             self.clipboard_clear()
-            self.clipboard_append(stock_firmware()['url'])
+            self.clipboard_append(self.firmware_urls[max(0, self.firmware_source.current())])
             self.status.configure(text='已复制固件下载链接。可粘贴到浏览器或支持续传的下载工具中。')
 
     def browse_firmware(self):

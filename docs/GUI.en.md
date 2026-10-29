@@ -4,7 +4,7 @@
 
 Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. Passport automatic installation, start and restore are paused; see [community research](COMMUNITY-RESEARCH.en.md).
 
-`0.3.3-r1` uses **连接手机 / Connect phone** and **连接帮助 / Connection help**. SSH file paths and aliases move to **更多 → 高级连接设置 / More → Advanced connection settings**. This flow is included in the Windows EXE, Mac DMG and source; r6 and older binaries retain some labels described below.
+`0.3.3-r3` uses **连接手机 / Connect phone** and **连接帮助 / Connection help**. SSH file paths and aliases move to **更多 → 高级连接设置 / More → Advanced connection settings**. This flow is included in the Windows EXE, Mac DMG and source; r6 and older binaries retain some labels described below.
 
 On first use, connect and unlock the phone, then choose Connect phone. Connection help distinguishes USB problems, rejected authorization, changed host identity and unverified Root. It can inspect an owner-selected original Root folder, confirm its source and create local paths from a unique login-key/host-key pair. Multiple or incomplete materials require a narrower folder or phone authorization. Advanced configuration imports keep their original paths.
 

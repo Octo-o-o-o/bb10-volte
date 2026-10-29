@@ -82,7 +82,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Connect phone to verify your existing connection, or follow Connection help to recover personal materials. Desktop version `0.3.3-r1` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.3`. Published EXE/DMG versions and validation scope are stated in their corresponding Releases. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Connect phone to verify your existing connection, or follow Connection help to recover personal materials. Desktop version `0.3.3-r3` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.3`. Published EXE/DMG versions and validation scope are stated in their corresponding Releases. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
 
 Alternatively, run the same workflow from the repository root:
 

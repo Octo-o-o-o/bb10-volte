@@ -40,6 +40,10 @@ def run(output):
     assert wizard.browser_download_button.cget('command')
     assert wizard.browse_firmware_button.cget('command')
     assert wizard.import_firmware_button.cget('command')
+    assert len(wizard.firmware_urls) == 3
+    assert str(wizard.firmware_source.cget('state')) == 'readonly'
+    wizard.firmware_source.current(1)
+    assert wizard.firmware_source.get() == 'ia600407.us.archive.org'
     wizard.close()
     from fetch_materials import import_material, fetch_entries
     # Verify the bundled importer under the network-denying audit hook.
@@ -124,6 +128,7 @@ def run(output):
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
               'first_run_wizard_without_probe_verified': True,
               'manual_firmware_import_ui_verified': True,
+              'firmware_mirror_selection_ui_verified': True,
               'offline_material_import_verified': True,
               'existing_root_recovery_ui_verified': True,
               'connection_help_ui_verified': True,

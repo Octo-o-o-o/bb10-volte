@@ -2,6 +2,15 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.3.3-r3 · 2026-10-29
+
+- Ranks download nodes by observed payload speed, switches on failures or sustained low speed, and retains usable progress.
+- Verifies overlapping bytes for cross-mirror resume, scopes ETags to their source, and requires the complete pinned SHA-256. Adds Q10 archive replicas and verified tool mirrors.
+- Adds browser source selection, link copying, file selection and pasted-path firmware import. Import is offline; verified firmware is reused during preparation.
+- Windows EXE and universal Mac DMG share the downloader. Phone payload remains `0.3.3`; this release adds no phone flashing or call acceptance.
+
+Get packages and checksums from [this Release](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.3.3-r3). See [download details](FIRST-RUN.en.md#interrupted-or-failing-downloads).
+
 ## 0.3.3-r2 · 2026-10-29
 
 Fix an import obstacle found during real Q10 acceptance: old Root folders may contain large or deep build trees. Choose “Check this folder only” to inspect the files directly inside the selected folder, without moving keys or editing SSH configuration. The scope is displayed explicitly. Ambiguous keys, missing trusted phone identity, or incomplete scans still block import, and connections are remembered only after successful Root verification.

@@ -175,6 +175,16 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(self.wizard.firmware_path.get(), 'existing path')
         importer.assert_not_called()
 
+    def test_selected_backup_node_is_used_by_browser_and_copy(self):
+        self.wizard.firmware_source.current(1)
+        url = self.wizard.firmware_urls[1]
+        with patch.object(w.webbrowser, 'open', return_value=True) as browser:
+            self.wizard.browser_download_button.invoke()
+        browser.assert_called_once_with(url, new=2)
+        with patch.object(self.wizard, 'clipboard_clear'), patch.object(self.wizard, 'clipboard_append') as copy:
+            self.wizard.copy_download_button.invoke()
+        copy.assert_called_once_with(url)
+
     def test_empty_path_is_rejected_before_worker(self):
         with patch.object(w, 'import_stock_firmware') as importer:
             self.wizard.import_firmware_button.invoke()
