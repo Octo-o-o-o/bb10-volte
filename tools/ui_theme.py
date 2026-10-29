@@ -129,19 +129,20 @@ def apply_theme(root, font):
     style.configure('TMenubutton', font=(font, 11), foreground=INK, padding=(px(13), px(9)))
     style.map('TMenubutton', foreground=[('disabled', '#7C8BA0')])
 
-    rounded('Surface.thumb', [('', '#BAC6D6', '#BAC6D6'), ('pressed', '#71849F', '#71849F'),
-                             ('active', '#91A2B9', '#91A2B9')], radius=3)
     for orientation, side in (('Vertical', 'top'), ('Horizontal', 'left')):
+        thumb = orientation + '.Scrollbar.thumb'
+        rounded(thumb, [('', '#BAC6D6', '#BAC6D6'), ('pressed', '#71849F', '#71849F'),
+                        ('active', '#91A2B9', '#91A2B9')], radius=3)
         style.layout(orientation + '.TScrollbar', [
             (orientation + '.Scrollbar.trough', {'sticky': 'ns' if side == 'top' else 'ew',
-             'children': [('Surface.thumb', {'side': side, 'sticky': 'ns' if side == 'top' else 'ew'})]})])
+             'children': [(thumb, {'sticky': 'nsew'})]})])
         style.configure(orientation + '.TScrollbar', troughcolor=BG, bordercolor=BG,
                         lightcolor=BG, darkcolor=BG, borderwidth=0, arrowsize=px(10))
 
-    rounded('Surface.track', [('', '#E2E8F2', '#E2E8F2')], radius=2)
-    rounded('Surface.progress', [('', BLUE, BLUE)], radius=2)
-    style.layout('Horizontal.TProgressbar', [('Surface.track', {'sticky': 'ew', 'children': [
-        ('Surface.progress', {'side': 'left', 'sticky': 'ns'})]})])
+    rounded('Horizontal.Progressbar.trough', [('', '#E2E8F2', '#E2E8F2')], radius=2)
+    rounded('Horizontal.Progressbar.pbar', [('', BLUE, BLUE)], radius=2)
+    style.layout('Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'sticky': 'ew', 'children': [
+        ('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})]})])
     style.configure('Horizontal.TProgressbar', thickness=px(4), borderwidth=0)
 
     style.configure('.', font=(font, 11), background=BG, foreground=INK,

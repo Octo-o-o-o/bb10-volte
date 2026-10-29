@@ -79,6 +79,30 @@ class ScrolledPageTests(unittest.TestCase):
         self.assertEqual(self.canvas.yview(), before)
         self.assertGreater(text.yview()[0], 0)
 
+    def test_scroll_thumb_size_and_position_follow_the_view(self):
+        ttk.Frame(self.content, height=1200, width=200).pack()
+        self.root.update()
+        x = self.scrollbar.winfo_width() // 2
+        thumb_pixels = [y for y in range(self.scrollbar.winfo_height())
+                        if self.scrollbar.identify(x, y).endswith('.thumb')]
+        self.assertGreater(len(thumb_pixels), 40)
+        self.assertLess(len(thumb_pixels), 100)
+        self.canvas.yview_moveto(1)
+        self.root.update()
+        self.assertTrue(self.scrollbar.identify(x, 280).endswith('.thumb'))
+        self.assertFalse(self.scrollbar.identify(x, 20).endswith('.thumb'))
+
+    def test_progress_fill_tracks_value(self):
+        progress = ttk.Progressbar(self.content, value=36, maximum=100, length=400)
+        progress.pack()
+        self.root.update()
+        y = progress.winfo_height() // 2
+        self.assertTrue(progress.identify(80, y).endswith('.pbar'))
+        self.assertFalse(progress.identify(300, y).endswith('.pbar'))
+        progress.configure(value=85)
+        self.root.update()
+        self.assertTrue(progress.identify(300, y).endswith('.pbar'))
+
 
 if __name__ == '__main__':
     unittest.main()
