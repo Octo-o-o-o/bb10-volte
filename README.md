@@ -43,6 +43,8 @@
 
 精确文件名、原始下载地址及 SHA-256 见 [sources.json](materials/sources.json)、[usb-drivers.json](materials/usb-drivers.json)、[stock-partitions.json](materials/stock-partitions.json)。这些是已经记录的可工作版本，不应直接用最新版替换；散列不匹配时准备流程会停止。
 
+当前源码已支持首次准备材料的断点续传、自动重试及下载进度；旧版 EXE / DMG 需更新构建才具备此能力。固件下载失败时保留缓存，也可预先下载完整文件后复用，见[下载故障处理](docs/FIRST-RUN.md#下载中断或一直失败)。
+
 ## 快速开始
 
 ### 使用方式
