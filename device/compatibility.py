@@ -25,6 +25,13 @@ V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
 FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
+NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
+                 'radio_read_error', 'data_read_error', 'network_read_error')
+PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', '3gnet')
+CONFIGURATION_FLAGS = ('ims_override_absent', 'probe_override_absent', 'cdsc_directory_empty',
+                       'voice_override_absent', 'ims_profiles_absent', 'ims_networks_absent',
+                       'ims_services_absent', 'ims_domain_default', 'cdsc_selection_default')
+NATIVE_BASELINE_FIELDS = ('voice_policy', 'crypto', 'ims_count', 'vpn_count')
 DIAGNOSTIC_VALUES = {
     'ims_state': (str, ('connected', 'disconnected', 'idle')),
     'ims_ran': (str, ('LTE', 'WLAN')),
@@ -42,6 +49,76 @@ def public_incoming_diagnostics(values):
         value = values.get(key)
         result[key] = value if type(value) is kind and value in allowed else None
     return result
+
+
+def public_flags(values, keys):
+    values = values if isinstance(values, dict) else {}
+    return {key: values.get(key) if type(values.get(key)) is bool else None for key in keys}
+
+
+def public_network_diagnostics(values):
+    result = public_flags(values, NETWORK_FLAGS)
+    apn = values.get('observed_data_apn')
+    result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
+    result['scope'] = 'snapshot_only_not_registration_or_band_proof'
+    return result
+
+
+def public_baseline(values):
+    """Bound numeric observations and exclude exception text and arbitrary data."""
+    def number(value, low, high):
+        return value if type(value) is int and low <= value <= high else None
+    crypto = values.get('crypto')
+    crypto = crypto if isinstance(crypto, dict) else {}
+    result = {'voice_policy': number(values.get('voice_policy'), 0, 255),
+              'crypto': {key: number(crypto.get(key), -2147483648, 2147483647)
+                         for key in ('swcr_id', 'crypto_support')},
+              'ims_count': number(values.get('ims_count'), 0, 65535),
+              'vpn_count': number(values.get('vpn_count'), 0, 65535)}
+    result.update(public_flags(values, ('clean_configuration', 'native_read_error')))
+    return result
+
+
+def public_native_read_status(values):
+    values = values if isinstance(values, dict) else {}
+    return {key: values.get(key) if values.get(key) in ('read', 'failed', 'not_checked') else 'unknown'
+            for key in NATIVE_BASELINE_FIELDS}
+
+
+def baseline_diagnostics(values):
+    """Explain every existing gate without changing installation eligibility.
+
+    This also accepts older report observations: missing details remain unknown.
+    Read failures are per probe, so one failure cannot erase the other readings.
+    """
+    baseline = public_baseline(values)
+    read_status = values.get('native_read_status', {})
+    read_status = read_status if isinstance(read_status, dict) else {}
+    rows = []
+    def add(key, actual, expected, source=None):
+        read = read_status.get(source) if source else None
+        reason = ('read_failed' if read == 'failed' else 'not_checked' if read == 'not_checked'
+                  else 'unavailable' if actual is None else 'observed')
+        if reason != 'observed':
+            actual = None
+        status = 'unknown' if actual is None else 'pass' if actual == expected else 'wait'
+        rows.append({'id': key, 'status': status, 'actual': actual,
+                     'expected': expected, 'reason': reason})
+    add('voice_policy', baseline['voice_policy'], 0, 'voice_policy')
+    add('crypto_swcr_id', baseline['crypto']['swcr_id'], -1, 'crypto')
+    add('crypto_support', baseline['crypto']['crypto_support'], 0, 'crypto')
+    add('ims_count', baseline['ims_count'], 0, 'ims_count')
+    add('vpn_count', baseline['vpn_count'], 0, 'vpn_count')
+    # Old reports omit the flag on success. Only infer success from complete reads.
+    error = baseline['native_read_error']
+    if error is None and all(row['actual'] is not None for row in rows):
+        error = False
+    add('native_read_error', error, False)
+    add('clean_configuration', baseline['clean_configuration'], True)
+    configuration = public_flags(values.get('configuration_diagnostics'), CONFIGURATION_FLAGS)
+    for key in CONFIGURATION_FLAGS:
+        add(key, configuration[key], True)
+    return rows
 
 
 def autostart_supported(device, profile):
@@ -100,13 +177,20 @@ def read_network(profile=None):
         result['sim_read_error'] = True
     try:
         radio = n.attrs(n.read(RADIO))
-        internet = n.value(n.attrs(n.read(DATA)), 'internet', {})
         result.update(radio_on=n.value(radio, 'power_status') == 'ON',
-                      lte=n.value(radio, 'network_technology') == ['lte'],
-                      apn_matches=internet.get('apn') in p['carrier']['data_apns'],
-                      data_connected=internet.get('connected') is True)
+                      lte=n.value(radio, 'network_technology') == ['lte'])
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
-        result['network_read_error'] = True
+        result['radio_read_error'] = result['network_read_error'] = True
+    try:
+        internet = n.value(n.attrs(n.read(DATA)), 'internet', {})
+        apn = internet.get('apn')
+        present = isinstance(apn, str) and bool(apn)
+        connected = internet.get('connected')
+        result.update(apn_matches=apn in p['carrier']['data_apns'] if present else None,
+                      data_connected=connected if type(connected) is bool else None,
+                      observed_data_apn=apn if apn in PUBLIC_APNS else 'other' if present else 'unknown')
+    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+        result['data_read_error'] = result['network_read_error'] = True
     return result
 
 
@@ -128,8 +212,14 @@ def network_checks(s, profile=None):
                 'identity_layout_matches' if s.get('identity_matches') else 'identity_layout_unknown')
     online = s.get('radio_on') and s.get('lte')
     add('lte', 'pass' if online else 'wait', 'lte_ready' if online else 'lte_not_ready')
-    data = s.get('apn_matches') and s.get('data_connected') and not s.get('network_read_error')
-    add('apn', 'pass' if data else 'wait', 'data_apn_ready' if data else 'data_apn_not_ready')
+    data = (s.get('apn_matches') is True and s.get('data_connected') is True and
+            not s.get('network_read_error'))
+    code = ('data_apn_ready' if data else
+            'data_apn_state_unknown' if s.get('network_read_error') else
+            'data_apn_profile_mismatch' if s.get('apn_matches') is False else
+            'data_apn_disconnected' if s.get('apn_matches') is True and s.get('data_connected') is False else
+            'data_apn_state_unknown')
+    add('apn', 'pass' if data else 'wait', code)
     return checks
 
 
@@ -189,23 +279,46 @@ def installed_state():
         return {'state': 'conflict'}
 
 
-def pristine_configuration():
-    if os.path.lexists('/var/ims/carrier/imsconfig_user.xml') or os.path.lexists('/pps/volte_probe'):
-        return False
-    if os.listdir('/var/radio/cdsc'):
-        return False
+def configuration_diagnostics():
+    """Observe the existing baseline gates; export only fixed boolean fields.
+
+    A non-default field does not establish who changed it or whether it is
+    harmful. Never delete an override or reset a user's APN from a probe.
+    """
+    result = dict((key, None) for key in CONFIGURATION_FLAGS)
+    for key, path in (('ims_override_absent', '/var/ims/carrier/imsconfig_user.xml'),
+                      ('probe_override_absent', '/pps/volte_probe')):
+        try:
+            result[key] = not os.path.lexists(path)
+        except OSError:
+            pass
+    try:
+        result['cdsc_directory_empty'] = not bool(os.listdir('/var/radio/cdsc'))
+    except OSError:
+        pass
     fields = {
-        '/pps/services/carrier_config/radio_common/cellular_protocol_configuration': ['voice_domain_preference_EUTRAN'],
-        '/pps/services/carrier_config/ims/ims': ['IMS_profilesV2', 'supported_networks', 'IMS_services', 'Home_network_domain_name'],
-        '/pps/services/cds/cnice/status_persistent': ['cdsc_xml'],
+        '/pps/services/carrier_config/radio_common/cellular_protocol_configuration':
+            [('voice_domain_preference_EUTRAN', 'voice_override_absent', (None,))],
+        '/pps/services/carrier_config/ims/ims':
+            [('IMS_profilesV2', 'ims_profiles_absent', (None,)),
+             ('supported_networks', 'ims_networks_absent', (None,)),
+             ('IMS_services', 'ims_services_absent', (None,)),
+             ('Home_network_domain_name', 'ims_domain_default', (None, ':'))],
+        '/pps/services/cds/cnice/status_persistent':
+            [('cdsc_xml', 'cdsc_selection_default', (':',))],
     }
-    for path, keys in fields.items():
-        attrs = n.attrs(n.read(path))
-        for key in keys:
-            allowed = (':',) if key == 'cdsc_xml' else (None, ':') if key == 'Home_network_domain_name' else (None,)
-            if attrs.get(key) not in allowed:
-                return False
-    return True
+    for path, entries in fields.items():
+        try:
+            attrs = n.attrs(n.read(path))
+            for key, label, allowed in entries:
+                result[label] = attrs.get(key) in allowed
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+    return result
+
+
+def pristine_configuration():
+    return all(value is True for value in configuration_diagnostics().values())
 
 
 def observe(profile=None):
@@ -234,13 +347,20 @@ def observe(profile=None):
     except Exception:
         s['carrier_template_ready'] = False
     # Never call native ARM functions on a different build, host or privilege level.
+    s['native_read_status'] = dict((key, 'not_checked') for key in NATIVE_BASELINE_FIELDS)
     if s['root_ready'] and device_info.engine_matches(s):
-        try:
-            s.update(voice_policy=n.voice_policy(), crypto=n.crypto_policy(),
-                     ims_count=len(n.ims_pids()), vpn_count=len(n.active_vpn_sessions()),
-                     clean_configuration=pristine_configuration())
-        except Exception:
-            s['native_read_error'] = True
+        s['configuration_diagnostics'] = configuration_diagnostics()
+        s['clean_configuration'] = all(value is True for value in s['configuration_diagnostics'].values())
+        s['native_read_error'] = False
+        for key, read in (('voice_policy', n.voice_policy), ('crypto', n.crypto_policy),
+                          ('ims_count', lambda: len(n.ims_pids())),
+                          ('vpn_count', lambda: len(n.active_vpn_sessions()))):
+            try:
+                s[key] = read()
+                s['native_read_status'][key] = 'read'
+            except Exception:
+                s['native_read_status'][key] = 'failed'
+                s['native_read_error'] = True
     return s
 
 
@@ -288,12 +408,15 @@ def evaluate(s, profile=None, allow_experimental=False):
             'profile_parameters': p, 'experimental': experimental, 'experimental_allowed': allow_experimental,
             'device': device, 'native_sha256': s.get('native_sha256', {}),
             'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),
+            'network_diagnostics': public_network_diagnostics(s),
+            'configuration_diagnostics': public_flags(s.get('configuration_diagnostics'), CONFIGURATION_FLAGS),
             'carrier_template': s.get('carrier_template'), 'checked_at': int(time.time()),
             'outcome': outcome, 'checks': checks,
             'facts': {key: s.get(key) for key in ('model', 'variant', 'os_version', 'mcc', 'mnc')},
             'installation': installation,
-            'baseline': {key: s.get(key) for key in ('voice_policy', 'crypto', 'ims_count', 'vpn_count',
-                                                    'clean_configuration', 'native_read_error')},
+            'baseline': public_baseline(s),
+            'native_read_status': public_native_read_status(s.get('native_read_status')),
+            'baseline_diagnostics': baseline_diagnostics(s),
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
             'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,

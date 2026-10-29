@@ -8,7 +8,9 @@ This research did not find a complete, hardware-validated database covering all 
 |---|---|---|---|
 | Unicom | 460 / 01, 09 | 3gnet | ims / IPv4v6 |
 | Mobile | 460 / 00, 02, 07 | cmnet | ims / IPv4v6 |
-| Telecom | 460 / 03, 11 | ctnet | ims / IPv4v6 |
+| Telecom | 460 / 03, 11 | ctnet, ctlte | ims / IPv4v6 |
+
+2026-10-29 addition: the experimental Telecom template also recognizes `ctlte`, supported by a [GNOME network configuration commit](https://mail.gnome.org/archives/commits-list/2020-April/msg03250.html) listing both `ctnet` and `ctlte` for 460-11. This expands APN recognition only, does not modify the phone's APN and does not establish BB10 data or call acceptance. Actual SIM, stock-carrier and live-data checks remain required. The AOSP provenance below describes the original sample.
 
 Facts were extracted from a [pinned AOSP commit](https://android.googlesource.com/device/sample/+/73f904fbeb872f5675cb5f18cd9dfb15856425a6/etc/apns-full-conf.xml). The upstream [README calls this a sample](https://android.googlesource.com/device/sample/+/main/etc/README), not BB10 certification. No 460-06 entry was returned by this query, so it was not added automatically. This is not a complete current MNC directory. See [provenance](../materials/carrier-data-sources.json) for the commit, original XML hash and selected facts; the full upstream XML is not redistributed.
 

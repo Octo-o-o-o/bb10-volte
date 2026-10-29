@@ -1,0 +1,136 @@
+{
+  "source": "measured TTS cue durations; phrase timing proportional within each cue",
+  "cues": [
+    {
+      "startMs": 350,
+      "endMs": 2012,
+      "text": "这台黑莓 Q10"
+    },
+    {
+      "startMs": 2012,
+      "endMs": 4298,
+      "text": "已经用上原生4G 通话"
+    },
+    {
+      "startMs": 4298,
+      "endMs": 5337,
+      "text": "今天用真机"
+    },
+    {
+      "startMs": 5337,
+      "endMs": 7622,
+      "text": "看看这个开源工具怎么用"
+    },
+    {
+      "startMs": 9200,
+      "endMs": 11504,
+      "text": "手机用数据线连上电脑"
+    },
+    {
+      "startMs": 11504,
+      "endMs": 13808,
+      "text": "解锁后，点击连接手机"
+    },
+    {
+      "startMs": 15300,
+      "endMs": 17940,
+      "text": "工具会识别型号、系统和运营商"
+    },
+    {
+      "startMs": 17940,
+      "endMs": 20580,
+      "text": "并验证已有的 Root 连接"
+    },
+    {
+      "startMs": 24400,
+      "endMs": 25602,
+      "text": "打开检查详情"
+    },
+    {
+      "startMs": 25602,
+      "endMs": 30808,
+      "text": "系统版本、原生文件、SIM 卡和4G 网络，逐项核对"
+    },
+    {
+      "startMs": 31500,
+      "endMs": 33466,
+      "text": "这台手机已经安装服务"
+    },
+    {
+      "startMs": 33466,
+      "endMs": 36612,
+      "text": "所以还有一项显示为预期的运行状态"
+    },
+    {
+      "startMs": 38450,
+      "endMs": 40826,
+      "text": "返回首页，点击查看状态"
+    },
+    {
+      "startMs": 40826,
+      "endMs": 43634,
+      "text": "就能读取手机当前的注册结果"
+    },
+    {
+      "startMs": 45000,
+      "endMs": 46375,
+      "text": "这里可以看到"
+    },
+    {
+      "startMs": 46375,
+      "endMs": 47749,
+      "text": "服务注册正常"
+    },
+    {
+      "startMs": 47749,
+      "endMs": 49582,
+      "text": "网络保持 LTE"
+    },
+    {
+      "startMs": 49582,
+      "endMs": 52560,
+      "text": "接下来仍要完成实际通话验收"
+    },
+    {
+      "startMs": 54600,
+      "endMs": 58407,
+      "text": "项目已有这台 Q10 的双向短通话实测"
+    },
+    {
+      "startMs": 58407,
+      "endMs": 62213,
+      "text": "验证范围是北京联通、这个机型和系统版本"
+    },
+    {
+      "startMs": 62213,
+      "endMs": 63816,
+      "text": "其他组合仍需验证"
+    },
+    {
+      "startMs": 64600,
+      "endMs": 66740,
+      "text": "首次使用需要 Root"
+    },
+    {
+      "startMs": 66740,
+      "endMs": 68101,
+      "text": "刷写前务必备份"
+    },
+    {
+      "startMs": 68101,
+      "endMs": 70047,
+      "text": "想让老黑莓继续用起来"
+    },
+    {
+      "startMs": 70047,
+      "endMs": 71992,
+      "text": "可以从兼容性检查开始"
+    }
+  ],
+  "safeArea": {
+    "left": 72,
+    "right": 72,
+    "bottom": 230
+  },
+  "coverIntroMs": 2000
+}

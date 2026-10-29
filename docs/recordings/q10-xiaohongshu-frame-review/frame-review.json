@@ -1,0 +1,222 @@
+{
+  "cueSource": "final adjusted narration report and mapped chapter transitions",
+  "sampleCount": 54,
+  "samples": [
+    {
+      "atMs": 500,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/000-0.500s.png"
+    },
+    {
+      "atMs": 2100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/001-2.100s.png"
+    },
+    {
+      "atMs": 2250,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/002-2.250s.png"
+    },
+    {
+      "atMs": 2450,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/003-2.450s.png"
+    },
+    {
+      "atMs": 3000,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/004-3.000s.png"
+    },
+    {
+      "atMs": 4000,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/005-4.000s.png"
+    },
+    {
+      "atMs": 5386,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/006-5.386s.png"
+    },
+    {
+      "atMs": 10700,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/007-10.700s.png"
+    },
+    {
+      "atMs": 10771,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/008-10.771s.png"
+    },
+    {
+      "atMs": 10900,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/009-10.900s.png"
+    },
+    {
+      "atMs": 11100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/010-11.100s.png"
+    },
+    {
+      "atMs": 11300,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/011-11.300s.png"
+    },
+    {
+      "atMs": 16157,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/012-16.157s.png"
+    },
+    {
+      "atMs": 17200,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/013-17.200s.png"
+    },
+    {
+      "atMs": 17400,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/014-17.400s.png"
+    },
+    {
+      "atMs": 21543,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/015-21.543s.png"
+    },
+    {
+      "atMs": 23750,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/016-23.750s.png"
+    },
+    {
+      "atMs": 23900,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/017-23.900s.png"
+    },
+    {
+      "atMs": 23950,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/018-23.950s.png"
+    },
+    {
+      "atMs": 24100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/019-24.100s.png"
+    },
+    {
+      "atMs": 26100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/020-26.100s.png"
+    },
+    {
+      "atMs": 26300,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/021-26.300s.png"
+    },
+    {
+      "atMs": 26500,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/022-26.500s.png"
+    },
+    {
+      "atMs": 26929,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/023-26.929s.png"
+    },
+    {
+      "atMs": 32314,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/024-32.314s.png"
+    },
+    {
+      "atMs": 33400,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/025-33.400s.png"
+    },
+    {
+      "atMs": 33600,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/026-33.600s.png"
+    },
+    {
+      "atMs": 37700,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/027-37.700s.png"
+    },
+    {
+      "atMs": 39900,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/028-39.900s.png"
+    },
+    {
+      "atMs": 40100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/029-40.100s.png"
+    },
+    {
+      "atMs": 40350,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/030-40.350s.png"
+    },
+    {
+      "atMs": 40550,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/031-40.550s.png"
+    },
+    {
+      "atMs": 43086,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/032-43.086s.png"
+    },
+    {
+      "atMs": 46900,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/033-46.900s.png"
+    },
+    {
+      "atMs": 47100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/034-47.100s.png"
+    },
+    {
+      "atMs": 48471,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/035-48.471s.png"
+    },
+    {
+      "atMs": 53857,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/036-53.857s.png"
+    },
+    {
+      "atMs": 54100,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/037-54.100s.png"
+    },
+    {
+      "atMs": 54300,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/038-54.300s.png"
+    },
+    {
+      "atMs": 54760,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/039-54.760s.png"
+    },
+    {
+      "atMs": 54960,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/040-54.960s.png"
+    },
+    {
+      "atMs": 56300,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/041-56.300s.png"
+    },
+    {
+      "atMs": 56500,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/042-56.500s.png"
+    },
+    {
+      "atMs": 56700,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/043-56.700s.png"
+    },
+    {
+      "atMs": 59243,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/044-59.243s.png"
+    },
+    {
+      "atMs": 64629,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/045-64.629s.png"
+    },
+    {
+      "atMs": 66150,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/046-66.150s.png"
+    },
+    {
+      "atMs": 66350,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/047-66.350s.png"
+    },
+    {
+      "atMs": 66500,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/048-66.500s.png"
+    },
+    {
+      "atMs": 66700,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/049-66.700s.png"
+    },
+    {
+      "atMs": 70014,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/050-70.014s.png"
+    },
+    {
+      "atMs": 74400,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/051-74.400s.png"
+    },
+    {
+      "atMs": 75200,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/052-75.200s.png"
+    },
+    {
+      "atMs": 75350,
+      "file": "docs/recordings/q10-xiaohongshu-frame-review/053-75.350s.png"
+    }
+  ]
+}

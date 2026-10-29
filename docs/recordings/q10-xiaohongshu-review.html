@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>黑莓 Q10 · 小红书演示审片</title>
+  <style>
+    :root{color-scheme:light;--bg:#f6f7f4;--ink:#17211b;--muted:#66746b;--line:#d9dfd8;--card:#fff;--accent:#1d6f42;--bad:#b42318}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{padding:28px 32px 20px;border-bottom:1px solid var(--line);background:#fff}
+    h1{margin:0 0 8px;font-size:28px;letter-spacing:0}
+    h2{margin:0 0 14px;font-size:18px}
+    a{color:var(--accent)}
+    main{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(320px,.9fr);gap:18px;padding:20px 24px 32px}
+    section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:0 10px 28px rgba(23,33,27,.05)}
+    video,img{width:100%;max-height:72vh;object-fit:contain;border-radius:6px;background:#111}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .badge{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700}
+    .badge.ok{background:#e5f4ea;color:#146232}
+    .badge.fail{background:#fde8e6;color:var(--bad)}
+    .muted{color:var(--muted)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+    th{color:#526057;background:#f8faf7}
+    details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+    summary{cursor:pointer;font-weight:700}
+    pre{overflow:auto;background:#111a14;color:#e9f5eb;border-radius:6px;padding:12px}
+    @media (max-width: 960px){main{grid-template-columns:1fr;padding:14px}.grid{grid-template-columns:1fr}header{padding:22px 18px}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>黑莓 Q10 · 小红书演示审片</h1>
+    <div class="muted">q10-xiaohongshu · portrait-video-of-native-desktop · </div>
+    <div class="badges">
+      <span class="badge ok">page errors</span>
+      <span class="badge ok">response errors</span>
+      <span class="badge ok">media gates</span>
+      <span class="badge ok">captions</span>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>Final Video</h2>
+      <video src="q10-xiaohongshu-final.mp4" controls playsinline poster="q10-xiaohongshu-cover.png"></video><p><a href="q10-xiaohongshu-final.mp4">Final video</a></p>
+      <details><summary>Source video</summary><video src="q10-xiaohongshu.mp4" controls playsinline></video><p><a href="q10-xiaohongshu.mp4">Source video</a></p></details>
+    </section>
+    <section>
+      <h2>Quality Summary</h2>
+      <p class="muted">No blocking issues recorded in the supplied reports.</p>
+      <details><summary>Media report</summary><pre>{
+  &quot;report&quot;: &quot;docs\\recordings\\q10-xiaohongshu-report.json&quot;,
+  &quot;scenario&quot;: &quot;q10-xiaohongshu&quot;,
+  &quot;steps&quot;: 3,
+  &quot;captions&quot;: 9,
+  &quot;pageErrors&quot;: 0,
+  &quot;responseErrors&quot;: 0,
+  &quot;failures&quot;: 0,
+  &quot;media&quot;: {
+    &quot;output&quot;: {
+      &quot;path&quot;: &quot;docs\\recordings\\q10-xiaohongshu-final.mp4&quot;,
+      &quot;durationSeconds&quot;: 75.4,
+      &quot;sizeBytes&quot;: 3010225,
+      &quot;video&quot;: {
+        &quot;codec&quot;: &quot;h264&quot;,
+        &quot;width&quot;: 1080,
+        &quot;height&quot;: 1920,
+        &quot;frameRate&quot;: &quot;30/1&quot;
+      },
+      &quot;audioStreams&quot;: 1,
+      &quot;coverArtStreams&quot;: [
+        {
+          &quot;index&quot;: 2,
+          &quot;codec&quot;: &quot;png&quot;,
+          &quot;width&quot;: 1080,
+          &quot;height&quot;: 1920,
+          &quot;attachedPic&quot;: true,
+          &quot;tags&quot;: {}
+        }
+      ],
+      &quot;audioVolume&quot;: {
+        &quot;meanVolumeDb&quot;: -22.7,
+        &quot;maxVolumeDb&quot;: -2.7
+      }
+    },
+    &quot;source&quot;: {
+      &quot;path&quot;: &quot;docs\\recordings\\q10-xiaohongshu.mp4&quot;,
+      &quot;durationSeconds&quot;: 73.4,
+      &quot;sizeBytes&quot;: 1577975,
+      &quot;video&quot;: {
+        &quot;index&quot;: 0,
+        &quot;codec_name&quot;: &quot;h264&quot;,
+        &quot;codec_long_name&quot;: &quot;H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10&quot;,
+        &quot;profile&quot;: &quot;High&quot;,
+        &quot;codec_type&quot;: &quot;video&quot;,
+        &quot;codec_tag_string&quot;: &quot;avc1&quot;,
+        &quot;codec_tag&quot;: &quot;0x31637661&quot;,
+        &quot;mime_codec_string&quot;: &quot;avc1.640028&quot;,
+        &quot;width&quot;: 1080,
+        &quot;height&quot;: 1920,
+        &quot;coded_width&quot;: 1080,
+        &quot;coded_height&quot;: 1920,
+        &quot;has_b_frames&quot;: 2,
+        &quot;pix_fmt&quot;: &quot;yuv420p&quot;,
+        &quot;level&quot;: 40,
+        &quot;chroma_location&quot;: &quot;left&quot;,
+        &quot;field_order&quot;: &quot;progressive&quot;,
+        &quot;is_avc&quot;: &quot;true&quot;,
+        &quot;nal_length_size&quot;: &quot;4&quot;,
+        &quot;id&quot;: &quot;0x1&quot;,
+        &quot;r_frame_rate&quot;: &quot;30/1&quot;,
+        &quot;avg_frame_rate&quot;: &quot;30/1&quot;,
+        &quot;time_base&quot;: &quot;1/15360&quot;,
+        &quot;start_pts&quot;: 0,
+        &quot;start_time&quot;: &quot;0.000000&quot;,
+        &quot;duration_ts&quot;: 1127424,
+        &quot;duration&quot;: &quot;73.400000&quot;,
+        &quot;bit_rate&quot;: &quot;169021&quot;,
+        &quot;bits_per_raw_sample&quot;: &quot;8&quot;,
+        &quot;nb_frames&quot;: &quot;2202&quot;,
+        &quot;extradata_size&quot;: 46,
+        &quot;disposition&quot;: {
+          &quot;default&quot;: 1,
+          &quot;dub&quot;: 0,
+          &quot;original&quot;: 0,
+          &quot;comment&quot;: 0,
+          &quot;lyrics&quot;: 0,
+          &quot;karaoke&quot;: 0,
+          &quot;forced&quot;: 0,
+          &quot;hearing_impaired&quot;: 0,
+          &quot;visual_impaired&quot;: 0,
+          &quot;clean_effects&quot;: 0,
+          &quot;attached_pic&quot;: 0,
+          &quot;timed_thumbnails&quot;: 0,
+          &quot;non_diegetic&quot;: 0,
+          &quot;captions&quot;: 0,
+          &quot;descriptions&quot;: 0,
+          &quot;metadata&quot;: 0,
+          &quot;dependent&quot;: 0,
+          &quot;still_image&quot;: 0,
+          &quot;multilayer&quot;: 0
+        },
+        &quot;tags&quot;: {
+          &quot;language&quot;: &quot;und&quot;,
+          &quot;handler_name&quot;: &quot;VideoHandler&quot;,
+          &quot;encoder&quot;: &quot;Lavc63.1.102 libx264&quot;
+        }
+      }
+    },
+    &quot;durationRatio&quot;: 1.0272479564032697,
+    &quot;narration&quot;: {
+      &quot;path&quot;: &quot;docs\\recordings\\q10-xiaohongshu-final-narration-report.json&quot;,
+      &quot;padMode&quot;: &quot;freeze&quot;,
+      &quot;padBufferMs&quot;: 300,
+      &quot;usePaddedFilter&quot;: false,
+      &quot;sourceDurationMs&quot;: 73400,
+      &quot;expectedDurationMs&quot;: 75400,
+      &quot;totalPaddingMs&quot;: 0,
+      &quot;paddedCues&quot;: 0,
+      &quot;outputDurationMs&quot;: 75400,
+      &quot;driftMs&quot;: 0,
+      &quot;toleranceMs&quot;: 1508
+    }
+  }
+}</pre></details>
+      <details><summary>Narration report</summary><pre>{
+  &quot;createdAt&quot;: &quot;2026-10-29T04:04:36.689Z&quot;,
+  &quot;sourceVideo&quot;: &quot;docs\\recordings\\q10-xiaohongshu.mp4&quot;,
+  &quot;sourceReport&quot;: &quot;docs\\recordings\\q10-xiaohongshu-report.json&quot;,
+  &quot;outputVideo&quot;: &quot;docs\\recordings\\q10-xiaohongshu-narrated.mp4&quot;,
+  &quot;transcript&quot;: &quot;docs\\recordings\\q10-xiaohongshu-narrated-narration.vtt&quot;,
+  &quot;engine&quot;: &quot;edge-tts&quot;,
+  &quot;language&quot;: &quot;zh-CN&quot;,
+  &quot;voice&quot;: &quot;zh-CN-YunyangNeural&quot;,
+  &quot;rate&quot;: 180,
+  &quot;timing&quot;: &quot;report&quot;,
+  &quot;mix&quot;: &quot;replace&quot;,
+  &quot;padMode&quot;: &quot;freeze&quot;,
+  &quot;padBufferMs&quot;: 300,
+  &quot;usePaddedFilter&quot;: false,
+  &quot;videoDurationSeconds&quot;: 73.4,
+  &quot;outputDurationSeconds&quot;: 75.4,
+  &quot;durationRatio&quot;: 1,
+  &quot;timeline&quot;: {
+    &quot;sourceDurationMs&quot;: 73400,
+    &quot;outputDurationMs&quot;: 75400,
+    &quot;expectedDurationMs&quot;: 75400,
+    &quot;totalPaddingMs&quot;: 0,
+    &quot;paddedCues&quot;: 0
+  },
+  &quot;media&quot;: {
+    &quot;source&quot;: {
+      &quot;durationSeconds&quot;: 73.4,
+      &quot;videoStreams&quot;: [
+        {
+          &quot;index&quot;: 0,
+          &quot;codec_name&quot;: &quot;h264&quot;,
+          &quot;codec_long_name&quot;: &quot;H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10&quot;,
+          &quot;profile&quot;: &quot;High&quot;,
+          &quot;codec_type&quot;: &quot;video&quot;,
+          &quot;codec_tag_string&quot;: &quot;avc1&quot;,
+          &quot;codec_tag&quot;: &quot;0x31637661&quot;,
+          &quot;mime_codec_string&quot;: &quot;avc1.640028&quot;,
+          &quot;width&quot;: 1080,
+          &quot;height&quot;: 1920,
+          &quot;coded_width&quot;: 1080,
+          &quot;coded_height&quot;: 1920,
+          &quot;has_b_frames&quot;: 2,
+          &quot;pix_fmt&quot;: &quot;yuv420p&quot;,
+          &quot;level&quot;: 40,
+          &quot;chroma_location&quot;: &quot;left&quot;,
+          &quot;field_order&quot;: &quot;progressive&quot;,
+          &quot;is_avc&quot;: &quot;true&quot;,
+          &quot;nal_length_size&quot;: &quot;4&quot;,
+          &quot;id&quot;: &quot;0x1&quot;,
+          &quot;r_frame_rate&quot;: &quot;30/1&quot;,
+          &quot;avg_frame_rate&quot;: &quot;30/1&quot;,
+          &quot;time_base&quot;: &quot;1/15360&quot;,
+          &quot;start_pts&quot;: 0,
+          &quot;start_time&quot;: &quot;0.000000&quot;,
+          &quot;duration_ts&quot;: 1127424,
+          &quot;duration&quot;: &quot;73.400000&quot;,
+          &quot;bit_rate&quot;: &quot;173861&quot;,
+          &quot;bits_per_raw_sample&quot;: &quot;8&quot;,
+          &quot;nb_frames&quot;: &quot;2202&quot;,
+          &quot;extradata_size&quot;: 46,
+          &quot;disposition&quot;: {
+            &quot;default&quot;: 1,
+            &quot;dub&quot;: 0,
+            &quot;original&quot;: 0,
+            &quot;comment&quot;: 0,
+            &quot;lyrics&quot;: 0,
+            &quot;karaoke&quot;: 0,
+            &quot;forced&quot;: 0,
+            &quot;hearing_impaired&quot;: 0,
+            &quot;visual_impaired&quot;: 0,
+            &quot;clean_effects&quot;: 0,
+            &quot;attached_pic&quot;: 0,
+            &quot;timed_thumbnails&quot;: 0,
+            &quot;non_diegetic&quot;: 0,
+            &quot;captions&quot;: 0,
+            &quot;descriptions&quot;: 0,
+            &quot;metadata&quot;: 0,
+            &quot;dependent&quot;: 0,
+            &quot;still_image&quot;: 0,
+            &quot;multilayer&quot;: 0
+          },
+          &quot;tags&quot;: {
+            &quot;language&quot;: &quot;und&quot;,
+            &quot;handler_name&quot;: &quot;VideoHandler&quot;,
+            &quot;encoder&quot;: &quot;Lavc63.1.102 libx264&quot;
+          }
+        }
+      ],
+      &quot;audioStreams&quot;: []
+    },
+    &quot;output&quot;: {
+      &quot;durationSeconds&quot;: 75.4,
+      &quot;videoStreams&quot;: [
+        {
+          &quot;index&quot;: 0,
+          &quot;codec_name&quot;: &quot;h264&quot;,
+          &quot;codec_long_name&quot;: &quot;H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10&quot;,
+          &quot;profile&quot;: &quot;High&quot;,
+          &quot;codec_type&quot;: &quot;video&quot;,
+          &quot;codec_tag_string&quot;: &quot;avc1&quot;,
+          &quot;codec_tag&quot;: &quot;0x31637661&quot;,
+          &quot;mime_codec_string&quot;: &quot;avc1.640028&quot;,
+          &quot;width&quot;: 1080,
+          &quot;height&quot;: 1920,
+          &quot;coded_width&quot;: 1080,
+          &quot;coded_height&quot;: 1920,
+          &quot;has_b_frames&quot;: 2,
+          &quot;pix_fmt&quot;: &quot;yuv420p&quot;,
+          &quot;level&quot;: 40,
+          &quot;chroma_location&quot;: &quot;left&quot;,
+          &quot;field_order&quot;: &quot;progressive&quot;,
+          &quot;is_avc&quot;: &quot;true&quot;,
+          &quot;nal_length_size&quot;: &quot;4&quot;,
+          &quot;id&quot;: &quot;0x1&quot;,
+          &quot;r_frame_rate&quot;: &quot;30/1&quot;,
+          &quot;avg_frame_rate&quot;: &quot;30/1&quot;,
+          &quot;time_base&quot;: &quot;1/15360&quot;,
+          &quot;start_pts&quot;: 0,
+          &quot;start_time&quot;: &quot;0.000000&quot;,
+          &quot;duration_ts&quot;: 1127424,
+          &quot;duration&quot;: &quot;73.400000&quot;,
+          &quot;bit_rate&quot;: &quot;173861&quot;,
+          &quot;bits_per_raw_sample&quot;: &quot;8&quot;,
+          &quot;nb_frames&quot;: &quot;2202&quot;,
+          &quot;extradata_size&quot;: 46,
+          &quot;disposition&quot;: {
+            &quot;default&quot;: 1,
+            &quot;dub&quot;: 0,
+            &quot;original&quot;: 0,
+            &quot;comment&quot;: 0,
+            &quot;lyrics&quot;: 0,
+            &quot;karaoke&quot;: 0,
+            &quot;forced&quot;: 0,
+            &quot;hearing_impaired&quot;: 0,
+            &quot;visual_impaired&quot;: 0,
+            &quot;clean_effects&quot;: 0,
+            &quot;attached_pic&quot;: 0,
+            &quot;timed_thumbnails&quot;: 0,
+            &quot;non_diegetic&quot;: 0,
+            &quot;captions&quot;: 0,
+            &quot;descriptions&quot;: 0,
+            &quot;metadata&quot;: 0,
+            &quot;dependent&quot;: 0,
+            &quot;still_image&quot;: 0,
+            &quot;multilayer&quot;: 0
+          },
+          &quot;tags&quot;: {
+            &quot;language&quot;: &quot;und&quot;,
+            &quot;handler_name&quot;: &quot;VideoHandler&quot;,
+            &quot;encoder&quot;: &quot;Lavc63.1.102 libx264&quot;
+          }
+        }
+      ],
+      &quot;audioStreams&quot;: [
+        {
+          &quot;index&quot;: 1,
+          &quot;codec_name&quot;: &quot;aac&quot;,
+          &quot;codec_long_name&quot;: &quot;AAC (Advanced Audio Coding)&quot;,
+          &quot;profile&quot;: &quot;LC&quot;,
+          &quot;codec_type&quot;: &quot;audio&quot;,
+          &quot;codec_tag_string&quot;: &quot;mp4a&quot;,
+          &quot;codec_tag&quot;: &quot;0x6134706d&quot;,
+          &quot;mime_codec_string&quot;: &quot;mp4a.40.2&quot;,
+          &quot;sample_fmt&quot;: &quot;fltp&quot;,
+          &quot;sample_rate&quot;: &quot;44100&quot;,
+          &quot;channels&quot;: 2,
+          &quot;channel_layout&quot;: &quot;stereo&quot;,
+          &quot;bits_per_sample&quot;: 0,
+          &quot;initial_padding&quot;: 1024,
+          &quot;id&quot;: &quot;0x2&quot;,
+          &quot;r_frame_rate&quot;: &quot;0/0&quot;,
+          &quot;avg_frame_rate&quot;: &quot;0/0&quot;,
+          &quot;time_base&quot;: &quot;1/44100&quot;,
+          &quot;start_pts&quot;: 0,
+          &quot;start_time&quot;: &quot;0.000000&quot;,
+          &quot;duration_ts&quot;: 3236940,
+          &quot;duration&quot;: &quot;73.400000&quot;,
+          &quot;bit_rate&quot;: &quot;118362&quot;,
+          &quot;nb_frames&quot;: &quot;3163&quot;,
+          &quot;extradata_size&quot;: 5,
+          &quot;disposition&quot;: {
+            &quot;default&quot;: 1,
+            &quot;dub&quot;: 0,
+            &quot;original&quot;: 0,
+            &quot;comment&quot;: 0,
+            &quot;lyrics&quot;: 0,
+            &quot;karaoke&quot;: 0,
+            &quot;forced&quot;: 0,
+            &quot;hearing_impaired&quot;: 0,
+            &quot;visual_impaired&quot;: 0,
+            &quot;clean_effects&quot;: 0,
+            &quot;attached_pic&quot;: 0,
+            &quot;timed_thumbnails&quot;: 0,
+            &quot;non_diegetic&quot;: 0,
+            &quot;captions&quot;: 0,
+            &quot;descriptions&quot;: 0,
+            &quot;metadata&quot;: 0,
+            &quot;dependent&quot;: 0,
+            &quot;still_image&quot;: 0,
+            &quot;multilayer&quot;: 0
+          },
+          &quot;tags&quot;: {
+            &quot;language&quot;: &quot;und&quot;,
+            &quot;handler_name&quot;: &quot;SoundHandler&quot;
+          }
+        }
+      ],
+      &quot;audioVolume&quot;: {
+        &quot;meanVolumeDb&quot;: -31.3,
+        &quot;maxVolumeDb&quot;: -4.9
+      }
+    }
+  },
+  &quot;cues&quot;: [
+    {
+      &quot;title&quot;: &quot;让老黑莓重新用上 4G 通话&quot;,
+      &quot;body&quot;: &quot;这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。&quot;,
+      &quot;text&quot;: &quot;这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。&quot;,
+      &quot;sourceStartMs&quot;: 350,
+      &quot;sourceEndMs&quot;: 8800,
+      &quot;index&quot;: 1,
+      &quot;startMs&quot;: 2350,
+      &quot;endMs&quot;: 10800,
+      &quot;sourceWindowStartMs&quot;: 350,
+      &quot;sourceWindowEndMs&quot;: 9200,
+      &quot;windowEndMs&quot;: 11200,
+      &quot;audioDurationMs&quot;: 7272,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 8450
+    },
+    {
+      &quot;title&quot;: &quot;连接并解锁手机&quot;,
+      &quot;body&quot;: &quot;手机用数据线连上电脑，解锁后，点击连接手机。&quot;,
+      &quot;text&quot;: &quot;手机用数据线连上电脑，解锁后，点击连接手机。&quot;,
+      &quot;sourceStartMs&quot;: 9200,
+      &quot;sourceEndMs&quot;: 15300,
+      &quot;index&quot;: 2,
+      &quot;startMs&quot;: 11200,
+      &quot;endMs&quot;: 17300,
+      &quot;sourceWindowStartMs&quot;: 9200,
+      &quot;sourceWindowEndMs&quot;: 15300,
+      &quot;windowEndMs&quot;: 17300,
+      &quot;audioDurationMs&quot;: 4608,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 6100
+    },
+    {
+      &quot;title&quot;: &quot;自动识别并验证已有连接&quot;,
+      &quot;body&quot;: &quot;工具会识别型号、系统和运营商，并验证已有的 Root 连接。&quot;,
+      &quot;text&quot;: &quot;工具会识别型号、系统和运营商，并验证已有的 Root 连接。&quot;,
+      &quot;sourceStartMs&quot;: 15300,
+      &quot;sourceEndMs&quot;: 21850,
+      &quot;index&quot;: 3,
+      &quot;startMs&quot;: 17300,
+      &quot;endMs&quot;: 23850,
+      &quot;sourceWindowStartMs&quot;: 15300,
+      &quot;sourceWindowEndMs&quot;: 24400,
+      &quot;windowEndMs&quot;: 26400,
+      &quot;audioDurationMs&quot;: 5280,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 6550
+    },
+    {
+      &quot;title&quot;: &quot;逐项检查适配条件&quot;,
+      &quot;body&quot;: &quot;打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。&quot;,
+      &quot;text&quot;: &quot;打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。&quot;,
+      &quot;sourceStartMs&quot;: 24400,
+      &quot;sourceEndMs&quot;: 31500,
+      &quot;index&quot;: 4,
+      &quot;startMs&quot;: 26400,
+      &quot;endMs&quot;: 33500,
+      &quot;sourceWindowStartMs&quot;: 24400,
+      &quot;sourceWindowEndMs&quot;: 31500,
+      &quot;windowEndMs&quot;: 33500,
+      &quot;audioDurationMs&quot;: 6408,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 7100
+    },
+    {
+      &quot;title&quot;: &quot;先检查，再决定下一步&quot;,
+      &quot;body&quot;: &quot;这台手机已经安装服务，所以还有一项显示为预期的运行状态。&quot;,
+      &quot;text&quot;: &quot;这台手机已经安装服务，所以还有一项显示为预期的运行状态。&quot;,
+      &quot;sourceStartMs&quot;: 31500,
+      &quot;sourceEndMs&quot;: 38000,
+      &quot;index&quot;: 5,
+      &quot;startMs&quot;: 33500,
+      &quot;endMs&quot;: 40000,
+      &quot;sourceWindowStartMs&quot;: 31500,
+      &quot;sourceWindowEndMs&quot;: 38450,
+      &quot;windowEndMs&quot;: 40450,
+      &quot;audioDurationMs&quot;: 5112,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 6500
+    },
+    {
+      &quot;title&quot;: &quot;查看已安装的服务&quot;,
+      &quot;body&quot;: &quot;返回首页，点击查看状态，就能读取手机当前的注册结果。&quot;,
+      &quot;text&quot;: &quot;返回首页，点击查看状态，就能读取手机当前的注册结果。&quot;,
+      &quot;sourceStartMs&quot;: 38450,
+      &quot;sourceEndMs&quot;: 45000,
+      &quot;index&quot;: 6,
+      &quot;startMs&quot;: 40450,
+      &quot;endMs&quot;: 47000,
+      &quot;sourceWindowStartMs&quot;: 38450,
+      &quot;sourceWindowEndMs&quot;: 45000,
+      &quot;windowEndMs&quot;: 47000,
+      &quot;audioDurationMs&quot;: 5184,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 6550
+    },
+    {
+      &quot;title&quot;: &quot;IMS 注册与 LTE 网络正常&quot;,
+      &quot;body&quot;: &quot;这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。&quot;,
+      &quot;text&quot;: &quot;这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。&quot;,
+      &quot;sourceStartMs&quot;: 45000,
+      &quot;sourceEndMs&quot;: 52000,
+      &quot;index&quot;: 7,
+      &quot;startMs&quot;: 47000,
+      &quot;endMs&quot;: 54860,
+      &quot;sourceWindowStartMs&quot;: 45000,
+      &quot;sourceWindowEndMs&quot;: 54600,
+      &quot;windowEndMs&quot;: 56600,
+      &quot;audioDurationMs&quot;: 7560,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 7860
+    },
+    {
+      &quot;title&quot;: &quot;准确说明实测范围&quot;,
+      &quot;body&quot;: &quot;项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。&quot;,
+      &quot;text&quot;: &quot;项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。&quot;,
+      &quot;sourceStartMs&quot;: 54600,
+      &quot;sourceEndMs&quot;: 64250,
+      &quot;index&quot;: 8,
+      &quot;startMs&quot;: 56600,
+      &quot;endMs&quot;: 66250,
+      &quot;sourceWindowStartMs&quot;: 54600,
+      &quot;sourceWindowEndMs&quot;: 64600,
+      &quot;windowEndMs&quot;: 66600,
+      &quot;audioDurationMs&quot;: 9216,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 9650
+    },
+    {
+      &quot;title&quot;: &quot;首次 Root 前务必备份&quot;,
+      &quot;body&quot;: &quot;首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。&quot;,
+      &quot;text&quot;: &quot;首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。&quot;,
+      &quot;sourceStartMs&quot;: 64600,
+      &quot;sourceEndMs&quot;: 73300,
+      &quot;index&quot;: 9,
+      &quot;startMs&quot;: 66600,
+      &quot;endMs&quot;: 75300,
+      &quot;sourceWindowStartMs&quot;: 64600,
+      &quot;sourceWindowEndMs&quot;: 73400,
+      &quot;windowEndMs&quot;: 75400,
+      &quot;audioDurationMs&quot;: 7392,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 8700
+    }
+  ],
+  &quot;coverIntro&quot;: {
+    &quot;introDurationMs&quot;: 2000,
+    &quot;shiftedByMs&quot;: 2000,
+    &quot;updatedAt&quot;: &quot;2026-10-29T04:14:26.545Z&quot;
+  }
+}</pre></details>
+    </section>
+    <section>
+      <h2>Cover</h2>
+      <a href="q10-xiaohongshu-cover.png"><img src="q10-xiaohongshu-cover.png" alt="Final cover"></a><p><a href="q10-xiaohongshu-cover.png">Final cover</a></p>
+      <details open><summary>Cover candidates</summary><a href="q10-xiaohongshu-cover-candidates/contact-sheet.png"><img src="q10-xiaohongshu-cover-candidates/contact-sheet.png" alt="Cover candidates"></a><p><a href="q10-xiaohongshu-cover-candidates/contact-sheet.png">Cover candidates</a></p></details>
+
+    </section>
+    <section>
+      <h2>Frame Review</h2>
+      <a href="q10-xiaohongshu-frame-review/contact-sheet.png"><img src="q10-xiaohongshu-frame-review/contact-sheet.png" alt="Frame review contact sheet"></a><p><a href="q10-xiaohongshu-frame-review/contact-sheet.png">Frame review contact sheet</a></p>
+      <details><summary>Frame review JSON</summary><pre>{
+  &quot;cueSource&quot;: &quot;final adjusted narration report and mapped chapter transitions&quot;,
+  &quot;sampleCount&quot;: 54,
+  &quot;samples&quot;: [
+    {
+      &quot;atMs&quot;: 500,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/000-0.500s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 2100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/001-2.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 2250,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/002-2.250s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 2450,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/003-2.450s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 3000,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/004-3.000s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 4000,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/005-4.000s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 5386,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/006-5.386s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 10700,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/007-10.700s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 10771,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/008-10.771s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 10900,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/009-10.900s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 11100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/010-11.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 11300,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/011-11.300s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 16157,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/012-16.157s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 17200,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/013-17.200s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 17400,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/014-17.400s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 21543,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/015-21.543s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 23750,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/016-23.750s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 23900,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/017-23.900s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 23950,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/018-23.950s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 24100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/019-24.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 26100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/020-26.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 26300,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/021-26.300s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 26500,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/022-26.500s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 26929,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/023-26.929s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 32314,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/024-32.314s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 33400,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/025-33.400s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 33600,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/026-33.600s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 37700,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/027-37.700s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 39900,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/028-39.900s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 40100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/029-40.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 40350,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/030-40.350s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 40550,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/031-40.550s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 43086,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/032-43.086s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 46900,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/033-46.900s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 47100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/034-47.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 48471,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/035-48.471s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 53857,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/036-53.857s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 54100,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/037-54.100s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 54300,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/038-54.300s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 54760,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/039-54.760s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 54960,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/040-54.960s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 56300,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/041-56.300s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 56500,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/042-56.500s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 56700,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/043-56.700s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 59243,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/044-59.243s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 64629,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/045-64.629s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 66150,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/046-66.150s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 66350,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/047-66.350s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 66500,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/048-66.500s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 66700,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/049-66.700s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 70014,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/050-70.014s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 74400,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/051-74.400s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 75200,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/052-75.200s.png&quot;
+    },
+    {
+      &quot;atMs&quot;: 75350,
+      &quot;file&quot;: &quot;docs/recordings/q10-xiaohongshu-frame-review/053-75.350s.png&quot;
+    }
+  ]
+}</pre></details>
+    </section>
+    <section style="grid-column:1/-1">
+      <h2>Caption Timeline</h2>
+      <table>
+    <thead><tr><th>#</th><th>Time</th><th>Kind</th><th>Title</th><th>Body</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>00:00.350 - 00:08.800</td><td>caption</td><td>让老黑莓重新用上 4G 通话</td><td>这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。</td></tr><tr><td>2</td><td>00:09.200 - 00:15.300</td><td>caption</td><td>连接并解锁手机</td><td>手机用数据线连上电脑，解锁后，点击连接手机。</td></tr><tr><td>3</td><td>00:15.300 - 00:21.850</td><td>caption</td><td>自动识别并验证已有连接</td><td>工具会识别型号、系统和运营商，并验证已有的 Root 连接。</td></tr><tr><td>4</td><td>00:24.400 - 00:31.500</td><td>caption</td><td>逐项检查适配条件</td><td>打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。</td></tr><tr><td>5</td><td>00:31.500 - 00:38.000</td><td>caption</td><td>先检查，再决定下一步</td><td>这台手机已经安装服务，所以还有一项显示为预期的运行状态。</td></tr><tr><td>6</td><td>00:38.450 - 00:45.000</td><td>caption</td><td>查看已安装的服务</td><td>返回首页，点击查看状态，就能读取手机当前的注册结果。</td></tr><tr><td>7</td><td>00:45.000 - 00:52.000</td><td>caption</td><td>IMS 注册与 LTE 网络正常</td><td>这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。</td></tr><tr><td>8</td><td>00:54.600 - 01:04.250</td><td>caption</td><td>准确说明实测范围</td><td>项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。</td></tr><tr><td>9</td><td>01:04.600 - 01:13.300</td><td>caption</td><td>首次 Root 前务必备份</td><td>首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。</td></tr>
+    </tbody>
+  </table>
+      <details><summary>Raw report</summary><pre>{
+  &quot;createdAt&quot;: &quot;2026-10-29T04:13:58.663501+00:00&quot;,
+  &quot;scenario&quot;: &quot;q10-xiaohongshu&quot;,
+  &quot;title&quot;: &quot;黑莓 Q10：连接、检查与 VoLTE 状态&quot;,
+  &quot;baseUrl&quot;: &quot;native:BB10-VoLTE&quot;,
+  &quot;sourceCommit&quot;: &quot;d2a0c40&quot;,
+  &quot;dataMode&quot;: &quot;production&quot;,
+  &quot;allowProduction&quot;: true,
+  &quot;readonly&quot;: true,
+  &quot;audience&quot;: &quot;小红书公开观众&quot;,
+  &quot;surface&quot;: &quot;portrait-video-of-native-desktop&quot;,
+  &quot;durationMs&quot;: 73400,
+  &quot;chapters&quot;: [
+    {
+      &quot;id&quot;: &quot;opening&quot;,
+      &quot;eyebrow&quot;: &quot;旧机新用  /  BLACKBERRY&quot;,
+      &quot;title&quot;: [
+        &quot;让老黑莓&quot;,
+        &quot;重新用上 4G 通话&quot;
+      ],
+      &quot;tag&quot;: &quot;BB10 VoLTE · Q10 真机连接&quot;,
+      &quot;info&quot;: [
+        &quot;原生 IMS · 系统拨号器 · 自己的 SIM 卡&quot;,
+        &quot;这次先看：连接 → 检查 → 查询状态&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;01-connect.mp4&quot;,
+          39,
+          9
+        ]
+      ],
+      &quot;duration&quot;: 9,
+      &quot;startMs&quot;: 0,
+      &quot;endMs&quot;: 9000
+    },
+    {
+      &quot;id&quot;: &quot;connect&quot;,
+      &quot;eyebrow&quot;: &quot;01  /  连上你的黑莓&quot;,
+      &quot;title&quot;: [
+        &quot;插上数据线&quot;,
+        &quot;点击「连接手机」&quot;
+      ],
+      &quot;tag&quot;: &quot;手机解锁后，验证已有 Root 连接&quot;,
+      &quot;info&quot;: [
+        &quot;自动识别 Q10、系统版本和运营商&quot;,
+        &quot;录制中的等待已剪短&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;01-connect.mp4&quot;,
+          8,
+          5
+        ],
+        [
+          &quot;01-connect.mp4&quot;,
+          25,
+          8
+        ]
+      ],
+      &quot;duration&quot;: 13,
+      &quot;startMs&quot;: 9000,
+      &quot;endMs&quot;: 22000
+    },
+    {
+      &quot;id&quot;: &quot;transition-check&quot;,
+      &quot;transition&quot;: true,
+      &quot;eyebrow&quot;: &quot;下一步  /  确认适配条件&quot;,
+      &quot;title&quot;: [
+        &quot;连接成功之后&quot;,
+        &quot;逐项看检查结果&quot;
+      ],
+      &quot;tag&quot;: &quot;先确认系统、SIM 和网络是否匹配&quot;,
+      &quot;info&quot;: [
+        &quot;每一步都有检查结论&quot;
+      ],
+      &quot;still&quot;: &quot;checks.png&quot;,
+      &quot;duration&quot;: 2.2,
+      &quot;startMs&quot;: 22000,
+      &quot;endMs&quot;: 24200
+    },
+    {
+      &quot;id&quot;: &quot;checks&quot;,
+      &quot;eyebrow&quot;: &quot;02  /  查看完整检查&quot;,
+      &quot;title&quot;: [
+        &quot;能不能用&quot;,
+        &quot;让检查结果说话&quot;
+      ],
+      &quot;tag&quot;: &quot;系统 · Root · 原生文件 · SIM · 4G 网络&quot;,
+      &quot;info&quot;: [
+        &quot;已检查 15 项：14 项通过&quot;,
+        &quot;1 项是当前服务运行状态&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;02-checks.mp4&quot;,
+          2,
+          14
+        ]
+      ],
+      &quot;duration&quot;: 14,
+      &quot;startMs&quot;: 24200,
+      &quot;endMs&quot;: 38200
+    },
+    {
+      &quot;id&quot;: &quot;status&quot;,
+      &quot;eyebrow&quot;: &quot;03  /  刷新服务状态&quot;,
+      &quot;title&quot;: [
+        &quot;查看注册结果&quot;,
+        &quot;确认当前网络&quot;
+      ],
+      &quot;tag&quot;: &quot;已有服务，点击「查看状态」&quot;,
+      &quot;info&quot;: [
+        &quot;本机回读：IMS connected · LTE&quot;,
+        &quot;注册通过之后，还需实际通话验收&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;03-status.mp4&quot;,
+          14,
+          7
+        ],
+        [
+          &quot;03-status.mp4&quot;,
+          40,
+          7
+        ]
+      ],
+      &quot;duration&quot;: 14,
+      &quot;startMs&quot;: 38200,
+      &quot;endMs&quot;: 52200
+    },
+    {
+      &quot;id&quot;: &quot;transition-scope&quot;,
+      &quot;transition&quot;: true,
+      &quot;eyebrow&quot;: &quot;使用之前  /  看清实测范围&quot;,
+      &quot;title&quot;: [
+        &quot;这台 Q10 已验证&quot;,
+        &quot;其他组合逐台确认&quot;
+      ],
+      &quot;tag&quot;: &quot;机型、系统与运营商都要匹配&quot;,
+      &quot;info&quot;: [
+        &quot;不把单台实测当作通用承诺&quot;
+      ],
+      &quot;still&quot;: &quot;status.png&quot;,
+      &quot;duration&quot;: 2.2,
+      &quot;startMs&quot;: 52200,
+      &quot;endMs&quot;: 54400
+    },
+    {
+      &quot;id&quot;: &quot;scope&quot;,
+      &quot;eyebrow&quot;: &quot;实测范围  /  如实说明&quot;,
+      &quot;title&quot;: [
+        &quot;Q10 SQN100-3&quot;,
+        &quot;北京中国联通&quot;
+      ],
+      &quot;tag&quot;: &quot;系统：BB10 10.3.3.3216&quot;,
+      &quot;info&quot;: [
+        &quot;项目已有双向短通话、全程 4G 记录&quot;,
+        &quot;其他机型与运营商仍需验证&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;03-status.mp4&quot;,
+          40,
+          10
+        ]
+      ],
+      &quot;duration&quot;: 10,
+      &quot;startMs&quot;: 54400,
+      &quot;endMs&quot;: 64400
+    },
+    {
+      &quot;id&quot;: &quot;closing&quot;,
+      &quot;eyebrow&quot;: &quot;开源项目  /  BB10 VoLTE&quot;,
+      &quot;title&quot;: [
+        &quot;让老黑莓&quot;,
+        &quot;继续用起来&quot;
+      ],
+      &quot;tag&quot;: &quot;从一次兼容性检查开始&quot;,
+      &quot;info&quot;: [
+        &quot;首次使用需要 Root，刷写前务必备份&quot;,
+        &quot;GitHub：Octo-o-o-o / bb10-volte&quot;
+      ],
+      &quot;clips&quot;: [
+        [
+          &quot;03-status.mp4&quot;,
+          40,
+          9
+        ]
+      ],
+      &quot;duration&quot;: 9,
+      &quot;startMs&quot;: 64400,
+      &quot;endMs&quot;: 73400
+    }
+  ],
+  &quot;demoData&quot;: {
+    &quot;source&quot;: &quot;connected owner-authorized Q10&quot;,
+    &quot;privacy&quot;: &quot;Only sanitized product UI; no phone numbers, device IDs, keys or account data&quot;
+  },
+  &quot;captions&quot;: [
+    {
+      &quot;title&quot;: &quot;让老黑莓重新用上 4G 通话&quot;,
+      &quot;body&quot;: &quot;这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。&quot;,
+      &quot;narration&quot;: &quot;这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。&quot;,
+      &quot;startMs&quot;: 350,
+      &quot;endMs&quot;: 8800
+    },
+    {
+      &quot;title&quot;: &quot;连接并解锁手机&quot;,
+      &quot;body&quot;: &quot;手机用数据线连上电脑，解锁后，点击连接手机。&quot;,
+      &quot;narration&quot;: &quot;手机用数据线连上电脑，解锁后，点击连接手机。&quot;,
+      &quot;startMs&quot;: 9200,
+      &quot;endMs&quot;: 15300
+    },
+    {
+      &quot;title&quot;: &quot;自动识别并验证已有连接&quot;,
+      &quot;body&quot;: &quot;工具会识别型号、系统和运营商，并验证已有的 Root 连接。&quot;,
+      &quot;narration&quot;: &quot;工具会识别型号、系统和运营商，并验证已有的 Root 连接。&quot;,
+      &quot;startMs&quot;: 15300,
+      &quot;endMs&quot;: 21850
+    },
+    {
+      &quot;title&quot;: &quot;逐项检查适配条件&quot;,
+      &quot;body&quot;: &quot;打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。&quot;,
+      &quot;narration&quot;: &quot;打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。&quot;,
+      &quot;startMs&quot;: 24400,
+      &quot;endMs&quot;: 31500
+    },
+    {
+      &quot;title&quot;: &quot;先检查，再决定下一步&quot;,
+      &quot;body&quot;: &quot;这台手机已经安装服务，所以还有一项显示为预期的运行状态。&quot;,
+      &quot;narration&quot;: &quot;这台手机已经安装服务，所以还有一项显示为预期的运行状态。&quot;,
+      &quot;startMs&quot;: 31500,
+      &quot;endMs&quot;: 38000
+    },
+    {
+      &quot;title&quot;: &quot;查看已安装的服务&quot;,
+      &quot;body&quot;: &quot;返回首页，点击查看状态，就能读取手机当前的注册结果。&quot;,
+      &quot;narration&quot;: &quot;返回首页，点击查看状态，就能读取手机当前的注册结果。&quot;,
+      &quot;startMs&quot;: 38450,
+      &quot;endMs&quot;: 45000
+    },
+    {
+      &quot;title&quot;: &quot;IMS 注册与 LTE 网络正常&quot;,
+      &quot;body&quot;: &quot;这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。&quot;,
+      &quot;narration&quot;: &quot;这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。&quot;,
+      &quot;startMs&quot;: 45000,
+      &quot;endMs&quot;: 52000
+    },
+    {
+      &quot;title&quot;: &quot;准确说明实测范围&quot;,
+      &quot;body&quot;: &quot;项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。&quot;,
+      &quot;narration&quot;: &quot;项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。&quot;,
+      &quot;startMs&quot;: 54600,
+      &quot;endMs&quot;: 64250
+    },
+    {
+      &quot;title&quot;: &quot;首次 Root 前务必备份&quot;,
+      &quot;body&quot;: &quot;首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。&quot;,
+      &quot;narration&quot;: &quot;首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。&quot;,
+      &quot;startMs&quot;: 64600,
+      &quot;endMs&quot;: 73300
+    }
+  ],
+  &quot;narration&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;engine&quot;: &quot;edge-tts&quot;,
+    &quot;voice&quot;: &quot;zh-CN-YunyangNeural&quot;
+  },
+  &quot;steps&quot;: [
+    {
+      &quot;label&quot;: &quot;native-connect-and-preflight&quot;,
+      &quot;url&quot;: &quot;native:main&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Real GUI showed Q10 SQN100-3, OS 10.3.3.3216 and 4G service enabled&quot;
+    },
+    {
+      &quot;label&quot;: &quot;native-check-details&quot;,
+      &quot;url&quot;: &quot;native:checks&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;15 checks: 14 passed, 1 expected running state&quot;
+    },
+    {
+      &quot;label&quot;: &quot;native-status-refresh&quot;,
+      &quot;url&quot;: &quot;native:main&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;registered=true, IMS connected, LTE; native GUI says call acceptance pending&quot;
+    }
+  ],
+  &quot;consoleMessages&quot;: [],
+  &quot;pageErrors&quot;: [],
+  &quot;responseErrors&quot;: [],
+  &quot;nativeNotes&quot;: [
+    &quot;Browser console/page/HTTP checks do not apply to this Tk application. Native launcher stderr inspected separately.&quot;,
+    &quot;ffmpeg gdigrab initial not-enough-frames warning is input probing only; decoded output verified.&quot;,
+    &quot;No calls made, no flashing, installation, service restart, configuration mutation or publication.&quot;,
+    &quot;Read-only preflight uploads temporary diagnostic files using the existing trusted connection and cleans them afterward.&quot;,
+    &quot;Editorial cuts shorten connection and status waiting; no results simulated.&quot;
+  ],
+  &quot;evidence&quot;: &quot;evidence/gui-last-result.json&quot;,
+  &quot;qualityGates&quot;: {
+    &quot;maxOverflow&quot;: 0,
+    &quot;allowedConsoleErrors&quot;: [],
+    &quot;allowedResponseErrors&quot;: []
+  }
+}</pre></details>
+    </section>
+  </main>
+</body>
+</html>

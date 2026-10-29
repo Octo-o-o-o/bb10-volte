@@ -1,0 +1,10 @@
+{
+  "source": "native-window-gdigrab",
+  "title": "BB10 VoLTE - Q10 Demo",
+  "startedUnix": 1793246208.1532836,
+  "endedUnix": 1793246253.2907124,
+  "exitCode": 0,
+  "targetSeconds": 45.0,
+  "desktopCaptured": false,
+  "frameRate": 30
+}

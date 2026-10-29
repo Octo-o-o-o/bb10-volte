@@ -10,6 +10,18 @@
     {"carrier": "China Mobile", "mcc": "460", "mncs": ["00", "02", "07"], "data_apn": "cmnet", "ims_apn": "ims", "ims_family": "IPv4v6"},
     {"carrier": "China Telecom", "mcc": "460", "mncs": ["03", "11"], "data_apn": "ctnet", "ims_apn": "ims", "ims_family": "IPv4v6"}
   ],
+  "additional_apn_sources": [
+    {
+      "researched_on": "2026-10-29",
+      "source": "GNOME mobile-broadband-provider-info",
+      "commit": "43755b833aa4f0c79f2d6f04c1a2231ba106ea85",
+      "url": "https://mail.gnome.org/archives/commits-list/2020-April/msg03250.html",
+      "mcc": "460",
+      "mnc": "11",
+      "data_apns": ["ctnet", "ctlte"],
+      "scope": "APN recognition evidence only; does not establish BB10 network or call acceptance. Existing SIM, stock-carrier and live-data gates still apply."
+    }
+  ],
   "runtime_defaults": "Project-defined wait values, SMS capability and stock-selection rules; not supplied by AOSP",
   "hardware_evidence": "Only Q10 SQN100-3 / OS 10.3.3.3216 / Beijing Unicom 460-01 / USIM without ISIM has recorded call evidence",
   "unavailable_as_universal_public_data": ["Subscriber identities and authentication", "Current network P-CSCF", "Per-SIM provisioning", "Terminal admission policies", "BB10 native compatibility and real-call results"],

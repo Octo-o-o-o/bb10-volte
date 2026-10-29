@@ -15,6 +15,7 @@ TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTIN
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
+RECORDING_MANIFEST = 'materials/recording-files.json'
 SENSITIVE = {
     'access token': re.compile(r'(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})'),
     'private key': re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
@@ -28,8 +29,19 @@ SENSITIVE = {
 }
 
 
+def recording_files():
+    manifest = json.loads((ROOT / RECORDING_MANIFEST).read_text(encoding='utf-8'))
+    assert manifest['schema'] == 1
+    for name, digest in manifest['files'].items():
+        assert name.startswith(('docs/recordings/', 'scripts/recordings/'))
+        assert '\\' not in name and '..' not in Path(name).parts
+        assert re.fullmatch('[0-9a-f]{64}', digest)
+    return manifest['files']
+
+
 def selected_files():
     files = {ROOT / name for name in TOP | {HELPER}}
+    files.update(ROOT / name for name in recording_files())
     for pattern in PATTERNS:
         files.update(ROOT.glob(pattern))
     for path in files:
@@ -60,10 +72,19 @@ def check(check_git=False):
         assert name in names and hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, 'Stale diagnostic manifest: ' + name
     issues = []
     hashes = {}
+    recordings = recording_files()
     for path in files:
         name = path.relative_to(ROOT).as_posix()
         data = path.read_bytes()
         hashes[name] = hashlib.sha256(data).hexdigest()
+        if name in recordings:
+            assert hashes[name] == recordings[name], 'Changed recording input: ' + name
+            if path.suffix in ('.png', '.mp4', '.mp3'):
+                valid = (data.startswith(b'\x89PNG\r\n\x1a\n') if path.suffix == '.png' else
+                         data[4:8] == b'ftyp' if path.suffix == '.mp4' else
+                         data.startswith(b'ID3') or len(data) > 1 and data[0] == 255 and data[1] & 224 == 224)
+                assert valid, 'Invalid recording media: ' + name
+                continue
         if name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}:
             magic = {'.png': b'\x89PNG\r\n\x1a\n', '.ico': b'\x00\x00\x01\x00', '.icns': b'icns'}
             assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
@@ -71,8 +92,9 @@ def check(check_git=False):
         if name == HELPER:
             continue
         text = data.decode('utf-8')
+        scan_text = text.replace('\\\\', '\\') if name in recordings else text
         for label, pattern in SENSITIVE.items():
-            if pattern.search(text):
+            if pattern.search(scan_text):
                 issues.append(name + ': possible ' + label + ' (value withheld)')
         if path.suffix == '.py':
             compile(data, name, 'exec')

@@ -1,0 +1,44 @@
+{
+  "createdAt": "2026-10-29T04:14:26.552Z",
+  "sourceVideo": "docs/recordings/q10-xiaohongshu-captioned.mp4",
+  "cover": "docs/recordings/q10-xiaohongshu-cover.png",
+  "outputVideo": "docs/recordings/q10-xiaohongshu-final.mp4",
+  "visibleIntro": {
+    "enabled": true,
+    "introDurationMs": 2000,
+    "introBackground": "0x101612"
+  },
+  "shiftedNarrationVtt": {
+    "path": "docs/recordings/q10-xiaohongshu-final-narration.vtt",
+    "introDurationMs": 2000,
+    "shiftedByMs": 2000
+  },
+  "shiftedNarrationReport": {
+    "path": "docs/recordings/q10-xiaohongshu-final-narration-report.json",
+    "introDurationMs": 2000,
+    "shiftedByMs": 2000
+  },
+  "sourceStreams": 2,
+  "mappedSourceStreams": 2,
+  "mainVideo": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "frameRate": "30/1"
+  },
+  "audioStreams": 1,
+  "coverArtStreams": [
+    {
+      "index": 2,
+      "codec": "png",
+      "width": 1080,
+      "height": 1920,
+      "attachedPic": true,
+      "tags": {}
+    }
+  ],
+  "format": {
+    "durationSeconds": 75.4,
+    "sizeBytes": 3010225
+  }
+}

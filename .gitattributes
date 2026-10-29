@@ -4,3 +4,6 @@
 *.7z -text
 *.exe -text
 *.dll -text
+*.png -text
+*.mp4 -text
+*.mp3 -text

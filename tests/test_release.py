@@ -1,5 +1,6 @@
 """Regression coverage for accidental private-file and credential publication."""
 import sys
+import json
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -38,6 +39,21 @@ class PublicReleaseTests(unittest.TestCase):
                       'AKIA' + '0' * 16):
             with self.subTest(prefix=value[:4]):
                 self.assertIsNotNone(pattern.search(value))
+
+    def test_changed_recording_media_is_rejected(self):
+        original = Path.read_bytes
+        def modified(path):
+            data = original(path)
+            return data + b'changed' if path.name == 'q10-xiaohongshu-final.mp4' else data
+        with patch.object(Path, 'read_bytes', modified):
+            with self.assertRaisesRegex(AssertionError, 'Changed recording input'):
+                check_release.check()
+
+    def test_recording_manifest_rejects_parent_traversal(self):
+        manifest = {'schema': 1, 'files': {'docs/recordings/../../private/secret': 'a' * 64}}
+        with patch.object(Path, 'read_text', return_value=json.dumps(manifest)):
+            with self.assertRaises(AssertionError):
+                check_release.recording_files()
 
 
 if __name__ == '__main__':

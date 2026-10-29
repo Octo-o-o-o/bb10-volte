@@ -1,0 +1,117 @@
+{
+  "report": "docs\\recordings\\q10-xiaohongshu-report.json",
+  "scenario": "q10-xiaohongshu",
+  "steps": 3,
+  "captions": 9,
+  "pageErrors": 0,
+  "responseErrors": 0,
+  "failures": 0,
+  "media": {
+    "output": {
+      "path": "docs\\recordings\\q10-xiaohongshu-final.mp4",
+      "durationSeconds": 75.4,
+      "sizeBytes": 2988093,
+      "video": {
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "frameRate": "30/1"
+      },
+      "audioStreams": 1,
+      "coverArtStreams": [
+        {
+          "index": 2,
+          "codec": "png",
+          "width": 1080,
+          "height": 1920,
+          "attachedPic": true,
+          "tags": {}
+        }
+      ],
+      "audioVolume": {
+        "meanVolumeDb": -22.7,
+        "maxVolumeDb": -2.7
+      }
+    },
+    "source": {
+      "path": "docs\\recordings\\q10-xiaohongshu.mp4",
+      "durationSeconds": 73.4,
+      "sizeBytes": 1555990,
+      "video": {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "avc1",
+        "codec_tag": "0x31637661",
+        "mime_codec_string": "avc1.640028",
+        "width": 1080,
+        "height": 1920,
+        "coded_width": 1080,
+        "coded_height": 1920,
+        "has_b_frames": 2,
+        "pix_fmt": "yuv420p",
+        "level": 40,
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "id": "0x1",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/15360",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 1127424,
+        "duration": "73.400000",
+        "bit_rate": "166624",
+        "bits_per_raw_sample": "8",
+        "nb_frames": "2202",
+        "extradata_size": 46,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc63.1.102 libx264"
+        }
+      }
+    },
+    "durationRatio": 1.0272479564032697,
+    "narration": {
+      "path": "docs\\recordings\\q10-xiaohongshu-final-narration-report.json",
+      "padMode": "freeze",
+      "padBufferMs": 300,
+      "usePaddedFilter": false,
+      "sourceDurationMs": 73400,
+      "expectedDurationMs": 75400,
+      "totalPaddingMs": 0,
+      "paddedCues": 0,
+      "outputDurationMs": 75400,
+      "driftMs": 0,
+      "toleranceMs": 1508
+    }
+  }
+}
+
+录屏质量门禁通过。

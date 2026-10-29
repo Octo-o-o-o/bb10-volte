@@ -1,6 +1,12 @@
 # bb10-volte
 
+Check details now prioritizes pending items and offers a pending-only filter. Each baseline observation shows its current value, required value, explanation, and next step. Select a row to read its full text in the wrapping pane. Failed or skipped reads remain unknown, while other successfully collected readings are retained. Passed autostart checks use success wording.
+
+Copy the troubleshooting summary or export the JSON report from the details window. The summary includes the desktop revision, hardware variant, check time, operation permissions and stable B/C diagnostic references, without keys, phone identifiers or raw configuration contents. The window and its exports retain the snapshot from when it opened. An absent installation never implies an owned running service or recommends the project's restore action. Differences still require investigation of their source.
+
 [简体中文](GUI.md)
+
+The local `0.3.3-r4` diagnostic test build recognizes Telecom `ctlte`. Check details and exported reports distinguish profile matching, actual data connectivity and individual baseline configuration observations. Only fixed public APN names are exported; other names become `other`. Existing custom profiles are not silently changed: reselect the Telecom template or review its APN list. Non-default settings do not establish corruption or ownership; preflight never resets an APN or deletes overrides. Old reports lack these details. Device data and baseline gates still apply, and Q20 Telecom hardware acceptance is pending.
 
 Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. Passport automatic installation, start and restore are paused; see [community research](COMMUNITY-RESEARCH.en.md).
 

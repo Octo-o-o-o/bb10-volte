@@ -13,6 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
+from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, support_summary
 from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
@@ -45,8 +46,11 @@ NOTES = {
     'sim_route_not_profiled': '此 SIM 类型需要另行适配，不能套用当前配置',
     'identity_layout_matches': '在手机本地核验通过；报告不包含完整标识',
     'identity_layout_unknown': 'SIM 身份格式不符，需提供脱敏预检报告排查',
-    'lte_ready': '无线已开启，当前处于 LTE', 'lte_not_ready': '开启移动网络并等待 LTE',
+    'lte_ready': '本次快照报告 LTE；不代表已完成网络注册、能上网或已确认频段', 'lte_not_ready': '开启移动网络并等待 LTE',
     'data_apn_ready': '所选配置的数据 APN 已连接', 'data_apn_not_ready': '所选数据 APN 未连接；检查数据服务与配置',
+    'data_apn_profile_mismatch': '手机报告的 APN 不在所选配置中；请核对实际 APN 与运营商模板。连接状态见检查详情。',
+    'data_apn_disconnected': 'APN 与配置匹配，但手机报告数据未连接；请先确认手机能使用移动数据上网。',
+    'data_apn_state_unknown': '未取得完整网络或 APN 状态；请导出报告，不能据此判断频段不支持。',
     'installation_absent': '未安装，可在全部检查通过后安装',
     'installation_stopped': '文件完整且已停止，可以更新',
     'installation_busy': '已有管理器或锁；更新前先停用并恢复',
@@ -54,7 +58,7 @@ NOTES = {
     'installation_interrupted': '上次安装中断；保留现场，不要重复覆盖',
     'installation_conflict': '目录、文件或所有权不符；需要人工检查',
     'baseline_clean': '原策略、IMS、VPN 与覆盖配置符合安装前条件',
-    'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
+    'baseline_not_clean': '配置或服务状态不符合安装前条件，具体项目见检查详情。尚未安装本工具时，需先核实已有配置来源。',
 }
 ERRORS = {
     'provider_lifecycle_needs_adaptation': '此机型的提供器停用策略尚未验证。请保留当前状态并导出报告，参阅“社区研究与适配进展”。',
@@ -368,7 +372,8 @@ class App:
         root_verified = any(item['id'] == 'root' and item['status'] == 'pass' for item in report['checks'])
         self.connection_status.configure(text='最近检查：已连接 · Root 已验证' if root_verified else '最近检查：手机已响应 · Root 权限待核验')
         self.running_baseline_expected = (report.get('installation', {}).get('state') == 'busy' and
-                                          bool((service_status or {}).get('manager_alive')))
+                                          bool((service_status or {}).get('manager_alive')) and
+                                          not has_read_failure(report))
         badge = 'Q10 已有实测记录' if device.get('hardware_tested') else '未实测 · 可实验试用'
         if not device.get('recognized'):
             badge = '机型待识别'
@@ -385,7 +390,7 @@ class App:
             if key in NAMES and state != 'pass' and not expected:
                 problems.append(check)
                 self.table.insert('', 'end', iid=key,
-                                  values=(NAMES[key], labels[state], NOTES.get(check['code'], '请导出报告协助检查')),
+                                  values=(NAMES[key], labels[state], self.check_note(check, report)),
                                   tags=(state,))
         expected_count = sum(self.running_baseline_expected and check['id'] == 'baseline' and
                              check['code'] == 'baseline_not_clean' for check in report['checks'])
@@ -402,6 +407,9 @@ class App:
                         'experimental': ('未实测适配 · 可实验试用', AMBER),
                         'needs_adaptation': ('设备或运营商配置需要适配', AMBER), 'unsupported': ('关键技术条件未通过', RED)}[outcome]
         state = report['installation']['state']
+        baseline_blocked = any(c['id'] == 'baseline' and c['status'] != 'pass' for c in problems)
+        if baseline_blocked and outcome in ('compatible', 'experimental'):
+            title, color = '安装前状态需处理', AMBER
         if report.get('can_restore') is False:
             detail = '此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。'
         elif state == 'busy':
@@ -410,6 +418,8 @@ class App:
             detail = '可进入安装流程。运营商开通情况和双向通话效果仍需真实通话确认。'
         elif state in ('conflict', 'interrupted', 'recovery_required'):
             detail = '安装或恢复状态需要处理。请保留现场，按检查表处理后重新预检。'
+        elif baseline_blocked:
+            detail = baseline_summary(report)
         else:
             detail = '请按下方提示处理后重新检查。'
         research = report.get('community_research', {})
@@ -573,68 +583,162 @@ class App:
     def explain_row(self, _):
         rows = self.table.selection()
         if rows:
+            if rows[0] == 'baseline':
+                self.show_checks()
+                return
             item, state, detail = self.table.item(rows[0], 'values')
             messagebox.showinfo(item + ' · ' + state, detail, parent=self.root)
+
+    def check_note(self, check, report=None, running=None):
+        report = self.display_report if report is None else report
+        running = self.running_baseline_expected if running is None else running
+        if check['id'] == 'baseline' and check['status'] != 'pass':
+            return ('已确认本工具管理器运行；当前读数及停用后的要求见检查详情。' if running else
+                    baseline_summary(report))
+        passed = {'os': '系统版本符合要求。', 'root': 'Root 与 QNX ARM32 环境核验通过。',
+                  'native': '4 个原生文件的 SHA-256 均与本工具基线一致。',
+                  'autostart_policy': '实验组合已关闭自动启动，可在条件通过后手动启动。',
+                  'saved_profile': '新安装将保存所选配置。' if report.get('installation', {}).get('state') == 'absent'
+                                   else '已装配置检查通过。'}
+        if check['status'] == 'pass' and check['id'] in passed:
+            return passed[check['id']]
+        return NOTES.get(check['code'], '请导出报告协助检查。')
+
+    def diagnostic_text(self, report=None, running=None):
+        report = self.display_report if report is None else report
+        running = self.running_baseline_expected if running is None else running
+        project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+        version = '{} · 桌面修订 {}'.format(project['version'], project.get('desktop_revision', 1))
+        return support_summary(report, NAMES, lambda check: self.check_note(check, report, running), version, running)
+
+    def copy_diagnostics(self, report=None, running=None, parent=None):
+        if not (report or self.display_report):
+            return
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(self.diagnostic_text(report, running))
+            self.activity.configure(text='排查摘要已复制，可粘贴给维护者；完整数据可导出检查报告')
+        except tk.TclError:
+            messagebox.showerror('无法复制', '剪贴板暂不可用，请使用“导出检查报告”。', parent=parent or self.root)
 
     def show_checks(self):
         if not self.display_report or self.busy:
             return
         popup = tk.Toplevel(self.root)
         popup.title('检查详情')
-        popup.geometry('900x570')
-        popup.minsize(780, 450)
+        popup.geometry('1040x700')
+        popup.minsize(820, 580)
         popup.transient(self.root)
         body = tk.Frame(popup, bg='white', padx=20, pady=20)
         body.pack(fill='both', expand=True)
         self.label(body, '完整检查结果', 16, bold=True).pack(anchor='w')
-        self.label(body, '此处是最近一次检查的快照；设备操作后需重新检查。', 11, MUTED).pack(anchor='w', pady=(6, 16))
-        table = ttk.Treeview(body, columns=('item', 'state', 'detail'), show='headings', selectmode='browse')
-        for key, title, width in [('item', '检查项目', 135), ('state', '结果', 85), ('detail', '说明', 580)]:
+        self.label(body, '待处理项排在前面。选择一项可阅读完整说明；设备操作后需重新检查。', 11, MUTED).pack(anchor='w', pady=(6, 10))
+        report, running = self.display_report, self.running_baseline_expected
+        toolbar = tk.Frame(body, bg='white')
+        toolbar.pack(fill='x', pady=(0, 10))
+        only_problems = tk.BooleanVar(popup, value=False)
+        filter_button = ttk.Checkbutton(toolbar, text='仅看待处理', variable=only_problems)
+        filter_button.pack(side='left')
+        ttk.Button(toolbar, text='复制排查摘要', command=lambda: self.copy_diagnostics(report, running, popup)).pack(side='right')
+        ttk.Button(toolbar, text='导出检查报告', command=lambda: self.export(report, running)).pack(side='right', padx=8)
+        selected_body = tk.Frame(body, bg=BG)
+        selected_body.pack(side='bottom', fill='x', pady=(12, 0))
+        selected = tk.Text(selected_body, height=6, wrap='word', font=(FONT, 11), bg=BG, fg=INK,
+                           relief='flat', padx=12, pady=10, state='disabled')
+        selected_scroll = AutoScrollbar(selected_body, orient='vertical', command=selected.yview)
+        selected.configure(yscrollcommand=selected_scroll.set)
+        selected_scroll.pack(side='right', fill='y')
+        selected.pack(fill='both', expand=True)
+        table_body = tk.Frame(body, bg='white')
+        table_body.pack(fill='both', expand=True)
+        table = ttk.Treeview(table_body, columns=('item', 'state', 'detail'), show='headings', selectmode='browse')
+        for key, title, width in [('item', '检查项目', 220), ('state', '结果', 110), ('detail', '说明', 620)]:
             table.heading(key, text=title, anchor='w')
-            table.column(key, width=width, minwidth=85 if key != 'detail' else 200, stretch=key == 'detail')
-        scroll = AutoScrollbar(body, orient='vertical', command=table.yview)
+            table.column(key, width=width, minwidth=180 if key == 'item' else 100 if key == 'state' else 200,
+                         stretch=key == 'detail')
+        scroll = AutoScrollbar(table_body, orient='vertical', command=table.yview)
         table.configure(yscrollcommand=scroll.set)
         scroll.pack(side='right', fill='y')
         table.pack(fill='both', expand=True)
         labels = {'pass': '通过', 'wait': '待处理', 'adapt': '需适配', 'block': '不支持'}
-        for check in self.display_report['checks']:
-            expected = self.running_baseline_expected and check['id'] == 'baseline' and check['code'] == 'baseline_not_clean'
-            table.insert('', 'end', values=(NAMES.get(check['id'], '其他检查'), '运行中（预期）' if expected else labels[check['status']],
-                                           '服务正在使用配置；更新前先停用并恢复。' if expected else
-                                           NOTES.get(check['code'], '请导出报告协助检查')))
+        rows = []
+        def add(title, state, detail, problem=False):
+            rows.append((title, state, detail, problem))
+        for check in report['checks']:
+            expected = running and check['id'] == 'baseline' and check['code'] == 'baseline_not_clean'
+            add(NAMES.get(check['id'], '其他检查'), '运行中（预期）' if expected else labels[check['status']],
+                self.check_note(check, report, running), check['status'] != 'pass' and not expected)
+        for row in baseline_rows(report, running):
+            add(row['title'], row['state'], '[' + row['code'] + '] ' + row['detail'], row['problem'])
+
+        network = report.get('network_diagnostics', {})
+        for key, title in (('apn_matches', 'APN 与模板匹配'), ('data_connected', '数据连接状态')):
+            if key in network:
+                value = network[key]
+                add(title, '只读快照', '是' if value is True else '否' if value is False else '未知', value is not True)
+        apn = network.get('observed_data_apn')
+        if apn is not None:
+            add('手机报告的 APN', '只读快照',
+                apn if apn in ('ctnet', 'ctlte', 'cmnet', '3gnet') else
+                '其他 APN（报告不保存原文）' if apn == 'other' else '未知')
 
         diagnostic_names = {'ims_state': 'IMS 状态', 'ims_ran': 'IMS 网络',
                             'allow_volte_provisioning': 'VoLTE provisioning',
                             'engineering_voice_override': '工程语音域',
                             'dca_voice_preference': 'DCA 语音域', 'use_preconditions': 'IR92 preconditions'}
-        diagnostics = self.display_report.get('incoming_diagnostics', {})
+        diagnostics = report.get('incoming_diagnostics', {})
         for key, title in diagnostic_names.items():
             if key in diagnostics:
                 value = diagnostics[key]
-                table.insert('', 'end', values=(title, '只读观察',
-                    ('未知' if value is None else str(value)) + '；配置快照，不能证明来电可用'))
+                add(title, '只读观察', ('未知' if value is None else str(value)) + '；配置快照，不能证明来电可用')
         levels = {'upstream_local_experiment': '上游作者本地实验',
                   'upstream_contributed_report': '上游收录的贡献者报告',
                   'upstream_local_negative_test': '上游作者失败记录'}
-        for entry in self.display_report.get('community_research', {}).get('records', []):
-            table.insert('', 'end', values=('社区记录', '参考', entry['id'] + ' · ' +
-                levels.get(entry['evidence_level'], '来源待核对') + '；非本工具验收，来源见社区研究说明'))
+        for entry in report.get('community_research', {}).get('records', []):
+            add('社区记录', '参考', entry['id'] + ' · ' +
+                levels.get(entry['evidence_level'], '来源待核对') + '；非本工具验收，来源见社区研究说明')
 
-        def explain(_):
-            rows = table.selection()
-            if rows:
-                item, state, detail = table.item(rows[0], 'values')
-                messagebox.showinfo(item + ' · ' + state, detail, parent=popup)
+        table.tag_configure('problem', foreground=AMBER)
+        full_details = {}
+        def explain(_=None):
+            selection = table.selection()
+            text = '没有待处理项目；可取消筛选查看全部检查。'
+            if selection:
+                item, state, detail = full_details[selection[0]]
+                text = item + ' · ' + state + '\n' + detail
+            selected.configure(state='normal')
+            selected.delete('1.0', 'end')
+            selected.insert('1.0', text)
+            selected.configure(state='disabled')
+        def populate():
+            table.delete(*table.get_children())
+            full_details.clear()
+            for title, state, detail, problem in sorted(rows, key=lambda row: not row[3]):
+                if not only_problems.get() or problem:
+                    row_id = table.insert('', 'end', values=(title, state, detail.replace('\n', ' ')),
+                                          tags=('problem',) if problem else ())
+                    full_details[row_id] = (title, state, detail)
+            if table.get_children():
+                table.selection_set(table.get_children()[0])
+            explain()
+        filter_button.configure(command=populate)
+        table.bind('<<TreeviewSelect>>', explain)
         table.bind('<Double-1>', explain)
+        populate()
 
-    def export(self):
-        if not self.last_result:
+    def export(self, snapshot=None, running=None):
+        result = snapshot if snapshot is not None else self.last_result
+        if not result:
             return
         path = filedialog.asksaveasfilename(title='保存脱敏检查报告', defaultextension='.json', initialfile='bb10-volte-preflight.json', filetypes=[('JSON', '*.json')])
         if path:
             try:
                 with open(path, 'w', encoding='utf-8') as file:
-                    json.dump(self.last_result, file, ensure_ascii=False, indent=2)
+                    payload = dict(result)
+                    report = result if 'checks' in result else result.get('preflight')
+                    if report:
+                        payload['desktop_diagnostics'] = {'schema': 1, 'summary': self.diagnostic_text(report, running)}
+                    json.dump(payload, file, ensure_ascii=False, indent=2)
                 self.activity.configure(text='脱敏报告已保存 · 分享前仍请自行核对内容')
             except OSError:
                 messagebox.showerror('无法保存', '请检查保存路径和写入权限。', parent=self.root)

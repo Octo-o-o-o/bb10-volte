@@ -16,6 +16,8 @@ A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, 
 
 ## What it does
 
+`0.3.3-r5` adds per-item baseline readings, required values, next steps and a copyable troubleshooting summary, plus China Telecom `ctlte` recognition. Windows and Mac share the diagnostics; see the [GUI guide](docs/GUI.en.md). Source archives also include the [Q10 demo and reproduction guide](docs/recordings/RECORDING_GUIDE.md), recorded on an earlier version and not evidence of phone acceptance for this release.
+
 - Creates a dedicated `ims` APN and derives IMS identities from the BB10 device's own USIM. Authentication stays with the SIM and native IMS implementation.
 - Builds a hash-checked copy of the stock IMS program with an isolated platform configuration and a two-byte change to the ordinary voice VoPS decision.
 - Enables the existing QNX software crypto provider and selects IMS-preferred voice through the native radio API.

@@ -108,6 +108,66 @@ class CompatibilityTests(unittest.TestCase):
                 service.wait_for_network()
             sleep.assert_not_called()
 
+    def telecom_network(self, apn='ctlte', connected=True, data_error=False):
+        profile = profiles.read_json(str(ROOT / 'profiles/china-telecom.json'))
+        records = {
+            '/pps/services/cellular/uicc/card0/status_private':
+                'uicc_state:json:{"state":"READY"}\nuicc_type:n:2\nhplmn:json:{"mcc":"460","mnc":"11"}\n',
+            '/pps/services/cellular/uicc/card0/status_restricted': 'imsi::' + '46011' + '0' * 10 + '\n',
+            c.RADIO: 'power_status::ON\nnetwork_technology:json:["lte"]\n',
+            c.DATA: 'internet:json:' + json.dumps({'apn': apn, 'connected': connected}) + '\n'}
+        def read(path):
+            if data_error and path == c.DATA:
+                raise OSError('unavailable')
+            return records[path].encode('ascii')
+        with patch.object(native, 'read', side_effect=read):
+            return profile, c.read_network(profile)
+
+    def test_ctlte_is_recognized_but_still_requires_connected_data_and_clean_baseline(self):
+        for connected in (True, False):
+            profile, network = self.telecom_network(connected=connected)
+            self.assertTrue(network['apn_matches'])
+            facts = baseline()
+            facts.update(network, model='Classic', variant='SQC100-4')
+            report = c.evaluate(facts, profile, True)
+            self.assertEqual(report['can_install'], connected)
+            self.assertEqual(report['network_diagnostics']['observed_data_apn'], 'ctlte')
+            self.assertEqual(report['network_diagnostics']['data_connected'], connected)
+            self.assertEqual(next(item['code'] for item in report['checks'] if item['id'] == 'apn'),
+                             'data_apn_ready' if connected else 'data_apn_disconnected')
+            facts['clean_configuration'] = False
+            self.assertFalse(c.evaluate(facts, profile, True)['can_install'])
+
+    def test_old_ctnet_only_profile_reports_mismatch_even_if_data_is_connected(self):
+        profile, network = self.telecom_network()
+        profile['carrier']['data_apns'] = ['ctnet']
+        network['apn_matches'] = False
+        check = next(item for item in c.network_checks(network, profile) if item['id'] == 'apn')
+        self.assertEqual(check['code'], 'data_apn_profile_mismatch')
+        self.assertEqual(check['status'], 'wait')
+        self.assertTrue(c.public_network_diagnostics(network)['data_connected'])
+
+    def test_data_read_failure_retains_radio_snapshot_without_claiming_data_readiness(self):
+        profile, network = self.telecom_network(data_error=True)
+        self.assertTrue(network['lte'])
+        self.assertTrue(network['data_read_error'])
+        self.assertEqual(c.network_state(network, profile), 'not_ready')
+        self.assertEqual(c.network_checks(network, profile)[-1]['code'], 'data_apn_state_unknown')
+        self.assertIsNone(c.public_network_diagnostics(network)['data_connected'])
+
+    def test_unknown_connected_value_and_private_apn_do_not_leak_or_pass(self):
+        secret = 'private-customer.example'
+        profile, network = self.telecom_network(apn=secret, connected=1)
+        self.assertIsNone(network['data_connected'])
+        self.assertEqual(network['observed_data_apn'], 'other')
+        self.assertNotIn(secret, json.dumps(network))
+        facts = baseline(); facts.update(network)
+        facts['configuration_diagnostics'] = {'ims_profiles_absent': secret, 'raw_pps': secret}
+        report = c.evaluate(facts, profile, True)
+        self.assertFalse(report['can_install'])
+        self.assertNotIn(secret, json.dumps(report))
+        self.assertIsNone(report['configuration_diagnostics']['ims_profiles_absent'])
+
     def test_missing_sim_wait_is_bounded(self):
         s = baseline(); s['sim_state'] = 'ABSENT'
         with patch.object(c, 'read_network', return_value=s), patch.object(service, 'status'), \
@@ -121,6 +181,56 @@ class CompatibilityTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, 'changed after preflight'):
                 service.configure()
             journal.assert_not_called()
+
+
+class ConfigurationDiagnosticTests(unittest.TestCase):
+    def observations(self, *, files=False, directory=False, fields=None, read_error=False):
+        records = {'cellular_protocol_configuration': b'', 'ims': b'',
+                   'status_persistent': b'cdsc_xml::\n'}
+        records.update(fields or {})
+        def read(path):
+            if read_error and path.endswith('/ims'):
+                raise OSError('unavailable')
+            return records[path.rsplit('/', 1)[-1]]
+        with patch.object(c.os.path, 'lexists', return_value=files), \
+             patch.object(c.os, 'listdir', return_value=['private-file'] if directory else []), \
+             patch.object(native, 'read', side_effect=read), patch.object(native, 'atomic') as write, \
+             patch.object(native, 'update_pps') as update:
+            result = c.configuration_diagnostics()
+            clean = c.pristine_configuration()
+            write.assert_not_called(); update.assert_not_called()
+        return result, clean
+
+    def test_default_configuration_is_clean(self):
+        result, clean = self.observations()
+        self.assertTrue(clean)
+        self.assertEqual(set(result), set(c.CONFIGURATION_FLAGS))
+        self.assertTrue(all(value is True for value in result.values()))
+
+    def test_each_existing_configuration_gate_remains_enforced(self):
+        cases = [({'files': True}, 'ims_override_absent'),
+                 ({'directory': True}, 'cdsc_directory_empty'),
+                 ({'fields': {'cellular_protocol_configuration': b'voice_domain_preference_EUTRAN:n:0\n'}}, 'voice_override_absent'),
+                 ({'fields': {'ims': b'IMS_profilesV2:json:[]\n'}}, 'ims_profiles_absent'),
+                 ({'fields': {'ims': b'supported_networks:json:[]\n'}}, 'ims_networks_absent'),
+                 ({'fields': {'ims': b'IMS_services:json:[]\n'}}, 'ims_services_absent'),
+                 ({'fields': {'ims': b'Home_network_domain_name::private.example\n'}}, 'ims_domain_default'),
+                 ({'fields': {'status_persistent': b'cdsc_xml::/private/override.xml\n'}}, 'cdsc_selection_default'),
+                 ({'fields': {'status_persistent': b''}}, 'cdsc_selection_default')]
+        for args, key in cases:
+            with self.subTest(key=key, args=args):
+                result, clean = self.observations(**args)
+                self.assertFalse(clean)
+                self.assertFalse(result[key])
+                self.assertNotIn('private', json.dumps(result))
+
+    def test_unreadable_configuration_is_unknown_and_blocks_install(self):
+        result, clean = self.observations(read_error=True)
+        self.assertIsNone(result['ims_profiles_absent'])
+        self.assertTrue(result['cdsc_selection_default'])
+        self.assertFalse(clean)
+        facts = baseline(); facts.update(clean_configuration=clean, configuration_diagnostics=result)
+        self.assertFalse(c.evaluate(facts)['can_install'])
 
 
 class WorkflowTests(unittest.TestCase):

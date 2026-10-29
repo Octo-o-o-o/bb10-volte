@@ -1,0 +1,221 @@
+{
+  "status": {
+    "phase": "running",
+    "enabled": true,
+    "manager_alive": true,
+    "native_alive": true,
+    "current": {
+      "ims": "connected",
+      "register_status": "200 OK",
+      "ran": "LTE",
+      "radio": [
+        "lte"
+      ],
+      "power": "ON"
+    },
+    "status_from_current_boot": true,
+    "ims_observation_scope": "owned_native",
+    "startup_wait": {}
+  },
+  "registered": true,
+  "preflight": {
+    "baseline": {
+      "clean_configuration": false,
+      "crypto": {
+        "crypto_support": 0,
+        "swcr_id": 0
+      },
+      "ims_count": 1,
+      "native_read_error": null,
+      "voice_policy": 3,
+      "vpn_count": 1
+    },
+    "can_enable": false,
+    "can_install": false,
+    "can_restore": true,
+    "can_start": false,
+    "can_update": false,
+    "carrier_provisioning": "requires_user_confirmation_and_real_calls",
+    "carrier_template": {
+      "path": "/etc/carrier/config/36.xml",
+      "sha256": "929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4"
+    },
+    "checked_at": 1793246243,
+    "checks": [
+      {
+        "code": "device_identified",
+        "id": "model",
+        "status": "pass"
+      },
+      {
+        "code": "os_3216_required",
+        "id": "os",
+        "status": "pass"
+      },
+      {
+        "code": "root_qnx_arm32_required",
+        "id": "root",
+        "status": "pass"
+      },
+      {
+        "code": "native_hashes_required",
+        "id": "native",
+        "status": "pass"
+      },
+      {
+        "code": "sim_ready",
+        "id": "sim",
+        "status": "pass"
+      },
+      {
+        "code": "carrier_matches_profile",
+        "id": "carrier",
+        "status": "pass"
+      },
+      {
+        "code": "usim_without_isim",
+        "id": "sim_route",
+        "status": "pass"
+      },
+      {
+        "code": "identity_layout_matches",
+        "id": "identity",
+        "status": "pass"
+      },
+      {
+        "code": "lte_ready",
+        "id": "lte",
+        "status": "pass"
+      },
+      {
+        "code": "data_apn_ready",
+        "id": "apn",
+        "status": "pass"
+      },
+      {
+        "code": "carrier_template_required",
+        "id": "carrier_config",
+        "status": "pass"
+      },
+      {
+        "code": "recorded_baseline",
+        "id": "experiment",
+        "status": "pass"
+      },
+      {
+        "code": "installation_busy",
+        "id": "installation",
+        "status": "pass"
+      },
+      {
+        "code": "baseline_not_clean",
+        "id": "baseline",
+        "status": "wait"
+      },
+      {
+        "code": "saved_profile_matches",
+        "id": "saved_profile",
+        "status": "pass"
+      }
+    ],
+    "device": {
+      "board_type": null,
+      "display_name": "BlackBerry Q10",
+      "experimental_device": false,
+      "family": "q10",
+      "hardware_tested": true,
+      "identity_conflict": false,
+      "native_engine": "qnx-arm32-os3216-native-v1",
+      "os_version": "10.3.3.3216",
+      "recognized": true,
+      "variant": "SQN100-3"
+    },
+    "experimental": false,
+    "experimental_allowed": false,
+    "facts": {
+      "mcc": "460",
+      "mnc": "01",
+      "model": "Q10",
+      "os_version": "10.3.3.3216",
+      "variant": "SQN100-3"
+    },
+    "hardware_validation": "single_q10_beijing_unicom_only",
+    "incoming_diagnostics": {
+      "allow_volte_provisioning": 0,
+      "call_acceptance": "not_assessed",
+      "dca_voice_preference": 3,
+      "engineering_voice_override": null,
+      "ims_ran": "LTE",
+      "ims_state": "connected",
+      "scope": "configuration_observation_only",
+      "use_preconditions": null
+    },
+    "installation": {
+      "carrier_profile_id": "unicom-46001-baseline",
+      "carrier_profile_sha256": "0692b9e16b75ef6fc027d1aefa6c521640ba84840b96d6cb01ad6ba96477d756",
+      "current_profile": true,
+      "enabled": true,
+      "payload_verified": true,
+      "state": "busy",
+      "version": "0.3.2"
+    },
+    "native_sha256": {
+      "/etc/carrier/config/36.xml": "929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4",
+      "/radio/bin/ims_rrm": "043d38b0f08cf6a9696ef405f3976679e32ff9ad943ec35294c3d3da69a12b67",
+      "/radio/lib/libradiocontrol.so.0.1": "0d0acc34656c16300db8a1b3341174d3749b8d50fe6081350805e05998d3ee8a",
+      "/sbin/io-pkt-v6-hc": "17d2bb5b641b3acd1ffac2e98fbd86c881633263598db983db4819702df3d222"
+    },
+    "outcome": "compatible",
+    "profile": "unicom-46001-baseline",
+    "profile_parameters": {
+      "carrier": {
+        "data_apns": [
+          "3gnet"
+        ],
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ],
+        "stock_config": "auto",
+        "stock_sha256": ""
+      },
+      "id": "unicom-46001-baseline",
+      "ims": {
+        "apn": "ims",
+        "home_domain": "auto",
+        "ip_family": "IPv4v6",
+        "sms": true
+      },
+      "label": "China Unicom 460-01 / Q10 baseline",
+      "runtime": {
+        "autostart": true,
+        "existing_ims_wait_seconds": 330,
+        "ims_apn_wait_seconds": 45,
+        "poll_seconds": 3,
+        "registration_wait_seconds": 180,
+        "sim_wait_seconds": 300
+      },
+      "schema": 1
+    },
+    "profile_sha256": "0692b9e16b75ef6fc027d1aefa6c521640ba84840b96d6cb01ad6ba96477d756",
+    "schema": 2,
+    "community_research": {
+      "status": "no_exact_match",
+      "source": {
+        "repository": "https://github.com/imqinyu/BB10DeviceVoLTEResearch",
+        "commit": "376f492ade10efad371dca64d49fe39549820844",
+        "issue": "https://github.com/Octo-o-o-o/bb10-volte/issues/1",
+        "confirmation_request": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217",
+        "license_status": "author_permission_recorded_in_issue",
+        "notice": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/NOTICE.md",
+        "import_policy": "Independently summarized facts and source links only; no upstream code, binaries, archives or carrier XML bundled.",
+        "permission_url": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+        "contributed_material_rights": "not_separately_confirmed",
+        "follow_up": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554",
+        "boot_report": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859"
+      },
+      "project_acceptance": "not_established",
+      "records": []
+    }
+  }
+}

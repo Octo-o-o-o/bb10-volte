@@ -8,7 +8,9 @@
 |---|---|---|---|
 | 联通 | 460 / 01、09 | 3gnet | ims / IPv4v6 |
 | 移动 | 460 / 00、02、07 | cmnet | ims / IPv4v6 |
-| 电信 | 460 / 03、11 | ctnet | ims / IPv4v6 |
+| 电信 | 460 / 03、11 | ctnet、ctlte | ims / IPv4v6 |
+
+2026-10-29 补充：电信试用模板加入 `ctlte`。来源为 [GNOME 网络配置提交](https://mail.gnome.org/archives/commits-list/2020-April/msg03250.html)，其 460-11 条目同时列出 `ctnet` 和 `ctlte`。这只补充 APN 识别范围，不证明 BB10 能上网或通话，也不自动修改手机 APN；实际 SIM、原厂配置与数据在线检查继续保留。下文的 AOSP 来源说明对应原始样本。
 
 这些事实来自 [AOSP APN 配置固定提交](https://android.googlesource.com/device/sample/+/73f904fbeb872f5675cb5f18cd9dfb15856425a6/etc/apns-full-conf.xml)。源项目将文件定位为 [APN 示例](https://android.googlesource.com/device/sample/+/main/etc/README)，不是 BB10 适配认证。此次查询的 460-06 没有相应条目，因此没有将其自动加入模板。列表并非所有现用 MNC 的完整目录。固定提交、原始 XML 哈希和整理的数据见 [来源记录](../materials/carrier-data-sources.json)；发布包不包含整份原始 XML。
 

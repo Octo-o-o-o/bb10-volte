@@ -1,5 +1,6 @@
 """Desktop presentation and action gates; no transport or phone operations."""
 from pathlib import Path
+import json
 import sys
 import tempfile
 import tkinter as tk
@@ -136,6 +137,27 @@ class GuiTests(unittest.TestCase):
         self.app.show_checks()
         self.root.update_idletasks()
 
+    def test_disconnected_ctlte_and_nondefault_configuration_are_visible_without_enabling_install(self):
+        value = report(ready=False, tested=False)
+        value['checks'] += [{'id': 'apn', 'status': 'wait', 'code': 'data_apn_disconnected'},
+                            {'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'}]
+        value['network_diagnostics'] = {'observed_data_apn': 'ctlte', 'apn_matches': True, 'data_connected': False}
+        value['configuration_diagnostics'] = {'ims_override_absent': True, 'cdsc_selection_default': False}
+        self.app.render_report(value)
+        self.app.ack.set(True)
+        self.assertIn('匹配', self.app.table.item('apn', 'values')[2])
+        self.assertNotIn('服务运行时属正常', self.app.table.item('baseline', 'values')[2])
+        self.assertFalse(self.app.allowed_actions()['install'])
+        self.app.show_checks()
+        def tables(widget):
+            return ([widget] if isinstance(widget, gui.ttk.Treeview) else []) + [
+                table for child in widget.winfo_children() for table in tables(child)]
+        rows = [table.item(row, 'values') for table in tables(self.root) if table is not self.app.table
+                for row in table.get_children()]
+        self.assertIn(('手机报告的 APN', '只读快照', 'ctlte'), rows)
+        self.assertIn(('数据连接状态', '只读快照', '否'), rows)
+        self.assertTrue(any(row[:2] == ('数据配置选择为默认状态', '需核实') for row in rows))
+
     def test_stopped_installation_offers_start_and_retains_update_in_menu(self):
         self.app.render_report(report(installed=True))
         self.app.ack.set(True)
@@ -166,6 +188,57 @@ class GuiTests(unittest.TestCase):
         self.app.drain()
         self.assertNotIn('untranslated_internal_code', self.app.activity.cget('text'))
         self.assertEqual(self.app.last_result['error'], 'untranslated_internal_code')
+
+    def test_baseline_reason_filter_copy_and_export_use_the_same_snapshot(self):
+        value = report()
+        value.update(can_install=False, baseline={'voice_policy': 3, 'crypto': {'swcr_id': -1, 'crypto_support': 0},
+                     'ims_count': 1, 'vpn_count': 0, 'clean_configuration': False, 'native_read_error': False},
+                     configuration_diagnostics={'cdsc_selection_default': False})
+        value['checks'].append({'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'})
+        self.app.render_report(value)
+        self.assertEqual(self.app.summary.cget('text'), '安装前状态需处理')
+        self.assertIn('语音策略：3', self.app.table.item('baseline', 'values')[2])
+        self.app.show_checks()
+        def widgets(widget):
+            return [widget] + [item for child in widget.winfo_children() for item in widgets(child)]
+        popup = next(child for child in self.root.winfo_children() if isinstance(child, tk.Toplevel))
+        all_widgets = widgets(popup)
+        table = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Treeview))
+        selected = next(widget for widget in all_widgets if isinstance(widget, tk.Text))
+        voice = next(key for key in table.get_children() if table.item(key, 'values')[0] == '语音策略')
+        table.selection_set(voice); table.event_generate('<<TreeviewSelect>>')
+        self.root.update_idletasks()
+        self.assertIn('当前：3；安装前要求：0', selected.get('1.0', 'end'))
+        toggle = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Checkbutton))
+        before = len(table.get_children()); toggle.invoke()
+        self.assertLess(len(table.get_children()), before)
+        copy_button = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Button) and widget.cget('text') == '复制排查摘要')
+        self.app.render_report(report())  # The open dialog must keep its original snapshot.
+        copy_button.invoke()
+        self.assertIn('当前：3；安装前要求：0', self.root.clipboard_get())
+        destination = self.private / 'report.json'
+        export_button = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Button) and widget.cget('text') == '导出检查报告')
+        with patch.object(gui.filedialog, 'asksaveasfilename', return_value=str(destination)):
+            export_button.invoke()
+        exported = json.loads(destination.read_text(encoding='utf-8'))
+        self.assertEqual(exported['baseline']['voice_policy'], 3)
+        self.assertIn('[B01]', exported['desktop_diagnostics']['summary'])
+        self.assertNotIn('desktop_diagnostics', value)
+
+    def test_running_manager_does_not_hide_a_native_read_failure(self):
+        value = report(installed=True)
+        value.update(can_start=False, can_update=False, baseline={'native_read_error': True},
+                     native_read_status={'voice_policy': 'failed'})
+        value['installation']['state'] = 'busy'
+        value['checks'].append({'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'})
+        self.app.render_report(value, {'manager_alive': True})
+        self.assertIn('baseline', self.app.table.get_children())
+        self.assertFalse(self.app.running_baseline_expected)
+
+    def test_passed_autostart_check_does_not_ask_user_to_disable_it_again(self):
+        check = {'id': 'autostart_policy', 'status': 'pass', 'code': 'experimental_manual_start_required'}
+        self.assertIn('已关闭', self.app.check_note(check, report(tested=False)))
+        self.assertNotIn('请在', self.app.check_note(check, report(tested=False)))
 
     def test_actions_fit_when_connection_options_and_experiment_are_open(self):
         self.app.toggle_connection_options()

@@ -1,0 +1,10 @@
+{
+  "source": "native-window-gdigrab",
+  "title": "检查详情",
+  "startedUnix": 1793246148.3141496,
+  "endedUnix": 1793246170.4566667,
+  "exitCode": 0,
+  "targetSeconds": 22.0,
+  "desktopCaptured": false,
+  "frameRate": 30
+}

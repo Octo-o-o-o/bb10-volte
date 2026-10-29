@@ -50,6 +50,23 @@ class ProfileTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     p.validate(profile)
 
+    def test_telecom_stock_ctnet_and_ctlte_are_preserved_but_other_apns_rejected(self):
+        profile = p.read_json(str(ROOT / 'profiles/china-telecom.json'))
+        home = {'mcc': 460, 'mnc': 11, 'preloadedConfigFile': '/etc/carrier/config/446.xml'}
+        status = ('true_home_carrier:json:' + json.dumps(home) + '\n').encode('ascii')
+        for apn in ('ctnet', 'ctlte', 'cmnet'):
+            stock = STOCK.replace(b'cmnet', apn.encode('ascii'))
+            with self.subTest(apn=apn), patch.object(n, 'read',
+                    side_effect=lambda path: status if path.endswith('status_private') else stock), \
+                    patch.object(p.os.path, 'islink', return_value=False):
+                if apn == 'cmnet':
+                    with self.assertRaisesRegex(ValueError, 'Stock data APN'):
+                        p.carrier_template(profile, '460', '11')
+                else:
+                    _, changed = p.carrier_template(profile, '460', '11')
+                    self.assertIn(INTERNET.replace(b'cmnet', apn.encode('ascii')), changed)
+                    self.assertIn(EMERGENCY, changed)
+
     def test_unknown_options_are_rejected_instead_of_silently_ignored(self):
         profile = p.default(); profile['ims']['pcscf'] = 'example.org'
         with self.assertRaises(ValueError): p.validate(profile)

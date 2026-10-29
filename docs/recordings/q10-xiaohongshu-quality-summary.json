@@ -1,0 +1,68 @@
+{
+  "createdAt": "2026-10-29T04:15:26.702575+00:00",
+  "status": "passed",
+  "realDeviceEvidence": {
+    "registered": true,
+    "ims": "connected",
+    "network": "LTE",
+    "variant": "SQN100-3",
+    "persistentMutations": false,
+    "callsMade": false
+  },
+  "sourceCommit": "d2a0c40",
+  "durationSeconds": 75.4,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "frameRate": "30/1",
+  "nativeCaptureExitCodes": [
+    0,
+    0,
+    0
+  ],
+  "nativeLauncherStderr": "empty",
+  "fullDecode": "passed",
+  "continuousBlackFramesOver500ms": false,
+  "visualReview": {
+    "contactSheetFrames": 54,
+    "selectedFullSizeFrames": "cover, opening, check details, registration result, ending",
+    "subtitleProductOverlap": false
+  },
+  "limitations": [
+    "No calls placed in this session; historical call claims reference project acceptance evidence.",
+    "Subtitle phrase timings are proportional within measured TTS cues; owner can audition pronunciation and pacing in review page."
+  ],
+  "files": [
+    {
+      "path": "docs/recordings/q10-xiaohongshu-final.mp4",
+      "bytes": 3010225,
+      "sha256": "f92b9ca608243b553555d5c488cd427158c8b117570d4725d6474b64d14fab48"
+    },
+    {
+      "path": "docs/recordings/q10-xiaohongshu-cover.png",
+      "bytes": 243513,
+      "sha256": "822ef74083cfed9691d4715b378d9ccffdfa31c553e9703586ba565733a1ab83"
+    },
+    {
+      "path": "docs/recordings/q10-xiaohongshu-final.srt",
+      "bytes": 1745,
+      "sha256": "b32293074fad8905b112be8d3e25644e8f59d447d842248a6aa1a3614ddd26cf"
+    },
+    {
+      "path": "docs/recordings/raw/01-connect.mp4",
+      "bytes": 397082,
+      "sha256": "00a265b2e1663f5aba9f14adc1e410cac6c964f39afc14c92bb9b95c25a60cae"
+    },
+    {
+      "path": "docs/recordings/raw/02-checks.mp4",
+      "bytes": 286004,
+      "sha256": "de670f111fe1e7f9db37ecf8df7da492e1a71834debb6f0a58bd3e0205176d6f"
+    },
+    {
+      "path": "docs/recordings/raw/03-status.mp4",
+      "bytes": 364708,
+      "sha256": "db3e572498f1e2ec9c119bc6f2b0c0d476749d242d2ceec5d136cfe3c6d5cbe8"
+    }
+  ]
+}

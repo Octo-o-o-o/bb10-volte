@@ -26,6 +26,19 @@ def run(output):
     bundle = resource_root()
     manifest = verify_package()
     verify_diagnostics()
+    import compatibility
+    telecom = next(profile for profile in presets() if profile['id'] == 'china-telecom')
+    assert set(telecom['carrier']['data_apns']) == {'ctnet', 'ctlte'}
+    snapshot = {'apn_matches': True, 'data_connected': False, 'observed_data_apn': 'ctlte'}
+    assert compatibility.network_checks(snapshot, telecom)[-1]['code'] == 'data_apn_disconnected'
+    assert compatibility.public_network_diagnostics(snapshot)['data_connected'] is False
+    assert set(compatibility.public_flags({}, compatibility.CONFIGURATION_FLAGS)) == set(compatibility.CONFIGURATION_FLAGS)
+    from diagnostic_details import baseline_rows
+    diagnostic_fixture = {'checks': [{'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'}],
+                          'installation': {'state': 'absent'}, 'baseline': {'voice_policy': 3}}
+    voice = next(row for row in baseline_rows(diagnostic_fixture) if row['id'] == 'voice_policy')
+    assert voice['problem'] and voice['actual'] == '3' and voice['expected'] == '0'
+    assert '未检测到本工具安装' in voice['detail']
     root = tk.Tk()
     root.withdraw()
     app = App(root)
@@ -126,6 +139,8 @@ def run(output):
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
+              'telecom_ctlte_and_diagnostic_gates_verified': True,
+              'baseline_detail_explanations_verified': True,
               'first_run_wizard_without_probe_verified': True,
               'manual_firmware_import_ui_verified': True,
               'firmware_mirror_selection_ui_verified': True,

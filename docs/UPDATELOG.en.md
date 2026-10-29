@@ -2,6 +2,23 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.3.3-r5 · Cross-platform diagnostics and complete source release · 2026-10-29
+
+- Current and required values with next steps for voice policy, crypto, IMS processes, VPN sessions and configuration checks; missing values remain unknown.
+- Independent native reads retain successful observations when another read fails; existing installation gates remain enforced.
+- Pending-first rows, filtering and a wrapping explanation pane; copy a versioned troubleshooting summary with stable diagnostic references or export the same snapshot as JSON.
+- Distinguish absent installations, running services and read failures; passed autostart checks now use success wording.
+- Includes r4 China Telecom `ctlte` and APN diagnostics, with Windows EXE, Mac universal2 DMG and source ZIP from the same sources; signing, notarization and validation records accompany the release.
+- Adds the previously recorded Q10 portrait demo, subtitles, cover, review evidence and recording scripts. Public inputs use relative paths and an explicit hash manifest; build caches stay local.
+- Remains experimental; packaging and regression checks do not establish new device, carrier or phone-call acceptance.
+
+## 0.3.3-r4 · Local diagnostic test build · 2026-10-29
+
+- Recognize Telecom `ctlte` while retaining actual data connectivity, stock-carrier and baseline gates.
+- Distinguish an APN/profile mismatch, disconnected data and unknown status; export fixed allowlisted APN names and independent connection flags.
+- Expose individual read-only baseline observations without deleting or resetting non-default settings. An LTE snapshot does not establish registration or the serving band.
+- Local regression and packaging checks do not constitute Q20 Telecom hardware acceptance. This build is not published.
+
 ## 0.3.3-r3 · 2026-10-29
 
 - Ranks download nodes by observed payload speed, switches on failures or sustained low speed, and retains usable progress.

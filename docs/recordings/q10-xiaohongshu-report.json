@@ -1,0 +1,310 @@
+{
+  "createdAt": "2026-10-29T04:13:58.663501+00:00",
+  "scenario": "q10-xiaohongshu",
+  "title": "黑莓 Q10：连接、检查与 VoLTE 状态",
+  "baseUrl": "native:BB10-VoLTE",
+  "sourceCommit": "d2a0c40",
+  "dataMode": "production",
+  "allowProduction": true,
+  "readonly": true,
+  "audience": "小红书公开观众",
+  "surface": "portrait-video-of-native-desktop",
+  "durationMs": 73400,
+  "chapters": [
+    {
+      "id": "opening",
+      "eyebrow": "旧机新用  /  BLACKBERRY",
+      "title": [
+        "让老黑莓",
+        "重新用上 4G 通话"
+      ],
+      "tag": "BB10 VoLTE · Q10 真机连接",
+      "info": [
+        "原生 IMS · 系统拨号器 · 自己的 SIM 卡",
+        "这次先看：连接 → 检查 → 查询状态"
+      ],
+      "clips": [
+        [
+          "01-connect.mp4",
+          39,
+          9
+        ]
+      ],
+      "duration": 9,
+      "startMs": 0,
+      "endMs": 9000
+    },
+    {
+      "id": "connect",
+      "eyebrow": "01  /  连上你的黑莓",
+      "title": [
+        "插上数据线",
+        "点击「连接手机」"
+      ],
+      "tag": "手机解锁后，验证已有 Root 连接",
+      "info": [
+        "自动识别 Q10、系统版本和运营商",
+        "录制中的等待已剪短"
+      ],
+      "clips": [
+        [
+          "01-connect.mp4",
+          8,
+          5
+        ],
+        [
+          "01-connect.mp4",
+          25,
+          8
+        ]
+      ],
+      "duration": 13,
+      "startMs": 9000,
+      "endMs": 22000
+    },
+    {
+      "id": "transition-check",
+      "transition": true,
+      "eyebrow": "下一步  /  确认适配条件",
+      "title": [
+        "连接成功之后",
+        "逐项看检查结果"
+      ],
+      "tag": "先确认系统、SIM 和网络是否匹配",
+      "info": [
+        "每一步都有检查结论"
+      ],
+      "still": "checks.png",
+      "duration": 2.2,
+      "startMs": 22000,
+      "endMs": 24200
+    },
+    {
+      "id": "checks",
+      "eyebrow": "02  /  查看完整检查",
+      "title": [
+        "能不能用",
+        "让检查结果说话"
+      ],
+      "tag": "系统 · Root · 原生文件 · SIM · 4G 网络",
+      "info": [
+        "已检查 15 项：14 项通过",
+        "1 项是当前服务运行状态"
+      ],
+      "clips": [
+        [
+          "02-checks.mp4",
+          2,
+          14
+        ]
+      ],
+      "duration": 14,
+      "startMs": 24200,
+      "endMs": 38200
+    },
+    {
+      "id": "status",
+      "eyebrow": "03  /  刷新服务状态",
+      "title": [
+        "查看注册结果",
+        "确认当前网络"
+      ],
+      "tag": "已有服务，点击「查看状态」",
+      "info": [
+        "本机回读：IMS connected · LTE",
+        "注册通过之后，还需实际通话验收"
+      ],
+      "clips": [
+        [
+          "03-status.mp4",
+          14,
+          7
+        ],
+        [
+          "03-status.mp4",
+          40,
+          7
+        ]
+      ],
+      "duration": 14,
+      "startMs": 38200,
+      "endMs": 52200
+    },
+    {
+      "id": "transition-scope",
+      "transition": true,
+      "eyebrow": "使用之前  /  看清实测范围",
+      "title": [
+        "这台 Q10 已验证",
+        "其他组合逐台确认"
+      ],
+      "tag": "机型、系统与运营商都要匹配",
+      "info": [
+        "不把单台实测当作通用承诺"
+      ],
+      "still": "status.png",
+      "duration": 2.2,
+      "startMs": 52200,
+      "endMs": 54400
+    },
+    {
+      "id": "scope",
+      "eyebrow": "实测范围  /  如实说明",
+      "title": [
+        "Q10 SQN100-3",
+        "北京中国联通"
+      ],
+      "tag": "系统：BB10 10.3.3.3216",
+      "info": [
+        "项目已有双向短通话、全程 4G 记录",
+        "其他机型与运营商仍需验证"
+      ],
+      "clips": [
+        [
+          "03-status.mp4",
+          40,
+          10
+        ]
+      ],
+      "duration": 10,
+      "startMs": 54400,
+      "endMs": 64400
+    },
+    {
+      "id": "closing",
+      "eyebrow": "开源项目  /  BB10 VoLTE",
+      "title": [
+        "让老黑莓",
+        "继续用起来"
+      ],
+      "tag": "从一次兼容性检查开始",
+      "info": [
+        "首次使用需要 Root，刷写前务必备份",
+        "GitHub：Octo-o-o-o / bb10-volte"
+      ],
+      "clips": [
+        [
+          "03-status.mp4",
+          40,
+          9
+        ]
+      ],
+      "duration": 9,
+      "startMs": 64400,
+      "endMs": 73400
+    }
+  ],
+  "demoData": {
+    "source": "connected owner-authorized Q10",
+    "privacy": "Only sanitized product UI; no phone numbers, device IDs, keys or account data"
+  },
+  "captions": [
+    {
+      "title": "让老黑莓重新用上 4G 通话",
+      "body": "这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。",
+      "narration": "这台黑莓 Q10，已经用上原生四 G 通话。今天用真机，看看这个开源工具怎么用。",
+      "startMs": 350,
+      "endMs": 8800
+    },
+    {
+      "title": "连接并解锁手机",
+      "body": "手机用数据线连上电脑，解锁后，点击连接手机。",
+      "narration": "手机用数据线连上电脑，解锁后，点击连接手机。",
+      "startMs": 9200,
+      "endMs": 15300
+    },
+    {
+      "title": "自动识别并验证已有连接",
+      "body": "工具会识别型号、系统和运营商，并验证已有的 Root 连接。",
+      "narration": "工具会识别型号、系统和运营商，并验证已有的 Root 连接。",
+      "startMs": 15300,
+      "endMs": 21850
+    },
+    {
+      "title": "逐项检查适配条件",
+      "body": "打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。",
+      "narration": "打开检查详情，系统版本、原生文件、SIM 卡和四 G 网络，逐项核对。",
+      "startMs": 24400,
+      "endMs": 31500
+    },
+    {
+      "title": "先检查，再决定下一步",
+      "body": "这台手机已经安装服务，所以还有一项显示为预期的运行状态。",
+      "narration": "这台手机已经安装服务，所以还有一项显示为预期的运行状态。",
+      "startMs": 31500,
+      "endMs": 38000
+    },
+    {
+      "title": "查看已安装的服务",
+      "body": "返回首页，点击查看状态，就能读取手机当前的注册结果。",
+      "narration": "返回首页，点击查看状态，就能读取手机当前的注册结果。",
+      "startMs": 38450,
+      "endMs": 45000
+    },
+    {
+      "title": "IMS 注册与 LTE 网络正常",
+      "body": "这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。",
+      "narration": "这里可以看到，服务注册正常，网络保持 LTE。接下来仍要完成实际通话验收。",
+      "startMs": 45000,
+      "endMs": 52000
+    },
+    {
+      "title": "准确说明实测范围",
+      "body": "项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。",
+      "narration": "项目已有这台 Q10 的双向短通话实测。验证范围是北京联通、这个机型和系统版本，其他组合仍需验证。",
+      "startMs": 54600,
+      "endMs": 64250
+    },
+    {
+      "title": "首次 Root 前务必备份",
+      "body": "首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。",
+      "narration": "首次使用需要 Root，刷写前务必备份。想让老黑莓继续用起来，可以从兼容性检查开始。",
+      "startMs": 64600,
+      "endMs": 73300
+    }
+  ],
+  "narration": {
+    "enabled": true,
+    "engine": "edge-tts",
+    "voice": "zh-CN-YunyangNeural"
+  },
+  "steps": [
+    {
+      "label": "native-connect-and-preflight",
+      "url": "native:main",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Real GUI showed Q10 SQN100-3, OS 10.3.3.3216 and 4G service enabled"
+    },
+    {
+      "label": "native-check-details",
+      "url": "native:checks",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "15 checks: 14 passed, 1 expected running state"
+    },
+    {
+      "label": "native-status-refresh",
+      "url": "native:main",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "registered=true, IMS connected, LTE; native GUI says call acceptance pending"
+    }
+  ],
+  "consoleMessages": [],
+  "pageErrors": [],
+  "responseErrors": [],
+  "nativeNotes": [
+    "Browser console/page/HTTP checks do not apply to this Tk application. Native launcher stderr inspected separately.",
+    "ffmpeg gdigrab initial not-enough-frames warning is input probing only; decoded output verified.",
+    "No calls made, no flashing, installation, service restart, configuration mutation or publication.",
+    "Read-only preflight uploads temporary diagnostic files using the existing trusted connection and cleans them afterward.",
+    "Editorial cuts shorten connection and status waiting; no results simulated."
+  ],
+  "evidence": "evidence/gui-last-result.json",
+  "qualityGates": {
+    "maxOverflow": 0,
+    "allowedConsoleErrors": [],
+    "allowedResponseErrors": []
+  }
+}
