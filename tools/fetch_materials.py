@@ -1,6 +1,6 @@
 """Fetch pinned third-party inputs with persistent, hash-checked HTTP resume."""
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from email.utils import parsedate_to_datetime
 import hashlib
 import http.client
@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import ssl
 import time
 import urllib.error
@@ -51,6 +52,18 @@ class _Retryable(Exception):
         self.delay = delay
 
 
+class MaterialImportError(RuntimeError):
+    """Local import errors carry instructions without suggesting a network retry."""
+    def __init__(self, code):
+        super().__init__(code)
+        self.user_message = {
+            'import_source_invalid': '无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。',
+            'import_hash_mismatch': '所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整 .7z 文件，不要解压。原文件和已有缓存均已保留。',
+            'import_insufficient_disk': '下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。',
+            'import_io_error': '导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。',
+        }[code]
+
+
 def sha(path):
     h = hashlib.sha256()
     with path.open('rb') as source:
@@ -62,6 +75,76 @@ def sha(path):
 def _regular(path):
     if path.is_symlink() or path.exists() and not path.is_file():
         raise DownloadError('download_cache_invalid', path.name)
+
+
+def _input_paths(item, folder):
+    name, digest = item['file'], item['sha256']
+    if (Path(name).name != name or name in ('.', '..') or '\\' in name or '/' in name or
+            not re.fullmatch(r'[0-9a-f]{64}', digest)):
+        raise DownloadError('download_cache_invalid')
+    target = folder / name
+    partial = folder / (name + '.' + digest + '.partial')
+    return target, partial
+
+
+def import_material(item, source, folder=None, progress=None):
+    """Copy a user-selected archive into the cache, promoting only its pinned hash.
+
+    Never opens a URL, moves the source, extracts a file or launches a tool.
+    The download lock also protects against other importing/downloading apps.
+    """
+    folder = Path(folder) if folder else download_root()
+    source = Path(source).expanduser()
+    target, partial = _input_paths(item, folder)
+    progress = progress or (lambda text: print(text, flush=True))
+    temporary = None
+    temporary_created = False
+    try:
+        if not source.is_file():
+            raise MaterialImportError('import_source_invalid')
+        try:
+            input_file = source.open('rb')
+        except OSError:
+            raise MaterialImportError('import_source_invalid') from None
+        with input_file:
+            total = os.fstat(input_file.fileno()).st_size
+            folder.mkdir(parents=True, exist_ok=True)
+            with _download_lock(partial.with_name(partial.name + '.lock')):
+                _regular(target)
+                same_file = target.exists() and source.samefile(target)
+                if not same_file and shutil.disk_usage(folder).free < total:
+                    raise MaterialImportError('import_insufficient_disk')
+                h, count, last_progress = hashlib.sha256(), 0, time.monotonic()
+                progress('正在校验并导入 ' + item['file'] + '，请稍候…')
+                # An independent file leaves resumable downloads and an existing
+                # cache intact until the entire selected input is verified.
+                if not same_file:
+                    temporary = folder / (item['file'] + '.' + uuid.uuid4().hex + '.importing')
+                output_file = temporary.open('xb') if temporary else nullcontext()
+                temporary_created = temporary is not None
+                with output_file as output:
+                    while chunk := input_file.read(CHUNK_SIZE):
+                        h.update(chunk)
+                        if output:
+                            output.write(chunk)
+                        count += len(chunk)
+                        if time.monotonic() - last_progress >= 0.5:
+                            progress(f'校验并导入 {item["file"]} · {count / 1024 ** 2:.1f} / {total / 1024 ** 2:.1f} MiB（{count / max(total, 1):.1%}）')
+                            last_progress = time.monotonic()
+                if h.hexdigest() != item['sha256']:
+                    raise MaterialImportError('import_hash_mismatch')
+                if temporary:
+                    temporary.replace(target)
+                progress('固件已导入并通过 SHA-256 校验：' + item['file'])
+                return target
+    except OSError:
+        raise MaterialImportError('import_io_error') from None
+    finally:
+        if temporary_created:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass  # Never hide the actual import error; .importing is not used as cache.
 
 
 @contextmanager
@@ -233,11 +316,7 @@ def _transfer(item, partial, meta, opener, progress, headers):
 
 def _fetch(item, folder, opener, progress, verify_only, headers):
     name, digest = item['file'], item['sha256']
-    if (Path(name).name != name or name in ('.', '..') or '\\' in name or '/' in name or
-            not re.fullmatch(r'[0-9a-f]{64}', digest)):
-        raise DownloadError('download_cache_invalid')
-    target = folder / name
-    partial = folder / (name + '.' + digest + '.partial')
+    target, partial = _input_paths(item, folder)
     meta = partial.with_name(partial.name + '.json')
     with _download_lock(partial.with_name(partial.name + '.lock')):
         for path in (target, partial, meta):

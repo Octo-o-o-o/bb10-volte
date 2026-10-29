@@ -55,7 +55,16 @@ Current source supports resumable downloads; an existing EXE/DMG needs a new bui
 - SHA-256 must match before extraction or tool execution. Corrupt files are retained as `.invalid-*`; a failed hash triggers at most one fresh full download. Concurrent applications cannot write the same download.
 - HTTP 403/404, certificate errors and disk/permission failures have specific messages. Resume helps interrupted transfers; a persistently inaccessible origin needs a working network or HTTP proxy configured in the wizard.
 
-Alternatively, use a download manager with resume support to obtain the complete `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z` from its original URL in the [Root manifest](../materials/sources.json). **Keep its exact filename and do not extract it.** Put it in the cache below and retry preparation. A complete matching file is verified and reused, including by older app versions.
+Current source adds an in-app manual download/import section; existing EXE/DMG releases need a build containing this feature:
+
+1. Open **Connect phone / Connection help → Initial Root**, then the manual Q10 firmware download/import section.
+2. Use **Download firmware in browser** to open the original manifest URL for `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
+3. Choose the local file or paste its full path, then use **Verify and import firmware**. Quoted Windows “Copy as path” values and browser-added `(1)` filename suffixes are supported. The content is verified and stored under the canonical cache name.
+4. After success, use **Auto prepare Root images**. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
+
+Import shows progress and leaves the selected original file in place. Incomplete, corrupt or wrong-version files are rejected without changing existing cache files or resume progress. The cache disk needs room for a complete copy; selecting that same file already in the cache only verifies it.
+
+Older versions can still reuse a complete archive downloaded from the [Root manifest](../materials/sources.json). **Keep the exact manifest filename and do not extract it.** Put it in the cache below and retry preparation; the app verifies SHA-256 before reuse.
 
 | Application | Download cache |
 | --- | --- |

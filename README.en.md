@@ -45,6 +45,8 @@ Exact filenames, original download URLs and SHA-256 values are in [sources.json]
 
 Current source supports resume, automatic retries and progress reporting for first-use material downloads. Existing EXE/DMG releases need a new build to gain these features. Preserve the cache after a failure, or preload the complete archive; see [download troubleshooting](docs/FIRST-RUN.en.md#interrupted-or-failing-downloads).
 
+Current source also offers **Download firmware in browser → Choose a file or paste its path → Verify and import firmware** in the app. Import works offline; verified firmware is reused during preparation, while other missing tools still need downloading. Existing packages need a build containing this entry point.
+
 ## Quick start
 
 ### Ways to run

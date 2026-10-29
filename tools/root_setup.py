@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from desktop_paths import resource_root, private_root, download_root, frozen
-from fetch_materials import fetch_entries, sha
+from fetch_materials import fetch_entries, import_material, sha
 from connection import resolve_connection, save_connection
 from workflow import WorkflowError
 
@@ -27,6 +27,15 @@ class SetupError(RuntimeError):
 
 def catalog():
     return json.loads((ROOT / 'materials/first-run-tools.json').read_text(encoding='utf-8'))
+
+
+def stock_firmware():
+    source = json.loads((ROOT / 'materials/sources.json').read_text(encoding='utf-8'))
+    return next(item for item in source['verified_inputs'] if item['id'] == 'stock-q10')
+
+
+def import_stock_firmware(path, progress, cache_dir=None):
+    return str(import_material(stock_firmware(), path, folder=cache_dir, progress=progress))
 
 
 def powershell():

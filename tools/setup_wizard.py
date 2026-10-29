@@ -4,15 +4,17 @@ import queue
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from tkinter import filedialog, messagebox, ttk
 
 from connection import matching_alias
 from profile_editor import FONT
 from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh,
-                        prepared_kit_history, prepared_images, root_lock_path)
+                        prepared_kit_history, prepared_images, root_lock_path,
+                        stock_firmware, import_stock_firmware)
 from workflow import WorkflowError
-from fetch_materials import DownloadError
+from fetch_materials import DownloadError, MaterialImportError
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
@@ -58,6 +60,7 @@ class SetupWizard(tk.Toplevel):
         self.host, self.config = 'bb10-root', ''
         self.variant = tk.StringVar()
         self.proxy = tk.StringVar()
+        self.firmware_path = tk.StringVar()
         self.ack = tk.BooleanVar()
         self.mac_flash_ack = tk.BooleanVar()
         body = ttk.Frame(self, padding=24)
@@ -135,6 +138,27 @@ class SetupWizard(tk.Toplevel):
             self.history_picker.current(0)
         self.prepare_button = ttk.Button(root_tab, text='自动准备 Root 镜像', command=self.prepare_root)
         self.prepare_button.pack(anchor='w', pady=(16, 12))
+        manual = ttk.LabelFrame(root_tab, text='下载失败？手动下载并导入 Q10 固件', padding=12)
+        manual.pack(fill='x', pady=(0, 16))
+        ttk.Label(manual, text='1. 用浏览器下载完整压缩包，不要解压：\n' + stock_firmware()['file'],
+                  wraplength=680, justify='left').pack(anchor='w')
+        links = ttk.Frame(manual)
+        links.pack(fill='x', pady=(8, 12))
+        self.browser_download_button = ttk.Button(links, text='在浏览器下载固件', command=self.open_firmware_download)
+        self.browser_download_button.pack(side='left')
+        self.copy_download_button = ttk.Button(links, text='复制下载链接', command=self.copy_firmware_link)
+        self.copy_download_button.pack(side='left', padx=(8, 0))
+        ttk.Label(manual, text='2. 下载完成后，选择文件或粘贴本地完整路径：', wraplength=680).pack(anchor='w')
+        file_row = ttk.Frame(manual)
+        file_row.pack(fill='x', pady=(8, 8))
+        self.firmware_entry = ttk.Entry(file_row, textvariable=self.firmware_path)
+        self.firmware_entry.pack(side='left', fill='x', expand=True)
+        self.browse_firmware_button = ttk.Button(file_row, text='选择文件…', command=self.browse_firmware)
+        self.browse_firmware_button.pack(side='left', padx=(8, 0))
+        self.import_firmware_button = ttk.Button(manual, text='校验并导入固件', command=self.import_firmware)
+        self.import_firmware_button.pack(anchor='w')
+        ttk.Label(manual, text='导入成功后，再点击“自动准备 Root 镜像”。固件导入不需要联网；其他未缓存的工具仍需下载。',
+                  wraplength=680, justify='left').pack(anchor='w', pady=(8, 0))
         self.ack_check = ttk.Checkbutton(root_tab, text='已备份并核对机型，同意清空手机数据', variable=self.ack)
         self.ack_check.pack(anchor='w')
         self.ack.trace_add('write', lambda *_: self.refresh())
@@ -172,7 +196,8 @@ class SetupWizard(tk.Toplevel):
             self.detect()
 
     def refresh(self):
-        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button):
+        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button,
+                       self.browser_download_button, self.copy_download_button, self.browse_firmware_button, self.import_firmware_button):
             button.configure(state='disabled' if self.busy else 'normal')
         self.prepare_button.configure(state='normal' if not self.busy and sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
@@ -181,6 +206,7 @@ class SetupWizard(tk.Toplevel):
         self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         self.model_picker.configure(state='disabled' if self.busy or self.kit else 'readonly')
         self.proxy_entry.configure(state='disabled' if self.busy else 'normal')
+        self.firmware_entry.configure(state='disabled' if self.busy else 'normal')
         self.history_picker.configure(state='disabled' if self.busy else 'readonly')
         self.ack_check.configure(state='disabled' if self.busy else 'normal')
         if self.mac_flash_check is not None:
@@ -192,11 +218,11 @@ class SetupWizard(tk.Toplevel):
         self.busy = True
         self.refresh()
         self.progress.start(12)
-        self.status.configure(text='正在处理，请保持设备连接。')
+        self.status.configure(text='正在校验本地固件文件，请稍候…' if action == 'import_firmware' else '正在处理，请保持设备连接。')
         def worker():
             try:
                 self.events.put(('result', (action, function(lambda value: self.events.put(('progress', value))))))
-            except DownloadError as error:
+            except (DownloadError, MaterialImportError) as error:
                 self.events.put(('download_error', error.user_message))
             except (SetupError, WorkflowError) as error:
                 self.events.put(('error', str(error)))
@@ -243,6 +269,42 @@ class SetupWizard(tk.Toplevel):
         self.ack.set(False)
         self.mac_flash_ack.set(False)
         self.start('prepare', lambda progress: prepare_root_kit(variant, progress, proxy))
+
+    def open_firmware_download(self):
+        if self.busy:
+            return
+        try:
+            opened = webbrowser.open(stock_firmware()['url'], new=2)
+        except (OSError, webbrowser.Error):
+            opened = False
+        self.status.configure(text='已请求浏览器打开固件下载。下载完成后，选择文件并点击“校验并导入固件”。' if opened else
+                              '未能自动打开浏览器。请点击“复制下载链接”，粘贴到浏览器或下载工具中。')
+
+    def copy_firmware_link(self):
+        if not self.busy:
+            self.clipboard_clear()
+            self.clipboard_append(stock_firmware()['url'])
+            self.status.configure(text='已复制固件下载链接。可粘贴到浏览器或支持续传的下载工具中。')
+
+    def browse_firmware(self):
+        if self.busy:
+            return
+        path = filedialog.askopenfilename(parent=self, title='选择已下载完成的 Q10 固件压缩包（不要解压）',
+                                          filetypes=[('7-Zip 固件压缩包', '*.7z'), ('所有文件', '*')])
+        if path:
+            self.firmware_path.set(path)
+
+    def import_firmware(self):
+        if self.busy:
+            return
+        path = self.firmware_path.get().strip()
+        if len(path) >= 2 and path[0] == path[-1] == '"':
+            path = path[1:-1]  # Windows Explorer's "Copy as path".
+        if not path:
+            self.status.configure(text='请先选择已下载的完整固件文件，或粘贴本地文件路径。')
+            self.firmware_entry.focus_set()
+            return
+        self.start('import_firmware', lambda progress: import_stock_firmware(path, progress))
 
     def resume_preparation(self):
         if self.busy:
@@ -343,6 +405,8 @@ class SetupWizard(tk.Toplevel):
                                               '驱动安装完成，请重新连接手机并检测。')
                     elif action == 'components':
                         self.status.configure(text='连接组件已就绪，请重新检测。')
+                    elif action == 'import_firmware':
+                        self.status.configure(text='固件已导入并通过校验。请点击“自动准备 Root 镜像”继续；该固件会直接复用，其他缺少的工具仍需下载。')
                 self.refresh()
         except queue.Empty:
             pass
