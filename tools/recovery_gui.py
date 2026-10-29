@@ -7,13 +7,15 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from connection_recovery import (RecoveryError, read_host_key, fingerprint, import_identity,
-                                 prepare_pairing, read_pairing_result, finish_pairing)
+                                 prepare_pairing, read_pairing_result, finish_pairing,
+                                 pending_pairings, save_pairing_step, complete_pairing)
 from root_setup import verify_root, SetupError
 from workflow import WorkflowError
 from profile_editor import FONT
 from mac_help import TRANSFER_HINT, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
+    'pairing_export_conflict': '目标位置已有同名但内容不同的文件。请更换保存位置，原文件没有覆盖。',
     'keygen_missing': '缺少密钥工具。Windows 源码用户请先准备连接组件；Mac 使用系统 OpenSSH。',
     'key_unreadable': '私钥无法读取或带有口令。请用原 SSH 工具解锁并导出可用的 RSA 私钥，或改用“没有连接文件”重新授权。',
     'login_key_required': '请选择登录私钥（如 id_rsa、id_rsa4x），不能选择 .pub 或 ssh_host 开头的手机主机密钥。',
@@ -33,7 +35,7 @@ MESSAGES = {
 
 
 class RecoveryDialog(tk.Toplevel):
-    def __init__(self, parent, on_ready):
+    def __init__(self, parent, on_ready, mode='pair'):
         super().__init__(parent)
         self.title('恢复已 Root 手机的连接')
         self.geometry('880x720')
@@ -42,22 +44,23 @@ class RecoveryDialog(tk.Toplevel):
         self.on_ready = on_ready
         self.events = queue.Queue()
         self.busy, self.choice, self.verified = False, None, False
+        self.pair_script, self.pair_step = None, 1
         self.identity, self.host_key = tk.StringVar(), tk.StringVar()
         body = ttk.Frame(self, padding=22)
         body.pack(fill='both', expand=True)
-        ttk.Label(body, text='手机已 Root，重新建立电脑连接', font=(FONT, 16, 'bold')).pack(anchor='w')
-        ttk.Label(body, text='先按已有材料选择路径。此向导不刷机；只有验证 Root 连接成功后才保存并继续。',
+        ttk.Label(body, text='让这台电脑连接手机', font=(FONT, 16, 'bold')).pack(anchor='w')
+        ttk.Label(body, text='手机授权需要已有有效 Root 终端。完成后验证手机身份和实际 Root 权限。',
                   wraplength=800).pack(anchor='w', pady=(8, 14))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
         existing = ttk.Frame(self.tabs, padding=18)
-        self.tabs.add(existing, text='有登录私钥')
+        self.tabs.add(existing, text='高级：手动导入密钥')
         if sys.platform == 'darwin':
             missing_page, missing = scrolled_page(self.tabs)
-            self.tabs.add(missing_page, text='没有连接文件')
+            self.tabs.add(missing_page, text='从手机授权 / 继续上次')
         else:
             missing = ttk.Frame(self.tabs, padding=18)
-            self.tabs.add(missing, text='没有连接文件')
+            self.tabs.add(missing, text='从手机授权 / 继续上次')
         ttk.Label(existing, text='用于原刷机包提供了登录私钥，但没有 ssh_config 的情况。', wraplength=750).pack(anchor='w')
         self.buttons = []
         for title, variable, callback in [('登录私钥', self.identity, self.select_identity),
@@ -76,26 +79,31 @@ class RecoveryDialog(tk.Toplevel):
         button = ttk.Button(existing, text='补建配置并验证', command=self.import_key)
         button.pack(anchor='w')
         self.buttons.append(button)
-        missing_steps = ('需要手机已有可用的 Root 终端（如 Term49 + __root）。只有图标、开发模式或 Root 提示还不够。\n'
-                  '全新电脑无需 Windows 上的旧文件：本机生成独立密钥，私钥保留在本机。\n'
-                  '1. 生成并导出授权脚本，只把此 .py 文件复制到手机 Downloads；私钥保留在电脑。\n'
-                  '2. 在手机终端执行下方命令；脚本确认有效 Root 后，输入 PAIR 授权这台电脑。\n'
-                  '3. 若 SSH 未开启，可按脚本提示输入 START 临时启动；已有会话无需重复启动。\n'
-                  '4. 将手机内部 Downloads 中同编号的 result.json 复制回原电脑，核对来源后导入并验证。')
-        self.missing_steps = ttk.Label(missing, text=missing_steps, wraplength=740, justify='left')
-        self.missing_steps.pack(anchor='w')
+        self.pending = pending_pairings()
+        resume = ttk.Frame(missing)
+        resume.pack(fill='x', pady=(0, 10))
+        self.resume_picker = ttk.Combobox(resume, state='readonly', width=34,
+            values=[item['script'].stem + ' · 第 ' + str(item['step']) + ' 步' for item in self.pending])
+        self.resume_picker.pack(side='left')
+        resume_button = ttk.Button(resume, text='继续选中的授权', command=self.resume_pairing)
+        resume_button.pack(side='left', padx=8)
+        self.buttons.append(resume_button)
+        if not self.pending:
+            resume.pack_forget()
+        self.step_label = ttk.Label(missing, font=(FONT, 12, 'bold'))
+        self.step_label.pack(anchor='w')
+        self.missing_steps = ttk.Label(missing, wraplength=740, justify='left')
+        self.missing_steps.pack(anchor='w', pady=(8, 0))
         row = ttk.Frame(missing)
         row.pack(fill='x', pady=12)
-        for title, callback in [('生成并导出授权文件', self.generate), ('导入手机授权结果', self.import_result)]:
-            button = ttk.Button(row, text=title, command=callback)
-            button.pack(side='left', padx=(0, 10))
-            self.buttons.append(button)
+        self.generate_button = ttk.Button(row, text='保存授权文件', command=self.generate)
+        self.result_button = ttk.Button(row, text='选择手机授权结果', command=self.import_result)
+        self.step_back = ttk.Button(row, text='上一步', command=lambda: self.set_step(self.pair_step - 1))
+        self.step_next = ttk.Button(row, command=lambda: self.set_step(self.pair_step + 1))
+        self.buttons.extend([self.generate_button, self.result_button, self.step_back, self.step_next])
         self.commands = tk.Text(missing, height=5, wrap='word', font=(FONT, 10))
-        self.commands.pack(fill='x')
-        self.set_commands('生成文件后，这里会显示对应的手机命令。')
-        ttk.Label(missing, text='脚本保留原授权并备份，不改 Root 固件。临时启动 SSH 不保证重启后仍开启。\n'
-                  '若 __root / u_root 不存在或仍无 Root 权限，请先在手机原有 Root 工具中恢复权限；电脑端无法越过这一步。',
-                  wraplength=740, justify='left').pack(anchor='w', pady=(12, 0))
+        self.pair_hint = ttk.Label(missing, wraplength=740, justify='left')
+        self.pair_hint.pack(anchor='w', pady=(12, 0))
         self.mac_transfer_help = None
         if sys.platform == 'darwin':
             self.mac_transfer_help = ttk.Label(missing, text=TRANSFER_HINT, wraplength=740, justify='left')
@@ -114,6 +122,62 @@ class RecoveryDialog(tk.Toplevel):
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
         self.grab_set()
+        self.tabs.select(0 if mode == 'key' else 1)
+        if len(self.pending) == 1:
+            self.resume_picker.current(0)
+            self.resume_pairing()
+        else:
+            self.set_step(1, persist=False)
+        self.refresh()
+
+    def resume_pairing(self):
+        if self.busy:
+            return
+        index = self.resume_picker.current()
+        if index < 0:
+            self.status.configure(text='有多次未完成授权，请按手机上的文件编号选择对应记录。')
+            return
+        item = self.pending[index]
+        self.pair_script = item['script']
+        self.set_step(item['step'], persist=False)
+        self.status.configure(text='继续 ' + self.pair_script.name + '，使用原来的本机密钥。')
+
+    def set_step(self, step, persist=True):
+        if self.busy or step not in (1, 2, 3) or step > 1 and not self.pair_script:
+            return
+        if persist and self.pair_script:
+            try:
+                save_pairing_step(self.pair_script, step)
+            except (OSError, ValueError):
+                self.status.configure(text='暂时无法保存进度。请检查应用个人目录的写入权限。')
+                return
+        self.pair_step = step
+        titles = {1: '把授权文件放到手机', 2: '在手机上允许这台电脑连接', 3: '取回手机授权结果'}
+        self.step_label.configure(text='第 {} / 3 步 · {}'.format(step, titles[step]))
+        descriptions = {
+            1: '保存本次授权文件，并复制到手机内部存储 Downloads。电脑私钥保留在本机。\n如果已经拿到结果，也可以直接选择手机授权结果。',
+            2: '在手机已有 Root 终端按下方命令执行。脚本核验权限后，输入 PAIR 才会追加这台电脑的授权。\n只有脚本提示需要启动连接服务时，才另行输入 START。',
+            3: '将手机内部 Downloads 中同编号的 result.json 复制回本电脑，再选择它并确认来源。\n应用会核对请求编号、本机密钥、手机身份与实际 Root 权限。',
+        }
+        self.missing_steps.configure(text=descriptions[step])
+        for button in (self.generate_button, self.result_button, self.step_back, self.step_next):
+            button.pack_forget()
+        if step == 1:
+            self.generate_button.pack(side='left', padx=(0, 10))
+        self.result_button.pack(side='left', padx=(0, 10))
+        if step > 1:
+            self.step_back.pack(side='left', padx=(0, 10))
+        if step < 3:
+            self.step_next.configure(text='已复制到手机，下一步' if step == 1 else '手机已生成结果，下一步')
+            self.step_next.pack(side='left')
+        self.commands.pack_forget()
+        if step == 2 and self.pair_script:
+            phone_path = '/accounts/1000/shared/downloads/' + self.pair_script.name
+            self.set_commands('__root\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
+            self.commands.pack(fill='x', before=self.pair_hint)
+        self.pair_hint.configure(text=('当前文件：' + self.pair_script.name if self.pair_script else '还没有生成本次授权文件。') +
+                                 '\n关闭应用后可继续本次授权，无需重新生成密钥。')
+        self.refresh()
 
     def set_commands(self, text):
         self.commands.configure(state='normal')
@@ -157,13 +221,19 @@ class RecoveryDialog(tk.Toplevel):
         folder = filedialog.askdirectory(parent=self, title='选择公开授权脚本的导出目录')
         if not folder:
             return
+        existing_script = self.pair_script
         def work():
-            script = prepare_pairing()
+            script = existing_script or prepare_pairing()
+            self.events.put(('prepared_script', script))
             target = Path(folder) / script.name
             # Exclusive creation avoids overwriting another exported request.
-            with target.open('xb') as output:
-                output.write(script.read_bytes())
-            return target
+            if target.exists():
+                if target.read_bytes() != script.read_bytes():
+                    raise RecoveryError('pairing_export_conflict')
+            else:
+                with target.open('xb') as output:
+                    output.write(script.read_bytes())
+            return script
         self.start('script', work)
 
     def import_result(self):
@@ -201,18 +271,25 @@ class RecoveryDialog(tk.Toplevel):
         try:
             while True:
                 action, result = self.events.get_nowait()
+                if action == 'prepared_script':
+                    self.pair_script = result
+                    continue
                 self.busy = False
                 if action == 'error':
                     self.show_error(result)
                 elif action == 'script':
-                    phone_path = '/accounts/1000/shared/downloads/' + result.name
-                    self.set_commands('__root\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
-                    self.status.configure(text='已导出 ' + result.name + '。复制到手机 Downloads，再按上面的步骤授权；此时尚未建立连接。')
+                    self.pair_script = result
+                    self.set_step(1)
+                    self.status.configure(text='已保存 ' + result.name + '。复制到手机内部 Downloads 后点击下一步。')
                 elif action == 'config':
                     self.choice = result
                     self.verify()
                 elif action == 'verify':
                     self.choice, self.verified = result, True
+                    try:
+                        complete_pairing(result['config'])
+                    except OSError:
+                        pass
                     self.status.configure(text='手机身份与 Root 连接已验证并保存，可使用此连接继续检查设备。')
                 self.refresh()
         except queue.Empty:
@@ -224,6 +301,8 @@ class RecoveryDialog(tk.Toplevel):
             button.configure(state='disabled' if self.busy else 'normal')
         self.verify_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         self.continue_button.configure(state='normal' if self.verified and not self.busy else 'disabled')
+        self.step_next.configure(state='normal' if self.pair_script and not self.busy else 'disabled')
+        self.resume_picker.configure(state='disabled' if self.busy else 'readonly')
 
     def finish(self):
         if self.verified and not self.busy:

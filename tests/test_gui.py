@@ -17,6 +17,7 @@ def report(ready=True, tested=True, installed=False):
                        'variant': 'SQN100-3' if tested else 'SQC100-1', 'os_version': '10.3.3.3216',
                        'hardware_tested': tested, 'recognized': True},
             'checks': [{'id': 'model', 'status': 'pass', 'code': 'device_identified'},
+                       {'id': 'root', 'status': 'pass', 'code': 'root_qnx_arm32_required'},
                        {'id': 'native', 'status': 'pass', 'code': 'native_hashes_required'},
                        {'id': 'lte', 'status': 'pass' if ready else 'wait',
                         'code': 'lte_ready' if ready else 'lte_not_ready'}],

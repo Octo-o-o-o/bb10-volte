@@ -208,6 +208,27 @@ def prepared_images(folder, allowed_stages=('prepared',)):
     return state, images
 
 
+def prepared_kit_history():
+    """Read bounded preparation journals; listing is never flash authorization."""
+    result = []
+    folders = [private_root() / 'root-kit'] + sorted(private_root().glob('root-kit-*'))
+    for folder in folders:
+        if folder.is_symlink() or folder.is_junction():
+            continue
+        try:
+            journal = folder / 'setup-state.json'
+            if journal.is_symlink() or journal.stat().st_size > 65536:
+                continue
+            state = json.loads(journal.read_text(encoding='utf-8'))
+            if state.get('variant') not in catalog()['auto_root_variants'] or not isinstance(state.get('stage'), str):
+                continue
+            result.append({'folder': str(folder), 'variant': state['variant'], 'stage': state['stage'],
+                           'platform': state.get('platform', 'win32')})
+        except (OSError, ValueError, TypeError, AttributeError):
+            continue
+    return result
+
+
 def run_flash_stage(folder, stage, token):
     if sys.platform == 'darwin':
         from macos_root_flash import launch_stage

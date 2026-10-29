@@ -1,5 +1,7 @@
 # First use and connection setup
 
+Current development source starts with **Connect phone / Connection help**, with SSH paths under advanced settings. Released r6 and earlier applications may still use the older labels below; this new flow has not been released as an EXE/DMG. Reopening rechecks the last successful connection once. Pairing requests and completed image preparation can be resumed. Connection failure never establishes that a phone is unrooted.
+
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
 Desktop revision `0.3.2-r6` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.

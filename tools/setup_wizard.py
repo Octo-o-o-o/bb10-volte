@@ -9,7 +9,8 @@ from tkinter import filedialog, messagebox, ttk
 from connection import matching_alias
 from profile_editor import FONT
 from root_setup import (SetupError, catalog, local_usb_state, verify_root,
-                        prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh)
+                        prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh,
+                        prepared_kit_history, prepared_images, root_lock_path)
 from workflow import WorkflowError
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
@@ -45,7 +46,7 @@ MESSAGES = {
 
 
 class SetupWizard(tk.Toplevel):
-    def __init__(self, parent, on_ready, auto_check=True):
+    def __init__(self, parent, on_ready, auto_check=True, initial_page='connection'):
         super().__init__(parent)
         self.title('首次使用与连接帮助')
         self.geometry('860x730')
@@ -65,15 +66,12 @@ class SetupWizard(tk.Toplevel):
         self.status.pack(anchor='w', pady=(8, 18))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
-        if sys.platform == 'darwin':
-            connection_page, connection = scrolled_page(self.tabs, padding=20)
-            root_page, root_tab = scrolled_page(self.tabs, padding=20)
-        else:
-            connection_page = connection = ttk.Frame(self.tabs, padding=20)
-            root_page = root_tab = ttk.Frame(self.tabs, padding=20)
+        connection_page, connection = scrolled_page(self.tabs, padding=20)
+        root_page, root_tab = scrolled_page(self.tabs, padding=20)
         drivers = ttk.Frame(self.tabs, padding=20)
         for frame, title in [(connection_page, '连接检查'), (root_page, '首次 Root'), (drivers, 'Windows 驱动')]:
             self.tabs.add(frame, text=title)
+        self.tabs.select({'connection': 0, 'root': 1, 'drivers': 2}.get(initial_page, 0))
         self.device = ttk.Label(connection, text='设备型号与系统将在检测后显示', font=(FONT, 12, 'bold'))
         self.device.pack(anchor='w', pady=(0, 12))
         self.facts = ttk.Label(connection, text='等待检测 USB、开发模式、SSH 与 Root。', wraplength=730, justify='left')
@@ -120,6 +118,20 @@ class SetupWizard(tk.Toplevel):
         ttk.Label(line, text='手机型号').pack(side='left', padx=(0, 14))
         self.model_picker = ttk.Combobox(line, textvariable=self.variant, values=catalog()['auto_root_variants'], state='readonly', width=20)
         self.model_picker.pack(side='left')
+        self.history = prepared_kit_history()
+        history_row = ttk.Frame(root_tab)
+        history_row.pack(fill='x', pady=(12, 0))
+        stage_labels = {'prepared': '镜像已准备', 'flashed_waiting_for_root': '已刷写，等待验证'}
+        self.history_picker = ttk.Combobox(history_row, state='readonly', width=46, values=[
+            '{} · {} · {}'.format(item['variant'], stage_labels.get(item['stage'], '刷写状态待核对'), Path(item['folder']).name)
+            for item in self.history])
+        self.history_picker.pack(side='left')
+        self.resume_button = ttk.Button(history_row, text='继续上次准备', command=self.resume_preparation)
+        self.resume_button.pack(side='left', padx=(8, 0))
+        if not self.history:
+            history_row.pack_forget()
+        elif len(self.history) == 1:
+            self.history_picker.current(0)
         self.prepare_button = ttk.Button(root_tab, text='自动准备 Root 镜像', command=self.prepare_root)
         self.prepare_button.pack(anchor='w', pady=(16, 12))
         self.ack_check = ttk.Checkbutton(root_tab, text='已备份并核对机型，同意清空手机数据', variable=self.ack)
@@ -159,15 +171,16 @@ class SetupWizard(tk.Toplevel):
             self.detect()
 
     def refresh(self):
-        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button):
+        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button):
             button.configure(state='disabled' if self.busy else 'normal')
         self.prepare_button.configure(state='normal' if not self.busy and sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
         mac_confirmed = sys.platform != 'darwin' or self.mac_flash_ack.get()
-        self.flash_button.configure(state='normal' if self.kit and self.ack.get() and mac_confirmed and not self.busy and not self.choice else 'disabled')
+        self.flash_button.configure(state='normal' if self.kit and self.ack.get() and mac_confirmed and not self.busy and not self.choice and not root_lock_path().exists() else 'disabled')
         self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         self.model_picker.configure(state='disabled' if self.busy or self.kit else 'readonly')
         self.proxy_entry.configure(state='disabled' if self.busy else 'normal')
+        self.history_picker.configure(state='disabled' if self.busy else 'readonly')
         self.ack_check.configure(state='disabled' if self.busy else 'normal')
         if self.mac_flash_check is not None:
             self.mac_flash_check.configure(state='disabled' if self.busy else 'normal')
@@ -223,7 +236,40 @@ class SetupWizard(tk.Toplevel):
         if variant not in catalog()['auto_root_variants']:
             self.status.configure(text='请先检测设备，或按手机“关于”中的硬件型号选择正确的 Q10 变体。')
             return
+        self.kit = None
+        self.ack.set(False)
+        self.mac_flash_ack.set(False)
         self.start('prepare', lambda progress: prepare_root_kit(variant, progress, proxy))
+
+    def resume_preparation(self):
+        if self.busy:
+            return
+        index = self.history_picker.current()
+        if index < 0:
+            self.status.configure(text='请选择与当前手机对应的准备记录。')
+            return
+        item = self.history[index]
+        self.kit = None
+        self.ack.set(False)
+        self.mac_flash_ack.set(False)
+        self.refresh()
+        if root_lock_path().exists() or item['stage'] not in ('prepared', 'flashed_waiting_for_root'):
+            self.status.configure(text='上次刷写状态尚未确认。请保留现场和日志，不要重复刷写。')
+            return
+        if item['stage'] == 'flashed_waiting_for_root':
+            self.host, self.config = 'bb10-root', str(Path(item['folder']) / 'ssh_config')
+            self.tabs.select(0)
+            self.detect()
+            return
+        if item['platform'] != sys.platform:
+            self.status.configure(text=MESSAGES['root_platform_mismatch'])
+            return
+        def work(progress):
+            progress('重新校验已准备的镜像，尚不刷写手机…')
+            prepared_images(item['folder'])
+            return item['folder']
+        self.variant.set(item['variant'])
+        self.start('prepare', work)
 
     def flash(self):
         if (not self.kit or not self.ack.get() or self.busy or
@@ -309,3 +355,5 @@ class SetupWizard(tk.Toplevel):
             return
         self.after_cancel(self._job)
         self.destroy()
+        if isinstance(self.master, tk.Toplevel) and self.master.winfo_exists():
+            self.master.grab_set()

@@ -144,7 +144,53 @@ def prepare_pairing():
     script = script.replace('PAIR_REQUEST_ID = None', 'PAIR_REQUEST_ID = ' + repr(request_id), 1)
     output = folder / ('bb10-pair-' + request_id + '.py')
     output.write_text(script, encoding='utf-8', newline='\n')
+    save_pairing_step(output, 1)
     return output
+
+
+def save_pairing_step(script, step):
+    script = Path(script).resolve()
+    folder = script.parent
+    if (step not in (1, 2, 3) or folder.parent != private_root().resolve() or
+            not re.fullmatch(r'recovery-[a-f0-9]{12}', folder.name) or
+            script.name != 'bb10-pair-' + folder.name[9:] + '.py' or not script.is_file()):
+        raise RecoveryError('pairing_result_invalid')
+    temporary = folder / ('progress-' + uuid.uuid4().hex + '.json')
+    temporary.write_text(json.dumps({'step': step}) + '\n', encoding='utf-8')
+    temporary.replace(folder / 'pairing-progress.json')
+
+
+def pending_pairings():
+    """Resume by request ID, never substitute a different computer's identity."""
+    result = []
+    for folder in sorted(private_root().glob('recovery-*')):
+        if folder.is_symlink() or folder.is_junction() or not re.fullmatch(r'recovery-[a-f0-9]{12}', folder.name):
+            continue
+        script = folder / ('bb10-pair-' + folder.name[9:] + '.py')
+        if (folder / 'pairing-complete.json').exists():
+            continue
+        if not all(path.is_file() and not path.is_symlink() for path in (script, folder / 'identity', folder / 'identity.pub')):
+            continue
+        try:
+            public_key((folder / 'identity.pub').read_text(encoding='ascii'))
+        except (OSError, ValueError, UnicodeError):
+            continue
+        try:
+            progress_path = folder / 'pairing-progress.json'
+            if progress_path.stat().st_size > 65536:
+                raise ValueError('invalid progress')
+            progress = json.loads(progress_path.read_text(encoding='utf-8'))
+            step = progress.get('step', 1)
+        except (OSError, ValueError, UnicodeError, AttributeError):
+            step = 1
+        result.append({'script': script, 'step': step if type(step) is int and step in (1, 2, 3) else 1})
+    return result
+
+
+def complete_pairing(config):
+    folder = Path(config).resolve().parent
+    if folder.parent == private_root().resolve() and re.fullmatch(r'recovery-[a-f0-9]{12}', folder.name):
+        (folder / 'pairing-complete.json').write_text('{"verified": true}\n', encoding='utf-8')
 
 
 def read_pairing_result(path):
