@@ -15,7 +15,7 @@ from mac_help import scrolled_page
 from profile_editor import FONT
 
 MATERIAL_MESSAGES = {
-    'limited': '文件夹内容较多或层级过深。请选择更接近原手机刷机材料的子文件夹后重试。',
+    'limited': '文件夹内容较多或层级过深。如果连接材料就在所选文件夹中，可以只检查这一层；也可以选择存放材料的子文件夹。',
     'ambiguous': '找到多组密钥或手机身份。请选择当前手机对应的子文件夹；程序不会按日期猜选。',
     'host_missing': '找到了登录密钥，但缺少可信的手机身份记录。请补充原材料，或从手机重新授权。',
     'identity_missing': '找到了手机身份记录，但没有登录密钥。请取回原电脑上的材料，或从手机重新授权。',
@@ -209,6 +209,11 @@ class ConnectionDialog(tk.Toplevel):
             return verify_root(choice['host'], choice['config'])
         self.start('verified', work)
 
+    def scan_current_folder(self):
+        if self.materials and not self.busy:
+            folder = self.materials['folder']
+            self.start('materials', lambda: scan_materials(folder, recursive=False))
+
     def detect(self):
         def work():
             usb = local_usb_state()
@@ -263,8 +268,12 @@ class ConnectionDialog(tk.Toplevel):
                     self.clear_options()
                     self.title_label.configure(text='已识别连接材料' if value['state'] == 'ready' else '还需要补充连接材料')
                     self.detail.configure(text='找到一组登录密钥和手机身份记录。确认来源后，程序会建立本机配置并验证实际连接。' if value['state'] == 'ready' else MATERIAL_MESSAGES[value['state']])
+                    self.status.configure(text='检查范围：' + str(value['folder']) +
+                                          ('（包含子文件夹）' if value.get('recursive', True) else '（仅当前文件夹）'))
                     if value['state'] == 'ready':
                         self.option('确认来源并验证连接', self.use_materials)
+                    elif value['state'] in ('limited', 'ambiguous', 'unreadable') and value.get('recursive', True):
+                        self.option('只检查当前文件夹', self.scan_current_folder, '不查找子文件夹；仍需完整材料、来源确认和实际连接验证。')
                     self.option('重新选择文件夹', self.select_folder)
                     self.option('没有完整材料，从手机授权', self.pair)
                     self.option('高级：选择 SSH 配置文件', self.import_config)

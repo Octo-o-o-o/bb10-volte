@@ -83,6 +83,26 @@ class FolderTests(unittest.TestCase):
         (self.folder / 'q10_host_rsa.pub').write_text(rsa_public(3))
         self.assertEqual(materials.scan_materials(self.folder)['state'], 'ambiguous')
 
+    def test_explicit_current_folder_can_import_from_deep_root_build_tree(self):
+        self.kit()
+        self.kit(self.folder / 'build' / 'a' / 'b' / 'c' / 'd' / 'e' / 'f', 'other')
+        self.assertEqual(materials.scan_materials(self.folder)['state'], 'limited')
+        found = materials.scan_materials(self.folder, recursive=False)
+        self.assertEqual(found['state'], 'ready')
+        self.assertFalse(found['recursive'])
+        self.assertEqual(found['identities'], [(self.folder / 'id_rsa4x').resolve()])
+
+    def test_current_folder_still_rejects_ambiguity_missing_trust_and_limits(self):
+        self.kit()
+        self.kit(self.folder / 'nested', 'other')
+        (self.folder / 'identity').write_text('PRIVATE KEY another')
+        self.assertEqual(materials.scan_materials(self.folder, recursive=False)['state'], 'ambiguous')
+        (self.folder / 'identity').unlink()
+        (self.folder / 'ssh_host_rsa_key.pub').unlink()
+        self.assertEqual(materials.scan_materials(self.folder, recursive=False)['state'], 'host_missing')
+        with patch.object(materials, 'MAX_ENTRIES', 0):
+            self.assertEqual(materials.scan_materials(self.folder, recursive=False)['state'], 'limited')
+
     def test_linked_material_outside_selection_is_not_scanned(self):
         outside = self.folder / 'outside'
         self.kit(outside)
@@ -227,6 +247,22 @@ class OnboardingGuiTests(unittest.TestCase):
         verify.assert_not_called()
         self.assertIn('只连接一台', dialog.title_label.cget('text'))
         self.assertEqual(str(dialog.continue_button.cget('state')), 'disabled')
+        dialog.close()
+
+    def test_partial_folder_scan_requires_explicit_scope_selection(self):
+        dialog = dialog_ui.ConnectionDialog(self.root, lambda *_: None, auto_check=False)
+        value = {'state': 'limited', 'folder': self.private, 'recursive': True}
+        dialog.events.put(('materials', value))
+        dialog.after_cancel(dialog._job)
+        dialog.drain()
+        self.assertIsNone(dialog.choice)
+        self.assertEqual(str(dialog.continue_button.cget('state')), 'disabled')
+        button = next(b for b in dialog.option_buttons if b.cget('text') == '只检查当前文件夹')
+        with patch.object(dialog, 'start') as start, patch.object(dialog_ui, 'scan_materials') as scan:
+            scan.assert_not_called()
+            button.invoke()
+            start.call_args.args[1]()
+        scan.assert_called_once_with(self.private, recursive=False)
         dialog.close()
 
     def test_unknown_root_does_not_open_first_root_without_explicit_choice(self):

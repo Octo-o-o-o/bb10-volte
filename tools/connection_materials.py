@@ -9,7 +9,7 @@ MAX_ENTRIES = 2000
 MAX_DEPTH = 6
 
 
-def scan_materials(folder):
+def scan_materials(folder, recursive=True):
     root = Path(folder).resolve(strict=True)
     if not root.is_dir():
         raise RecoveryError('folder_unreadable')
@@ -21,6 +21,11 @@ def scan_materials(folder):
     for current, dirs, files in os.walk(root, followlinks=False, onerror=cannot_read):
         here = Path(current)
         depth = len(here.relative_to(root).parts)
+        # Owners may explicitly select this directory alone when a real Root
+        # kit also contains large/deep build trees. Never silently narrow a
+        # partial recursive search or accept its incomplete candidate list.
+        if not recursive:
+            dirs[:] = []
         safe_dirs = []
         for name in sorted(dirs):
             child = here / name
@@ -76,4 +81,4 @@ def scan_materials(folder):
              'putty' if putty else 'identity_missing' if hosts else 'config_only' if configs else
              'unreadable' if unreadable else 'empty')
     return {'state': state, 'identities': list(identities.values()), 'hosts': list(hosts.items()),
-            'configs': configs, 'folder': root}
+            'configs': configs, 'folder': root, 'recursive': recursive}
