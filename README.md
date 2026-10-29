@@ -12,7 +12,7 @@
 
 **本项目已有实机验收的组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 0.3.2 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、其他 Q10 版本和运营商仍需通过兼容性检查后实验试用，不能保证可用。**0.3.3 新增社区证据与只读来电诊断，尚未实机复测；未验收组合仅允许手动启动；Passport 因提供器停用后的网络栈重启报告，暂缓自动安装、启动和恢复操作。** 社区 Q20 呼出、Passport 双向通话报告与本工具验收分开记录，见[社区研究与适配进展](docs/COMMUNITY-RESEARCH.md)。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
 
-[Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
+[Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [更新日志](docs/UPDATELOG.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
 
 ## 项目功能
 
@@ -43,7 +43,7 @@
 
 精确文件名、原始下载地址及 SHA-256 见 [sources.json](materials/sources.json)、[usb-drivers.json](materials/usb-drivers.json)、[stock-partitions.json](materials/stock-partitions.json)。这些是已经记录的可工作版本，不应直接用最新版替换；散列不匹配时准备流程会停止。
 
-当前源码已支持首次准备材料的断点续传、自动重试及下载进度；旧版 EXE / DMG 需更新构建才具备此能力。固件下载失败时保留缓存，也可预先下载完整文件后复用，见[下载故障处理](docs/FIRST-RUN.md#下载中断或一直失败)。
+`0.3.3-r1` 已支持首次准备材料的断点续传、自动重试及下载进度；旧版 EXE / DMG 需更新构建才具备此能力。固件下载失败时保留缓存，也可预先下载完整文件后复用，见[下载故障处理](docs/FIRST-RUN.md#下载中断或一直失败)。
 
 ## 快速开始
 
@@ -80,9 +80,9 @@ python tools/check_release.py
 
 ### 3. 安装并启动 VoLTE
 
-当前开发源码已改为“连接手机 / 连接帮助”：普通用户无需先找 SSH 配置文件，可选择原刷机文件夹或逐步手机授权；关闭后会复查已保存连接，并支持继续未完成授权。新流程尚未作为 EXE/DMG 发布，下面 r6 的入口名称属于已发布版本。见[使用场景与方案](docs/CONNECTION-FLOW.md)。
+版本 `0.3.3-r1` 使用“连接手机 / 连接帮助”：普通用户无需先找 SSH 配置文件，可选择原刷机文件夹或逐步手机授权；关闭后会复查已保存连接，并支持继续未完成授权。Windows EXE、Mac DMG 与源码共用此流程。见[使用场景与方案](docs/CONNECTION-FLOW.md)。
 
-源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“检查设备”自动查找并填写个人 SSH 配置，也可手动选择。当前源码版本 `0.3.3-r1` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.3`。已发布 EXE / DMG 的版本与验收范围以对应 Release 为准。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
+源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“连接手机”验证已有连接，缺少材料时按“连接帮助”继续。桌面版本 `0.3.3-r1` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.3`。已发布 EXE / DMG 的版本与验收范围以对应 Release 为准。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
 
 或在仓库根目录执行同一套流程：
 

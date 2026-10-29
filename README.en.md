@@ -12,7 +12,7 @@ A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, 
 
 **This project's existing hardware acceptance covers Q10 SQN100-3 + BB10 OS 10.3.3.3216 + China Unicom in Beijing (460-01).** Version 0.3.2 automatic registration after a phone-menu reboot and native incoming/outgoing calls with USB disconnected, two-way audio and continued 4G passed; see the [device acceptance](materials/startup-latency-2026-10-28.json). Q20, other Q10 variants and carriers still require experimental opt-in and all compatibility checks. **Version 0.3.3 adds community evidence and read-only incoming diagnostics without a new hardware retest. Experimental combinations require manual start. Passport automatic installation, start and restore are paused after a reported network-stack restart on provider disable.** Community Q20 outgoing and Passport two-way call reports remain separate from this toolkit's acceptance; see [community research](docs/COMMUNITY-RESEARCH.en.md). Please [report your results](https://github.com/Octo-o-o-o/bb10-volte/issues): **both working and non-working combinations are welcome**. Releases remain experimental; longer calls and long-term stability need further validation.
 
-[Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
+[Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Update log](docs/UPDATELOG.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
 ## What it does
 
@@ -80,7 +80,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Check device to discover and fill your own SSH configuration, or select it manually. Current source version `0.3.3-r1` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.3`. Published EXE/DMG versions and validation scope are stated in their corresponding Releases. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Connect phone to verify your existing connection, or follow Connection help to recover personal materials. Desktop version `0.3.3-r1` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.3`. Published EXE/DMG versions and validation scope are stated in their corresponding Releases. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
 
 Alternatively, run the same workflow from the repository root:
 

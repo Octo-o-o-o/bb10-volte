@@ -2,7 +2,7 @@
 
 [English](WINDOWS-EXE.en.md) · [GUI 操作](GUI.md) · [macOS / DMG](MACOS.md)
 
-下载 `bb10-volte-0.3.2-r6-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；启动和正常使用不需要管理员权限；首次驱动安装会单独请求 Windows UAC。
+下载 `bb10-volte-0.3.3-r1-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；启动和正常使用不需要管理员权限；首次驱动安装会单独请求 Windows UAC。
 
 目标为 Windows 10 / 11 x64，实际打包与启动验证在 Windows 11 x64 上完成。当前 EXE 未做 Windows Authenticode 签名；发布页同时提供 SHA-256。Apple 开发者证书不能用来签 Windows EXE。
 
@@ -55,7 +55,7 @@ python -m venv .venv
 材料和构建依赖均已缓存时，可以运行 `tools/build_windows.py --offline`；缓存缺失或散列不符立即停止，不自动替换。可用以下离线诊断验证发布文件：
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.2-r6-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.3.3-r1-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 
