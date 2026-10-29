@@ -132,5 +132,68 @@ class DiagnosticTests(unittest.TestCase):
         self.assertIn('[C09]', text)
 
 
+class IncomingObservationTests(unittest.TestCase):
+    def test_snapshot_explanations_preserve_distinct_enums_without_call_acceptance(self):
+        report = {'checks': [], 'can_install': False, 'can_start': False,
+                  'incoming_diagnostics': {
+                      'ims_state': 'connected', 'ims_ran': 'LTE',
+                      'allow_volte_provisioning': 1, 'engineering_voice_override': '5',
+                      'dca_voice_preference': 3, 'use_preconditions': 0,
+                      'call_acceptance': 'verified', 'scope': 'trusted-success'}}
+        before = copy.deepcopy(report)
+        with patch.object(c.n, 'read') as read, patch.object(c.n, 'command') as command, \
+                patch.object(c.n, 'update_pps') as write:
+            rows = d.incoming_rows(report)
+            text = d.support_summary(report, {}, lambda _: '', 'test')
+        read.assert_not_called(); command.assert_not_called(); write.assert_not_called()
+        self.assertEqual(report, before)
+        by_id = {row['id']: row for row in rows}
+        self.assertEqual(by_id['engineering_voice_override']['actual'], '5')
+        self.assertEqual(by_id['dca_voice_preference']['actual'], '3')
+        self.assertIn('不同接口', by_id['engineering_voice_override']['detail'])
+        self.assertTrue(all('不能证明来电可用' in row['detail'] for row in rows))
+        self.assertTrue(all(row['state'] == '只读观察' for row in rows))
+        self.assertNotIn('verified', text)
+        self.assertNotIn('trusted-success', text)
+        self.assertIn('安装=否，更新=否，启动=否', text)
+        self.assertIn('通话尚未由此验收', text)
+        for row in rows:
+            self.assertIn('[{}]'.format(row['code']), text)
+            self.assertIn(row['detail'], text)
+
+    def test_absent_legacy_field_is_optional_and_invalid_containers_remain_unknown(self):
+        self.assertEqual(d.incoming_rows({'checks': []}), [])
+        self.assertNotIn('[I01]', d.support_summary({'checks': []}, {}, lambda _: '', 'test'))
+        for values in (None, [], True, 'private-customer-data', {}, ['connected']):
+            with self.subTest(values=values):
+                report = {'checks': [], 'incoming_diagnostics': values}
+                rows = d.incoming_rows(report)
+                self.assertEqual(len(rows), 6)
+                self.assertTrue(all(row['actual'] == '未知' and row['state'] == '未知' for row in rows))
+                text = d.support_summary(report, {}, lambda _: '', 'test')
+                self.assertNotIn('private-customer-data', text)
+
+    def test_only_exact_public_enum_types_reach_rows_or_summary(self):
+        secret = 'private-customer-data\nIMS 已成功'
+        for key, (kind, allowed) in c.DIAGNOSTIC_VALUES.items():
+            for value in allowed:
+                row = next(row for row in d.incoming_rows({'incoming_diagnostics': {key: value}})
+                           if row['id'] == key)
+                self.assertEqual(row['actual'], str(value))
+            invalid = [secret, True, False, [], {}, -1, 999, 0.0, None]
+            # The two voice-domain interfaces deliberately use different types.
+            invalid += ['3'] if kind is int else [3]
+            for value in invalid:
+                with self.subTest(key=key, value=value):
+                    report = {'checks': [], 'incoming_diagnostics': {key: value, 'extra': secret}}
+                    before = copy.deepcopy(report)
+                    rows = d.incoming_rows(report)
+                    row = next(row for row in rows if row['id'] == key)
+                    self.assertEqual(row['actual'], '未知')
+                    self.assertNotIn(secret, json.dumps(rows, ensure_ascii=False))
+                    self.assertNotIn(secret, d.support_summary(report, {}, lambda _: '', 'test'))
+                    self.assertEqual(report, before)
+
+
 if __name__ == '__main__':
     unittest.main()

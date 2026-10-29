@@ -1,5 +1,6 @@
 """Desktop presentation and action gates; no transport or phone operations."""
 from pathlib import Path
+import copy
 import json
 import sys
 import tempfile
@@ -136,6 +137,50 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(any(self.app.allowed_actions()[key] for key in ('install', 'start', 'disable')))
         self.app.show_checks()
         self.root.update_idletasks()
+
+    def test_incoming_observations_share_snapshot_and_never_enable_actions_or_transport(self):
+        value = report(ready=False, tested=False, installed=True)
+        value.update(can_restore=False, incoming_diagnostics={
+            'ims_state': 'connected', 'ims_ran': 'LTE', 'allow_volte_provisioning': 1,
+            'engineering_voice_override': '5', 'dca_voice_preference': 3,
+            'use_preconditions': True, 'extra': 'private-customer-data'})
+        before = copy.deepcopy(value)
+        self.app.render_report(value)
+        self.app.ack.set(True)
+        actions = self.app.allowed_actions()
+        self.assertFalse(any(actions[key] for key in ('install', 'start', 'disable')))
+        with patch.object(self.app, 'run') as action, patch.object(gui, 'Client') as client:
+            self.app.show_checks()
+            self.root.update_idletasks()
+            def widgets(widget):
+                return [widget] + [item for child in widget.winfo_children() for item in widgets(child)]
+            popup = next(child for child in self.root.winfo_children() if isinstance(child, tk.Toplevel))
+            all_widgets = widgets(popup)
+            table = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Treeview))
+            rows = [table.item(key, 'values') for key in table.get_children()]
+            observations = {row[0]: row for row in rows if row[2].startswith('[I')}
+            self.assertEqual(len(observations), 6)
+            self.assertEqual(observations['IR92 preconditions'][1], '未知')
+            self.assertIn('当前：未知', observations['IR92 preconditions'][2])
+            self.assertIn('不同接口', observations['工程语音域'][2])
+            self.assertNotIn('private-customer-data', str(rows))
+            self.assertEqual(self.app.allowed_actions(), actions)
+            copy_button = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Button)
+                               and widget.cget('text') == '复制排查摘要')
+            self.app.render_report(report())  # The open dialog retains the old observations.
+            copy_button.invoke()
+            summary = self.root.clipboard_get()
+            self.assertIn('当前：connected', summary)
+            self.assertNotIn('private-customer-data', summary)
+            destination = self.private / 'incoming-report.json'
+            export_button = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Button)
+                                 and widget.cget('text') == '导出检查报告')
+            with patch.object(gui.filedialog, 'asksaveasfilename', return_value=str(destination)):
+                export_button.invoke()
+            exported = json.loads(destination.read_text(encoding='utf-8'))
+            self.assertEqual(exported['desktop_diagnostics']['summary'], summary)
+            action.assert_not_called(); client.assert_not_called()
+        self.assertEqual(value, before)
 
     def test_disconnected_ctlte_and_nondefault_configuration_are_visible_without_enabling_install(self):
         value = report(ready=False, tested=False)

@@ -25,6 +25,40 @@ BASELINE_ITEMS = {
 }
 
 
+INCOMING_ITEMS = (
+    ('ims_state', 'I01', 'IMS 状态',
+     '这是系统 IMS 的状态快照，未据此核实本工具进程或本次注册。'),
+    ('ims_ran', 'I02', 'IMS 网络',
+     '这是系统 IMS 报告的接入类型，不能证明通话全程保持 4G。'),
+    ('allow_volte_provisioning', 'I03', 'VoLTE provisioning',
+     '这是设备的配置标志，不能确认运营商业务已开通。'),
+    ('engineering_voice_override', 'I04', '工程语音域',
+     '工程 override=5 与 DCA=3 属于不同接口的枚举，不能互换或直接作为原生 API 参数。'),
+    ('dca_voice_preference', 'I05', 'DCA 语音域',
+     'DCA=3 与工程 override=5 属于不同接口的枚举；此处不提供要求值或修改建议。'),
+    ('use_preconditions', 'I06', 'IR92 preconditions',
+     '这是 IR92 的配置值；关闭 preconditions 不是已证实的通用来电修复。'),
+)
+
+
+def incoming_rows(report):
+    """Explain an existing snapshot without I/O, readiness inference or mutation."""
+    if not isinstance(report, dict) or 'incoming_diagnostics' not in report:
+        return []
+    values = compatibility.public_incoming_diagnostics(report.get('incoming_diagnostics'))
+    rows = []
+    for key, code, title, hint in INCOMING_ITEMS:
+        value = values[key]
+        actual = '未知' if value is None else str(value)
+        detail = '当前：{}。'.format(actual)
+        if value is None:
+            detail += '报告未提供有效读数；缺失、读取失败或不受支持的值均不能按 0 处理。'
+        detail += hint + '仅为只读观察，不能证明来电可用。'
+        rows.append({'id': key, 'code': code, 'title': title, 'actual': actual,
+                     'state': '未知' if value is None else '只读观察', 'detail': detail})
+    return rows
+
+
 def baseline_rows(report, running=False):
     baseline_check = next((c for c in report.get('checks', []) if c['id'] == 'baseline'), None)
     if not baseline_check and not report.get('baseline') and not report.get('configuration_diagnostics'):
@@ -138,5 +172,10 @@ def support_summary(report, names, note_for, version, running=False):
         for key, title in (('apn_matches', 'APN 匹配'), ('data_connected', '数据已连接')):
             value = network.get(key)
             lines.append(title + '：' + ('是' if value is True else '否' if value is False else '未知'))
+    observations = incoming_rows(report)
+    if observations:
+        lines.append('IMS 与来电配置观察（不作为通过条件；通话尚未由此验收）：')
+        for row in observations:
+            lines.append('- [{}] {} · {}\n  {}'.format(row['code'], row['title'], row['state'], row['detail']))
     lines.append('以上为检查快照；设备操作后请重新检查。配置观察不能代替通话验收。')
     return '\n'.join(lines)

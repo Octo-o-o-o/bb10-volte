@@ -13,7 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
-from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, support_summary
+from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, incoming_rows, support_summary
 from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
@@ -682,15 +682,8 @@ class App:
                 apn if apn in ('ctnet', 'ctlte', 'cmnet', '3gnet') else
                 '其他 APN（报告不保存原文）' if apn == 'other' else '未知')
 
-        diagnostic_names = {'ims_state': 'IMS 状态', 'ims_ran': 'IMS 网络',
-                            'allow_volte_provisioning': 'VoLTE provisioning',
-                            'engineering_voice_override': '工程语音域',
-                            'dca_voice_preference': 'DCA 语音域', 'use_preconditions': 'IR92 preconditions'}
-        diagnostics = report.get('incoming_diagnostics', {})
-        for key, title in diagnostic_names.items():
-            if key in diagnostics:
-                value = diagnostics[key]
-                add(title, '只读观察', ('未知' if value is None else str(value)) + '；配置快照，不能证明来电可用')
+        for row in incoming_rows(report):
+            add(row['title'], row['state'], '[' + row['code'] + '] ' + row['detail'])
         levels = {'upstream_local_experiment': '上游作者本地实验',
                   'upstream_contributed_report': '上游收录的贡献者报告',
                   'upstream_local_negative_test': '上游作者失败记录'}

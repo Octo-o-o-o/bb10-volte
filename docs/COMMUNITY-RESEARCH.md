@@ -4,6 +4,8 @@
 
 本次整合来自 [imqinyu/BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch)，由 [issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) 提供。引用固定在提交 [376f492](https://github.com/imqinyu/BB10DeviceVoLTEResearch/tree/376f492ade10efad371dca64d49fe39549820844)，日期为 2026-10-28。机器可读的来源、证据等级、限制和待验证项目见 [community-research.json](../materials/community-research.json)。
 
+2026-10-29 发布的 bb10root VoLTE Addon 已另作[源码与方案对照](UPSTREAM-ADDON-COMPARISON.md)。该记录属于源码观察，不加入这里的硬件成功案例，也不改变兼容性或恢复门槛。
+
 ## 本版本已经整合
 
 - 在桌面预检、CLI 和导出的报告中附上精确匹配的社区记录。匹配要求公开 Board_Type（或 Z30 型号）、系统版本及实际 SIM 的 MCC/MNC 同时一致，不使用所选模板代替实际网络身份。无精确匹配时不推断支持。

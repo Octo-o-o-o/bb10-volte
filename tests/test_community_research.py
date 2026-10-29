@@ -69,7 +69,8 @@ class EvidenceTests(unittest.TestCase):
     def test_catalog_and_guide_are_in_desktop_resources(self):
         names = build_windows.runtime_data()
         for name in ('materials/community-research.json', 'docs/COMMUNITY-RESEARCH.md',
-                     'docs/COMMUNITY-RESEARCH.en.md'):
+                     'docs/COMMUNITY-RESEARCH.en.md', 'materials/upstream-addon-research.json',
+                     'docs/UPSTREAM-ADDON-COMPARISON.md', 'docs/UPSTREAM-ADDON-COMPARISON.en.md'):
             self.assertIn(name, names)
 
 

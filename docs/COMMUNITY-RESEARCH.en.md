@@ -4,6 +4,8 @@
 
 [Issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) introduced [imqinyu/BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch). This integration pins commit [376f492](https://github.com/imqinyu/BB10DeviceVoLTEResearch/tree/376f492ade10efad371dca64d49fe39549820844), reviewed on October 28, 2026. [community-research.json](../materials/community-research.json) records provenance, evidence levels, limitations and research candidates.
 
+The bb10root VoLTE Addon published on October 29, 2026 has a separate [source and design comparison](UPSTREAM-ADDON-COMPARISON.en.md). It records source observations only, adds no successful hardware cases to this catalog and changes no compatibility or restoration gates.
+
 ## Included in this version
 
 - Desktop/CLI preflight and exported reports attach community observations only when the public board name (or exact Z30 variant), OS and actual SIM MCC/MNC match. The selected profile cannot substitute for observed SIM facts.

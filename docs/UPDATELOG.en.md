@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## Unreleased · Incoming configuration explanations and upstream comparison · 2026-10-29
+
+- Show the same six existing incoming-configuration observations in check details and copied/exported troubleshooting summaries, with interface-specific explanations and stable references. Missing or invalid values remain unknown; observations do not establish call acceptance or action permission.
+- Record the pinned bb10root VoLTE Addon source comparison, configuration differences, experimental candidates and alternatives not adopted in bilingual guides and machine-readable provenance.
+- Changes are limited to desktop explanations and reference materials. Phone payload, carrier templates, registration checks, installation/restoration gates and hardware acceptance retain their existing scope. No new EXE/DMG has been built or published.
+
 ## 0.3.3-r5 · Cross-platform diagnostics and complete source release · 2026-10-29
 
 - Current and required values with next steps for voice policy, crypto, IMS processes, VPN sessions and configuration checks; missing values remain unknown.

@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-29",
+  "evidence_level": "source_inspection_only",
+  "project_acceptance": "not_established",
+  "source": {
+    "article": "https://bb10.root.sx/blog/volte",
+    "repository": "https://github.com/bb10root/bb10-volte",
+    "commit": "8ac271b5b1170ae98c60dd248dc5c4485edf95f3",
+    "declared_license": "GPL-3.0",
+    "license_url": "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/LICENSE",
+    "import_policy": "Independently summarized facts and pinned links only; no upstream source, binary, ZIP or carrier XML imported."
+  },
+  "local_baseline": {
+    "commit": "08224a816be78d75e35c2255f3f9ccc9dd9c6ff8",
+    "scope": "Desktop presentation and offline research only.",
+    "device_payload_changed": false,
+    "additional_phone_reads": false,
+    "phone_configuration_writes": false,
+    "compatibility_gates_changed": false,
+    "hardware_evidence_added": false
+  },
+  "applied": [
+    {
+      "id": "existing-incoming-snapshot",
+      "decision": "desktop_presentation_only",
+      "summary": "Explain the six existing allowlisted incoming_diagnostics fields in check details and support summaries; unknown stays unknown; no pass/fail or working-call conclusion.",
+      "fields": [
+        "ims_state",
+        "ims_ran",
+        "allow_volte_provisioning",
+        "engineering_voice_override",
+        "dca_voice_preference",
+        "use_preconditions"
+      ],
+      "call_acceptance": "not_assessed",
+      "local_files": [
+        "tools/diagnostic_details.py",
+        "tools/gui.py"
+      ],
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L250"
+      ]
+    }
+  ],
+  "carrier_templates": [
+    {
+      "carrier": "China Unicom",
+      "carrier_id": 36,
+      "source": "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/pkg/data/carrier-36-volte.xml#L88"
+    },
+    {
+      "carrier": "China Mobile",
+      "carrier_id": 404,
+      "source": "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/pkg/data/carrier-404-volte.xml#L88"
+    },
+    {
+      "carrier": "Vodafone Ukraine",
+      "carrier_id": 339,
+      "source": "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/pkg/data/carrier-339-volte.xml#L75"
+    }
+  ],
+  "parameter_comparison": [
+    {
+      "parameter": "IMS AlwaysOn",
+      "upstream": false,
+      "local": true,
+      "decision": "experiment_only"
+    },
+    {
+      "parameter": "IMS DisableDAD",
+      "upstream": true,
+      "local": "not_explicitly_set",
+      "decision": "experiment_only"
+    },
+    {
+      "parameter": "IMS RequestSignallingBearerViaPCO",
+      "upstream": true,
+      "local": "not_explicitly_set",
+      "decision": "experiment_only"
+    },
+    {
+      "parameter": "IMS RequestPCSCFViaPCO",
+      "upstream": true,
+      "local": true,
+      "decision": "already_present"
+    },
+    {
+      "parameter": "IMS IP family",
+      "upstream": "IPv4v6",
+      "local": "IPv4v6 by default; configurable",
+      "decision": "already_present"
+    }
+  ],
+  "local_carrier_source": "device/profiles.py",
+  "experiments": [
+    {
+      "id": "stock-ims-without-copy-patch",
+      "decision": "experiment_only",
+      "observation": "Starts /radio/bin/ims_rrm after DCA, provisioning and engineering-voice changes; no IMS image patch is visible in the inspected manager.",
+      "reason": "Does not demonstrate that the verified Q10 can omit the ordinary-voice VoPS patch. Multiple simultaneous configuration changes prevent attributing a result to one parameter.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L391",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L457",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L840"
+      ],
+      "local_files": [
+        "device/ims_image.py",
+        "docs/DESIGN.md"
+      ]
+    },
+    {
+      "id": "berry-indicator",
+      "decision": "experiment_only",
+      "observation": "Monitors IMS PPS and writes the Navigator indicator, with a BBM/RCP-based restoration routine.",
+      "reason": "A phone UI write is outside this desktop-only change. Must verify case handling, stale status, conflicts, exit and flight mode; an indicator cannot establish call acceptance.",
+      "source_limitations": "The connection test reads public PPS with case-sensitive LTE and no owned-process/current REGISTER 200 check. The off write uses the shorter on-string length, omitting the newline; PPS acceptance was not tested.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/berry_monitor.c#L34",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/berry_monitor.c#L89",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/berry_monitor.c#L105",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/berry_monitor.c#L178"
+      ]
+    },
+    {
+      "id": "event-monitoring-statistics",
+      "decision": "design_reference_only",
+      "observation": "Monitors LTE, SIM and data PPS; records drops and reconnection statistics.",
+      "reason": "Useful for designing observability, but no additional monitoring or phone calls are introduced here. The forced-stop reconnection policy is not adopted.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L69",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L572"
+      ]
+    },
+    {
+      "id": "software-provider-argument",
+      "decision": "experiment_only",
+      "observation": "Upstream invokes swcryptoattach(0); the local helper invokes swcryptoattach(1).",
+      "reason": "Source difference alone does not establish the argument's effect on BB10 or a Passport lifecycle fix. Existing ownership and VPN checks stay in force.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/devnp-volte-swcrypto.c#L13"
+      ],
+      "local_files": [
+        "driver/volte_swcrypto.c",
+        "device/service.py",
+        "docs/COMMUNITY-RESEARCH.md"
+      ]
+    }
+  ],
+  "not_adopted": [
+    {
+      "id": "first-carrier-file",
+      "trigger": "The data directory contains more than one carrier XML.",
+      "observation": "find_carrier_xml returns the first matching directory entry without comparing its carrier ID with the SIM. Its fallback uses MNC, not the documented carrier ID.",
+      "impact": "The selected CDSC XML may belong to a different operator. A separate carrier-ID resolver used for provisioning does not correct this selection.",
+      "local_policy": "Read the current SIM's stock carrier selection, validate data APN, replace only its IMS section.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L300",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L861",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_carrier_config.c#L126"
+      ],
+      "local_files": [
+        "device/profiles.py"
+      ]
+    },
+    {
+      "id": "incoming-readiness-as-proof",
+      "trigger": "The provisioning and preconditions observations satisfy incoming_ready_pps.",
+      "observation": "This function checks two configuration observations, not a real incoming call.",
+      "impact": "Its INCOMING_READY label cannot establish ringing, answering or two-way audio.",
+      "local_policy": "Keep configuration_observation_only and call_acceptance=not_assessed.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L250",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L800"
+      ],
+      "local_files": [
+        "device/compatibility.py"
+      ]
+    },
+    {
+      "id": "global-config-without-owned-rollback",
+      "trigger": "Enable writes configuration and then fails or the manager receives a termination signal.",
+      "observation": "The manager writes several DCA sources and provisioning XML. The inspected exit paths do not restore these settings, remove owned VPN state or unregister the provider.",
+      "impact": "Manager exit does not prove baseline restoration; deployment-specific cleanup outside these paths has not been verified.",
+      "local_policy": "Retain the journal, conflict detection, owned-state cleanup and readback; keep Passport recovery restricted.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L457",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L688",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L840",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_carrier_config.c#L146",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/sys_utils.c#L89"
+      ],
+      "local_files": [
+        "device/service.py",
+        "docs/COMMUNITY-RESEARCH.md"
+      ]
+    },
+    {
+      "id": "forced-stop-on-network-observation",
+      "trigger": "The monitor changes from ready to not ready after loss of LTE, SIM readiness or cellular data; or a reconnect is attempted.",
+      "observation": "The monitor calls stop_ims; reconnect also stops IMS without a fresh call-idle check. The stop helper matches a command-line substring and can escalate from SIGTERM to SIGKILL.",
+      "impact": "Could interrupt a surviving call/session or an IMS instance not owned by this manager. Source inspection does not prove that this happens on every device.",
+      "local_policy": "Keep runtime transient LTE recovery with native IMS and preserve narrowly verified startup handoff.",
+      "sources": [
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L520",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/ims_manager.c#L627",
+        "https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/src/sys_utils.c#L319"
+      ],
+      "local_files": [
+        "device/service.py",
+        "docs/DESIGN.md"
+      ]
+    }
+  ],
+  "acceptance_limits": [
+    "Carrier templates do not establish hardware/network support.",
+    "No new call, restart, long-call, long-standby, flight-mode or provider-lifecycle evidence was collected.",
+    "Unverified combinations remain manual-start only; Passport automatic operations remain restricted.",
+    "Upstream GPL-3.0 material is not relicensed as MIT."
+  ]
+}
