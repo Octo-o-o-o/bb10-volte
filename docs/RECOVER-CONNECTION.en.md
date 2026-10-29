@@ -2,7 +2,9 @@
 
 [简体中文](RECOVER-CONNECTION.md) · [First use](FIRST-RUN.en.md)
 
-On Windows and macOS, open **First use → Connection checks → Recover connection**. The workflow uses available materials and verified access, without requiring the original firmware package name. It does not flash or erase the phone.
+In current development source on Windows and macOS, open **Connection help**. Select the entire original Root materials folder, or choose authorization from the phone when no old files are available. Advanced imports remain available. Released r6 and older applications use **First use → Connection checks → Recover connection**. The workflow uses available materials and verified access, without requiring the original firmware package name. It does not flash or erase the phone.
+
+Folder inspection stays within the selected directory, skips linked directories and stops at bounded depth/count limits. It does not execute discovered SSH configurations. A unique login key and trusted host identity can be confirmed, copied into the protected app directory and used to create paths for this computer. Multiple or incomplete sets require user action. Closing and reopening preserves incomplete phone pairing keys, IDs and progress; multiple requests require explicit selection rather than choosing the newest one.
 
 A complete, working local `ssh_config` can be imported directly, provided its login key and trusted host records are readable on this computer. Windows `C:\…` paths cannot be used unchanged on a Mac; import your own login key and trusted host public key below to create valid local paths. With only an unencrypted RSA login private key, select it and a trusted phone RSA host public key (`ssh_host_rsa_key.pub`, or a `known_hosts` record for the USB address). Confirm its source and fingerprint. The app copies the login key into its protected private directory, creates a strict configuration, and verifies effective UID 0. Original files are preserved. PuTTY PPK files require OpenSSH export in PuTTYgen; encrypted keys can instead use the new-authorization path below.
 

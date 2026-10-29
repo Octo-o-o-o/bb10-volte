@@ -6,8 +6,7 @@ from desktop_paths import resource_root
 from profile_editor import FONT
 
 CONNECTION_HINT = (
-    '先接数据线并解锁，再点“检查设备”。未 Root：查看首次准备说明；'
-    '已 Root 无资料：用手机 Root 终端授权本机；有资料：导入个人连接。')
+    '先接数据线并解锁，再点“连接手机”。需要恢复授权、处理 USB 网络或首次 Root 时，打开“连接帮助”。')
 
 PHONE_STEPS = (
     '未 Root：本分支提供 Q10 的实验性 Mac 首刷，须先核对变体并备份；Q30 / Q20 尚缺匹配首刷材料。\n'

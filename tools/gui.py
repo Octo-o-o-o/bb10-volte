@@ -14,6 +14,7 @@ from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
+from connection_flow import guidance
 from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
@@ -52,19 +53,19 @@ NOTES = {
     'baseline_not_clean': '服务运行时属正常现象；更新前需恢复原状态',
 }
 ERRORS = {
-    'connection_setup_required': '尚未找到连接配置。手机已 Root：打开“首次使用 → 恢复连接”；尚未 Root：进入首次 Root 准备。',
-    'hostname_unresolved': '连接别名没有对应配置。请选择已有配置，或打开“首次使用”。',
+    'connection_setup_required': '这台电脑还没有可用的连接。打开“连接帮助”，选择原刷机文件夹，或从手机重新授权。',
+    'hostname_unresolved': '原连接不可用。打开“连接帮助”恢复材料，或在高级设置核对连接。',
     'ssh_algorithm_mismatch': '手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新检查。',
-    'connection_refused': '手机尚未提供 SSH 连接。请解锁手机，并按“首次使用”中的提示检查 Root 和 SSH。',
+    'connection_refused': '手机连接服务尚未启动。请解锁手机，打开“连接帮助”按当前状态处理。',
     'bundled_ssh_mismatch': '内置 SSH 文件校验失败，请重新获取完整 EXE。',
     'invalid_profile': '配置格式或参数不符合要求，请在配置编辑器中检查。',
     'profile_update_required': '所选配置与已装配置不同。先停用恢复，再预检和更新安装。',
     'invalid_host': 'SSH 别名只能使用字母、数字、点、下划线和短横线。',
-    'config_missing': '找不到 SSH 配置文件，请重新选择。',
+    'config_missing': '原连接文件可能移动了。打开“连接帮助”，选择原刷机文件夹或恢复授权。',
     'openssh_missing': '找不到 SSH 客户端，请按安装文档准备 ssh 和 scp。',
     'package_mismatch': '安装包与固定清单不一致。请使用完整发布包，不要在客户电脑重新生成清单。',
     'host_key_mismatch': '主机密钥校验失败。核对所选设备和个人 SSH 配置，保留原信任记录。',
-    'authentication_failed': '密钥未获手机授权。请打开“首次使用 → 恢复连接”，导入原密钥或在手机端重新授权。',
+    'authentication_failed': '手机未接受这台电脑的授权。打开“连接帮助”，选择原材料或在手机端重新授权。',
     'connection_failed': '无法连接。检查 USB、手机 Root 状态、驱动和 SSH 配置。',
     'connection_timeout_state_unknown': '连接超时，设备状态尚未确认。重新预检并查看状态，不要盲目重复安装。',
     'remote_operation_failed': '设备拒绝了操作。请重新预检并保留现场，必要时采集私有日志。',
@@ -87,18 +88,20 @@ SERVICE_PHASES = {'waiting_for_native_ims': '等待系统 IMS 初始化结束',
 
 
 class App:
-    def __init__(self, root, host='bb10-root', config=''):
+    def __init__(self, root, host='bb10-root', config='', auto_connect=False):
         self.root, self.events = root, queue.Queue()
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
         self.display_report, self.device_info = None, {}
         self.running_baseline_expected = False
         self.connection_options_visible = False
+        self.connection_dialog = None
+        self._startup_job = None
         self.presets = presets()
         self.profile = profiles.default()
         self.profile_name = tk.StringVar(value=picker_label(self.profile['label']))
         self.experimental = tk.BooleanVar(value=False)
-        saved = saved_connection() if not config and host == 'bb10-root' else None
+        saved = saved_connection(require_files=False) if not config and host == 'bb10-root' else None
         # An unverified default kit must not bypass discovery of the kit that
         # actually matches the connected phone. Check device fills it on success.
         selected_config = config or (saved['config'] if saved else '')
@@ -147,6 +150,16 @@ class App:
         self.experimental.trace_add('write', lambda *_: self.connection_changed(preserve_device=True))
         self.ack.trace_add('write', lambda *_: self.refresh_buttons())
         self._drain_job = self.root.after(100, self.drain)
+        self.connection_status.configure(text='已记住上次连接 · 待重新验证' if saved else '尚未连接')
+        if saved:
+            self.detail.configure(text='已记住上次成功的连接。重新检查后显示手机当前状态，不会自动安装或刷写。')
+        if auto_connect and saved:
+            self._startup_job = self.root.after(350, self.resume_last_connection)
+
+    def resume_last_connection(self):
+        self._startup_job = None
+        if not self.busy and not (self.connection_dialog and self.connection_dialog.winfo_exists()):
+            self.run('preflight')
 
     def label(self, parent, text, size=10, fg=INK, bg=None, bold=False, **kwargs):
         return tk.Label(parent, text=text, font=(FONT, max(size, 11), 'bold' if bold else 'normal'),
@@ -169,7 +182,7 @@ class App:
         self.menu.add_separator()
         self.export_index = self.menu.index('end') + 1
         self.menu.add_command(label='导出检查报告', command=self.export)
-        self.menu.add_command(label='连接选项', command=self.toggle_connection_options)
+        self.menu.add_command(label='高级连接设置', command=self.toggle_connection_options)
         self.menu.add_separator()
         self.menu.add_command(label='使用与恢复指南', command=self.guide)
         self.menu.add_command(label='关于与开源许可', command=self.licenses)
@@ -178,14 +191,8 @@ class App:
 
         self.connection_card = tk.Frame(main, bg='white', padx=20, pady=16)
         self.connection_card.pack(fill='x', pady=(0, 18))
-        connection = tk.Frame(self.connection_card, bg='white')
-        connection.pack(fill='x')
-        connection.columnconfigure(1, weight=1)
-        self.label(connection, '连接配置', 11, MUTED).grid(row=0, column=0, sticky='w', padx=(0, 14))
-        self.config_entry = ttk.Entry(connection, textvariable=self.config)
-        self.config_entry.grid(row=0, column=1, sticky='ew')
-        self.browse_button = ttk.Button(connection, text='手动选择', command=self.browse)
-        self.browse_button.grid(row=0, column=2, padx=(10, 0))
+        self.connection_status = self.label(self.connection_card, '尚未连接', 12, MUTED)
+        self.connection_status.pack(anchor='w')
 
         settings = tk.Frame(self.connection_card, bg='white')
         settings.pack(fill='x', pady=(12, 0))
@@ -210,9 +217,15 @@ class App:
             hint.pack(side='left', fill='x', expand=True)
             hint.bind('<Configure>', lambda event: hint.configure(wraplength=max(1, event.width - 4)))
         self.connection_options = tk.Frame(self.connection_card, bg='white')
-        self.label(self.connection_options, 'SSH 别名', 11, MUTED).pack(side='left', padx=(0, 14))
+        self.connection_options.columnconfigure(1, weight=1)
+        self.label(self.connection_options, 'SSH 配置', 11, MUTED).grid(row=0, column=0, sticky='w', padx=(0, 14))
+        self.config_entry = ttk.Entry(self.connection_options, textvariable=self.config)
+        self.config_entry.grid(row=0, column=1, sticky='ew')
+        self.browse_button = ttk.Button(self.connection_options, text='手动选择', command=self.browse)
+        self.browse_button.grid(row=0, column=2, padx=(10, 0))
+        self.label(self.connection_options, 'SSH 别名', 11, MUTED).grid(row=1, column=0, sticky='w', pady=(8, 0))
         self.host_entry = ttk.Entry(self.connection_options, textvariable=self.host, width=20)
-        self.host_entry.pack(side='left')
+        self.host_entry.grid(row=1, column=1, sticky='w', pady=(8, 0))
         self.experiment_check = ttk.Checkbutton(self.connection_card, text='允许未实测设备或运营商实验试用',
                                                 variable=self.experimental)
 
@@ -226,9 +239,9 @@ class App:
         self.primary_button = ttk.Button(toolbar, text='安装并验证', style='Accent.TButton',
                                           command=lambda: self.run(self.primary_action))
         self.primary_button.pack(side='right')
-        self.check_button = ttk.Button(toolbar, text='检查设备', command=lambda: self.run('preflight'))
+        self.check_button = ttk.Button(toolbar, text='连接手机', command=self.connect_phone)
         self.check_button.pack(side='right', padx=(0, 10))
-        self.setup_button = ttk.Button(toolbar, text='首次使用', command=self.setup)
+        self.setup_button = ttk.Button(toolbar, text='连接帮助', command=self.setup)
         self.setup_button.pack(side='left', padx=(0, 16))
         self.activity = self.label(toolbar, '准备就绪', 11, MUTED, anchor='w')
         self.activity.pack(side='left', fill='x', expand=True, padx=(0, 16))
@@ -239,11 +252,11 @@ class App:
         summary.pack(fill='both', expand=True)
         heading = tk.Frame(summary, bg='white')
         heading.pack(fill='x')
-        self.summary = self.label(heading, '准备连接设备', 18, bold=True)
+        self.summary = self.label(heading, '连接你的黑莓手机', 18, bold=True)
         self.summary.pack(side='left')
         self.details_button = ttk.Button(heading, text='检查详情', command=self.show_checks, state='disabled')
         self.details_button.pack(side='right')
-        self.detail = self.label(summary, '连接配置可留空，点击“检查设备”自动查找并填写。首次准备请打开“首次使用”。', 11, MUTED,
+        self.detail = self.label(summary, '用数据线连接并解锁手机，再点击“连接手机”。程序会查找已有连接；需要授权或首次 Root 时，打开“连接帮助”。', 11, MUTED,
                                  wraplength=850, justify='left', anchor='w')
         self.detail.pack(fill='x', pady=(10, 12))
         self.detail.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width - 4)))
@@ -271,6 +284,7 @@ class App:
             self.device_info = {}
             self.device_label.configure(text='BlackBerry 10 设备 · 等待连接')
         self.ack.set(False)
+        self.connection_status.configure(text='连接或选项已改变 · 请重新检查')
         self.summary.configure(text='配置已更新，请检查设备', fg=INK)
         self.detail.configure(text='检查通过后即可继续安装或管理服务。')
         self.check_count.configure(text='等待重新检查')
@@ -321,7 +335,7 @@ class App:
             self.primary_button.pack(side='right', before=self.check_button)
         else:
             self.primary_button.pack_forget()
-        self.check_button.configure(text='重新检查' if self.display_report or self.last_result else '检查设备',
+        self.check_button.configure(text='重新检查' if self.display_report or self.last_result else '连接手机',
                                     style='TButton' if self.primary_action else 'Accent.TButton',
                                     state='normal' if allowed['preflight'] else 'disabled')
         for action, index in self.menu_actions.items():
@@ -363,6 +377,8 @@ class App:
         self.report_connection = self.selection()
         device = report.get('device', {})
         self.display_report, self.device_info = report, device
+        root_verified = any(item['id'] == 'root' and item['status'] == 'pass' for item in report['checks'])
+        self.connection_status.configure(text='最近检查：已连接 · Root 已验证' if root_verified else '最近检查：手机已响应 · Root 权限待核验')
         self.running_baseline_expected = (report.get('installation', {}).get('state') == 'busy' and
                                           bool((service_status or {}).get('manager_alive')))
         badge = 'Q10 已有实测记录' if device.get('hardware_tested') else '未实测 · 可实验试用'
@@ -411,6 +427,9 @@ class App:
     def run(self, action):
         if not self.allowed_actions().get(action):
             return
+        if self._startup_job is not None:
+            self.root.after_cancel(self._startup_job)
+            self._startup_job = None
         if action in ('install', 'start', 'disable'):
             if not self.ack.get() or self.report_connection != self.selection():
                 return
@@ -423,6 +442,7 @@ class App:
         host, config = self.host.get().strip(), self.config.get().strip()
         profile, experimental = profiles.validate(self.profile), self.experimental.get()
         self.busy = True
+        self.connection_status.configure(text='正在连接并检查手机…')
         self.last_result = None
         self.refresh_buttons()
         self.progress.pack(fill='x', pady=(0, 10), before=self.activity.master)
@@ -455,6 +475,13 @@ class App:
                 self.events.put(('error', ('unexpected_error', None)))
         threading.Thread(target=work, daemon=True).start()
 
+    def connect_phone(self):
+        if not self.busy:
+            if not self.config.get() and self.host.get() in ('bb10-root', 'q10-root') and not self.display_report:
+                self.setup()
+            else:
+                self.run('preflight')
+
     def drain(self):
         try:
             while True:
@@ -484,17 +511,27 @@ class App:
                     self.last_result = {'error': code, 'preflight': report if report and 'checks' in report else None}
                     self.summary.configure(text='操作未完成，需要核对', fg=RED)
                     self.detail.configure(text=ERRORS.get(code, '发生异常。请重新预检并保留现场；不要重复覆盖安装。'))
+                    if code in ERRORS and code in ('connection_setup_required', 'hostname_unresolved', 'config_missing',
+                            'authentication_failed', 'host_key_mismatch', 'connection_refused', 'connection_failed',
+                            'connection_timeout_state_unknown', 'openssh_missing', 'bundled_ssh_mismatch', 'ssh_algorithm_mismatch'):
+                        view = guidance(error=code)
+                        self.summary.configure(text=view.title, fg=AMBER)
+                        self.connection_status.configure(text='连接尚未验证 · 已保存材料保留')
                     self.activity.configure(text='操作已停止，请查看上方提示')
                 else:
                     action, result = payload
                     self.last_result = result
-                    try:
-                        save_connection(self.host.get(), self.config.get())
-                    except OSError:
-                        pass
                     report = result if 'checks' in result else result.get('preflight')
+                    remember_failed = False
+                    if report and any(item['id'] == 'root' and item['status'] == 'pass' for item in report.get('checks', [])):
+                        try:
+                            save_connection(self.host.get(), self.config.get())
+                        except OSError:
+                            remember_failed = True
                     if report:
                         self.render_report(report, result.get('status'))
+                    if remember_failed:
+                        self.connection_status.configure(text='连接可用 · 本次未能保存，请检查个人目录权限')
                     if action != 'preflight':
                         # Every device action invalidates previously enabled mutation buttons.
                         self.report, self.report_connection = None, None
@@ -594,12 +631,18 @@ class App:
 
     def setup(self):
         if not self.busy:
-            from setup_wizard import SetupWizard
+            if self._startup_job is not None:
+                self.root.after_cancel(self._startup_job)
+                self._startup_job = None
+            if self.connection_dialog and self.connection_dialog.winfo_exists():
+                self.connection_dialog.lift()
+                return
+            from connection_dialog import ConnectionDialog
             def ready(host, config):
                 self.host.set(host)
                 self.config.set(config)
                 self.run('preflight')
-            SetupWizard(self.root, ready)
+            self.connection_dialog = ConnectionDialog(self.root, ready, self.host.get(), self.config.get())
 
     def licenses(self):
         path = ROOT / 'licenses/THIRD-PARTY-NOTICES.txt'
@@ -627,6 +670,8 @@ class App:
             messagebox.showinfo('操作进行中', '请等待本次有界操作结束。强行退出不能撤销已经写入手机的步骤。', parent=self.root)
             return
         self.root.after_cancel(self._drain_job)
+        if self._startup_job is not None:
+            self.root.after_cancel(self._startup_job)
         self.root.destroy()
 
 
@@ -688,7 +733,7 @@ def main():
     # The window remains resizable; Tk's default font scaling otherwise clips
     # the fixed-width sidebar and pushes the operation status below the window.
     root.tk.call('tk', 'scaling', min(float(root.tk.call('tk', 'scaling')), 1.6))
-    App(root, args.host, args.ssh_config)
+    App(root, args.host, args.ssh_config, auto_connect=True)
     root.mainloop()
     return 0
 
