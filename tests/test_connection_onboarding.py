@@ -60,7 +60,7 @@ class FolderTests(unittest.TestCase):
         with patch('subprocess.run') as subprocess:
             found = materials.scan_materials(self.folder)
         self.assertEqual(found['state'], 'ready')
-        self.assertEqual(found['identities'], [self.folder / 'id_rsa4x'])
+        self.assertEqual(found['identities'], [(self.folder / 'id_rsa4x').resolve()])
         subprocess.assert_not_called()
 
     def test_duplicate_copies_are_ok_but_multiple_identities_require_narrower_folder(self):
