@@ -13,6 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
+from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
 
@@ -120,27 +121,7 @@ class App:
         root.configure(bg=BG)
         root.option_add('*Font', (FONT, 11))
         root.protocol('WM_DELETE_WINDOW', self.close)
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure('TFrame', background=BG)
-        style.configure('TLabel', background=BG, foreground=INK, font=(FONT, 11))
-        style.configure('TNotebook', background=BG)
-        style.configure('TButton', font=(FONT, 11), padding=(12, 9),
-                        background='white', foreground=INK, borderwidth=0)
-        style.map('TButton', background=[('active', '#E9EFFA'), ('disabled', '#E9EDF3')],
-                  foreground=[('disabled', '#98A3B4')])
-        style.configure('Accent.TButton', background=BLUE, foreground='white')
-        style.map('Accent.TButton', background=[('active', '#194BB7'), ('disabled', '#CCD7ED')],
-                  foreground=[('disabled', '#7C8BA7')])
-        style.configure('TEntry', padding=8, fieldbackground='white', font=(FONT, 11))
-        style.configure('TCombobox', font=(FONT, 11))
-        style.configure('TCheckbutton', background=BG, foreground=INK, font=(FONT, 11))
-        style.configure('Treeview', font=(FONT, 12), rowheight=34,
-                        background='white', fieldbackground='white', foreground=INK, borderwidth=0)
-        style.configure('Treeview.Heading', font=(FONT, 11, 'bold'),
-                        background='#EDF1F7', foreground=INK, padding=9, relief='flat')
-        style.map('Treeview', background=[('selected', '#E4EDFF')], foreground=[('selected', INK)])
-        style.configure('Horizontal.TProgressbar', background=BLUE, troughcolor='#E2E8F2', borderwidth=0)
+        apply_theme(root, FONT)
         self.build()
         self.host.trace_add('write', self.connection_changed)
         self.config.trace_add('write', self.connection_changed)
@@ -158,7 +139,7 @@ class App:
         header = tk.Frame(main, bg=BG)
         header.pack(fill='x')
         self.label(header, 'BB10 VoLTE', 22, bold=True).pack(side='left')
-        self.more_button = ttk.Menubutton(header, text='更多  ▾')
+        self.more_button = ttk.Menubutton(header, text='更多')
         self.more_button.pack(side='right')
         self.menu = tk.Menu(self.more_button, tearoff=False, font=(FONT, 11))
         self.more_button.configure(menu=self.menu)
@@ -254,7 +235,7 @@ class App:
         for col, label, width in [('item', '待处理项目', 135), ('state', '结果', 95), ('detail', '处理方法', 480)]:
             self.table.heading(col, text=label, anchor='w')
             self.table.column(col, width=width, minwidth=width if col != 'detail' else 300, stretch=col == 'detail')
-        scroll = ttk.Scrollbar(self.table_frame, orient='vertical', command=self.table.yview)
+        scroll = AutoScrollbar(self.table_frame, orient='vertical', command=self.table.yview)
         self.table.configure(yscrollcommand=scroll.set)
         scroll.pack(side='right', fill='y')
         self.table.pack(fill='both', expand=True)
@@ -559,7 +540,7 @@ class App:
         for key, title, width in [('item', '检查项目', 135), ('state', '结果', 85), ('detail', '说明', 580)]:
             table.heading(key, text=title, anchor='w')
             table.column(key, width=width, minwidth=85 if key != 'detail' else 200, stretch=key == 'detail')
-        scroll = ttk.Scrollbar(body, orient='vertical', command=table.yview)
+        scroll = AutoScrollbar(body, orient='vertical', command=table.yview)
         table.configure(yscrollcommand=scroll.set)
         scroll.pack(side='right', fill='y')
         table.pack(fill='both', expand=True)
@@ -615,7 +596,7 @@ class App:
         popup.geometry('760x580')
         text = tk.Text(popup, wrap='word', font=(FONT, 11), padx=24, pady=20,
                        bg='white', fg=INK, relief='flat')
-        bar = ttk.Scrollbar(popup, command=text.yview)
+        bar = AutoScrollbar(popup, command=text.yview)
         bar.pack(side='right', fill='y')
         text.configure(yscrollcommand=bar.set)
         text.pack(fill='both', expand=True)

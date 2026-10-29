@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import tkinter as tk
+from tkinter import ttk
 
 from desktop_paths import frozen, private_root, resource_root
 from workflow import Client, verify_package, verify_diagnostics, CREATE_NO_WINDOW
@@ -24,6 +25,7 @@ def run(output):
     root = tk.Tk()
     root.withdraw()
     app = App(root)
+    assert ttk.Style(root).theme_use() == 'bb10'
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
     assert editor.value() == app.profile
@@ -100,6 +102,7 @@ def run(output):
               'phone_pairing_resource_present': True,
               'root_probe_resource_verified': True,
               'minimum_window_actions_visible': True,
+              'shared_control_theme_loaded': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
               'phone_contacted': False}
