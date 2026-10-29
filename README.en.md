@@ -10,7 +10,7 @@ A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, 
 
 **No hardware modification is needed, but the phone needs root access through AutoRoot.** Calling uses the phone's own SIM, native IMS stack and system dialer. No separate VoLTE project or calling app is needed; EXE/DMG users do not install Python separately. See [ways to run](#ways-to-run) and the [installation guide](docs/INSTALL.en.md) for the actual initial-root and connection requirements.
 
-**The only hardware-tested combination is Q10 SQN100-3 + BB10 OS 10.3.3.3216 + China Unicom in Beijing (460-01).** Automatic registration after a phone-menu reboot and native incoming/outgoing calls with USB disconnected, two-way audio and continued 4G passed; see the [device acceptance](materials/startup-latency-2026-10-28.json). Q20, Passport, other Q10 variants and carriers may also work, but remain untested and require experimental opt-in and passing compatibility checks. Please [report your results](https://github.com/Octo-o-o-o/bb10-volte/issues): **both working and non-working combinations are welcome**. Releases remain experimental; longer calls and long-term stability need further validation.
+**This project's existing hardware acceptance covers Q10 SQN100-3 + BB10 OS 10.3.3.3216 + China Unicom in Beijing (460-01).** Version 0.3.2 automatic registration after a phone-menu reboot and native incoming/outgoing calls with USB disconnected, two-way audio and continued 4G passed; see the [device acceptance](materials/startup-latency-2026-10-28.json). Q20, other Q10 variants and carriers still require experimental opt-in and all compatibility checks. **Version 0.3.3 adds community evidence and read-only incoming diagnostics without a new hardware retest. Experimental combinations require manual start. Passport automatic installation, start and restore are paused after a reported network-stack restart on provider disable.** Community Q20 outgoing and Passport two-way call reports remain separate from this toolkit's acceptance; see [community research](docs/COMMUNITY-RESEARCH.en.md). Please [report your results](https://github.com/Octo-o-o-o/bb10-volte/issues): **both working and non-working combinations are welcome**. Releases remain experimental; longer calls and long-term stability need further validation.
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
@@ -29,7 +29,7 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 
 | Component | Requirement / recorded environment |
 | --- | --- |
-| Phone | **BlackBerry Q10 SQN100-3**; other Q10 variants and BB10 models are untested |
+| Phone | **BlackBerry Q10 SQN100-3**; other Q10 variants and Q20 remain experimental; Passport automatic operations are paused, with preflight/report export available |
 | Phone operating system | **BlackBerry 10 OS 10.3.3.3216**; the firmware archive is named `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`. Exact native file hashes are enforced by the installer |
 | SIM and network | **China Unicom 460-01 USIM in Beijing**, working LTE data and a subscription confirmed to support VoLTE; the tested SIM had no ISIM |
 | Phone access | Working **root SSH**, the owner's private key and a verified host key; the service uses the AutoRoot v4 addon mechanism |
@@ -78,7 +78,7 @@ For a stock phone, follow the [full installation guide](docs/INSTALL.en.md) to v
 
 ### 3. Install and start VoLTE
 
-Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Check device to discover and fill your own SSH configuration, or select it manually. Desktop build `0.3.2-r6` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.2`. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
+Double-click **[Start-GUI.cmd](Start-GUI.cmd)** in the fully extracted release and choose Check device to discover and fill your own SSH configuration, or select it manually. Current source version `0.3.3-r1` shows the outcome and actionable checks first; complete checks, reports and maintenance tools are available on demand. The phone payload version is `0.3.3`. Published EXE/DMG versions and validation scope are stated in their corresponding Releases. The GUI uses Python's bundled Tk without extra pip packages. See [the GUI guide](docs/GUI.en.md); use First use for the supported initial Root flow.
 
 Alternatively, run the same workflow from the repository root:
 
@@ -192,3 +192,5 @@ Original project code, documentation and the source-built helper are released un
 ## Acknowledgements
 
 Special thanks to the authors and contributors of **[AutoRoot v4](https://bb10.root.sx/blog/autoroot-v4)** and **[bb10root / BB10 MultiTool (bb10mt)](https://github.com/bb10root/bb10mt)**. Their work on BB10 rooting, SSH access and firmware construction made this project's native IMS investigation and real-Q10 call validation possible. Our initial Root preparation builds on these tools. Please support the original projects and retain their attribution and license notices.
+
+Thanks to **[imqinyu](https://github.com/imqinyu)** and the contributors to **[BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch)** for sharing Classic, Passport and Z30 observations, native IMS/software-provider research, incoming-call leads and the BlackBerry indicator approach through [issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1). Their work informed our community evidence, read-only diagnostics and device restoration checks. See [integration scope and evidence levels](docs/COMMUNITY-RESEARCH.en.md); third-party materials retain their provenance and licensing boundaries.

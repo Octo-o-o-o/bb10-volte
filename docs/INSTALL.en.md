@@ -2,6 +2,8 @@
 
 [简体中文](INSTALL.md) | **English**
 
+**0.3.3 scope:** Installation/restoration below applies only after all current gates pass. Passport automatic operations are paused and opt-in cannot bypass the hold. Preserve existing state and export a report; see [community research](COMMUNITY-RESEARCH.en.md). This source version has not been retested on hardware.
+
 This recipe was tested with a **Q10 SQN100-3, BB10 10.3.3.3216 and a China Unicom 460-01 USIM in Beijing**. The persistent service remains experimental; see the [validation record](VALIDATION.en.md). Run commands from the repository root with Python 3.14.
 
 The source GUI and Windows EXE include [First use](FIRST-RUN.en.md) for automated Q10 preparation and separately confirmed flashing. The manual script recipe below remains available for maintainers.

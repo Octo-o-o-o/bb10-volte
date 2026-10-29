@@ -2,6 +2,8 @@
 
 [English](PROFILES.en.md)
 
+0.3.3 的实验试用选项不能绕过 Passport 恢复策略限制。上游来电参数只作为诊断线索，不是可导入的运行配置，也不会自动写入。见[社区研究](COMMUNITY-RESEARCH.md)。
+
 GUI 可选择 Q10 联通实测参数，或联通多 MNC、移动、电信公开资料模板。“编辑 / 导入配置”提供三组字段，支持 JSON 导入、导出和应用。字段会参与手机预检、安装回读和运行。
 
 | 配置 | 行为 |
@@ -23,7 +25,7 @@ GUI 可选择 Q10 联通实测参数，或联通多 MNC、移动、电信公开�
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 python tools/bb10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 
-# Q20 / Q30 使用默认联通 460-01 参数的试用
+# Q20 使用默认联通 460-01 参数的试用；Passport 仅可预检
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
 ```
 
@@ -34,3 +36,5 @@ CLI 的 `setup`、`update`、`start`、`enable` 等操作需传入同一配置�
 手机保存 `carrier-profile.json`，安装回执绑定其哈希；原厂 XML 仅替换 IMS 服务段，保留数据及其他原有段落。恢复日志保存实际写入的 PPS 值，换运营商后仍能恢复旧值。完整 v0.1/v0.2 安装可停用恢复后更新；中断和外部改动会阻止覆盖。
 
 P-CSCF 由网络 PCO 提供，IMSI/IMPI/IMPU 在手机本地取得和派生；不会下载他人身份。当前引擎不支持 ISIM，也不提供可编辑的补丁偏移、原生哈希绕过或鉴权替代。需要适配时请附脱敏报告提 Issue / PR。
+
+三个试用模板默认关闭自动启动。Q20 使用默认联通参数时，也请在“自定义 → 运行选项”关闭自动启动；runtime.autostart=false 是未验收组合的强制条件，enable 不能绕过。Passport 仍受独立适配限制。

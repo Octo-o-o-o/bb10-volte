@@ -2,6 +2,8 @@
 
 [简体中文](PROFILES.md)
 
+In 0.3.3, experimental opt-in cannot bypass the Passport lifecycle hold. Incoming-call research parameters are diagnostic leads, not importable runtime options or automatic writes. See [community research](COMMUNITY-RESEARCH.en.md).
+
 The GUI offers the recorded Q10/Unicom parameters and public-data Unicom, Mobile and Telecom templates. The editor has operator, IMS and runtime tabs with JSON import/export. Options participate in validation, installation or runtime behavior.
 
 | Field | Effect |
@@ -23,7 +25,7 @@ Templates cite a [pinned snapshot](../materials/carrier-data-sources.json). Mobi
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 python tools/bb10.py setup --ssh-config private/root-kit/ssh_config --profile profiles/china-mobile.json --allow-experimental
 
-# Q20/Q30 trial with default Unicom 460-01 parameters
+# Q20 trial with default Unicom parameters; Passport preflight only
 python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config --allow-experimental
 ```
 
@@ -34,3 +36,5 @@ Pass the same profile and opt-in to subsequent CLI setup/update/start/enable com
 The phone stores `carrier-profile.json`, hash-bound to its receipt. Only the stock XML's IMS section is replaced; data and other sections remain intact. Recovery records exact applied PPS values, so later profiles do not change restoration. Complete v0.1/v0.2 installs can update after restoration; interruptions or outside edits block replacement.
 
 P-CSCF comes from network PCO. IMSI/IMPI/IMPU stay local; subscriber credentials are never downloaded. The current engine requires USIM without ISIM. Patch offsets, native hash bypasses and authentication substitutes are not profile fields. Submit sanitized reports for further ports.
+
+All three experimental presets default to autostart off. Q20 with the default Unicom parameters must also disable it under Customize → Runtime options. runtime.autostart=false is mandatory for experimental combinations and enable cannot bypass it. Passport retains its separate hold.

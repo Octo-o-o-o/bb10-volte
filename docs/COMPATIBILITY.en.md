@@ -2,13 +2,16 @@
 
 [简体中文](COMPATIBILITY.md)
 
+Version 0.3.3 attaches community evidence only for exact hardware/OS/actual MCC/MNC matches, alongside finite read-only incoming diagnostics. Evidence does not confer project acceptance. Passport automatic operations are paused; see [community research](COMMUNITY-RESEARCH.en.md).
+
 v0.3.0 separates device recognition, operator profiles and native patch compatibility. GUI, CLI and the phone installer share `device/compatibility.py`. Preflight cannot establish subscriber provisioning or working calls.
 
 | Combination | Result | Hardware evidence |
 |---|---|---|
 | Q10 SQN100-3 / OS 10.3.3.3216 / Unicom 460-01 / USIM without ISIM / 3gnet / LTE / matching hashes | Eligible after clean-state checks | One Beijing phone, short incoming/outgoing calls and normal reboot |
 | Another Unicom province with identical conditions | Eligible for individual acceptance; MCC/MNC does not identify province | No cross-province validation |
-| Classic / Q20 (SQC100-*), Passport / Q30 (SQW100-*), other Q10 variants | **Not hardware validated; experimental use available** with explicit opt-in and every technical gate passing | Recognition and simulated gate tests only |
+| Classic / Q20 (SQC100-*), other Q10 variants | **Not hardware validated; experimental use available** with opt-in and all gates passing | No project hardware acceptance; community Q20 records are attributed separately |
+| Passport / Q30 (SQW100-*) | **Provider lifecycle needs validation**; automatic installation, update, start and restore paused regardless of opt-in | Contributed two-way call report also describes a network-stack restart on provider disable; not independently reproduced |
 | Other Unicom MNCs, Mobile, Telecom, custom profiles | Matching profile plus experimental opt-in and all technical gates required | Public-data templates only |
 | ISIM, unknown SIM type or different identity layout | Needs a different implementation; installation blocked | Untested |
 | Unknown/conflicting device identity, different OS or any native hash mismatch | Installation blocked; report export available | Opt-in cannot bypass these checks |
@@ -27,3 +30,5 @@ P-CSCF comes from network PCO; no Beijing address is hardcoded. Province is not 
 Ask customers for model/variant/full OS and root readiness; operator, home/current province and porting/roaming status; whether the same SIM supports two-way VoLTE in a supported phone; selected JSON and sanitized preflight; per-device call results/failure stage. Full phone numbers or SIM identities are unnecessary.
 
 Reports do not automatically collect full IMSI, IMEI, ICCID, PIN, SIM secrets, authentication material or SSH keys. Keep personal details out of profile labels. Configuration edits invalidate preflight; stop and restore before updating. Issues and PRs for other builds, models and carriers are welcome; see [reporting guidance](ISSUES.md).
+
+Experimental device/carrier combinations must also set runtime.autostart=false and use manual start. Opt-in cannot bypass this restriction after the author reported boot-animation hangs. The accepted Q10 baseline retains autostart.

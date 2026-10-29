@@ -26,6 +26,6 @@
     "existing_ims_wait_seconds": 330,
     "registration_wait_seconds": 180,
     "poll_seconds": 3,
-    "autostart": true
+    "autostart": false
   }
 }

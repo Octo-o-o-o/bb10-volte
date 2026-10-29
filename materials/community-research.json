@@ -1,0 +1,177 @@
+{
+  "schema": 1,
+  "updated": "2026-10-28",
+  "project_acceptance": "not_established",
+  "source": {
+    "repository": "https://github.com/imqinyu/BB10DeviceVoLTEResearch",
+    "commit": "376f492ade10efad371dca64d49fe39549820844",
+    "issue": "https://github.com/Octo-o-o-o/bb10-volte/issues/1",
+    "confirmation_request": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217",
+    "license_status": "author_permission_recorded_in_issue",
+    "notice": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/NOTICE.md",
+    "import_policy": "Independently summarized facts and source links only; no upstream code, binaries, archives or carrier XML bundled.",
+    "permission_url": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+    "contributed_material_rights": "not_separately_confirmed",
+    "follow_up": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472842554",
+    "boot_report": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859"
+  },
+  "records": [
+    {
+      "id": "classic-att-cmcc",
+      "selector": {
+        "board_type": "CLASSICATT",
+        "os_version": "10.3.3.3216",
+        "mcc": "460",
+        "mnc": "00"
+      },
+      "evidence_level": "upstream_local_experiment",
+      "outcome": {
+        "ims": "observed_registered",
+        "outgoing": "user_confirmed_with_reported_bidirectional_rtp",
+        "incoming": "not_established",
+        "reboot_autostart": "not_established"
+      },
+      "limitations": [
+        "Q20 incoming failures reported without a complete per-variant trace.",
+        "Fresh October 28 snapshot had LTE attached and IMS idle; it was not a successful call retest.",
+        "Reported RTP counts are session observations, not an included raw capture."
+      ],
+      "sources": [
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/05-validation-and-evidence.md",
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/evidence/q20-20261028-readonly.txt",
+        "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806"
+      ],
+      "author_clarification": {
+        "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+        "evidence_level": "author_issue_statement",
+        "summary": "Author described the Mobile device as sqc-2 and confirmed outgoing only, with incoming not implemented."
+      },
+      "autostart_observation": {
+        "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859",
+        "evidence_level": "author_issue_statement",
+        "device_description": "Authors Mobile Classic, described as sqc-2",
+        "startup_mechanism": "addon",
+        "result": "stuck_at_boot_animation",
+        "cause": "unresolved; author suspects configuration and does not recommend reproducing it"
+      }
+    },
+    {
+      "id": "classic-vzw-unicom",
+      "selector": {
+        "board_type": "CLASSICVZW",
+        "os_version": "10.3.3.3216",
+        "mcc": "460",
+        "mnc": "01"
+      },
+      "evidence_level": "upstream_contributed_report",
+      "outcome": {
+        "ims": "reported_registered",
+        "outgoing": "author_reported_working",
+        "incoming": "author_reported_working",
+        "reboot_autostart": "not_established"
+      },
+      "limitations": [
+        "The issue author later confirmed incoming/outgoing calls; no new raw trace or independent project acceptance accompanies that clarification.",
+        "Execution trust differs from the locally tested Classic environment."
+      ],
+      "sources": [
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/05-validation-and-evidence.md",
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/04-portability.md",
+        "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806"
+      ],
+      "archive_outcome": {
+        "ims": "reported_registered",
+        "outgoing": "not_independently_verified",
+        "incoming": "not_established",
+        "reboot_autostart": "not_established"
+      },
+      "author_clarification": {
+        "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+        "evidence_level": "author_issue_statement",
+        "summary": "Author confirmed that the other two contributed devices achieved incoming and outgoing calls."
+      }
+    },
+    {
+      "id": "passport-unicom",
+      "selector": {
+        "board_type": "WINDERMERE4ROW",
+        "os_version": "10.3.3.3216",
+        "mcc": "460",
+        "mnc": "01"
+      },
+      "evidence_level": "upstream_contributed_report",
+      "outcome": {
+        "ims": "reported_registered",
+        "outgoing": "reported_working",
+        "incoming": "reported_working_with_normal_handset_caller",
+        "reboot_autostart": "not_established"
+      },
+      "limitations": [
+        "Not independently repeated by the upstream archive compiler or bb10-volte.",
+        "Provider disable reportedly restarted io-pkt and interrupted USB; root cause unresolved.",
+        "Provisioning, voice-domain override and IR92 changes were not isolated as individual causes."
+      ],
+      "sources": [
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/03-incoming-calls.md",
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/04-portability.md",
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/variants/passport-unicom/payload/easy-device.sh",
+        "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806"
+      ],
+      "author_clarification": {
+        "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806",
+        "evidence_level": "author_issue_statement",
+        "summary": "Author confirmed that the other two contributed devices achieved incoming and outgoing calls."
+      }
+    },
+    {
+      "id": "z30-sta1003-cmcc-negative",
+      "selector": {
+        "variant": "STA100-3",
+        "os_version": "10.3.3.3216",
+        "mcc": "460",
+        "mnc": "00"
+      },
+      "evidence_level": "upstream_local_negative_test",
+      "outcome": {
+        "lte": "not_attached_on_tested_network",
+        "ims": "not_tested",
+        "outgoing": "not_tested",
+        "incoming": "not_tested"
+      },
+      "limitations": [
+        "Observed LTE capabilities B4/B13; do not generalize to every Z30 or network.",
+        "This record never adds Z30 to the supported device families."
+      ],
+      "sources": [
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/05-validation-and-evidence.md",
+        "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/evidence/z30-lte-only-scan.txt"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "incoming-configuration",
+      "status": "research_only",
+      "source": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/03-incoming-calls.md",
+      "integration": "Read-only finite-enum observations; no provisioning, codec, DCA or engineering writes."
+    },
+    {
+      "id": "navigator-indicator",
+      "status": "deferred_pending_license_and_device_validation",
+      "source": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/src/volte-berry.c",
+      "integration": "Documented candidate only; no indicator binary or Navigator writes included."
+    },
+    {
+      "id": "provider-lifecycle",
+      "status": "conservative_passport_gate",
+      "source": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/376f492ade10efad371dca64d49fe39549820844/docs/04-portability.md",
+      "integration": "Pause Passport automatic mutations; retain existing Q10 provider and rollback implementation."
+    },
+    {
+      "id": "boot-autostart",
+      "status": "manual_only_for_experimental_combinations",
+      "source": "https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472916859",
+      "integration": "Author identifies the Mobile Classic (sqc-2) with an addon startup entry. Root cause remains unresolved, possibly configuration. Conservatively keep unvalidated combinations manual-only; preserve accepted Q10 baseline autostart. Do not generalize the observed failure to every model."
+    }
+  ]
+}
