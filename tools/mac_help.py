@@ -4,10 +4,10 @@ from tkinter import ttk
 
 from desktop_paths import resource_root
 from profile_editor import FONT
+from ui_theme import AutoScrollbar
 
 CONNECTION_HINT = (
-    '先接数据线并解锁，再点“检查设备”。未 Root：查看首次准备说明；'
-    '已 Root 无资料：用手机 Root 终端授权本机；有资料：导入个人连接。')
+    '先接数据线并解锁，再点“连接手机”。需要恢复授权、处理 USB 网络或首次 Root 时，打开“连接帮助”。')
 
 PHONE_STEPS = (
     '未 Root：本分支提供 Q10 的实验性 Mac 首刷，须先核对变体并备份；Q30 / Q20 尚缺匹配首刷材料。\n'
@@ -27,24 +27,54 @@ def scrolled_page(parent, padding=18):
     page = ttk.Frame(parent)
     canvas = tk.Canvas(page, highlightthickness=0, borderwidth=0,
                        background=ttk.Style(parent).lookup('TFrame', 'background') or '#f0f0f0')
-    scrollbar = ttk.Scrollbar(page, orient='vertical', command=canvas.yview)
+    scrollbar = AutoScrollbar(page, orient='vertical', command=canvas.yview)
     canvas.configure(yscrollcommand=scrollbar.set)
     scrollbar.pack(side='right', fill='y')
     canvas.pack(side='left', fill='both', expand=True)
     content = ttk.Frame(canvas, padding=padding)
     window = canvas.create_window(0, 0, anchor='nw', window=content)
-    content.bind('<Configure>', lambda _: canvas.configure(scrollregion=canvas.bbox('all')))
-    canvas.bind('<Configure>', lambda event: canvas.itemconfigure(window, width=event.width))
+    pending = None
+
+    def sync_region():
+        nonlocal pending
+        pending = None
+        canvas.configure(scrollregion=canvas.bbox('all'))
+
+    def queue_region(event):
+        nonlocal pending
+        if str(event.widget).startswith(str(page) + '.') and pending is None:
+            pending = page.after_idle(sync_region)
+
+    def resize(event):
+        canvas.itemconfigure(window, width=event.width)
+        queue_region(event)
+
+    canvas.bind('<Configure>', resize)
     # Bind each page's toplevel, and only handle wheel events from its subtree.
     # Destroying the page also removes this additive binding.
     toplevel = parent.winfo_toplevel()
+    # A scrolled-off canvas window may not receive Configure when its children
+    # shrink. Observe child layout too, so replacing long instructions resets
+    # the scroll range even if the old content was below the viewport.
+    layout_binding = toplevel.bind('<Configure>', queue_region, add='+')
     def wheel(event):
-        if str(event.widget).startswith(str(page) + '.') and canvas.winfo_ismapped():
-            canvas.yview_scroll(-int(event.delta), 'units')
+        if (str(event.widget).startswith(str(page) + '.') and canvas.winfo_ismapped()
+                and event.widget.winfo_class() not in ('Text', 'Listbox', 'Treeview', 'TCombobox')
+                and canvas.yview() != (0.0, 1.0)):
+            # Windows reports wheel notches in multiples of 120; macOS reports
+            # small pixel-like deltas. Do not jump 120 rows on a single notch.
+            delta = event.delta
+            steps = int(delta / 120) * 3 if abs(delta) >= 120 else int(delta)
+            canvas.yview_scroll(-steps, 'units')
             return 'break'
     binding = toplevel.bind('<MouseWheel>', wheel, add='+')
-    page.bind('<Destroy>', lambda event: toplevel.unbind('<MouseWheel>', binding)
-              if event.widget is page else None)
+    def cleanup(event):
+        if event.widget is page:
+            if pending is not None:
+                page.after_cancel(pending)
+            toplevel.unbind('<MouseWheel>', binding)
+            toplevel.unbind('<Configure>', layout_binding)
+    page.bind('<Destroy>', cleanup)
     return page, content
 
 
@@ -60,7 +90,7 @@ def show_guide(parent):
     body.pack(fill='both', expand=True)
     text = tk.Text(body, wrap='word', font=(FONT, 11), padx=12, pady=12,
                    bg='white', relief='flat')
-    scroll = ttk.Scrollbar(body, command=text.yview)
+    scroll = AutoScrollbar(body, command=text.yview)
     scroll.pack(side='right', fill='y')
     text.configure(yscrollcommand=scroll.set)
     text.pack(fill='both', expand=True)

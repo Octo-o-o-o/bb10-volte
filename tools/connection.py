@@ -30,11 +30,11 @@ def matching_alias(path, host):
     return host
 
 
-def saved_connection():
+def saved_connection(require_files=True):
     try:
         data = json.loads((private_root() / 'connection.json').read_text(encoding='utf-8'))
         if set(data) == {'host', 'config'} and isinstance(data['host'], str) and isinstance(data['config'], str):
-            if not data['config'] or Path(data['config']).is_file():
+            if not require_files or not data['config'] or Path(data['config']).is_file():
                 return data
     except (OSError, ValueError, TypeError):
         pass

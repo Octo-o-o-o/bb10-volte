@@ -4,12 +4,14 @@ import shutil
 import subprocess
 import sys
 import tkinter as tk
+from tkinter import ttk
 
 from desktop_paths import frozen, private_root, resource_root
 from workflow import Client, verify_package, verify_diagnostics, CREATE_NO_WINDOW
 from profile_editor import presets, ProfileEditor
 from setup_wizard import SetupWizard
 from recovery_gui import RecoveryDialog
+from connection_dialog import ConnectionDialog
 
 
 def run(output):
@@ -24,6 +26,7 @@ def run(output):
     root = tk.Tk()
     root.withdraw()
     app = App(root)
+    assert ttk.Style(root).theme_use() == 'bb10'
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
     assert editor.value() == app.profile
@@ -32,6 +35,11 @@ def run(output):
     wizard.withdraw()
     assert not wizard.busy and wizard.choice is None
     wizard.close()
+    connection = ConnectionDialog(root, lambda *_: None, auto_check=False)
+    connection.withdraw()
+    assert not connection.busy and connection.choice is None
+    assert str(connection.continue_button.cget('state')) == 'disabled'
+    connection.close()
     recovery = RecoveryDialog(root, lambda *_: None)
     recovery.withdraw()
     assert not recovery.busy and not recovery.verified and len(recovery.tabs.tabs()) == 2
@@ -100,9 +108,11 @@ def run(output):
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
               'first_run_wizard_without_probe_verified': True,
               'existing_root_recovery_ui_verified': True,
+              'connection_help_ui_verified': True,
               'phone_pairing_resource_present': True,
               'root_probe_resource_verified': True,
               'minimum_window_actions_visible': True,
+              'shared_control_theme_loaded': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
               'phone_contacted': False}
