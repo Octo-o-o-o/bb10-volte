@@ -198,7 +198,12 @@ class GuiTests(unittest.TestCase):
         self.app.render_report(value)
         self.assertEqual(self.app.summary.cget('text'), '安装前状态需处理')
         self.assertIn('语音策略：3', self.app.table.item('baseline', 'values')[2])
+        # Native Tk selection events need a mapped window and a full event loop on macOS.
+        self.root.attributes('-alpha', 0.0)
+        self.root.deiconify()
+        self.root.update()
         self.app.show_checks()
+        self.root.update()
         def widgets(widget):
             return [widget] + [item for child in widget.winfo_children() for item in widgets(child)]
         popup = next(child for child in self.root.winfo_children() if isinstance(child, tk.Toplevel))
@@ -206,8 +211,8 @@ class GuiTests(unittest.TestCase):
         table = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Treeview))
         selected = next(widget for widget in all_widgets if isinstance(widget, tk.Text))
         voice = next(key for key in table.get_children() if table.item(key, 'values')[0] == '语音策略')
-        table.selection_set(voice); table.event_generate('<<TreeviewSelect>>')
-        self.root.update_idletasks()
+        table.selection_set(voice)
+        self.root.update()
         self.assertIn('当前：3；安装前要求：0', selected.get('1.0', 'end'))
         toggle = next(widget for widget in all_widgets if isinstance(widget, gui.ttk.Checkbutton))
         before = len(table.get_children()); toggle.invoke()
