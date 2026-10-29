@@ -22,6 +22,28 @@ def complete():
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_data_service_settings_and_actual_status_are_distinct_in_summary(self):
+        report = c.evaluate(complete())
+        report['network_diagnostics'] = {
+            'data_service_mode': 'ON', 'data_services_status': 'OFF', 'internet_present': True,
+            'internet_active': False, 'internet_connectable': False, 'network_service': 1,
+            'lte_active_band_mask': 16, 'lte_band_capability_mask': 'private-value',
+            'private-extra': 'private-value'}
+        before = copy.deepcopy(report)
+        rows = d.network_rows(report)
+        by_title = {row['title']: row for row in rows}
+        self.assertIn('当前：ON', by_title['数据服务设置']['detail'])
+        self.assertIn('当前：OFF', by_title['数据服务实际状态']['detail'])
+        self.assertIn('不等于用户手动关闭', by_title['数据服务实际状态']['detail'])
+        self.assertIn('仅紧急服务', by_title['无线网络服务位图']['detail'])
+        self.assertEqual(by_title['LTE 频段能力位图']['state'], '未知')
+        text = d.support_summary(report, {}, lambda check: '检查', 'test')
+        for row in rows:
+            self.assertIn(row['detail'], text)
+        self.assertNotIn('private-value', text)
+        self.assertEqual(report, before)
+        self.assertEqual(d.network_rows({'network_diagnostics': {'apn_matches': True}}), [])
+
     def observe(self, failure=None, root=True, engine=True):
         reads = {'voice_policy': ('voice_policy', 0), 'crypto': ('crypto_policy', {'swcr_id': -1, 'crypto_support': 0}),
                  'ims_count': ('ims_pids', [123]), 'vpn_count': ('active_vpn_sessions', [])}

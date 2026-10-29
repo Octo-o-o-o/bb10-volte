@@ -183,6 +183,96 @@ class CompatibilityTests(unittest.TestCase):
             journal.assert_not_called()
 
 
+class NetworkSnapshotTests(unittest.TestCase):
+    def read_snapshot(self, data=None, radio=None, settings=b'data_service_mode::ON\n'):
+        # Relevant fields transcribed from the SQC100-4 report; no identities.
+        records = {
+            c.RADIO: (b'[n]@status_public\npower_status::ON\nnetwork_technology:json:["lte"]\n'
+                      b'network_service:n:1\nactive_bands:json:{"lte":16}\n'
+                      b'band_capability:json:{"lte":16846939}\n') if radio is None else radio,
+            c.DATA: (b'[n]@status\ndata_services_status::OFF\n'
+                     b'internet:json:{"enabled":true,"connectable":false,"active":false,"bid":[16]}\n')
+                    if data is None else data,
+            c.DATA_SETTINGS: settings,
+        }
+        def read(path):
+            value = records.get(path)
+            if value is None:
+                raise OSError('private read error')
+            return value
+        with patch.object(native, 'read', side_effect=read), patch.object(native, 'atomic') as write, \
+             patch.object(native, 'update_pps') as update:
+            facts = c.read_network()
+            write.assert_not_called(); update.assert_not_called()
+        return facts
+
+    def test_q20_inactive_service_is_present_and_off_not_an_apn_mismatch(self):
+        facts = self.read_snapshot()
+        self.assertTrue(facts['internet_present'])
+        self.assertTrue(facts['internet_enabled'])
+        self.assertFalse(facts['internet_connectable'])
+        self.assertFalse(facts['internet_active'])
+        self.assertIsNone(facts['apn_matches'])
+        self.assertIsNone(facts['data_connected'])
+        self.assertEqual(facts['data_service_mode'], 'ON')
+        self.assertEqual(facts['data_services_status'], 'OFF')
+        self.assertEqual(facts['lte_active_band_mask'], 16)
+        checks = {row['id']: row for row in c.network_checks(facts)}
+        self.assertEqual(checks['lte']['code'], 'lte_emergency_only')
+        self.assertEqual(checks['apn']['code'], 'data_services_off')
+        self.assertFalse(c.evaluate(facts)['can_install'])
+
+    def test_negative_observations_block_even_with_stale_connected_true(self):
+        cases = ({'network_service': 1}, {'data_services_status': 'OFF'}, {'data_service_mode': 'OFF'})
+        cases += tuple({key: False} for key in
+                       ('internet_present', 'internet_enabled', 'internet_connectable', 'internet_active'))
+        for fields in cases:
+            with self.subTest(fields=fields):
+                facts = baseline(); facts.update(fields)
+                self.assertEqual(c.network_state(facts), 'not_ready')
+                self.assertFalse(c.evaluate(facts)['can_install'])
+                self.assertFalse(c.evaluate(facts)['can_start'])
+                self.assertFalse(c.evaluate(facts)['can_update'])
+
+    def test_enabled_or_active_never_substitute_for_connected_or_apn(self):
+        data = b'data_services_status::ON\ninternet:json:{"enabled":true,"active":true,"connectable":true}\n'
+        facts = baseline()
+        facts.update(self.read_snapshot(data=data, radio=b'power_status::ON\nnetwork_technology:json:["lte"]\n'))
+        self.assertIsNone(facts['data_connected'])
+        self.assertIsNone(facts['apn_matches'])
+        self.assertEqual(c.network_checks(facts)[-1]['code'], 'data_apn_state_unknown')
+        self.assertFalse(c.evaluate(facts)['can_install'])
+
+    def test_settings_failure_retains_live_observations_and_cannot_imply_user_off(self):
+        facts = self.read_snapshot(settings=None)
+        self.assertTrue(facts['data_settings_read_error'])
+        self.assertIsNone(facts['data_service_mode'])
+        self.assertIsNone(facts['network_read_error'])
+        self.assertEqual(facts['data_services_status'], 'OFF')
+        self.assertEqual(c.network_checks(facts)[-1]['code'], 'data_services_off')
+
+    def test_valid_connected_snapshot_still_passes_but_inactive_and_missing_differ(self):
+        radio = b'power_status::ON\nnetwork_technology:json:["lte"]\nnetwork_service:n:2097408\n'
+        data = b'data_services_status::ON\ninternet:json:{"apn":"3gnet","connected":true,"active":true}\n'
+        snapshot = self.read_snapshot(data=data, radio=radio)
+        facts = baseline()
+        facts.update({key: value for key, value in snapshot.items() if key in c.public_network_diagnostics(snapshot)})
+        self.assertTrue(c.evaluate(facts)['can_install'])
+        for data in (b'', b'internet:json:{"active":false}\n'):
+            facts = self.read_snapshot(data=data, radio=radio)
+            self.assertEqual(c.network_checks(facts)[-1]['code'], 'data_internet_inactive')
+
+    def test_public_snapshot_bounds_types_and_never_leaks_arbitrary_values(self):
+        for bad in (True, -1, 1 << 65, 'private-value', [], {}):
+            values = {key: bad for key in c.NETWORK_NUMBERS}
+            values.update(data_service_mode='private-value', data_services_status='private-value',
+                          raw='private-value', internet_active='private-value')
+            public = c.public_network_diagnostics(values)
+            self.assertTrue(all(public[key] is None for key in c.NETWORK_NUMBERS))
+            self.assertNotIn('private-value', json.dumps(public))
+        self.assertIsNone(c.public_network_diagnostics(None)['network_service'])
+
+
 class ConfigurationDiagnosticTests(unittest.TestCase):
     def observations(self, *, files=False, directory=False, fields=None, read_error=False):
         records = {'cellular_protocol_configuration': b'', 'ims': b'',

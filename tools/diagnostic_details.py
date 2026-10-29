@@ -59,6 +59,35 @@ def incoming_rows(report):
     return rows
 
 
+def network_rows(report):
+    """Describe data services without inferring attach or substituting an APN."""
+    raw = report.get('network_diagnostics')
+    if not isinstance(raw, dict):
+        return []
+    values = compatibility.public_network_diagnostics(raw)
+    items = (
+        ('data_services_status', '数据服务实际状态', 'OFF 表示本次状态未就绪，不等于用户手动关闭。'),
+        ('data_service_mode', '数据服务设置', '这是系统记录的模式；与实际状态分开核对。'),
+        ('internet_present', '系统含 internet 服务', '服务存在不代表已建立数据连接。'),
+        ('internet_enabled', 'internet 已启用', '启用不代表已连接。'),
+        ('internet_connectable', 'internet 可连接', '不可连接时需先排查数据服务与入网状态。'),
+        ('internet_active', 'internet 已激活', '激活不替代 APN 和 connected 检查。'),
+        ('network_service', '无线网络服务位图', '值 1 表示仅紧急服务；其他值不据此认定注册成功。'),
+        ('lte_active_band_mask', 'LTE 活跃频段位图', '原始位图，不是频段编号，也不证明正常入网或运营商归属。'),
+        ('lte_band_capability_mask', 'LTE 频段能力位图', '原始位图，不证明现场覆盖或正常入网。'),
+    )
+    rows = []
+    for key, title, hint in items:
+        if key not in raw:
+            continue
+        value = values[key]
+        actual = '未知' if value is None else '是' if value is True else '否' if value is False else str(value)
+        problem = value == 'OFF' or value is False or key == 'network_service' and value == 1
+        rows.append({'title': title, 'state': '未知' if value is None else '只读快照',
+                     'detail': '当前：' + actual + '。' + hint, 'problem': problem})
+    return rows
+
+
 def baseline_rows(report, running=False):
     baseline_check = next((c for c in report.get('checks', []) if c['id'] == 'baseline'), None)
     if not baseline_check and not report.get('baseline') and not report.get('configuration_diagnostics'):
@@ -172,6 +201,8 @@ def support_summary(report, names, note_for, version, running=False):
         for key, title in (('apn_matches', 'APN 匹配'), ('data_connected', '数据已连接')):
             value = network.get(key)
             lines.append(title + '：' + ('是' if value is True else '否' if value is False else '未知'))
+    for row in network_rows(report):
+        lines.append(row['title'] + '：' + row['detail'])
     observations = incoming_rows(report)
     if observations:
         lines.append('IMS 与来电配置观察（不作为通过条件；通话尚未由此验收）：')

@@ -2,6 +2,13 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.3.3-r6 · Local Q20 network diagnostic test build · 2026-10-29
+
+- Stop reporting the LTE check as passed when the snapshot explicitly reports emergency-only service. Negative service observations also block stale connected=true readings.
+- Observe actual data-service status separately from the configured mode, plus internet presence/enabled/connectable/active flags. Missing APN/connected values stay unknown; active never substitutes for connection proof.
+- Show the same bounded network service and LTE band masks in details and troubleshooting summaries without inferring the operator or successful registration.
+- Preserve APN overlays and existing configuration-baseline restrictions. This is a diagnostic fix, not Q20/Telecom network acceptance; see the [evidence and limits](NETWORK-DIAGNOSTICS.md).
+
 ## Unreleased · Incoming configuration explanations and upstream comparison · 2026-10-29
 
 - Show the same six existing incoming-configuration observations in check details and copied/exported troubleshooting summaries, with interface-specific explanations and stable references. Missing or invalid values remain unknown; observations do not establish call acceptance or action permission.

@@ -3,7 +3,7 @@
   "version": "0.3.3",
   "files": {
     "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
-    "device/compatibility.py": "b2d395d3d4c8ee4f3ccca9833222c1d61dca3e78f667e477ef72fac5b54d2bef",
+    "device/compatibility.py": "124627144a7fb3d2e086bb6bd711f05a85bebd9b0653aae0b7cb8fe29fe15e13",
     "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
     "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
     "device/install.py": "c5b4f29d550f28b23e17b453bea87be79d6e48a0e7c59b13aa0e465d7a55ade9",

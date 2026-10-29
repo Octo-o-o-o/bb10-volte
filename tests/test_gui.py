@@ -138,6 +138,33 @@ class GuiTests(unittest.TestCase):
         self.app.show_checks()
         self.root.update_idletasks()
 
+    def test_network_failure_is_explained_in_table_and_copied_summary(self):
+        value = report(ready=False, tested=False)
+        value['network_diagnostics'] = {'data_service_mode': 'ON', 'data_services_status': 'OFF',
+                                        'internet_present': True, 'internet_active': False,
+                                        'internet_connectable': False, 'network_service': 1}
+        value['checks'] = [{'id': 'lte', 'status': 'wait', 'code': 'lte_emergency_only'},
+                           {'id': 'apn', 'status': 'wait', 'code': 'data_services_off'}]
+        self.app.render_report(value)
+        self.assertIn('仅紧急服务', self.app.table.item('lte', 'values')[2])
+        self.assertIn('OFF', self.app.table.item('apn', 'values')[2])
+        with patch.object(self.app, 'run') as action, patch.object(gui, 'Client') as client:
+            self.app.show_checks()
+            self.root.update_idletasks()
+            def widgets(widget):
+                return [widget] + [item for child in widget.winfo_children() for item in widgets(child)]
+            popup = next(child for child in self.root.winfo_children() if isinstance(child, tk.Toplevel))
+            table = next(widget for widget in widgets(popup) if isinstance(widget, gui.ttk.Treeview))
+            rows = {table.item(key, 'values')[0]: table.item(key, 'values')[2] for key in table.get_children()}
+            self.assertIn('当前：ON', rows['数据服务设置'])
+            self.assertIn('当前：OFF', rows['数据服务实际状态'])
+            summary = self.app.diagnostic_text()
+            self.assertIn(rows['数据服务设置'], summary)
+            self.assertIn(rows['数据服务实际状态'], summary)
+            self.assertFalse(self.app.allowed_actions()['install'])
+            action.assert_not_called(); client.assert_not_called()
+            popup.destroy()
+
     def test_incoming_observations_share_snapshot_and_never_enable_actions_or_transport(self):
         value = report(ready=False, tested=False, installed=True)
         value.update(can_restore=False, incoming_diagnostics={

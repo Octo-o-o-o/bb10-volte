@@ -13,7 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
-from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, incoming_rows, support_summary
+from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, incoming_rows, network_rows, support_summary
 from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
@@ -47,6 +47,10 @@ NOTES = {
     'identity_layout_matches': '在手机本地核验通过；报告不包含完整标识',
     'identity_layout_unknown': 'SIM 身份格式不符，需提供脱敏预检报告排查',
     'lte_ready': '本次快照报告 LTE；不代表已完成网络注册、能上网或已确认频段', 'lte_not_ready': '开启移动网络并等待 LTE',
+    'lte_emergency_only': '手机报告仅紧急服务，尚未取得正常网络服务；显示 LTE 或信号格不代表已入网。',
+    'data_services_off': '手机报告数据服务状态或设置为 OFF；检查详情可区分两者，不能仅凭状态认定手动关闭，也不能据此判断频段不支持。',
+    'data_internet_inactive': '系统未提供可用的 internet 服务；缺少 APN/connected 字段不等于 APN 填错，请先检查数据服务与入网状态。',
+    'data_network_emergency_only': '手机报告仅紧急服务，当前不能将数据连接判为就绪；请先排查正常入网。',
     'data_apn_ready': '所选配置的数据 APN 已连接', 'data_apn_not_ready': '所选数据 APN 未连接；检查数据服务与配置',
     'data_apn_profile_mismatch': '手机报告的 APN 不在所选配置中；请核对实际 APN 与运营商模板。连接状态见检查详情。',
     'data_apn_disconnected': 'APN 与配置匹配，但手机报告数据未连接；请先确认手机能使用移动数据上网。',
@@ -682,6 +686,8 @@ class App:
                 apn if apn in ('ctnet', 'ctlte', 'cmnet', '3gnet') else
                 '其他 APN（报告不保存原文）' if apn == 'other' else '未知')
 
+        for row in network_rows(report):
+            add(row['title'], row['state'], row['detail'], row['problem'])
         for row in incoming_rows(report):
             add(row['title'], row['state'], '[' + row['code'] + '] ' + row['detail'])
         levels = {'upstream_local_experiment': '上游作者本地实验',

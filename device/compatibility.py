@@ -25,8 +25,14 @@ V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
 FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
+DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
 NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
-                 'radio_read_error', 'data_read_error', 'network_read_error')
+                 'radio_read_error', 'data_read_error', 'network_read_error',
+                 'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
+                 'data_settings_read_error')
+NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
+                   'lte_band_capability_mask': 0xffffffffffffffff}
+NETWORK_ENUMS = ('data_services_status', 'data_service_mode')
 PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', '3gnet')
 CONFIGURATION_FLAGS = ('ims_override_absent', 'probe_override_absent', 'cdsc_directory_empty',
                        'voice_override_absent', 'ims_profiles_absent', 'ims_networks_absent',
@@ -57,7 +63,14 @@ def public_flags(values, keys):
 
 
 def public_network_diagnostics(values):
+    values = values if isinstance(values, dict) else {}
     result = public_flags(values, NETWORK_FLAGS)
+    for key, maximum in NETWORK_NUMBERS.items():
+        value = values.get(key)
+        result[key] = value if type(value) is int and 0 <= value <= maximum else None
+    for key in NETWORK_ENUMS:
+        value = values.get(key)
+        result[key] = value if isinstance(value, str) and value in ('ON', 'OFF') else None
     apn = values.get('observed_data_apn')
     result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
     result['scope'] = 'snapshot_only_not_registration_or_band_proof'
@@ -179,10 +192,23 @@ def read_network(profile=None):
         radio = n.attrs(n.read(RADIO))
         result.update(radio_on=n.value(radio, 'power_status') == 'ON',
                       lte=n.value(radio, 'network_technology') == ['lte'])
+        result['network_service'] = n.value(radio, 'network_service')
+        for key, source in (('lte_active_band_mask', 'active_bands'),
+                            ('lte_band_capability_mask', 'band_capability')):
+            bands = n.value(radio, source, {})
+            result[key] = bands.get('lte') if isinstance(bands, dict) else None
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         result['radio_read_error'] = result['network_read_error'] = True
     try:
-        internet = n.value(n.attrs(n.read(DATA)), 'internet', {})
+        data = n.attrs(n.read(DATA))
+        result['data_services_status'] = n.value(data, 'data_services_status')
+        result['internet_present'] = 'internet' in data
+        internet = n.value(data, 'internet', {})
+        # Inactive services can omit APN/connected. Enabled/active are NOT
+        # substitutes for the live connected field and must never grant access.
+        for key in ('enabled', 'connectable', 'active'):
+            value = internet.get(key)
+            result['internet_' + key] = value if type(value) is bool else None
         apn = internet.get('apn')
         present = isinstance(apn, str) and bool(apn)
         connected = internet.get('connected')
@@ -191,6 +217,12 @@ def read_network(profile=None):
                       observed_data_apn=apn if apn in PUBLIC_APNS else 'other' if present else 'unknown')
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         result['data_read_error'] = result['network_read_error'] = True
+    try:
+        result['data_service_mode'] = n.value(n.attrs(n.read(DATA_SETTINGS)), 'data_service_mode')
+    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+        # An optional setting read cannot erase a successful live observation.
+        result['data_settings_read_error'] = True
+    result.update(public_network_diagnostics(result))
     return result
 
 
@@ -210,12 +242,22 @@ def network_checks(s, profile=None):
         if carrier and supported:
             add('identity', 'pass' if s.get('identity_matches') else 'adapt',
                 'identity_layout_matches' if s.get('identity_matches') else 'identity_layout_unknown')
-    online = s.get('radio_on') and s.get('lte')
-    add('lte', 'pass' if online else 'wait', 'lte_ready' if online else 'lte_not_ready')
+    # Stock cellular-control service_to_str maps exactly 1 to EMERGENCY.
+    # Other/absent masks do not establish registration; live data is still required.
+    emergency = type(s.get('network_service')) is int and s['network_service'] == 1
+    online = s.get('radio_on') and s.get('lte') and not emergency
+    add('lte', 'pass' if online else 'wait',
+        'lte_emergency_only' if emergency else 'lte_ready' if online else 'lte_not_ready')
+    services_off = s.get('data_services_status') == 'OFF' or s.get('data_service_mode') == 'OFF'
+    inactive = any(s.get(key) is False for key in
+                   ('internet_present', 'internet_enabled', 'internet_connectable', 'internet_active'))
     data = (s.get('apn_matches') is True and s.get('data_connected') is True and
-            not s.get('network_read_error'))
+            not s.get('network_read_error') and not services_off and not inactive and not emergency)
     code = ('data_apn_ready' if data else
             'data_apn_state_unknown' if s.get('network_read_error') else
+            'data_services_off' if services_off else
+            'data_internet_inactive' if inactive else
+            'data_network_emergency_only' if emergency else
             'data_apn_profile_mismatch' if s.get('apn_matches') is False else
             'data_apn_disconnected' if s.get('apn_matches') is True and s.get('data_connected') is False else
             'data_apn_state_unknown')
