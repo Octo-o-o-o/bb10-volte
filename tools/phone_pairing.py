@@ -58,10 +58,19 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
     ssh_dir = os.path.realpath(ssh_dir)
     config = settings(os.path.join(ssh_dir, 'sshd_config'))
     target = os.path.join(ssh_dir, 'authorized_keys2')
-    authorized = [os.path.realpath(path) for path in config.get('authorizedkeysfile', [])]
-    host_paths = [os.path.realpath(path) for path in config.get('hostkey', [])]
+    authorized = config.get('authorizedkeysfile', [])
+    host_paths = config.get('hostkey', [])
     host = os.path.join(ssh_dir, 'ssh_host_rsa_key')
-    if target not in authorized or host not in host_paths or not os.path.isdir(root_dir):
+    def same_file(path, expected):
+        # QNX maps /base/etc/ssh and /var/etc/ssh to the same files without
+        # making realpath() return the same spelling. Verify device/inode,
+        # never infer equivalence from a similar name or matching contents.
+        try:
+            return os.path.isabs(path) and os.path.samefile(path, expected)
+        except (OSError, ValueError):
+            return False
+    if (not any(same_file(path, target) for path in authorized) or
+            not any(same_file(path, host) for path in host_paths) or not os.path.isdir(root_dir)):
         raise ValueError('UNSUPPORTED_SSH_LAYOUT: original Root configuration needs review')
     if os.path.islink(target) or not os.path.isfile(target):
         raise ValueError('Existing authorization file is required')

@@ -6,6 +6,8 @@
 
 Fix an import obstacle found during real Q10 acceptance: old Root folders may contain large or deep build trees. Choose “Check this folder only” to inspect the files directly inside the selected folder, without moving keys or editing SSH configuration. The scope is displayed explicitly. Ambiguous keys, missing trusted phone identity, or incomplete scans still block import, and connections are remembered only after successful Root verification.
 
+Also fixes phone pairing on QNX mount aliases: authorization and host-key paths must refer to the same actual files, rather than have identical path spelling. Re-export an existing request from step one after upgrading to use the current helper while preserving its key and progress.
+
 This updates the desktop app only; phone payload remains `0.3.3`. Windows EXE, notarized universal Mac DMG, hashes, and the exact hardware acceptance scope are provided with the [release](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.3.3-r2). Existing phone services can be checked without repeating Root preparation.
 
 ## 0.3.3-r1 · 2026-10-29

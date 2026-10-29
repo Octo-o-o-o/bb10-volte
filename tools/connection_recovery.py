@@ -138,14 +138,33 @@ def prepare_pairing():
     request_id = folder.name.removeprefix('recovery-')
     identity = folder / 'identity'
     run_keygen(['-q', '-t', 'rsa', '-b', '3072', '-m', 'PEM', '-N', '', '-f', str(identity)])
-    key = public_key(identity.with_suffix('.pub').read_text(encoding='ascii'))
-    template = (resource_root() / 'tools/phone_pairing.py').read_text(encoding='utf-8')
-    script = template.replace('PAIR_PUBLIC_KEY = None', 'PAIR_PUBLIC_KEY = ' + repr(key), 1)
-    script = script.replace('PAIR_REQUEST_ID = None', 'PAIR_REQUEST_ID = ' + repr(request_id), 1)
     output = folder / ('bb10-pair-' + request_id + '.py')
-    output.write_text(script, encoding='utf-8', newline='\n')
+    refresh_pairing_script(output)
     save_pairing_step(output, 1)
     return output
+
+
+def refresh_pairing_script(script):
+    """Explicit re-export uses the current helper with the original request/key."""
+    script = Path(script)
+    folder = script.parent
+    request_id = folder.name.removeprefix('recovery-')
+    if (folder.is_symlink() or folder.is_junction() or script.is_symlink() or
+            folder.resolve().parent != private_root().resolve() or
+            not re.fullmatch(r'[a-f0-9]{12}', request_id) or
+            script.name != 'bb10-pair-' + request_id + '.py'):
+        raise RecoveryError('pairing_result_invalid')
+    identity = folder / 'identity'
+    if not identity.is_file() or identity.is_symlink() or identity.with_suffix('.pub').is_symlink():
+        raise RecoveryError('pairing_result_invalid')
+    key = public_key(identity.with_suffix('.pub').read_text(encoding='ascii'))
+    template = (resource_root() / 'tools/phone_pairing.py').read_text(encoding='utf-8')
+    content = template.replace('PAIR_PUBLIC_KEY = None', 'PAIR_PUBLIC_KEY = ' + repr(key), 1)
+    content = content.replace('PAIR_REQUEST_ID = None', 'PAIR_REQUEST_ID = ' + repr(request_id), 1)
+    temporary = folder / ('script-' + uuid.uuid4().hex + '.partial')
+    temporary.write_text(content, encoding='utf-8', newline='\n')
+    temporary.replace(script)
+    return script
 
 
 def save_pairing_step(script, step):

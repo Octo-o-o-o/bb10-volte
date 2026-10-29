@@ -45,6 +45,18 @@ class RecoveryTests(unittest.TestCase):
                                       'computer_public_key': self.key, 'host_public_key': self.host}))
         return folder, result
 
+    def test_reexport_updates_helper_without_replacing_request_key_or_progress(self):
+        folder, _ = self.pending()
+        script = folder / ('bb10-pair-' + folder.name[9:] + '.py')
+        script.write_text('# old helper')
+        r.save_pairing_step(script, 2)
+        before = (folder / 'identity').read_bytes()
+        r.refresh_pairing_script(script)
+        self.assertIn('os.path.samefile', script.read_text())
+        self.assertIn('PAIR_REQUEST_ID = ' + repr(folder.name[9:]), script.read_text())
+        self.assertEqual((folder / 'identity').read_bytes(), before)
+        self.assertEqual(r.pending_pairings()[0]['step'], 2)
+
     def test_result_requires_owner_confirmation_and_matches_the_same_computer_key(self):
         folder, result = self.pending()
         with self.assertRaisesRegex(r.RecoveryError, 'host_confirmation_required'):
@@ -138,6 +150,7 @@ class PhonePairingTests(unittest.TestCase):
         self.old = b'# original owner keys\noriginal-key fixture\n'
         self.target.write_bytes(self.old)
         self.host, self.key = rsa_public(5), rsa_public(6)
+        (self.ssh / 'ssh_host_rsa_key').write_text('opaque host private fixture')
         (self.ssh / 'ssh_host_rsa_key.pub').write_text(self.host)
         self.config = self.ssh / 'sshd_config'
         self.config.write_text('AuthorizedKeysFile=' + str(self.target) + '\nHostKey=' + str(self.ssh / 'ssh_host_rsa_key') + '\n')
@@ -148,7 +161,8 @@ class PhonePairingTests(unittest.TestCase):
         def file_stat(path, *args, **kwargs):
             value = real_stat(path, *args, **kwargs)
             if os.path.realpath(path) == os.path.realpath(str(self.target)):
-                return SimpleNamespace(st_uid=0, st_mode=stat.S_IFREG | 0o600, st_size=value.st_size)
+                return SimpleNamespace(st_uid=0, st_mode=stat.S_IFREG | 0o600, st_size=value.st_size,
+                                       st_dev=value.st_dev, st_ino=value.st_ino)
             return value
         permissions = patch.object(p.os, 'stat', side_effect=file_stat)
         permissions.start()
@@ -179,6 +193,25 @@ class PhonePairingTests(unittest.TestCase):
             self.pair()
         self.assertEqual(self.target.read_bytes(), self.old)
 
+    def test_qnx_mount_aliases_are_verified_by_actual_file_identity(self):
+        alias = self.base / 'mounted-ssh'
+        alias.mkdir()
+        for name in ('authorized_keys2', 'ssh_host_rsa_key'):
+            (alias / name).hardlink_to(self.ssh / name)
+        self.config.write_text('AuthorizedKeysFile=' + str(alias / 'authorized_keys2') +
+                               '\nHostKey=' + str(alias / 'ssh_host_rsa_key') + '\n')
+        self.pair()
+        self.assertTrue(self.target.read_bytes().startswith(self.old))
+        self.assertIn(self.key, self.target.read_text())
+
+    def test_matching_contents_in_another_file_do_not_prove_layout(self):
+        other = self.base / 'other-authorized'
+        other.write_bytes(self.old)
+        self.config.write_text('AuthorizedKeysFile=' + str(other) +
+                               '\nHostKey=' + str(self.ssh / 'ssh_host_rsa_key') + '\n')
+        with self.assertRaisesRegex(ValueError, 'UNSUPPORTED_SSH_LAYOUT'):
+            self.pair()
+        self.assertEqual(self.target.read_bytes(), self.old)
     def test_conflicting_result_or_lock_is_preserved_without_writing_keys(self):
         output = self.out / 'bb10-pair-abcdef123456-result.json'
         output.write_text('{}')

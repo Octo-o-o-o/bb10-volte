@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from connection_recovery import (RecoveryError, read_host_key, fingerprint, import_identity,
-                                 prepare_pairing, read_pairing_result, finish_pairing,
+                                 prepare_pairing, refresh_pairing_script, read_pairing_result, finish_pairing,
                                  pending_pairings, save_pairing_step, complete_pairing)
 from root_setup import verify_root, SetupError
 from workflow import WorkflowError
@@ -176,7 +176,7 @@ class RecoveryDialog(tk.Toplevel):
             self.set_commands('__root\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
             self.commands.pack(fill='x', before=self.pair_hint)
         self.pair_hint.configure(text=('当前文件：' + self.pair_script.name if self.pair_script else '还没有生成本次授权文件。') +
-                                 '\n关闭应用后可继续本次授权，无需重新生成密钥。')
+                                 '\n关闭应用后可继续本次授权，无需重新生成密钥。\n升级应用后，可返回第一步重新保存同编号的授权文件。')
         self.refresh()
 
     def set_commands(self, text):
@@ -223,7 +223,7 @@ class RecoveryDialog(tk.Toplevel):
             return
         existing_script = self.pair_script
         def work():
-            script = existing_script or prepare_pairing()
+            script = refresh_pairing_script(existing_script) if existing_script else prepare_pairing()
             self.events.put(('prepared_script', script))
             target = Path(folder) / script.name
             # Exclusive creation avoids overwriting another exported request.
