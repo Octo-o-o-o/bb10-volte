@@ -72,7 +72,12 @@ def main():
     # explicitly so the app runs without the build machine's frameworks.
     tcl_root = base/'Frameworks/Tcl.framework/Versions/9.0'
     tk_root = base/'Frameworks/Tk.framework/Versions/9.0'
-    for library in (tcl_root/'Tcl', tk_root/'Tk'):
+    # The isolated framework's SSL dependencies have absolute install names;
+    # PyInstaller may not discover them even when analysis can import ssl.
+    # Explicitly bundle them so downloads work without the build environment.
+    runtime_libraries = (tcl_root/'Tcl', tk_root/'Tk',
+                         base/'lib/libssl.3.dylib', base/'lib/libcrypto.3.dylib')
+    for library in runtime_libraries:
         assert library.is_file()
         command += ['--add-binary', str(library)+':.']
     for folder, destination in ((tcl_root/'Resources/Scripts', '_tcl_data'),
@@ -99,7 +104,7 @@ def main():
     for name, source in resources.items():
         paths = [app/'Contents/Resources'/name, app/'Contents/Frameworks'/name]
         assert any(p.is_file() and sha(p) == sha(source) for p in paths), 'Bundled resource mismatch: '+name
-    for name in ('Tcl', 'Tk'):
+    for name in ('Tcl', 'Tk', 'libssl.3.dylib', 'libcrypto.3.dylib'):
         assert (app/'Contents/Frameworks'/name).is_file(), 'Missing bundled '+name
     for destination, source in (('_tcl_data/init.tcl', tcl_root/'Resources/Scripts/init.tcl'),
                                 ('_tk_data/tk.tcl', tk_root/'Resources/Scripts/tk.tcl')):
@@ -110,12 +115,27 @@ def main():
     exe = app/'Contents/MacOS/bb10-volte'
     archs = subprocess.check_output(['/usr/bin/lipo', '-archs', str(exe)], text=True).split()
     assert set(archs) == {'arm64', 'x86_64'}, archs
+    # Verify the actual app before notarization, without inherited framework
+    # search paths and without any phone or network access.
+    selftest_path = work/'packaged-selftest.json'
+    env = os.environ.copy()
+    for key in ('PYTHONHOME', 'PYTHONPATH', 'TCL_LIBRARY', 'TK_LIBRARY',
+                'DYLD_FRAMEWORK_PATH', 'DYLD_LIBRARY_PATH', 'BB10_FRAMEWORK_PATH',
+                'BB10_LIBRARY_PATH', 'VIRTUAL_ENV'):
+        env.pop(key, None)
+    subprocess.run(['/usr/bin/sandbox-exec', '-p', '(version 1)(allow default)(deny network*)',
+                    str(exe), '--self-test', str(selftest_path)], env=env, check=True, timeout=90)
+    selftest = json.loads(selftest_path.read_text(encoding='utf-8'))
+    assert selftest['passed'] and selftest['version'] == project['version']
+    assert selftest['desktop_revision'] == project.get('desktop_revision', 1)
+    assert selftest['phone_contacted'] is False
     result = {'project': project['name'], 'version': project['version'], 'app': app.name,
               'desktop_revision': project.get('desktop_revision'),
               'architecture': archs, 'python': spec['python'], 'tcl': tcl_version, 'tk': tk_version,
               'pyinstaller': spec['pyinstaller'], 'bundled_data_files': len(resources),
               'bundled_data_hashes_verified': True, 'private_inputs_excluded': True,
-              'source_files': report['files'], 'signed_developer_id': True, 'notarized': False}
+              'source_files': report['files'], 'signed_developer_id': True, 'notarized': False,
+              'packaged_offline_selftest_passed': True}
     (ROOT/'dist'/('bb10-volte-'+desktop_release_version(project)+'-macos-build.json')).write_text(
         json.dumps(result, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({k: v for k, v in result.items() if k != 'source_files'}, indent=2))
