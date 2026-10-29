@@ -43,6 +43,7 @@ def main():
     base = framework/'Versions/3.14'
     env = os.environ.copy()
     env['DYLD_FRAMEWORK_PATH'] = str(framework.parent) + ':' + str(base/'Frameworks')
+    env['DYLD_LIBRARY_PATH'] = str(base/'lib')
     env.pop('PYTHONHOME', None)
     env.pop('PYTHONPATH', None)
     python = base/'bin/python3.14'
@@ -53,13 +54,15 @@ def main():
                     str(ROOT/'tools/macos-freeze-requirements.txt')], env=env, check=True)
     # Apple's protected /usr/bin/arch strips DYLD_* from its inherited
     # environment. PyInstaller uses arch for isolated child interpreters;
-    # forward only this task-local framework path using arch's documented -e.
+    # forward only these task-local runtime paths using arch's documented -e.
     tools_dir = root/'build-tools'
     tools_dir.mkdir()
     arch = tools_dir/'arch'
-    arch.write_text('#!/bin/sh\nexec /usr/bin/arch -e "DYLD_FRAMEWORK_PATH=$BB10_FRAMEWORK_PATH" "$@"\n', encoding='utf-8')
+    arch.write_text('#!/bin/sh\nexec /usr/bin/arch -e "DYLD_FRAMEWORK_PATH=$BB10_FRAMEWORK_PATH" '
+                    '-e "DYLD_LIBRARY_PATH=$BB10_LIBRARY_PATH" "$@"\n', encoding='utf-8')
     arch.chmod(0o755)
     settings = {'python': str(venv_python), 'DYLD_FRAMEWORK_PATH': env['DYLD_FRAMEWORK_PATH'],
+                'DYLD_LIBRARY_PATH': env['DYLD_LIBRARY_PATH'],
                 'PATH_PREFIX': str(tools_dir), 'framework': str(framework), 'installer_sha256': item['sha256']}
     (root/'build-environment.json').write_text(json.dumps(settings, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({'prepared': True, 'build_root': str(root), 'python': str(venv_python),

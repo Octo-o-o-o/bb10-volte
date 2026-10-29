@@ -13,6 +13,7 @@ This release integrates all local development branches. The desktop version is `
 - **Community research:** Attributed, scoped community evidence and read-only incoming configuration diagnostics appear under More → Community research and adaptation progress and in exported reports. Community reports do not establish project hardware acceptance.
 - **Compatibility guards:** Untested model/carrier combinations require autostart disabled and manual startup. Passport installation, startup and automatic restoration remain paused pending provider lifecycle validation; experimental opt-in cannot bypass this guard.
 - **Integration:** Retains the earlier Mac connection diagnostics, experimental native Q10 Root flow, IMS startup changes and corrected acceptance records. Historical branch merges preserve subsequent fixes and update both language guides.
+- **Cross-platform fixes:** Resets stale Mac wizard scrolling when content shrinks, and supplies isolated SSL/library paths to the build environment and its subprocesses.
 
 ### Downloads and updating
 

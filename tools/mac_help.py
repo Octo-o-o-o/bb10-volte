@@ -38,7 +38,13 @@ def scrolled_page(parent, padding=18):
     def sync_region():
         nonlocal pending
         pending = None
-        canvas.configure(scrollregion=canvas.bbox('all'))
+        # macOS may defer resizing an offscreen canvas window. Its requested
+        # height still reflects new children; use it to discard stale overflow.
+        height = content.winfo_reqheight()
+        canvas.itemconfigure(window, height=height)
+        canvas.configure(scrollregion=(0, 0, canvas.winfo_width(), height))
+        if height <= canvas.winfo_height():
+            canvas.yview_moveto(0)
 
     def queue_region(event):
         nonlocal pending
