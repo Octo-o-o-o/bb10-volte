@@ -46,4 +46,23 @@ The Windows and experimental Mac initial-Root recipes are Q10-only. Q20/Passport
 
 This iteration verified portable inputs, personal-key generation, construction and hash checks of both Root images, driver extraction/signatures, and read-only access to an already-rooted Q10. The flashing branch has simulated regression coverage but **has not been exercised on an unrooted phone**, and the current working phone was not reflashed. The wizard remains experimental. First preparation needs Internet access or correctly cached materials; normal prepared use has no activation, billing or AI dependency.
 
+## Interrupted or failing downloads
+
+Current source supports resumable downloads; an existing EXE/DMG needs a new build containing this change. The Q10 archive is approximately 1.57 GB. Status shows downloaded bytes, percentage when the server supplies a total, speed and retries.
+
+- Timeouts, disconnections, HTTP 408/429 and common temporary server errors retry with increasing delays, up to five requests per preparation. Server `Retry-After` delays are capped at 60 seconds. After exhaustion, retry preparation or restart the app to resume saved progress.
+- Partial files are tied to the pinned SHA-256. The downloader also attempts to adopt old randomly named `.partial` files. Keep the download directory. Servers that ignore resume requests cause a safe restart from zero.
+- SHA-256 must match before extraction or tool execution. Corrupt files are retained as `.invalid-*`; a failed hash triggers at most one fresh full download. Concurrent applications cannot write the same download.
+- HTTP 403/404, certificate errors and disk/permission failures have specific messages. Resume helps interrupted transfers; a persistently inaccessible origin needs a working network or HTTP proxy configured in the wizard.
+
+Alternatively, use a download manager with resume support to obtain the complete `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z` from its original URL in the [Root manifest](../materials/sources.json). **Keep its exact filename and do not extract it.** Put it in the cache below and retry preparation. A complete matching file is verified and reused, including by older app versions.
+
+| Application | Download cache |
+| --- | --- |
+| Windows EXE | `%LOCALAPPDATA%\bb10-volte\private\downloads` (paste into Explorer's address bar) |
+| macOS app | `~/Library/Application Support/bb10-volte/private/downloads` |
+| Source | `downloads/` in the repository root |
+
+Retries apply only to material downloads. Interrupted or uncertain phone flashing still pauses under the existing rules.
+
 Pinned inputs: [first-use tools](../materials/first-run-tools.json), [Root materials](../materials/sources.json), [drivers](../materials/usb-drivers.json). Private kits and proprietary firmware remain outside public application/source bundles. Preserve the owner-specific kit for future connections and recovery.

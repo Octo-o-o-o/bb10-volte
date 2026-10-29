@@ -9,12 +9,11 @@ import shutil
 import stat
 import subprocess
 import tarfile
-import urllib.request
 import uuid
 import zipfile
 
 from desktop_paths import resource_root, private_root, download_root
-from fetch_materials import sha
+from fetch_materials import DownloadError, fetch_entries, sha
 
 ROOT = resource_root()
 
@@ -43,29 +42,16 @@ def architecture():
 
 def fetch(item, cache, progress, proxy=None, offline=False):
     """Fetch exact public artifacts, including anonymously readable GHCR bottles."""
-    name = item['file']
-    if Path(name).name != name or name in ('.', '..'):
-        fail('tool_hash_mismatch')
-    target = cache / name
-    if target.is_symlink():
-        fail('tool_hash_mismatch')
-    if not target.exists():
-        if offline:
-            fail('macos_root_input_missing')
-        progress('下载 ' + name)
-        headers = {'Authorization': 'Bearer QQ=='} if item['url'].startswith('https://ghcr.io/v2/homebrew/core/') else {}
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({'https': proxy, 'http': proxy})
-                                             if proxy else urllib.request.ProxyHandler())
-        partial = cache / (name + '.' + uuid.uuid4().hex[:8] + '.partial')
-        with opener.open(urllib.request.Request(item['url'], headers=headers), timeout=45) as response, partial.open('xb') as output:
-            shutil.copyfileobj(response, output, 1024 * 1024)
-        if sha(partial) != item['sha256']:
+    headers = {'Authorization': 'Bearer QQ=='} if item['url'].startswith('https://ghcr.io/v2/homebrew/core/') else {}
+    try:
+        fetch_entries([item], cache, progress, proxy, verify_only=offline, headers=headers)
+    except FileNotFoundError:
+        fail('macos_root_input_missing')
+    except DownloadError as error:
+        if error.code in ('download_hash_mismatch', 'download_cache_invalid'):
             fail('tool_hash_mismatch')
-        partial.rename(target)
-    progress('校验 ' + name)
-    if not target.is_file() or sha(target) != item['sha256']:
-        fail('tool_hash_mismatch')
-    return target
+        raise
+    return cache / item['file']
 
 
 def write_verified(path, data, expected, executable=False):

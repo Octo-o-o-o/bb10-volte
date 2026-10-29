@@ -43,6 +43,8 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 
 Exact filenames, original download URLs and SHA-256 values are in [sources.json](materials/sources.json), [usb-drivers.json](materials/usb-drivers.json) and [stock-partitions.json](materials/stock-partitions.json). These are recorded working versions, not a request to use whichever version is newest. A hash mismatch stops preparation.
 
+Current source supports resume, automatic retries and progress reporting for first-use material downloads. Existing EXE/DMG releases need a new build to gain these features. Preserve the cache after a failure, or preload the complete archive; see [download troubleshooting](docs/FIRST-RUN.en.md#interrupted-or-failing-downloads).
+
 ## Quick start
 
 ### Ways to run

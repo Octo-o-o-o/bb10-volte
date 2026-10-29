@@ -12,6 +12,7 @@ from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh,
                         prepared_kit_history, prepared_images, root_lock_path)
 from workflow import WorkflowError
+from fetch_materials import DownloadError
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
@@ -111,7 +112,7 @@ class SetupWizard(tk.Toplevel):
         if sys.platform != 'win32':
             self.tabs.tab(drivers, state='disabled')
         ttk.Label(root_tab, text='当前自动配方支持 Q10；首次刷写会清空手机数据。Q20 / Q30 请使用匹配机型的 Root 方法。\n'
-                  '应用自动下载固定版本工具和固件，无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。',
+                  '应用自动下载固定版本工具和固件，无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。下载中断会自动重试，再次准备可接续已保存进度。',
                   wraplength=740, justify='left').pack(anchor='w', pady=(10, 18))
         line = ttk.Frame(root_tab)
         line.pack(fill='x')
@@ -195,6 +196,8 @@ class SetupWizard(tk.Toplevel):
         def worker():
             try:
                 self.events.put(('result', (action, function(lambda value: self.events.put(('progress', value))))))
+            except DownloadError as error:
+                self.events.put(('download_error', error.user_message))
             except (SetupError, WorkflowError) as error:
                 self.events.put(('error', str(error)))
             except Exception:
@@ -298,7 +301,9 @@ class SetupWizard(tk.Toplevel):
                     continue
                 self.busy = False
                 self.progress.stop()
-                if kind == 'error':
+                if kind == 'download_error':
+                    self.status.configure(text=value)
+                elif kind == 'error':
                     self.status.configure(text=MESSAGES.get(value, '准备未完成。请检查网络或材料，保留现场后重试；下载代理可在“首次 Root”页设置。'))
                 else:
                     action, result = value
