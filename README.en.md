@@ -18,7 +18,7 @@ Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.c
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Update log](docs/UPDATELOG.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
-Local candidate **0.4.0-r1** records accepted Q20 SQC100-2 / Telecom 460-11 short calls, normal restart recovery and calls without USB. The app manages its existing legacy Root adapter and includes a Q10 SQN100-3 Telecom manual port pending hardware acceptance. Passport lifecycle gates remain. See [Telecom scope and peer comparison](docs/TELECOM-PORT.en.md).
+Local candidate **0.4.0-r3** records accepted Q20 SQC100-2 / Telecom 460-11 short calls, normal restart recovery and calls without USB. The app manages its existing legacy Root adapter and includes a Q10 SQN100-3 Telecom port with accepted bidirectional short calls; controlled restart acceptance is pending. Passport lifecycle gates remain. See [Telecom scope and peer comparison](docs/TELECOM-PORT.en.md).
 
 ## What it does
 

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "date_local": "2026-10-31",
+  "version": "0.4.0-r3",
+  "artifact": "bb10-volte-0.4.0-r3-windows-x64.exe",
+  "sha256": "eb1387fa02eb2d92e3dd5740d8d2cedd93e70995c7e032424a1428a378949e80",
+  "bytes": 18711397,
+  "regressions": {
+    "main_ran": 373,
+    "main_passed": 372,
+    "main_skipped": 1,
+    "q20_adapter_passed": 23
+  },
+  "source_GUI_selftest": true,
+  "packaged_GUI_selftest": true,
+  "all_bundled_data_hashes_verified": true,
+  "private_inputs_excluded": true,
+  "Q10_hardware": "native attach, LTE data, owned IMS and bidirectional short audio calls accepted; normal reboot pending",
+  "Q20_managed_adapter": "same pinned helper and manifest as r1; Q20 currently powered off with SIM temporarily in Q10",
+  "Passport": "not accessed; provider lifecycle gate retained",
+  "new_fixes": [
+    "actual data OFF with user setting ON admits attach preparation while IMS retains its LTE/data gate",
+    "service preparation imports the verified installation destination"
+  ],
+  "not_accepted": [
+    "20-second sustained calls",
+    "Q10 automatic normal reboot recovery",
+    "Q10 USB-disconnected post-reboot calls",
+    "macOS build in this session"
+  ],
+  "release_status": "local_candidate_not_published",
+  "authenticode_signed": false
+}
