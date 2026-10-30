@@ -449,8 +449,10 @@ def evaluate(s, profile=None, allow_experimental=False):
         attach_candidate = (telecom_attach.supported(s) and
             attach_facts.get('native_supported') is True and attach_facts.get('source_baseline') is True and
             attach_facts.get('original_usage') is True and s.get('radio_on') is True and
-            not s.get('network_read_error') and s.get('data_services_status') != 'OFF' and
-            s.get('data_service_mode') != 'OFF')
+            not s.get('network_read_error') and not s.get('data_settings_read_error') and
+            s.get('data_service_mode') == 'ON')
+        # Actual cnice OFF is expected before the attach being repaired. Require
+        # the user's data setting ON; IMS still requires live LTE/data readiness.
         check('telecom_attach', attach_candidate, 'telecom_attach_manual_port' if attach_candidate
               else 'telecom_attach_needs_adaptation', 'adapt')
     check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')

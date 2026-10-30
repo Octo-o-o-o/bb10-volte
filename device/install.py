@@ -13,6 +13,18 @@ BASE = '/var/rootdata/q10_volte'
 ADDON = '/var/addons/q10-unicom-volte'
 
 
+def prepare_telecom_plan(request):
+    # Every installed file was hash-checked and granted scoped PathTrust above.
+    # The temporary stage only trusts the preflight helpers; importing its
+    # service.py is rejected by the phone's Python loader.
+    sys.path.insert(0, BASE + '/device')
+    import service
+    import telecom_attach
+    assert os.path.realpath(service.__file__) == os.path.realpath(BASE + '/device/service.py')
+    service.ACTIVE_REQUEST, service.ACTIVE_PROFILE = request, request['profile']
+    return telecom_attach.prepare(service)
+
+
 def install(stage, update=False):
     assert stage.startswith('/var/rootdata/q10_volte_stage_') and os.path.realpath(stage) == stage
     manifest = json.loads(n.read(stage + '/payload-manifest.json').decode('ascii'))
@@ -81,10 +93,7 @@ def install(stage, update=False):
     n.atomic(BASE + '/installation.json', json.dumps(manifest, indent=2).encode('ascii'))
     telecom_plan = None
     if request['profile'].get('lte_attach'):
-        import service
-        import telecom_attach
-        service.ACTIVE_REQUEST, service.ACTIVE_PROFILE = request, request['profile']
-        telecom_plan = telecom_attach.prepare(service)
+        telecom_plan = prepare_telecom_plan(request)
     if request['profile']['runtime']['autostart']:
         n.atomic(BASE + '/enabled', b'enabled by owner installation\n')
     os.unlink(BASE + '/install-transaction.json')

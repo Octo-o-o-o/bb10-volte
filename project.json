@@ -1,8 +1,8 @@
 {
   "name": "bb10-volte",
   "version": "0.4.0",
-  "desktop_revision": 1,
-  "state": "q20_telecom_accepted_q10_manual_port_hardware_validation_pending",
+  "desktop_revision": 3,
+  "state": "q10_telecom_hardware_validation_in_progress",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
   "scope": "Q20 SQC100-2 Root-v2 Telecom 460-11 short calls and reboot accepted; Q10 SQN100-3 Telecom manual port pending hardware acceptance; Passport provider lifecycle gate retained; exact native hashes required"

@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -69,14 +70,27 @@ class AttachGateTests(unittest.TestCase):
     def test_sources_native_reads_sim_and_data_switch_still_gate_manual_port(self):
         changes = ({'telecom_attach': {}}, {'root_ready': False}, {'mnc': '03'},
                    {'sim_type': 18}, {'identity_matches': False}, {'radio_on': False},
-                   {'network_read_error': True}, {'data_services_status': 'OFF'},
-                   {'data_service_mode': 'OFF'}, {'native_read_error': True},
+                   {'network_read_error': True}, {'data_settings_read_error': True},
+                   {'data_service_mode': 'OFF'}, {'data_service_mode': None}, {'native_read_error': True},
                    {'carrier_template_ready': False}, {'clean_configuration': False},
                    {'voice_policy': 3}, {'vpn_count': 1})
         for change in changes:
             value = attach_facts(); value.update(change)
             with self.subTest(change=change):
                 self.assertFalse(c.evaluate(value, telecom_profile(), True)['can_install'])
+
+    def test_actual_data_off_with_user_mode_on_can_prepare_attach_not_ims(self):
+        value = attach_facts()
+        value.update(data_services_status='OFF', data_service_mode='ON', internet_enabled=True,
+                     internet_active=False, internet_connectable=False, lte=False,
+                     installation={'state': 'stopped', 'current_profile': False})
+        report = c.evaluate(value, telecom_profile(), True)
+        self.assertTrue(report['can_update'])
+        self.assertFalse(report['can_start'])
+        self.assertFalse(report['can_enable'])
+        self.assertEqual(report['network_diagnostics']['data_services_status'], 'OFF')
+        self.assertEqual(next(row for row in report['checks'] if row['id'] == 'apn')['status'], 'wait')
+        self.assertEqual(c.network_state(value, telecom_profile()), 'not_ready')
 
     def test_only_q10_variant3_can_use_new_port_and_passport_gate_remains(self):
         for model, variant in (('Passport', 'SQW100-4'), ('Classic', 'SQC100-2'), ('Q10', 'SQN100-1')):
@@ -106,6 +120,24 @@ class AttachGateTests(unittest.TestCase):
 
 
 class BackupAndRestoreTests(unittest.TestCase):
+    def test_installer_imports_service_from_verified_destination(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            stage = root / 'stage'; stage.mkdir()
+            target = root / 'installed/device'; target.mkdir(parents=True)
+            (stage / 'service.py').write_text("raise RuntimeError('untrusted stage was imported')\n")
+            (target / 'service.py').write_text("marker = 'verified_destination'\n")
+            (target / 'telecom_attach.py').write_text(
+                "def prepare(service):\n    assert service.marker == 'verified_destination'\n"
+                "    assert service.ACTIVE_PROFILE == {'id': 'test'}\n    return {'prepared': True}\n")
+            code = (
+                "import sys;sys.path.insert(0,sys.argv[1]);import install;"
+                "sys.path.insert(0,sys.argv[2]);install.BASE=sys.argv[3];"
+                "assert install.prepare_telecom_plan({'profile': {'id': 'test'}}) == {'prepared': True}"
+            )
+            subprocess.run([sys.executable, '-c', code, str(ROOT / 'device'), str(stage),
+                            (root / 'installed').as_posix()], check=True, capture_output=True)
+
     def test_existing_source_write_preserves_inode_mode_and_owner(self):
         previous = dca.q
         dca.q = SimpleNamespace(n=SimpleNamespace(read=lambda p: Path(p).read_bytes()))
