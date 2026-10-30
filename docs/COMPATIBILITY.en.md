@@ -23,7 +23,7 @@ Identity comes from `/pps/services/deviceproperties`; full OS from `/etc/os.vers
 
 Every trial requires **OS 10.3.3.3216, root, QNX ARM32 and all four exact native SHA-256 values**, matching SIM/profile, verifiable stock carrier configuration, active LTE/data APN and a clean baseline. Editing JSON or enabling trials cannot bypass native checks. Engine: `qnx-arm32-os3216-native-v1`; other hashes/builds need implementation and hardware acceptance.
 
-**Bundled firmware and Root image preparation remain Q10-only. Q20/Q30 testers must supply working root SSH prepared for their own model. Never flash the Q10 images onto them.** This release extends VoLTE trials on already-rooted phones.
+**Desktop `0.3.3-r8` downloads matching Q10, Q20, or Q30 firmware by exact hardware model. Automatic Root image building and flashing remain Q10-only.** Q20 / Q30 require their own matching Root and SSH materials; never flash Q10 images. Firmware downloads and rooted-phone VoLTE compatibility have separate validation scopes.
 
 P-CSCF comes from network PCO; no Beijing address is hardcoded. Province is not a code gate, but provisioning, terminal policies, bands, APNs and roaming affect results. See [profiles](PROFILES.en.md) and [research](CARRIER-RESEARCH.en.md).
 

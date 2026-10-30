@@ -1,4 +1,5 @@
 """Fetch pinned third-party inputs with persistent, hash-checked HTTP resume."""
+from i18n import tr
 import argparse
 from contextlib import contextmanager, nullcontext
 from email.utils import parsedate_to_datetime
@@ -39,23 +40,23 @@ class DownloadError(RuntimeError):
         super().__init__(code)
         self.code = code
         reasons = {
-            'download_failed': '下载中断，自动重试已用完',
-            'download_http_error': '下载服务器拒绝请求',
-            'download_tls_error': '无法验证下载服务器的安全证书，请检查系统时间或代理',
-            'download_invalid_response': '服务器返回了无效的下载范围或内容',
-            'download_resume_mismatch': '节点内容与已有下载进度不一致',
-            'download_hash_mismatch': '文件 SHA-256 校验失败，已停止使用该文件',
-            'download_cache_invalid': '下载缓存路径或材料清单无效',
-            'download_busy': '另一个应用正在下载此文件，请等待其完成',
-            'download_disk_error': '无法写入下载目录，请检查剩余空间和目录权限',
+            'download_failed': tr('下载中断，自动重试已用完'),
+            'download_http_error': tr('下载服务器拒绝请求'),
+            'download_tls_error': tr('无法验证下载服务器的安全证书，请检查系统时间或代理'),
+            'download_invalid_response': tr('服务器返回了无效的下载范围或内容'),
+            'download_resume_mismatch': tr('节点内容与已有下载进度不一致'),
+            'download_hash_mismatch': tr('文件 SHA-256 校验失败，已停止使用该文件'),
+            'download_cache_invalid': tr('下载缓存路径或材料清单无效'),
+            'download_busy': tr('另一个应用正在下载此文件，请等待其完成'),
+            'download_disk_error': tr('无法写入下载目录，请检查剩余空间和目录权限'),
         }
         self.user_message = reasons.get(code, code)
         if detail:
-            self.user_message += '（' + detail + '）'
+            self.user_message += tr('（') + detail + tr('）')
         if filename:
-            self.user_message += '：' + filename
+            self.user_message += tr('：') + filename
         if code not in ('download_busy', 'download_cache_invalid'):
-            self.user_message += '。已保留可用进度；检查网络或“下载代理”后，再次点击准备按钮。'
+            self.user_message += tr('。已保留可用进度；检查网络或“下载代理”后，再次点击准备按钮。')
 
 
 class _Retryable(Exception):
@@ -70,10 +71,10 @@ class MaterialImportError(RuntimeError):
     def __init__(self, code):
         super().__init__(code)
         self.user_message = {
-            'import_source_invalid': '无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。',
-            'import_hash_mismatch': '所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整 .7z 文件，不要解压。原文件和已有缓存均已保留。',
-            'import_insufficient_disk': '下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。',
-            'import_io_error': '导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。',
+            'import_source_invalid': tr('无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。'),
+            'import_hash_mismatch': tr('所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整 .7z 文件，不要解压。原文件和已有缓存均已保留。'),
+            'import_insufficient_disk': tr('下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。'),
+            'import_io_error': tr('导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。'),
         }[code]
 
 
@@ -122,7 +123,7 @@ def source_urls(item):
 
 def source_label(url):
     # Do not put signed redirect queries, proxy credentials or tokens in the UI.
-    return urlsplit(url).hostname or '下载节点'
+    return urlsplit(url).hostname or tr('下载节点')
 
 
 def _headers_for(item, url, headers):
@@ -159,7 +160,7 @@ def _probe_source(item, url, opener, headers):
 
 
 def _rank_sources(item, urls, make_opener, headers, progress):
-    progress(f'正在测速 {len(urls)} 个下载节点：' + item['file'])
+    progress(tr('正在测速 {} 个下载节点：').format(len(urls)) + item['file'])
     results = queue.Queue()
 
     def probe(url):
@@ -190,9 +191,9 @@ def _rank_sources(item, urls, make_opener, headers, progress):
             speeds[url] = speed
     ranked = sorted(urls, key=lambda url: -speeds.get(url, 0))
     if speeds:
-        progress(f'已选择节点 {source_label(ranked[0])} · 测速 {speeds[ranked[0]] / 1024 ** 2:.2f} MiB/s')
+        progress(tr('已选择节点 {} · 测速 {:.2f} MiB/s').format(source_label(ranked[0]), speeds[ranked[0]] / 1024 ** 2))
     else:
-        progress('测速暂未成功，将依次尝试下载节点：' + item['file'])
+        progress(tr('测速暂未成功，将依次尝试下载节点：') + item['file'])
     return ranked
 
 
@@ -224,7 +225,7 @@ def import_material(item, source, folder=None, progress=None):
                 if not same_file and shutil.disk_usage(folder).free < total:
                     raise MaterialImportError('import_insufficient_disk')
                 h, count, last_progress = hashlib.sha256(), 0, time.monotonic()
-                progress('正在校验并导入 ' + item['file'] + '，请稍候…')
+                progress(tr('正在校验并导入 ') + item['file'] + tr('，请稍候…'))
                 # An independent file leaves resumable downloads and an existing
                 # cache intact until the entire selected input is verified.
                 if not same_file:
@@ -238,13 +239,14 @@ def import_material(item, source, folder=None, progress=None):
                             output.write(chunk)
                         count += len(chunk)
                         if time.monotonic() - last_progress >= 0.5:
-                            progress(f'校验并导入 {item["file"]} · {count / 1024 ** 2:.1f} / {total / 1024 ** 2:.1f} MiB（{count / max(total, 1):.1%}）')
+                            progress(tr('校验并导入 {} · {:.1f} / {:.1f} MiB（{:.1%}）').format(
+                                item['file'], count / 1024 ** 2, total / 1024 ** 2, count / max(total, 1)))
                             last_progress = time.monotonic()
                 if h.hexdigest() != item['sha256']:
                     raise MaterialImportError('import_hash_mismatch')
                 if temporary:
                     temporary.replace(target)
-                progress('固件已导入并通过 SHA-256 校验：' + item['file'])
+                progress(tr('固件已导入并通过 SHA-256 校验：') + item['file'])
                 return target
     except OSError:
         raise MaterialImportError('import_io_error') from None
@@ -322,16 +324,16 @@ def _network_error(error, name):
     reason = getattr(error, 'reason', error)
     if isinstance(reason, ssl.SSLCertVerificationError):
         raise DownloadError('download_tls_error', name) from None
-    raise _Retryable('连接超时' if isinstance(reason, TimeoutError) else '网络连接中断') from None
+    raise _Retryable(tr('连接超时') if isinstance(reason, TimeoutError) else tr('网络连接中断')) from None
 
 
 def _show_progress(progress, name, count, total, started, initial):
     amount = f'{count / 1024 ** 2:.1f} MiB'
     if total is not None:
-        amount += f' / {total / 1024 ** 2:.1f} MiB（{count / max(total, 1):.1%}）'
+        amount += f' / {total / 1024 ** 2:.1f} MiB' + tr('（') + f'{count / max(total, 1):.1%}' + tr('）')
     elapsed = time.monotonic() - started
     speed = f' · {(count - initial) / 1024 ** 2 / elapsed:.2f} MiB/s' if elapsed > 0 and count > initial else ''
-    progress(('续传 ' if initial else '下载 ') + name + ' · ' + amount + speed)
+    progress((tr('续传 ') if initial else tr('下载 ')) + name + ' · ' + amount + speed)
 
 
 def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multiple=False, switch_slow=False):
@@ -347,7 +349,7 @@ def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multi
         request_headers['Range'] = f'bytes={range_start}-'
         if validator:
             request_headers['If-Range'] = validator
-    progress(('连接服务器，准备续传 ' if offset else '连接服务器，准备下载 ') + name)
+    progress((tr('连接服务器，准备续传 ') if offset else tr('连接服务器，准备下载 ')) + name)
     request = urllib.request.Request(url, headers=request_headers)
     try:
         response = opener.open(request, timeout=MIRROR_TIMEOUT if multiple else TIMEOUT)
@@ -359,10 +361,10 @@ def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multi
             if sha(partial) == item['sha256']:
                 return
             if multiple:
-                raise DownloadError('download_invalid_response', name, '节点不接受已有下载范围') from None
+                raise DownloadError('download_invalid_response', name, tr('节点不接受已有下载范围')) from None
             _quarantine(partial)
             meta.unlink(missing_ok=True)
-            raise _Retryable('服务器不接受旧进度，将重新下载') from None
+            raise _Retryable(tr('服务器不接受旧进度，将重新下载')) from None
         if status in (408, 429, 500, 502, 503, 504):
             raise _Retryable('HTTP ' + str(status), _retry_delay(retry_after)) from None
         raise DownloadError('download_http_error', name, 'HTTP ' + str(status)) from None
@@ -387,16 +389,16 @@ def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multi
             if offset and validator and current_validator and validator != current_validator:
                 _quarantine(partial)
                 meta.unlink(missing_ok=True)
-                raise _Retryable('服务器文件已变化，将重新下载')
+                raise _Retryable(tr('服务器文件已变化，将重新下载'))
             expected_end = end + 1
         elif status == 200:
             if offset:
-                progress('服务器未接受续传，将从头下载 ' + name)
+                progress(tr('服务器未接受续传，将从头下载 ') + name)
             offset, total, expected_end = 0, length, length
         else:
             raise DownloadError('download_invalid_response', name)
         if item.get('size') is not None and total is not None and total != item['size']:
-            raise DownloadError('download_invalid_response', name, '节点文件大小与固定版本不符')
+            raise DownloadError('download_invalid_response', name, tr('节点文件大小与固定版本不符'))
         if status == 206 and offset and not same_source:
             # ETags belong to one origin. Compare actual overlapping bytes
             # before appending data from another mirror (also after restart).
@@ -407,7 +409,7 @@ def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multi
                 except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
                     _network_error(error, name)
                 if not chunk:
-                    raise _Retryable('节点未返回完整的续传校验片段')
+                    raise _Retryable(tr('节点未返回完整的续传校验片段'))
                 overlap.extend(chunk)
             with partial.open('rb') as saved:
                 saved.seek(range_start)
@@ -440,17 +442,17 @@ def _transfer(item, partial, meta, opener, progress, headers, *, url=None, multi
                 if switch_slow and time.monotonic() - window_started >= SLOW_WINDOW:
                     now = time.monotonic()
                     if chunk and (expected_end is None or count < expected_end) and (count - window_count) / (now - window_started) < MIN_SPEED:
-                        raise _Retryable('节点持续低速，尝试其他节点', slow=True)
+                        raise _Retryable(tr('节点持续低速，尝试其他节点'), slow=True)
                     window_started, window_count = now, count
                 if incomplete:
-                    raise _Retryable('连接提前结束')
+                    raise _Retryable(tr('连接提前结束'))
                 if not chunk:
                     break
         _show_progress(progress, name, count, total, started, offset)
         if expected_end is not None and count != expected_end:
-            raise _Retryable('下载尚未完成')
+            raise _Retryable(tr('下载尚未完成'))
         if total is not None and count < total:
-            raise _Retryable('继续下载剩余内容')
+            raise _Retryable(tr('继续下载剩余内容'))
 
 
 def _fetch(item, folder, make_opener, progress, verify_only, headers):
@@ -461,13 +463,13 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
         for path in (target, partial, meta):
             _regular(path)
         if target.exists():
-            progress('校验 ' + name)
+            progress(tr('校验 ') + name)
             if sha(target) == digest:
                 return
             if verify_only:
                 raise DownloadError('download_hash_mismatch', name)
             _quarantine(target)
-            progress('缓存校验失败，已隔离，将重新获取 ' + name)
+            progress(tr('缓存校验失败，已隔离，将重新获取 ') + name)
         if verify_only:
             raise FileNotFoundError('Missing: ' + name)
         if not partial.exists():
@@ -478,9 +480,9 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
             if legacy:
                 max(legacy, key=lambda path: path.stat().st_size).rename(partial)
                 meta.unlink(missing_ok=True)
-                progress('已找回旧版下载进度 ' + name)
+                progress(tr('已找回旧版下载进度 ') + name)
         if partial.exists():
-            progress('检查已保存的下载 ' + name)
+            progress(tr('检查已保存的下载 ') + name)
             if sha(partial) == digest:
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
@@ -512,7 +514,7 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
                 blocked.difference_update(resume_conflicts)
                 candidates = [url for url in urls if url not in blocked]
                 clean_restart = True
-                progress('已有进度无法与可用节点匹配，已隔离旧进度，将重新下载 ' + name)
+                progress(tr('已有进度无法与可用节点匹配，已隔离旧进度，将重新下载 ') + name)
             if not candidates:
                 break
             eligible = [url for url in candidates if ready_at[url] <= time.monotonic()]
@@ -522,17 +524,17 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
             preferred = None
             delay = max(0, ready_at[url] - time.monotonic())
             if delay:
-                progress(f'{name}：{delay:.0f} 秒后自动重试（{attempt + 1}/{attempts}），保留已下载进度')
+                progress(tr('{}：{:.0f} 秒后自动重试（{}/{}），保留已下载进度').format(name, delay, attempt + 1, attempts))
                 time.sleep(delay)
             if multiple:
-                progress(('切换节点 ' if last_url and last_url != url else '使用节点 ') + source_label(url) + '：' + name)
+                progress((tr('切换节点 ') if last_url and last_url != url else tr('使用节点 ')) + source_label(url) + tr('：') + name)
             last_url = url
             offset = partial.stat().st_size if partial.exists() else 0
             show = (lambda text: progress('[' + source_label(url) + '] ' + text)) if multiple else progress
             try:
                 _transfer(item, partial, meta, make_opener(), show, headers, url=url,
                           multiple=multiple, switch_slow=multiple and len(candidates) > 1 and url not in slow_sources)
-                progress('校验 ' + name)
+                progress(tr('校验 ') + name)
                 if sha(partial) != digest:
                     _quarantine(partial)
                     meta.unlink(missing_ok=True)
@@ -542,7 +544,7 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
                     # A bad old prefix must not condemn a healthy finishing
                     # mirror. Give it one clean download after discarding it.
                     preferred = url
-                    raise _Retryable('文件校验失败，重新下载一次')
+                    raise _Retryable(tr('文件校验失败，重新下载一次'))
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
                 return
@@ -555,11 +557,11 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
                 failures[url] += 1
                 delay = max(2 ** min(failures[url] - 1, 5), error.delay)
                 if not multiple and attempt < attempts - 1:
-                    progress(f'{name}：{error}；{delay:g} 秒后自动重试（{attempt + 2}/{attempts}），保留已下载进度')
+                    progress(tr('{}：{}；{:g} 秒后自动重试（{}/{}），保留已下载进度').format(name, error, delay, attempt + 2, attempts))
                     time.sleep(delay)
                 else:
                     ready_at[url] = time.monotonic() + delay
-                    progress(f'节点 {source_label(url)}：{error}；已保留下载进度')
+                    progress(tr('节点 {}：{}；已保留下载进度').format(source_label(url), error))
             except DownloadError as error:
                 if not multiple or error.code not in ('download_http_error', 'download_tls_error',
                                                        'download_invalid_response', 'download_hash_mismatch',
@@ -569,7 +571,7 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
                 if error.code == 'download_resume_mismatch':
                     resume_conflicts.add(url)
                 last_error = error
-                progress(f'节点 {source_label(url)} 本次不可用：{error.user_message.split("。")[0]}')
+                progress(tr('节点 {} 本次不可用：{}').format(source_label(url), error.user_message))
         raise last_error
 
 
@@ -597,8 +599,16 @@ def main(argv=None):
     parser.add_argument('--verify-only', action='store_true')
     parser.add_argument('--with-usb-drivers', action='store_true', help='Also fetch the optional verified Windows USB driver archive')
     parser.add_argument('--proxy', help='Optional explicit HTTP proxy URL')
+    parser.add_argument('--variant', help='Exact hardware variant, e.g. SQC100-1 or SQW100-4; omit to fetch tools only')
     args = parser.parse_args(argv)
     entries = json.loads((ROOT / 'materials/sources.json').read_text())['verified_inputs']
+    entries = [item for item in entries if not item['id'].startswith('stock-')]
+    if args.variant:
+        from root_setup import SetupError, stock_firmware
+        try:
+            entries.append(stock_firmware(args.variant))
+        except SetupError as error:
+            parser.error(str(error))
     if args.with_usb_drivers:
         entries += json.loads((ROOT / 'materials/usb-drivers.json').read_text())['parts']
     try:

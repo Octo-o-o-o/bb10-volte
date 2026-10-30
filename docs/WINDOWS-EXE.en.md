@@ -28,7 +28,7 @@ Choose/edit an operator profile, run preflight, then follow the fixed install/re
 
 Normal operations use SSH/SCP and anonymous discovery on the direct USB link. First preparation downloads pinned HTTPS materials. A user-supplied SSH configuration may specify a proxy, jump host or remote address. Windows itself may perform security/reputation/certificate checks, so this is not a claim of zero network traffic from the entire computer.
 
-[sources.json](../materials/sources.json) and [usb-drivers.json](../materials/usb-drivers.json) pin initial-preparation downloads: AutoRoot v4, Q10 stock firmware, libusb, LZO, 7-Zip, the recorded Git for Windows/OpenSSL files and BlackBerry drivers. Q20/Q30 images still need model-specific verification. None is fetched on every EXE launch; all can be obtained and verified beforehand.
+[sources.json](../materials/sources.json) and [usb-drivers.json](../materials/usb-drivers.json) pin initial-preparation downloads. Desktop `0.3.3-r8` selects Q10, Classic (Q20), or Passport (Q30) stock firmware by exact hardware model, using the same mapping for automatic downloads, browser links, and local imports. Shared tools include AutoRoot v4, libusb, LZO, 7-Zip, the recorded Git for Windows/OpenSSL files and BlackBerry drivers. Automatic Root building and flashing remain Q10-only. None is fetched on every EXE launch; all can be obtained and verified beforehand.
 
 Private state lives in `%LOCALAPPDATA%\bb10-volte\private`, outside the temporary bundle. Profile import/export uses a user-selected path. Close the old app before replacing its EXE; personal connection files and saved logs remain. Source execution continues to use the repository's `private/` folder. Help and third-party notices are readable offline.
 

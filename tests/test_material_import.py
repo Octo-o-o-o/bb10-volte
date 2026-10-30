@@ -9,6 +9,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+import i18n
+i18n.LANGUAGE = 'zh'  # Wizard assertions below use Chinese.
 import fetch_materials as f
 import root_setup
 import setup_wizard as w
@@ -124,7 +126,7 @@ class MaterialImportTests(unittest.TestCase):
     def test_pinned_firmware_wrapper_uses_same_application_cache(self):
         with patch.object(root_setup, 'stock_firmware', return_value=self.item), \
                 patch.object(f, 'download_root', return_value=self.folder):
-            target = root_setup.import_stock_firmware(str(self.source), self.messages.append)
+            target = root_setup.import_stock_firmware(str(self.source), self.messages.append, variant='SQN100-3')
         self.assertEqual(Path(target).read_bytes(), self.data)
 
 
@@ -147,6 +149,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.root.withdraw()
         self.addCleanup(self.root.destroy)
         self.wizard = w.SetupWizard(self.root, lambda *_: None, auto_check=False, initial_page='root')
+        self.wizard.variant.set('SQN100-3')
         self.addCleanup(self.close_wizard)
 
     def close_wizard(self):
@@ -158,7 +161,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.wizard.drain()
 
     def test_browser_button_uses_manifest_url_and_has_copy_fallback(self):
-        url = root_setup.stock_firmware()['url']
+        url = root_setup.stock_firmware('SQN100-3')['url']
         for result in (True, False):
             with patch.object(w.webbrowser, 'open', return_value=result) as browser:
                 self.wizard.browser_download_button.invoke()
@@ -220,6 +223,95 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(self.wizard.status.cget('text'), error.user_message)
         self.assertEqual(str(self.wizard.import_firmware_button.cget('state')), 'normal')
         self.assertEqual(str(self.wizard.firmware_entry.cget('state')), 'normal')
+
+    def detect_result(self, usb):
+        usb = dict(usb, usb_present=True, usb_network=True, ssh_port=False)
+        self.wizard.events.put(('result', ('detect', {'usb': usb, 'choice': None, 'error': 'connection_refused'})))
+        self.drain()
+
+    def test_no_model_has_no_firmware_link_or_q10_default(self):
+        self.wizard.variant.set('')
+        self.assertEqual(self.wizard.firmware_urls, [])
+        self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), 'disabled')
+        with patch.object(w.webbrowser, 'open') as browser:
+            self.wizard.open_firmware_download()
+        browser.assert_not_called()
+
+    def test_detection_replaces_previous_q10_in_all_download_actions(self):
+        for variant, family in [('SQC100-2', 'classic'), ('SQW100-4', 'passport')]:
+            usb = {'usb_count': 1, 'device': {'ModelName': variant}}
+            self.detect_result(usb)
+            self.assertEqual(self.wizard.variant.get(), variant)
+            item = root_setup.stock_firmware(variant)
+            self.assertEqual(item['family'], family)
+            self.assertEqual(self.wizard.firmware_urls, f.source_urls(item))
+            self.assertIn(item['file'], self.wizard.firmware_label.cget('text'))
+            self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'disabled')
+            with patch.object(w, 'local_usb_state', return_value=usb), \
+                    patch.object(w, 'download_stock_firmware', return_value='cache/' + item['file']) as fetch:
+                self.wizard.download_firmware_button.invoke()
+            self.drain()
+            fetch.assert_called_once()
+            self.assertEqual(fetch.call_args.args[0], variant)
+            with patch.object(w.webbrowser, 'open', return_value=True) as browser:
+                self.wizard.browser_download_button.invoke()
+            browser.assert_called_once_with(item['url'], new=2)
+            self.wizard.firmware_path.set('original firmware')
+            with patch.object(w, 'import_stock_firmware', return_value='cache/' + item['file']) as importer:
+                self.wizard.import_firmware_button.invoke()
+            self.drain()
+            self.assertEqual(importer.call_args.kwargs['variant'], variant)
+            self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+
+    def test_ambiguous_or_unknown_detection_discards_stale_firmware(self):
+        for usb in ({'usb_count': 2, 'device': {'ModelName': 'SQN100-3'}},
+                    {'usb_count': 1, 'device': {'ModelName': 'STL100-1'}},
+                    {'usb_count': 1, 'device': {}}):
+            self.wizard.usb = {}
+            self.wizard.variant.set('SQN100-3')
+            self.detect_result(usb)
+            self.assertEqual(self.wizard.variant.get(), '')
+            self.assertEqual(self.wizard.firmware_urls, [])
+            self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), 'disabled')
+
+    def test_swapped_phone_is_rechecked_before_network_download(self):
+        self.detect_result({'usb_count': 1, 'device': {'ModelName': 'SQN100-3'}})
+        with patch.object(w, 'local_usb_state', return_value={'usb_count': 1, 'device': {'ModelName': 'SQW100-4'}}), \
+                patch.object(w, 'download_stock_firmware') as fetch:
+            self.wizard.download_firmware_button.invoke()
+        self.drain()
+        fetch.assert_not_called()
+        self.assertEqual(self.wizard.status.cget('text'), w.MESSAGES['firmware_model_mismatch'])
+
+    def test_changing_model_discards_previous_images_and_import_path(self):
+        self.wizard.kit = 'old Q10 kit'
+        self.wizard.ack.set(True)
+        self.wizard.firmware_path.set('old Q10 firmware')
+        self.wizard.variant.set('SQW100-4')
+        self.assertIsNone(self.wizard.kit)
+        self.assertFalse(self.wizard.ack.get())
+        self.assertEqual(self.wizard.firmware_path.get(), '')
+        self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+
+    def test_redetecting_same_variant_preserves_prepared_images(self):
+        self.wizard.kit = 'prepared Q10 kit'
+        self.wizard.ack.set(True)
+        self.detect_result({'usb_count': 1, 'device': {'ModelName': 'SQN100-3'}})
+        self.assertEqual(self.wizard.kit, 'prepared Q10 kit')
+        self.assertTrue(self.wizard.ack.get())
+
+    def test_domestic_share_is_browser_only_and_names_the_selected_firmware(self):
+        for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
+            self.wizard.variant.set(variant)
+            item = root_setup.stock_firmware(variant)
+            with patch.object(w.webbrowser, 'open', return_value=True) as browser, \
+                    patch.object(w, 'download_stock_firmware') as fetch:
+                self.wizard.domestic_download_button.invoke()
+            browser.assert_called_once_with(item['manual_download_url'], new=2)
+            fetch.assert_not_called()
+            self.assertIn(item['file'], self.wizard.status.cget('text'))
+        self.wizard.variant.set('')
+        self.assertEqual(str(self.wizard.domestic_download_button.cget('state')), 'disabled')
 
 
 if __name__ == '__main__':

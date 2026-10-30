@@ -21,7 +21,7 @@ class ApnWaitTests(unittest.TestCase):
         self.ready_at = 12
         self.network = {'sim_state': 'READY', 'sim_type': 2, 'mcc': '460', 'mnc': '01',
                         'identity_matches': True, 'radio_on': True, 'lte': True,
-                        'apn_matches': True, 'data_connected': True}
+                        'apn_matches': True, 'data_connected': True, 'network_service': 2098186}
         self.override = ':' + s.APN
         self.data = b'owned carrier file'
         profile = copy.deepcopy(s.ACTIVE_PROFILE)

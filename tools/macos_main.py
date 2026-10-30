@@ -1,4 +1,5 @@
 """Mac app entry point with a local startup diagnostic when necessary."""
+from i18n import tr
 import sys
 import traceback
 import uuid
@@ -20,7 +21,7 @@ if __name__ == '__main__':
                 from tkinter import messagebox
                 root = tk.Tk()
                 root.withdraw()
-                messagebox.showerror('bb10-volte', '程序未能启动。诊断信息保存在本机：\n' + str(report), parent=root)
+                messagebox.showerror('bb10-volte', tr('程序未能启动。诊断信息保存在本机：\n') + str(report), parent=root)
                 root.destroy()
             except Exception:
                 pass

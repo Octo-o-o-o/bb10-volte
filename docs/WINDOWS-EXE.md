@@ -32,7 +32,7 @@ OS 仍要求 **10.3.3.3216**，原生文件哈希、ARM32、SIM 类型、APN 和
 
 正常业务使用 SSH/SCP 到所选手机，并可读取直接 USB 地址的匿名机型发现信息。首次准备按固定清单下载 HTTPS 材料。自定义 `ssh_config` 可自行指定网络主机、代理或跳板，这会改变连接路径；准备步骤只运行已核验的固定工具与本项目脚本。操作系统本身的证书、杀毒或信誉查询不属于本程序逻辑，因此不承诺整台 Windows 电脑零网络流量。
 
-首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。Q10 的材料包括 AutoRoot v4、原版固件、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；Q20 / Q30 的对应固件仍由适配者核实。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
+首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。`0.3.3-r8` 按准确硬件型号获取 Q10、Classic（Q20）或 Passport（Q30）原版固件，自动下载、浏览器链接与导入校验使用同一映射。公共工具包括 AutoRoot v4、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；自动 Root 构建及刷写仍限 Q10。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
 
 ## 保存位置与升级
 

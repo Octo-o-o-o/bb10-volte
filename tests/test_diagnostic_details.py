@@ -10,6 +10,8 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 sys.path.insert(0, str(ROOT / 'device'))
+import i18n
+i18n.LANGUAGE = 'zh'  # Keep the Chinese diagnostic assertions locale-independent.
 import compatibility as c
 import diagnostic_details as d
 from test_preflight import baseline
@@ -26,7 +28,7 @@ class DiagnosticTests(unittest.TestCase):
         report = c.evaluate(complete())
         report['network_diagnostics'] = {
             'data_service_mode': 'ON', 'data_services_status': 'OFF', 'internet_present': True,
-            'internet_active': False, 'internet_connectable': False, 'network_service': 1,
+            'internet_active': False, 'internet_connectable': False, 'network_service': 33555457,
             'lte_active_band_mask': 16, 'lte_band_capability_mask': 'private-value',
             'private-extra': 'private-value'}
         before = copy.deepcopy(report)
@@ -35,7 +37,10 @@ class DiagnosticTests(unittest.TestCase):
         self.assertIn('当前：ON', by_title['数据服务设置']['detail'])
         self.assertIn('当前：OFF', by_title['数据服务实际状态']['detail'])
         self.assertIn('不等于用户手动关闭', by_title['数据服务实际状态']['detail'])
-        self.assertIn('仅紧急服务', by_title['无线网络服务位图']['detail'])
+        self.assertIn('组合位图', by_title['无线网络服务位图']['detail'])
+        self.assertIn('当前：是', by_title['网络含紧急服务标志']['detail'])
+        self.assertTrue(by_title['网络含紧急服务标志']['problem'])
+        self.assertIn('当前：否', by_title['无线层有 LTE 数据服务']['detail'])
         self.assertEqual(by_title['LTE 频段能力位图']['state'], '未知')
         text = d.support_summary(report, {}, lambda check: '检查', 'test')
         for row in rows:

@@ -6,6 +6,10 @@
 
 A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, including **Q10, Classic (Q20) and Passport (often called Q30)**. It provides source code, a Windows EXE and a macOS DMG; original project code uses the [MIT license](LICENSE).
 
+Desktop `0.3.3-r8` selects Q10, Classic (Q20), or Passport (Q30) firmware by exact hardware model for automatic downloads, browser links, and local imports. Missing, conflicting, or multiple-device identification never defaults to Q10. Disconnect devices to explicitly select a model for offline preparation. Automatic Root building and flashing remain Q10-only. See [First use](docs/FIRST-RUN.en.md).
+
+Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.cn/9jkbxczhAK4), then verify and import the file for the selected model, or choose **China download (ZSpace)** in the app. Availability follows the share expiration and usage limit. Stock files contain no owner-specific Root images or keys.
+
 **Background:** These 4G phones could use messaging and data on 4G while voice calls fell back to 2G/3G; as carriers retire those networks in users' regions, default voice calling may stop working, which motivated this project.
 
 **No hardware modification is needed, but the phone needs root access through AutoRoot.** Calling uses the phone's own SIM, native IMS stack and system dialer. No separate VoLTE project or calling app is needed; EXE/DMG users do not install Python separately. See [ways to run](#ways-to-run) and the [installation guide](docs/INSTALL.en.md) for the actual initial-root and connection requirements.

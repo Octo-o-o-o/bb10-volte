@@ -1,4 +1,5 @@
 """Pinned native Mac Root preparation; all operations here are offline from the phone."""
+from i18n import tr
 import hashlib
 import json
 import os
@@ -198,7 +199,7 @@ def build_images(kit, original, progress):
     tools = verified_tools(kit / 'autoroot')
     output = kit / 'images'
     output.mkdir()
-    progress('原生构建并校验 OS / radio 镜像；不会连接或刷写手机')
+    progress(tr('原生构建并校验 OS / radio 镜像；不会连接或刷写手机'))
     with (kit / 'root-build.log').open('xb') as log:
         child = subprocess.run([str(tools['bb10mt']), 'batch', '-i', str(original), '-s', 'patch-owner.txt', '-o', str(output)],
                                cwd=tools['work'], env=native_environment(tools), stdout=log, stderr=subprocess.STDOUT,
@@ -260,7 +261,7 @@ def prepare_root_kit_macos(variant, progress, proxy=None, cache_dir=None, offlin
     archive = fetch(stock, cache, progress, proxy, offline)
     stock_dir = kit / 'stock'
     stock_dir.mkdir()
-    progress('解包并校验匹配 Q10 的原厂固件')
+    progress(tr('解包并校验匹配 Q10 的原厂固件'))
     result = subprocess.run([str(tools['seven_zip']), 'e', '-y', str(archive), stock['extracted_file'], '-o' + str(stock_dir)],
                             capture_output=True, timeout=600)
     original = stock_dir / stock['extracted_file']

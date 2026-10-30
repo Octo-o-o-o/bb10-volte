@@ -23,7 +23,7 @@ def baseline():
     return dict(model='Q10', variant='SQN100-3', os_version='10.3.3.3216', root_ready=True,
                 arm32_qnx=True, native_hashes={path: True for path in native.STOCK_HASHES},
                 sim_state='READY', sim_type=2, mcc='460', mnc='01', identity_matches=True,
-                radio_on=True, lte=True, apn_matches=True, data_connected=True,
+                radio_on=True, lte=True, network_service=2098186, apn_matches=True, data_connected=True,
                 installation={'state': 'absent'}, voice_policy=0,
                 crypto={'swcr_id': -1, 'crypto_support': 0}, ims_count=0, vpn_count=0,
                 clean_configuration=True, carrier_template_ready=True)
@@ -92,7 +92,7 @@ class CompatibilityTests(unittest.TestCase):
         records = {'status_private': {'uicc_state': {'state': 'READY'}, 'uicc_type': 2,
                                       'hplmn': {'mcc': '460', 'mnc': '01'}},
                    'status_restricted': {'imsi': '46001' + '0' * 10},
-                   'status_public': {'power_status': 'ON', 'network_technology': ['lte']},
+                   'status_public': {'power_status': 'ON', 'network_technology': ['lte'], 'network_service': 2098186},
                    'status': {'internet': {'apn': '3gnet', 'connected': True}}}
         with patch.object(native, 'read', side_effect=lambda p: records[p.rsplit('/', 1)[-1]]), \
              patch.object(native, 'attrs', side_effect=lambda v: v), \
@@ -114,7 +114,7 @@ class CompatibilityTests(unittest.TestCase):
             '/pps/services/cellular/uicc/card0/status_private':
                 'uicc_state:json:{"state":"READY"}\nuicc_type:n:2\nhplmn:json:{"mcc":"460","mnc":"11"}\n',
             '/pps/services/cellular/uicc/card0/status_restricted': 'imsi::' + '46011' + '0' * 10 + '\n',
-            c.RADIO: 'power_status::ON\nnetwork_technology:json:["lte"]\n',
+            c.RADIO: 'power_status::ON\nnetwork_technology:json:["lte"]\nnetwork_service:n:2098186\n',
             c.DATA: 'internet:json:' + json.dumps({'apn': apn, 'connected': connected}) + '\n'}
         def read(path):
             if data_error and path == c.DATA:
@@ -184,6 +184,49 @@ class CompatibilityTests(unittest.TestCase):
 
 
 class NetworkSnapshotTests(unittest.TestCase):
+    def test_combined_emergency_capabilities_do_not_allow_connected_apn(self):
+        # r6 missed this real report because the bitmap was not exactly 1.
+        facts = baseline()
+        facts.update(network_service=33555457, data_services_status='ON', data_service_mode='ON',
+                     internet_present=True, internet_enabled=True, internet_connectable=True,
+                     internet_active=True, apn_matches=True, data_connected=True,
+                     observed_data_apn='ctnet', lte_active_band_mask=16)
+        checks = {row['id']: row for row in c.network_checks(facts)}
+        self.assertEqual(checks['lte']['code'], 'lte_emergency_only')
+        self.assertEqual(checks['apn']['code'], 'data_network_emergency_only')
+        # Even hypothetically clearing the overlay restriction cannot permit install.
+        self.assertFalse(c.evaluate(facts)['can_install'])
+        facts['installation'] = {'state': 'stopped', 'current_profile': True,
+                                'carrier_profile_sha256': profiles.fingerprint(profiles.request())}
+        self.assertFalse(any(c.evaluate(facts)[key] for key in ('can_update', 'can_start', 'can_enable')))
+        with patch.object(c, 'read_network', return_value=facts), patch.object(service, 'init_journal') as journal:
+            with self.assertRaisesRegex(AssertionError, 'SIM/network changed'):
+                service.configure()
+            journal.assert_not_called()
+
+    def test_bit_combinations_and_missing_radio_data_fail_closed(self):
+        for mask in (1, 0x400 | 1, 0x2000000 | 1, 33555457, 0x200000 | 1, 0xffffffff):
+            facts = baseline(); facts['network_service'] = mask
+            self.assertTrue(c.public_network_diagnostics(facts)['emergency_service'])
+            self.assertFalse(c.evaluate(facts)['can_install'])
+        for mask in (0, 0x2000400, 0x100, 0x400, 2):
+            facts = baseline(); facts['network_service'] = mask
+            self.assertEqual(c.network_checks(facts)[-2]['code'], 'lte_data_unavailable')
+            self.assertFalse(c.evaluate(facts)['can_install'])
+        for mask in (None, True, '2098186', -1, 1 << 32):
+            facts = baseline(); facts['network_service'] = mask
+            self.assertEqual(c.network_checks(facts)[-2]['code'], 'lte_service_unknown')
+            self.assertFalse(c.evaluate(facts)['can_install'])
+        for mask in (0x200000, 2098186, 0x200000 | 0x2000400):
+            facts = baseline(); facts['network_service'] = mask
+            self.assertTrue(c.evaluate(facts)['can_install'])
+
+    def test_report_derives_flags_from_validated_bitmap_not_spoofed_booleans(self):
+        public = c.public_network_diagnostics({'network_service': 33555457,
+                                              'emergency_service': False, 'lte_data_service': True})
+        self.assertTrue(public['emergency_service'])
+        self.assertFalse(public['lte_data_service'])
+
     def read_snapshot(self, data=None, radio=None, settings=b'data_service_mode::ON\n'):
         # Relevant fields transcribed from the SQC100-4 report; no identities.
         records = {
@@ -237,7 +280,7 @@ class NetworkSnapshotTests(unittest.TestCase):
     def test_enabled_or_active_never_substitute_for_connected_or_apn(self):
         data = b'data_services_status::ON\ninternet:json:{"enabled":true,"active":true,"connectable":true}\n'
         facts = baseline()
-        facts.update(self.read_snapshot(data=data, radio=b'power_status::ON\nnetwork_technology:json:["lte"]\n'))
+        facts.update(self.read_snapshot(data=data, radio=b'power_status::ON\nnetwork_technology:json:["lte"]\nnetwork_service:n:2098186\n'))
         self.assertIsNone(facts['data_connected'])
         self.assertIsNone(facts['apn_matches'])
         self.assertEqual(c.network_checks(facts)[-1]['code'], 'data_apn_state_unknown')

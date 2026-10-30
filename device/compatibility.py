@@ -29,7 +29,7 @@ DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
 NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
                  'radio_read_error', 'data_read_error', 'network_read_error',
                  'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
-                 'data_settings_read_error')
+                 'data_settings_read_error', 'emergency_service', 'lte_data_service')
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
 NETWORK_ENUMS = ('data_services_status', 'data_service_mode')
@@ -62,6 +62,13 @@ def public_flags(values, keys):
     return {key: values.get(key) if type(values.get(key)) is bool else None for key in keys}
 
 
+def network_service_flags(value):
+    """Decode the native bitmap, never compare it to one isolated flag value."""
+    valid = type(value) is int and 0 <= value <= 0xffffffff
+    return {'emergency_service': bool(value & 0x1) if valid else None,
+            'lte_data_service': bool(value & 0x200000) if valid else None}
+
+
 def public_network_diagnostics(values):
     values = values if isinstance(values, dict) else {}
     result = public_flags(values, NETWORK_FLAGS)
@@ -71,6 +78,7 @@ def public_network_diagnostics(values):
     for key in NETWORK_ENUMS:
         value = values.get(key)
         result[key] = value if isinstance(value, str) and value in ('ON', 'OFF') else None
+    result.update(network_service_flags(result['network_service']))
     apn = values.get('observed_data_apn')
     result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
     result['scope'] = 'snapshot_only_not_registration_or_band_proof'
@@ -242,22 +250,29 @@ def network_checks(s, profile=None):
         if carrier and supported:
             add('identity', 'pass' if s.get('identity_matches') else 'adapt',
                 'identity_layout_matches' if s.get('identity_matches') else 'identity_layout_unknown')
-    # Stock cellular-control service_to_str maps exactly 1 to EMERGENCY.
-    # Other/absent masks do not establish registration; live data is still required.
-    emergency = type(s.get('network_service')) is int and s['network_service'] == 1
-    online = s.get('radio_on') and s.get('lte') and not emergency
+    # Native service values are a bitmap. VoPS/concurrency capabilities may
+    # coexist with EMERGENCY and must never substitute for normal LTE data.
+    flags = network_service_flags(s.get('network_service'))
+    emergency = flags['emergency_service'] is True
+    radio_data = flags['emergency_service'] is False and flags['lte_data_service'] is True
+    online = s.get('radio_on') and s.get('lte') and radio_data
     add('lte', 'pass' if online else 'wait',
-        'lte_emergency_only' if emergency else 'lte_ready' if online else 'lte_not_ready')
+        'lte_emergency_only' if emergency else
+        'lte_not_ready' if not s.get('radio_on') or not s.get('lte') else
+        'lte_service_unknown' if flags['lte_data_service'] is None else
+        'lte_data_unavailable' if not radio_data else 'lte_ready')
     services_off = s.get('data_services_status') == 'OFF' or s.get('data_service_mode') == 'OFF'
     inactive = any(s.get(key) is False for key in
                    ('internet_present', 'internet_enabled', 'internet_connectable', 'internet_active'))
     data = (s.get('apn_matches') is True and s.get('data_connected') is True and
-            not s.get('network_read_error') and not services_off and not inactive and not emergency)
+            not s.get('network_read_error') and not services_off and not inactive and radio_data)
     code = ('data_apn_ready' if data else
             'data_apn_state_unknown' if s.get('network_read_error') else
             'data_services_off' if services_off else
             'data_internet_inactive' if inactive else
             'data_network_emergency_only' if emergency else
+            'data_network_service_unknown' if flags['lte_data_service'] is None else
+            'data_network_unavailable' if not radio_data else
             'data_apn_profile_mismatch' if s.get('apn_matches') is False else
             'data_apn_disconnected' if s.get('apn_matches') is True and s.get('data_connected') is False else
             'data_apn_state_unknown')

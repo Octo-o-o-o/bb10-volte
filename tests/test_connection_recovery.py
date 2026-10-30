@@ -52,10 +52,31 @@ class RecoveryTests(unittest.TestCase):
         r.save_pairing_step(script, 2)
         before = (folder / 'identity').read_bytes()
         r.refresh_pairing_script(script)
-        self.assertIn('os.path.samefile', script.read_text())
-        self.assertIn('PAIR_REQUEST_ID = ' + repr(folder.name[9:]), script.read_text())
+        self.assertIn('os.path.samefile', script.read_text(encoding='utf-8'))
+        self.assertIn('PAIR_REQUEST_ID = ' + repr(folder.name[9:]), script.read_text(encoding='utf-8'))
         self.assertEqual((folder / 'identity').read_bytes(), before)
         self.assertEqual(r.pending_pairings()[0]['step'], 2)
+
+    def test_pairing_helper_carries_desktop_language_without_changing_keys(self):
+        folder, _ = self.pending()
+        script = folder / ('bb10-pair-' + folder.name[9:] + '.py')
+        before = (folder / 'identity.pub').read_bytes()
+        for language in ('zh', 'en'):
+            with self.subTest(language=language), patch.object(r.i18n, 'LANGUAGE', language):
+                r.refresh_pairing_script(script)
+                self.assertIn('PAIR_LANGUAGE = ' + repr(language), script.read_text(encoding='utf-8'))
+                self.assertEqual((folder / 'identity.pub').read_bytes(), before)
+
+    def test_pairing_helper_handles_ascii_only_terminal(self):
+        message = 'Cancelled; no files changed.'
+        with patch.object(p, 'PAIR_LANGUAGE', 'zh'), \
+                patch.object(p, 'sys', SimpleNamespace(stdout=SimpleNamespace(encoding='utf-8'))):
+            self.assertEqual(p.phone_message(message), '已取消；没有修改任何文件。')
+        with patch.object(p, 'PAIR_LANGUAGE', 'zh'), \
+                patch.object(p, 'sys', SimpleNamespace(stdout=SimpleNamespace(encoding='ascii'))):
+            self.assertEqual(p.phone_message(message), message)
+        with patch.object(p, 'PAIR_LANGUAGE', 'en'):
+            self.assertEqual(p.phone_message(message), message)
 
     def test_result_requires_owner_confirmation_and_matches_the_same_computer_key(self):
         folder, result = self.pending()

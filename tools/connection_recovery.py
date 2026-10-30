@@ -13,6 +13,7 @@ import uuid
 from desktop_paths import private_root, resource_root
 from workflow import Client, WorkflowError, CREATE_NO_WINDOW
 from phone_pairing import public_key
+import i18n
 
 
 class RecoveryError(ValueError):
@@ -161,6 +162,7 @@ def refresh_pairing_script(script):
     template = (resource_root() / 'tools/phone_pairing.py').read_text(encoding='utf-8')
     content = template.replace('PAIR_PUBLIC_KEY = None', 'PAIR_PUBLIC_KEY = ' + repr(key), 1)
     content = content.replace('PAIR_REQUEST_ID = None', 'PAIR_REQUEST_ID = ' + repr(request_id), 1)
+    content = content.replace("PAIR_LANGUAGE = 'zh'", 'PAIR_LANGUAGE = ' + repr(i18n.LANGUAGE), 1)
     temporary = folder / ('script-' + uuid.uuid4().hex + '.partial')
     temporary.write_text(content, encoding='utf-8', newline='\n')
     temporary.replace(script)

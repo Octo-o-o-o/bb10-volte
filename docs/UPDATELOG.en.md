@@ -2,6 +2,19 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.3.3-r8 · Firmware downloads by hardware model · 2026-10-30
+
+- Add **China download (ZSpace)** with three uploaded stock files and verification lists. Browser shares remain separate from automatic raw-file mirrors; model-specific import verification is retained.
+- Automatic downloads, browser links, and local import verification share one exact-model mapping for Q10, Classic / Q20, and Passport / Q30, without a Q10 default.
+- Unknown, conflicting, and multiple-device identities stop the action. Explicit offline selection is available. Downloads and Root preparation recheck the connected model; model changes clear old image selections.
+- Pin Q20 / Passport stock file sizes, SHA-256 digests, and checked download servers. Automatic Root building and flashing remain Q10-only, with existing phone compatibility gates preserved.
+
+## 0.3.3-r7 · Combined network-service flag correction · 2026-10-29
+
+- Fix r6's equality-to-1 check: combined emergency flags such as 33555457 also block installation, update and start.
+- Require the LTE data-service bit and no emergency bit, retaining unknown for missing/invalid bitmaps. cnice connected=true alone cannot authorize actions; reports and UI explain both bits.
+- Preserve APN-overlay restrictions. This corrects the misleading preflight result and does not establish recovery of the reported device's actual network access.
+
 ## 0.3.3-r6 · Local Q20 network diagnostic test build · 2026-10-29
 
 - Stop reporting the LTE check as passed when the snapshot explicitly reports emergency-only service. Negative service observations also block stale connected=true readings.

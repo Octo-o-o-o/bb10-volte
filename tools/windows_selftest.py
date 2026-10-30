@@ -15,6 +15,7 @@ from profile_editor import presets, ProfileEditor
 from setup_wizard import SetupWizard
 from recovery_gui import RecoveryDialog
 from connection_dialog import ConnectionDialog
+from i18n import tr
 
 
 def run(output):
@@ -23,22 +24,32 @@ def run(output):
             raise RuntimeError('Packaging self-test must not use the network')
     sys.addaudithook(no_python_network)
     from gui import App
+    import i18n
+    assert i18n.language_from_tag('zh-Hant') == 'zh'
+    assert i18n.language_from_tag('ja-JP') == 'en'
+    assert i18n.language_from_tag(None) == 'zh'
+    assert i18n.ENGLISH['连接手机'] == 'Connect phone'
     bundle = resource_root()
     manifest = verify_package()
     verify_diagnostics()
     import compatibility
     telecom = next(profile for profile in presets() if profile['id'] == 'china-telecom')
     assert set(telecom['carrier']['data_apns']) == {'ctnet', 'ctlte'}
-    snapshot = {'apn_matches': True, 'data_connected': False, 'observed_data_apn': 'ctlte'}
+    snapshot = {'apn_matches': True, 'data_connected': False, 'observed_data_apn': 'ctlte',
+                'network_service': 2098186}
     assert compatibility.network_checks(snapshot, telecom)[-1]['code'] == 'data_apn_disconnected'
     assert compatibility.public_network_diagnostics(snapshot)['data_connected'] is False
+    snapshot.update(data_connected=True, network_service=33555457)
+    assert compatibility.network_checks(snapshot, telecom)[-1]['code'] == 'data_network_emergency_only'
+    assert compatibility.public_network_diagnostics(snapshot)['emergency_service'] is True
+    assert compatibility.public_network_diagnostics(snapshot)['lte_data_service'] is False
     assert set(compatibility.public_flags({}, compatibility.CONFIGURATION_FLAGS)) == set(compatibility.CONFIGURATION_FLAGS)
     from diagnostic_details import baseline_rows
     diagnostic_fixture = {'checks': [{'id': 'baseline', 'status': 'wait', 'code': 'baseline_not_clean'}],
                           'installation': {'state': 'absent'}, 'baseline': {'voice_policy': 3}}
     voice = next(row for row in baseline_rows(diagnostic_fixture) if row['id'] == 'voice_policy')
     assert voice['problem'] and voice['actual'] == '3' and voice['expected'] == '0'
-    assert '未检测到本工具安装' in voice['detail']
+    assert tr('未检测到本工具安装；请核对已有设置的来源，并提供排查摘要。') in voice['detail']
     root = tk.Tk()
     root.withdraw()
     app = App(root)
@@ -53,10 +64,36 @@ def run(output):
     assert wizard.browser_download_button.cget('command')
     assert wizard.browse_firmware_button.cget('command')
     assert wizard.import_firmware_button.cget('command')
+    assert wizard.firmware_urls == []
+    assert str(wizard.download_firmware_button.cget('state')) == 'disabled'
+    wizard.variant.set('SQN100-3')
     assert len(wizard.firmware_urls) == 3
+    assert str(wizard.domestic_download_button.cget('state')) == 'normal'
     assert str(wizard.firmware_source.cget('state')) == 'readonly'
     wizard.firmware_source.current(1)
     assert wizard.firmware_source.get() == 'ia600407.us.archive.org'
+    from root_setup import stock_firmware, selected_firmware_variant, SetupError
+    for variant, family in [('SQC100-2', 'classic'), ('SQW100-4', 'passport')]:
+        wizard.usb = {'usb_count': 1, 'device': {'ModelName': variant}}
+        wizard.variant.set(variant)
+        item = stock_firmware(variant)
+        assert item['family'] == family
+        assert item['file'] in wizard.firmware_label.cget('text')
+        assert wizard.firmware_urls[0] == item['url']
+        assert item['manual_download_url'] not in wizard.firmware_urls
+        assert str(wizard.domestic_download_button.cget('state')) == 'normal'
+        assert str(wizard.download_firmware_button.cget('state')) == 'normal'
+        assert str(wizard.prepare_button.cget('state')) == 'disabled'
+        try:
+            selected_firmware_variant('SQN100-3', wizard.usb)
+        except SetupError as error:
+            assert str(error) == 'firmware_model_mismatch'
+        else:
+            raise AssertionError('Wrong-model firmware selection was accepted')
+    wizard.usb = {'usb_count': 2, 'device': {'ModelName': 'SQN100-3'}}
+    wizard.variant.set('')
+    assert wizard.firmware_urls == []
+    assert str(wizard.download_firmware_button.cget('state')) == 'disabled'
     wizard.close()
     from fetch_materials import import_material, fetch_entries
     # Verify the bundled importer under the network-denying audit hook.
@@ -144,6 +181,9 @@ def run(output):
               'first_run_wizard_without_probe_verified': True,
               'manual_firmware_import_ui_verified': True,
               'firmware_mirror_selection_ui_verified': True,
+              'device_firmware_routing_verified': True,
+              'firmware_without_q10_default_verified': True,
+              'domestic_manual_download_ui_verified': True,
               'offline_material_import_verified': True,
               'existing_root_recovery_ui_verified': True,
               'connection_help_ui_verified': True,
@@ -151,6 +191,7 @@ def run(output):
               'root_probe_resource_verified': True,
               'minimum_window_actions_visible': True,
               'shared_control_theme_loaded': True,
+              'system_language_and_translations_verified': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
               'phone_contacted': False}
