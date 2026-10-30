@@ -139,4 +139,3 @@ def restore(folder, value):
     if result['restored']:
         q.n.atomic(folder + '/done', b'original sources, UE usage00 and voice00 verified\n')
     return result
-

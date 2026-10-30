@@ -3,8 +3,8 @@
   "version": "0.4.0-r1",
   "at_utc": "2026-10-30T17:05:19.472003+00:00",
   "artifact": "bb10-volte-0.4.0-r1-windows-x64.exe",
-  "sha256": "ca4225d20ef3660f3dcff6d90bd716a3c38a060ffa1dbe4f6e6715ff38e6e484",
-  "bytes": 18707523,
+  "sha256": "312bff614898df043eaba4d0c255baf5635fbac3cb6b8fccbacdbe74b9eaa90f",
+  "bytes": 18706131,
   "unit_regression": {
     "ran": 371,
     "passed": 370,
