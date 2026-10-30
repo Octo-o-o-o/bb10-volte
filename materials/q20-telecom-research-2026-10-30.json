@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "updated_at_utc": "2026-10-30T16:32:45.468192+00:00",
+  "device": {
+    "variant": "SQC100-2",
+    "board": "CLASSICATT",
+    "os": "10.3.3.3216",
+    "root": "pre-rooted v2"
+  },
+  "scope": "Q20 only; Passport unchanged; keep current Telecom SIM for continued tests",
+  "sources": [
+    {
+      "url": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/tree/40a3d3fd3b6fcdbcb127447742dc81c11980c59a",
+      "commit": "40a3d3fd3b6fcdbcb127447742dc81c11980c59a",
+      "finding": "Classic CMCC and contributed Unicom evidence; no Telecom recipe or Telecom acceptance located; inspected source rather than executing its installer"
+    },
+    {
+      "url": "https://github.com/imqinyu/BB10DeviceVoLTEResearch/blob/40a3d3fd3b6fcdbcb127447742dc81c11980c59a/docs/01-findings.md",
+      "finding": "MMTel voice, IR92, separate IMS APN and PCO are useful protocol references; its starting Classic already had LTE data"
+    },
+    {
+      "url": "https://media.digikey.com/pdf/PCNs/Quectel/PCN_2022042905.pdf",
+      "finding": "Vendor reports voice-centric no-service after 3G retirement and a data-centric native UE-setting candidate on its own modules; motivation only, not Q20 acceptance"
+    },
+    {
+      "url": "https://www.etsi.org/deliver/etsi_ts/124300_124399/124301/18.07.00_60/ts_124301v180700p.pdf",
+      "finding": "Network reject cause18 means CS domain not available; used to target the voice-domain investigation"
+    },
+    {
+      "url": "https://android.googlesource.com/device/sample/+/main/etc/apns-full-conf.xml",
+      "blob_sha": "59607f24d215196e73840e01fb43cafb9fab98f1",
+      "finding": "460-11 entries use data APN ctnet and IMS APN ims with IPV4V6; this agrees with the local carrier choice"
+    },
+    {
+      "url": "https://github.com/ShapeShifter499/joan-volte-lineage",
+      "readme_blob_sha": "629bdc0a13faa11b3d6fee7743e136745107d5e8",
+      "finding": "Author reports Telecom 46011 IMS REGISTER200 on LG V30 with USIM-only IMSI-derived identity; different OS/device, not a Q20 binary or call proof"
+    }
+  ],
+  "native_mapping": {
+    "qct_rrm_sha256": "71835f701affcb9254eadb4ee299e8f7d07547543b3e0f61519456b8241dcb3b",
+    "local_binary_equals_phone": true,
+    "thumb_table_at_0x6f3b0": "0305075f09",
+    "api_mask2_native_voice": {
+      "0": "EFS1 PS_ONLY",
+      "1": "EFS3 PS_PREFERRED",
+      "4": "EFS0 CS_ONLY/original"
+    },
+    "ue_usage": {
+      "DCA_data_centric": "native EFS1",
+      "DCA_voice_centric": "native EFS0",
+      "NAS_data_centric_enum": 2,
+      "NAS_voice_centric_enum": 1,
+      "DCA_decoder_window": "0x62434..0x62530"
+    }
+  },
+  "reproduced_lte_data_result": {
+    "success": true,
+    "method": "Append only UE data-centric to four backed-up empty DCA source objects, aggregate using native dca, then native IMS-preferred setter to reload modem",
+    "positive_samples": 5,
+    "observed_apn": "ctnet",
+    "ue_usage_efs": 1,
+    "voice_policy_efs": 3,
+    "sim_type": 6,
+    "hplmn": "460-11",
+    "lte_data_service": true,
+    "emergency_service": false,
+    "sources_and_original_ue0_voice0_restored_after_bounded_trial": true
+  },
+  "ims_status": "Accepted on this Q20/current 460-11 SIM, including normal-menu reboot automatic recovery and USB-disconnected bidirectional short calls",
+  "final_parameters_candidate": {
+    "data_apn": "ctnet",
+    "ims_apn": "ims",
+    "ip_family": "IPv4v6",
+    "home_domain": "ims.mnc011.mcc460.3gppnetwork.org",
+    "stock_carrier_xml": 446,
+    "ue_usage_setting_source": "data_centric",
+    "ue_usage_setting_efs": 1,
+    "voice_policy_efs": 3,
+    "voice_api_mask": 2,
+    "voice_api_value": 1
+  },
+  "not_replaced": [
+    "original IMS executable",
+    "modem firmware",
+    "Q20 root scheme"
+  ],
+  "autostart_enabled": true,
+  "raw_subscriber_data_in_git": false,
+  "manual_calls": {
+    "schema": 1,
+    "label": "manual",
+    "boot": [
+      "q20-volte-boot-v1",
+      "f5e9c569ce4d2320873eb9f970d2036c4bda7d127066c346"
+    ],
+    "profile_id": "q20-sqc100-2-telecom-46011",
+    "profile_sha256": "71ae006f1e28d1b8dd5107e3ff363310df8ba02f4f65ed0858f85b6ed89d2cbb",
+    "carrier": {
+      "mcc": "460",
+      "mncs": [
+        "11"
+      ]
+    },
+    "native_pid": 41164907,
+    "samples": 67,
+    "all_samples_lte": true,
+    "raw_log_sha256": "503c448268397f09f75fbc9eddfad525386636602d17256aa3cdbec574b2f2cb",
+    "packet_count": 55,
+    "calls": [
+      {
+        "direction": "outgoing",
+        "invite_at": "00:12:05.657",
+        "invite_cseq": 10903,
+        "answer_200_at": "00:12:12.145",
+        "ack_at": "00:12:12.158",
+        "bye_at": "00:12:18.299",
+        "bye_200_at": "00:12:18.487",
+        "established_seconds_to_bye": 6.154,
+        "invite_200_ack_bye_verified": true
+      },
+      {
+        "direction": "incoming",
+        "invite_at": "00:12:25.062",
+        "invite_cseq": 1,
+        "answer_200_at": "00:12:31.440",
+        "ack_at": "00:12:31.922",
+        "bye_at": "00:12:37.383",
+        "bye_200_at": "00:12:37.581",
+        "established_seconds_to_bye": 5.943,
+        "invite_200_ack_bye_verified": true
+      }
+    ],
+    "attempts": [
+      {
+        "direction": "outgoing",
+        "invite_at": "00:11:53.621",
+        "invite_cseq": 64399,
+        "final_responses": [
+          487
+        ],
+        "answered_200_observed": false,
+        "cancel_observed": true,
+        "termination_reason": "not_established"
+      },
+      {
+        "direction": "outgoing",
+        "invite_at": "00:12:05.657",
+        "invite_cseq": 10903,
+        "final_responses": [
+          200
+        ],
+        "answered_200_observed": true,
+        "cancel_observed": false,
+        "termination_reason": null
+      },
+      {
+        "direction": "incoming",
+        "invite_at": "00:12:25.062",
+        "invite_cseq": 1,
+        "final_responses": [
+          200
+        ],
+        "answered_200_observed": true,
+        "cancel_observed": false,
+        "termination_reason": null
+      }
+    ],
+    "both_directions_verified": true,
+    "owner_confirmed": {
+      "incoming": true,
+      "outgoing": true,
+      "audio_both_directions": true,
+      "four_g": true
+    }
+  },
+  "automatic_recovery": {
+    "normal_menu_reboot_owner_confirmed": true,
+    "new_boot_verified": true,
+    "launch": {
+      "source": "root-v2-boot-hook",
+      "boot": [
+        "q20-volte-boot-v1",
+        "9a4d71d643dfcac3e1aa26c2b6424521c6f0061ddc1adf38"
+      ],
+      "at": 1793377304.866433,
+      "profile_sha256": "71ae006f1e28d1b8dd5107e3ff363310df8ba02f4f65ed0858f85b6ed89d2cbb"
+    },
+    "status": {
+      "stock_handoff": {
+        "attempted": false,
+        "reason": "not_a_previous_boot_journal"
+      },
+      "manager_pid": 16912448,
+      "manager_alive": true,
+      "native_pid": 17621235,
+      "startup_timing": {
+        "manager_started": 1793377304.895641,
+        "stock_finished": 1793377340.294236,
+        "telecom_bootstrap_configuring": 1793377322.023864,
+        "configuring": 1793377340.537975,
+        "waiting_for_ims_apn": 1793377362.217675,
+        "running": 1793377378.228927,
+        "registering": 1793377370.30438
+      },
+      "boot": [
+        "q20-volte-boot-v1",
+        "9a4d71d643dfcac3e1aa26c2b6424521c6f0061ddc1adf38"
+      ],
+      "current": {
+        "ran": "LTE",
+        "ims": "connected",
+        "register_status": "200 OK",
+        "radio": [
+          "lte"
+        ],
+        "power": "ON"
+      },
+      "ims_observation_scope": "owned_native",
+      "native_alive": true,
+      "at": 1793377466.870448,
+      "error": null,
+      "phase": "running",
+      "status_from_current_boot": true,
+      "registered": true,
+      "enabled": true,
+      "desktop_captured_utc": "2026-10-30T16:24:28.724231+00:00"
+    },
+    "desktop_service_start_commands_during_reboot": 0,
+    "own_number_display_owner_confirmed_correct": true,
+    "accepted": true,
+    "manager_started_to_running_seconds": 73.333,
+    "full_system_boot_time_measured": false,
+    "post_reboot_calls": {
+      "schema": 1,
+      "label": "after-reboot",
+      "boot": [
+        "q20-volte-boot-v1",
+        "9a4d71d643dfcac3e1aa26c2b6424521c6f0061ddc1adf38"
+      ],
+      "profile_id": "q20-sqc100-2-telecom-46011",
+      "profile_sha256": "71ae006f1e28d1b8dd5107e3ff363310df8ba02f4f65ed0858f85b6ed89d2cbb",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "native_pid": 17621235,
+      "samples": 43,
+      "all_samples_lte": true,
+      "raw_log_sha256": "7ea916083c6d1c75ef1eaead1b04e2e8fbb4359144464edcbbc4d879834db100",
+      "packet_count": 41,
+      "calls": [
+        {
+          "direction": "outgoing",
+          "invite_at": "00:25:53.487",
+          "invite_cseq": 52272,
+          "answer_200_at": "00:25:57.890",
+          "ack_at": "00:25:57.894",
+          "bye_at": "00:26:02.075",
+          "bye_200_at": "00:26:02.354",
+          "established_seconds_to_bye": 4.185,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "00:26:05.586",
+          "invite_cseq": 1,
+          "answer_200_at": "00:26:11.104",
+          "ack_at": "00:26:11.413",
+          "bye_at": "00:26:15.749",
+          "bye_200_at": "00:26:15.961",
+          "established_seconds_to_bye": 4.645,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "attempts": [
+        {
+          "direction": "outgoing",
+          "invite_at": "00:25:53.487",
+          "invite_cseq": 52272,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "00:26:05.586",
+          "invite_cseq": 1,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        }
+      ],
+      "both_directions_verified": true,
+      "owner_confirmed": {
+        "incoming": true,
+        "outgoing": true,
+        "audio_both_directions": true,
+        "four_g": true,
+        "usb_disconnected_during_calls": true
+      }
+    }
+  }
+}
