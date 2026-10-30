@@ -27,7 +27,15 @@ NAMES = {'model': tr('手机型号'), 'os': tr('系统版本'), 'root': tr('Root
          'lte': tr('4G 网络'), 'apn': tr('数据 APN'), 'carrier_config': tr('原厂数据配置'), 'experiment': tr('实测与试用'),
          'installation': tr('已装服务'), 'baseline': tr('安装前状态'), 'saved_profile': tr('已装配置'),
          'provider_lifecycle': tr('机型恢复验证'), 'autostart_policy': tr('开机启动验证')}
+NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'))
 NOTES = {
+    'telecom_attach_manual_port': tr('Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。'),
+    'telecom_attach_needs_adaptation': tr('电信入网前置流程仅开放散列和原始配置一致的 Q10 SQN100-3 手动试用；Q20 使用已验收的独立适配，Q30 仍待适配。'),
+    'q20_root_v2_verified': tr('已验证现有 Q20 旧 Root 适配，无需更换 Root 方案。'),
+    'q20_adapter_verified': tr('现有 Q20 适配的全部固定文件校验通过；App 可查询、手动启动或停用恢复。'),
+    'q20_boot_accepted': tr('此 Q20 460-11 组合已有正常重启和拔 USB 双向短通话记录；当前状态仍需现场核验。'),
+    'q20_boot_hook_changed': tr('Q20 开机入口与已验收版本不同，自动恢复需要复核；请保留当前配置并导出报告。'),
+    'carrier_selection_conflict': tr('配置选择路径与当前服务的文件不一致。保留现场，核对 XML 内容与运营商，避免套用其他运营商数据配置。'),
     'device_identified': tr('已自动识别型号和硬件变体；实测状态见顶部'),
     'passport_provider_lifecycle_unvalidated': tr('Passport 有停用后网络栈重启的社区报告；恢复策略验证前暂停安装、启动及自动恢复，实验试用不能绕过。见社区研究说明。'),
     'device_identity_unknown': tr('型号未知或与硬件变体冲突，请导出报告协助适配'),
@@ -70,6 +78,8 @@ NOTES = {
     'baseline_not_clean': tr('配置或服务状态不符合安装前条件，具体项目见检查详情。尚未安装本工具时，需先核实已有配置来源。'),
 }
 ERRORS = {
+    'telecom_backup_not_verified': tr('原始电信配置尚未完成电脑备份和散列核验，未允许入网修改。请保留现场并重新检查。'),
+    'q20_managed_existing_only': tr('这台 Q20 使用已验收的独立适配；请管理现有服务，通用安装器不会覆盖它。'),
     'provider_lifecycle_needs_adaptation': tr('此机型的提供器停用策略尚未验证。请保留当前状态并导出报告，参阅“社区研究与适配进展”。'),
     'connection_setup_required': tr('这台电脑还没有可用的连接。打开“连接帮助”，选择原刷机文件夹，或从手机重新授权。'),
     'hostname_unresolved': tr('原连接不可用。打开“连接帮助”恢复材料，或在高级设置核对连接。'),
@@ -100,6 +110,9 @@ PHASES = {'package': tr('校验安装包'), 'connection': tr('连接设备'), 't
           'start': tr('启动服务'), 'registration': tr('验证 IMS 注册'), 'restore': tr('停用并恢复'),
           'stage_cleanup': tr('临时检查文件清理')}
 SERVICE_PHASES = {'waiting_for_native_ims': tr('等待系统 IMS 初始化结束'),
+                  'telecom_bootstrap_configuring': tr('准备电信入网策略'),
+                  'telecom_waiting_for_lte_data': tr('等待电信 LTE 数据入网'),
+                  'configuration_restored_reboot_required': tr('配置已恢复，正常重启完成收尾'),
                   'configuring': tr('准备运营商配置'), 'waiting_for_ims_apn': tr('等待 IMS 专用网络'),
                   'not_started_this_boot': tr('本次开机尚未启动'), 'not_started': tr('尚未启动'),
                   'running': tr('运行中'), 'registering': tr('等待 IMS 注册'), 'stopped': tr('已停止')}
@@ -344,7 +357,10 @@ class App:
         for widget in (self.config_entry, self.host_entry, self.browse_button, self.edit_button,
                        self.experiment_check, self.ack_check, self.setup_button):
             widget.configure(state='disabled' if self.busy else 'normal')
-        self.profile_picker.configure(state='disabled' if self.busy else 'readonly')
+        managed = r.get('managed_adapter') == 'q20_root_v2'
+        self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
+        self.edit_button.configure(state='disabled' if self.busy or managed else 'normal')
+        self.experiment_check.configure(state='disabled' if self.busy or managed else 'normal')
         self.menu.entryconfigure(self.export_index, state='normal' if self.last_result and not self.busy else 'disabled')
         self.details_button.configure(state='normal' if self.display_report and not self.busy else 'disabled')
         needs_ack = any(r.get(key) for key in ('can_install', 'can_update', 'can_start')) or r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
@@ -354,7 +370,7 @@ class App:
             self.ack_check.pack_forget()
         experimental = (self.experimental.get() or not profiles.baseline_parameters(self.profile) or
                         bool(self.device_info) and not self.device_info.get('hardware_tested'))
-        if experimental:
+        if experimental and not managed:
             self.experiment_check.pack(anchor='w', pady=(12, 0))
         else:
             self.experiment_check.pack_forget()
@@ -388,6 +404,8 @@ class App:
             badge = tr('机型待识别')
         elif any(c['code'] == 'passport_provider_lifecycle_unvalidated' for c in report['checks']):
             badge = tr('Passport 恢复策略待验证')
+        elif report.get('managed_adapter') == 'q20_root_v2':
+            badge = tr('Q20 电信短通话与重启已验收')
         display_name = device.get('display_name', tr('未知设备'))
         if display_name == 'Unrecognized BB10 device':
             display_name = tr('未识别的 BB10 设备')
@@ -428,6 +446,8 @@ class App:
             detail = tr('已有服务正在运行或持有锁。更新前请先停用并恢复；本次不会覆盖安装。')
         elif report.get('can_install') or report.get('can_update'):
             detail = tr('可进入安装流程。运营商开通情况和双向通话效果仍需真实通话确认。')
+            if report.get('lte_bootstrap_pending'):
+                detail = tr('电信当前尚未正常入网。手动试用会先保存并核验原始备份，再尝试入网；LTE 数据未就绪时不会配置 IMS。')
         elif state in ('conflict', 'interrupted', 'recovery_required'):
             detail = tr('安装或恢复状态需要处理。请保留现场，按检查表处理后重新预检。')
         elif baseline_blocked:
@@ -453,6 +473,8 @@ class App:
             message = (tr('将停止本项目服务、恢复其修改并关闭自动启动。') if action == 'disable' else
                        tr('将按所选配置安装或启动并进行 IMS 验证。自动启动：') +
                        (tr('开启') if self.profile['runtime']['autostart'] else tr('已关闭')) + tr('。首次启动可能短暂重载无线网络。'))
+            if action == 'disable' and (self.report or {}).get('managed_adapter') == 'q20_root_v2':
+                message += tr(' Q20 会保留软件提供器至正常重启；请在恢复完成后用电源菜单重启。')
             if not messagebox.askokcancel(tr('确认设备操作'), message + tr('\n\n请保持 USB 连接，操作期间不要换卡或拨打电话。'), parent=self.root):
                 return
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
@@ -546,6 +568,10 @@ class App:
                         except OSError:
                             remember_failed = True
                     if report:
+                        if report.get('use_installed_profile'):
+                            self.profile = profiles.validate(report['profile_parameters'])
+                            self.profile_name.set(picker_label(self.profile['label']))
+                            self.experimental.set(True)
                         self.render_report(report, result.get('status'))
                     if remember_failed:
                         self.connection_status.configure(text=tr('连接可用 · 本次未能保存，请检查个人目录权限'))
@@ -554,7 +580,8 @@ class App:
                         self.report, self.report_connection = None, None
                     if result.get('restored'):
                         self.summary.configure(text=tr('已停用并确认恢复'), fg=GREEN)
-                        self.detail.configure(text=tr('恢复检查通过。再次安装或更新前，请重新预检。'))
+                        self.detail.configure(text=tr('Q20 配置已恢复，请用电源菜单正常重启，完成提供器收尾。') if result.get('reboot_required') else
+                                              tr('恢复检查通过。再次安装或更新前，请重新预检。'))
                     elif result.get('registration') == 'verified' or result.get('registered'):
                         self.summary.configure(text=tr('4G 通话服务已启用') if action == 'preflight' else tr('服务注册正常，待通话验收'), fg=GREEN)
                         self.detail.configure(text=tr('已检测到安装的服务，当前 IMS 注册与 LTE 正常。') if action == 'preflight' else

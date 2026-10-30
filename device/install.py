@@ -33,7 +33,7 @@ def install(stage, update=False):
     if update:
         previous = json.loads(n.read(BASE+'/installation.json').decode('ascii'))
         assert previous['owner'] == manifest['owner']
-        assert set(previous['files']) in (compatibility.LEGACY_FILES, compatibility.V02_FILES, required)
+        assert set(previous['files']) in (compatibility.LEGACY_FILES, compatibility.V02_FILES, compatibility.V03_FILES, required)
         for name, expected in previous['files'].items():
             assert n.digest(n.read(BASE+'/'+name)) == expected, 'Installed file changed outside the project: '+name
         assert n.digest(n.read(ADDON+'/init/start.sh')) == previous['files']['device/addon-start.sh']
@@ -79,11 +79,18 @@ def install(stage, update=False):
     manifest['carrier_profile_sha256'] = profiles.fingerprint(request)
     manifest['carrier_profile_id'] = request['profile']['id']
     n.atomic(BASE + '/installation.json', json.dumps(manifest, indent=2).encode('ascii'))
+    telecom_plan = None
+    if request['profile'].get('lte_attach'):
+        import service
+        import telecom_attach
+        service.ACTIVE_REQUEST, service.ACTIVE_PROFILE = request, request['profile']
+        telecom_plan = telecom_attach.prepare(service)
     if request['profile']['runtime']['autostart']:
         n.atomic(BASE + '/enabled', b'enabled by owner installation\n')
     os.unlink(BASE + '/install-transaction.json')
     print(json.dumps({'installed': True, 'base': BASE, 'addon': ADDON,
-                      'updated': update, 'started': False, 'startup_validation_pending': True}))
+                      'updated': update, 'started': False, 'startup_validation_pending': True,
+                      'telecom_plan': telecom_plan}))
 
 
 def main():

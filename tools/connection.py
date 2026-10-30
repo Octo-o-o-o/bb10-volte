@@ -91,6 +91,7 @@ def candidate_connections():
 
 
 def resolve_connection(host, config, **client_options):
+    client_options.setdefault('detect_managed', True)
     if config:
         choice = {'host': matching_alias(config, host), 'config': config}
         return Client(choice['host'], choice['config'], **client_options), choice

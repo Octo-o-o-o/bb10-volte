@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "source_type": "user_supplied_peer_report_not_independent_hardware_acceptance",
+  "source_sha256": "5edc86cebb99ae063497fe9abcfb84a6d844903870436ea284f658ff2d3e0784",
+  "peer": {
+    "variant": "SQC100-4",
+    "mcc": "460",
+    "mnc": "11",
+    "carrier_id": 446,
+    "claimed_passes": [
+      "LTE",
+      "mobile_data",
+      "outgoing_call",
+      "incoming_call",
+      "SMS_receive"
+    ],
+    "intervention": "disable legacy carrier339 and carrier36 overlays; retain446; reboot",
+    "final_loaded_path": "not_captured",
+    "native_hashes": "not_captured",
+    "os_version": "not_captured",
+    "ue_usage_setting": "not_captured",
+    "voice_policy": "not_captured",
+    "ims_parameters": {
+      "AlwaysOn": false,
+      "DisableDAD": true,
+      "RequestPCSCFViaPCO": true,
+      "RequestSignallingBearerViaPCO": true
+    }
+  },
+  "our_readonly_crosscheck": {
+    "configured_profile": "q20-sqc100-2-telecom-46011",
+    "ims": {
+      "AlwaysOn": "true",
+      "IMSConfiguration/RequestPCSCFViaPCO": "true",
+      "NetworkInterfaceConfiguration/IPConfiguration/DisableDAD": null,
+      "IMSConfiguration/RequestSignallingBearerViaPCO": null,
+      "NetworkInterfaceConfiguration/IPConfiguration/Type": "IPv4v6"
+    },
+    "xml_sha256": "e9a50ae85b6c5aeb3fa0d20d51177cf29a72d24508105c34fa06011fb0f5f17c",
+    "selected_path": "/var/q20_volte/runtime/carrier/36-ims.xml",
+    "matches_owned_runtime": true,
+    "registered": true,
+    "variant": "SQC100-2",
+    "internet_apns": [
+      "ctnet"
+    ],
+    "carrier_id": "446",
+    "configuration_writes": 0,
+    "desktop_captured_utc": "2026-10-30T16:45:01.504638+00:00"
+  },
+  "useful_actions": [
+    "cross-check selected data XML path and XML CarrierID, not only system carrier ID",
+    "preserve original internet APNs when replacing the IMS service",
+    "keep mobile data, SMS and sustained calls as separate acceptance items"
+  ],
+  "not_justified": [
+    "causal attribution to disabling specific filenames without final load evidence",
+    "applying SQC100-4 evidence to Q10/Q30 or claiming UE1 unnecessary",
+    "changing the accepted SQC100-2 AlwaysOn setting solely from this report"
+  ],
+  "active_q20_configuration_changed": false
+}

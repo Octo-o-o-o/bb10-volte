@@ -18,6 +18,8 @@ Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.c
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Update log](docs/UPDATELOG.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
+Local candidate **0.4.0-r1** records accepted Q20 SQC100-2 / Telecom 460-11 short calls, normal restart recovery and calls without USB. The app manages its existing legacy Root adapter and includes a Q10 SQN100-3 Telecom manual port pending hardware acceptance. Passport lifecycle gates remain. See [Telecom scope and peer comparison](docs/TELECOM-PORT.en.md).
+
 ## What it does
 
 `0.3.3-r5` adds per-item baseline readings, required values, next steps and a copyable troubleshooting summary, plus China Telecom `ctlte` recognition. Windows and Mac share the diagnostics; see the [GUI guide](docs/GUI.en.md). Source archives also include the [Q10 demo and reproduction guide](docs/recordings/RECORDING_GUIDE.md), recorded on an earlier version and not evidence of phone acceptance for this release.

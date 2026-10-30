@@ -10,6 +10,8 @@ from workflow import ROOT, profiles
 FONT = 'PingFang SC' if sys.platform == 'darwin' else 'Microsoft YaHei UI'
 LEGACY_BASELINE_LABEL = profiles.default()['label']
 BB10_BASELINE_LABEL = tr('中国联通 460-01 / BB10（Q10 已验证）')
+ATTACH_MODES = {'standard': tr('保持现有入网策略'),
+                'telecom_data_centric_v1': tr('电信 460-11 数据优先（Q10 试用）')}
 
 
 def display_label(label):
@@ -17,6 +19,7 @@ def display_label(label):
     return {LEGACY_BASELINE_LABEL: BB10_BASELINE_LABEL,
             'China Unicom 01/09 - untested template': tr('中国联通（试用模板）'),
             'China Mobile - untested template': tr('中国移动（试用模板）'),
+            'China Telecom 460-11 / Q10 manual port': tr('中国电信 460-11（Q10 手动移植待验收）'),
             'China Telecom - untested template': tr('中国电信（试用模板）')}.get(label, label)
 
 
@@ -24,6 +27,7 @@ def picker_label(label):
     return {LEGACY_BASELINE_LABEL: tr('中国联通 460-01'),
             'China Unicom 01/09 - untested template': tr('中国联通（试用模板）'),
             'China Mobile - untested template': tr('中国移动（试用模板）'),
+            'China Telecom 460-11 / Q10 manual port': tr('中国电信 460-11（Q10 手动移植待验收）'),
             'China Telecom - untested template': tr('中国电信（试用模板）')}.get(label, display_label(label))
 
 
@@ -75,6 +79,7 @@ class ProfileEditor(tk.Toplevel):
                      ('ims.home_domain', tr('IMS 域名（auto 从实际 SIM 推导）'), None),
                      ('ims.sms', tr('向网络声明 SMS 能力（需单独实测）'), 'bool')]),
             (tr('运行选项'), [('runtime.sim_wait_seconds', tr('SIM / LTE 等待（30–900 秒）'), None),
+                          ('lte_attach', tr('电信入网前置流程'), list(ATTACH_MODES.values())),
                           ('runtime.ims_apn_wait_seconds', tr('IMS APN 等待（10–180 秒）'), None),
                           ('runtime.existing_ims_wait_seconds', tr('原生 IMS 退出等待（10–600 秒）'), None),
                           ('runtime.registration_wait_seconds', tr('桌面注册验证等待（30–900 秒）'), None),
@@ -115,9 +120,11 @@ class ProfileEditor(tk.Toplevel):
         self.original_label = p['label']
         for key, variable in self.fields.items():
             section, _, field = key.partition('.')
-            value = p[section][field] if field else p[section]
+            value = p[section][field] if field else p.get(section, 'standard') if key == 'lte_attach' else p[section]
             if key == 'label':
                 value = display_label(value)
+            elif key == 'lte_attach':
+                value = ATTACH_MODES[value]
             variable.set(', '.join(value) if isinstance(value, list) else value)
 
     def value(self):
@@ -129,6 +136,8 @@ class ProfileEditor(tk.Toplevel):
                 value = value.strip()
             if key == 'label':
                 value = stored_label(value, self.original_label)
+            elif key == 'lte_attach':
+                value = next(k for k, v in ATTACH_MODES.items() if value == v)
             if key in ('carrier.mncs', 'carrier.data_apns'):
                 value = [item.strip() for item in value.split(',')]
             elif section == 'runtime' and field != 'autostart':
@@ -137,6 +146,8 @@ class ProfileEditor(tk.Toplevel):
                 p[section][field] = value
             else:
                 p[section] = value
+        if p.get('lte_attach') == 'standard':
+            del p['lte_attach']
         return profiles.validate(p)
 
     def checked_value(self):

@@ -2,6 +2,10 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.4.0-r1 · Local Telecom candidate · 2026-10-31
+
+Accepted Q20 SQC100-2 Telecom bidirectional short calls, normal restart recovery and calls without USB. Added hash-pinned management of its existing legacy Root adapter, and a manual Q10 SQN100-3 / 460-11 attach port with independently verified desktop backups and the original LTE-before-IMS gate. Passport lifecycle restrictions remain. Added peer-report comparison and carrier path/content verification. See [scope and limits](TELECOM-PORT.en.md).
+
 ## 0.3.3-r8 · Firmware downloads by hardware model · 2026-10-30
 
 - Add **China download (ZSpace)** with three uploaded stock files and verification lists. Browser shares remain separate from automatic raw-file mirrors; model-specific import verification is retained.

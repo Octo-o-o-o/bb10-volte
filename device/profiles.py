@@ -36,7 +36,7 @@ def validate(value):
     def need(condition, field):
         if not condition:
             raise ValueError('Invalid profile field: ' + field)
-    need(isinstance(value, dict) and set(value) == set(DEFAULT), 'root keys')
+    need(isinstance(value, dict) and set(value) in (set(DEFAULT), set(DEFAULT) | {'lte_attach'}), 'root keys')
     p = copy.deepcopy(value)
     need(type(p['schema']) is int and p['schema'] == 1, 'schema')
     need(match(r'[a-z0-9][a-z0-9_-]{0,63}', p['id']), 'id')
@@ -45,6 +45,11 @@ def validate(value):
     for section in ('carrier', 'ims', 'runtime'):
         need(isinstance(p[section], dict) and set(p[section]) == set(DEFAULT[section]), section + ' keys')
     c, ims, runtime = p['carrier'], p['ims'], p['runtime']
+    if 'lte_attach' in p:
+        need(p['lte_attach'] == 'telecom_data_centric_v1', 'lte_attach')
+        need(c['mcc'] == '460' and c['mncs'] == ['11'] and
+             set(c['data_apns']).issubset({'ctnet', 'ctlte'}) and
+             runtime['autostart'] is False, 'lte_attach carrier/manual policy')
     need(match(r'[0-9]{3}', c['mcc']), 'carrier.mcc')
     for key, pattern in (('mncs', r'[0-9]{2,3}'), ('data_apns', APN_RE)):
         values = c[key]

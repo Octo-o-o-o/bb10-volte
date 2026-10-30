@@ -57,7 +57,13 @@ def run(output):
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
     assert editor.value() == app.profile
+    manual_telecom = next(profile for profile in presets() if profile['id'] == 'china-telecom-46011-data-centric')
+    editor.populate(manual_telecom)
+    assert editor.value() == manual_telecom and editor.value()['runtime']['autostart'] is False
     editor.destroy()
+    from q20_managed import bundle as q20_bundle
+    q20_spec, q20_probe = q20_bundle()
+    assert q20_probe.is_file() and q20_spec['variant'] == 'SQC100-2'
     wizard = SetupWizard(root, lambda *_: None, auto_check=False)
     wizard.withdraw()
     assert not wizard.busy and wizard.choice is None
@@ -156,11 +162,11 @@ def run(output):
     with client.stage():
         pass
     assert bundle / 'tools/stage_cleanup.py' in transferred
-    assert len(transferred) == 6
+    assert len(transferred) == 9
     with client.stage(diagnostic='root'):
         pass
     assert bundle / 'tools/root_probe.py' in transferred
-    assert len(transferred) == 9
+    assert len(transferred) == 12
     if frozen():
         assert (bundle / 'licenses/THIRD-PARTY-NOTICES.txt').stat().st_size > 1000
         assert (bundle / 'assets/app.ico').is_file()
@@ -176,6 +182,7 @@ def run(output):
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
+              'telecom_manual_profile_roundtrip': True, 'q20_managed_adapter_bundle_verified': True,
               'telecom_ctlte_and_diagnostic_gates_verified': True,
               'baseline_detail_explanations_verified': True,
               'first_run_wizard_without_probe_verified': True,

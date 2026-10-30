@@ -13,6 +13,8 @@ TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTIN
        'tools/windows-freeze-requirements.txt', 'tools/macos-freeze-requirements.txt',
        'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
+            'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
+            'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 RECORDING_MANIFEST = 'materials/recording-files.json'

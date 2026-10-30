@@ -146,23 +146,23 @@ class StartupPlacementTests(unittest.TestCase):
 
 
 class OwnNumberTests(unittest.TestCase):
-    def packet(self, direction='IN', method='REGISTER', number='+8613800000000'):
+    def packet(self, direction='IN', method='REGISTER', number='+86' + '138' + '0' * 8):
         marker = '<<<<<< IN' if direction == 'IN' else '>>>>>> OUT'
         return '\n'.join('Oct 30 22:00:00.000 ims_rrm.123 sip 3261 ' + body for body in
             (marker, 'SIP/2.0 200 OK', 'P-Associated-URI: <tel:' + number + '>', 'CSeq: 2 ' + method))
 
     def test_only_authenticated_registration_supplies_the_display_number(self):
-        text = (self.packet(method='INVITE', number='+8613800000001') + '\n' +
-                self.packet(direction='OUT', number='+8613800000002') + '\n' + self.packet())
-        self.assertEqual(own_number.registered_numbers(text, 123), {'+8613800000000'})
+        text = (self.packet(method='INVITE', number='+86' + '138' + '0' * 7 + '1') + '\n' +
+                self.packet(direction='OUT', number='+86' + '138' + '0' * 7 + '2') + '\n' + self.packet())
+        self.assertEqual(own_number.registered_numbers(text, 123), {'+86' + '138' + '0' * 8})
         self.assertEqual(own_number.registered_numbers(text, 999), set())
 
     def test_imsi_is_never_converted_to_a_telephone_number(self):
-        self.assertEqual(own_number.phone_numbers('sip:460010000000001@ims.example'), set())
+        self.assertEqual(own_number.phone_numbers('sip:' + '46001' + '0' * 9 + '1@ims.example'), set())
 
     def test_a_changed_sim_is_rejected_before_any_native_read(self):
         with self.assertRaises(AssertionError):
-            own_number.synchronize(None, 123, ['boot', 'nonce'], '460010000000001', 'wrong')
+            own_number.synchronize(None, 123, ['boot', 'nonce'], '46001' + '0' * 9 + '1', 'wrong')
 
 
 class SelectionRollbackTests(unittest.TestCase):

@@ -4,6 +4,27 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    'Q20 开机入口与已验收版本不同，自动恢复需要复核；请保留当前配置并导出报告。': 'The Q20 boot hook differs from the accepted revision. Recheck automatic recovery, preserve the current configuration and export a report.',
+    '保持现有入网策略': 'Keep the existing attach policy',
+    '电信 460-11 数据优先（Q10 试用）': 'Telecom 460-11 data-centric (Q10 manual test)',
+    ' Q20 会保留软件提供器至正常重启；请在恢复完成后用电源菜单重启。': ' Q20 retains its software provider until a normal restart. Restart from the power menu after restoration completes.',
+    'Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。': 'Q10 Telecom manual port awaits hardware acceptance: back up the originals, establish LTE data, then configure IMS.',
+    'Q20 电信短通话与重启已验收': 'Q20 Telecom short calls and restart accepted',
+    'Q20 配置已恢复，请用电源菜单正常重启，完成提供器收尾。': 'Q20 configuration is restored. Restart normally from the power menu to finish provider cleanup.',
+    '中国电信 460-11（Q10 手动移植待验收）': 'China Telecom 460-11 (Q10 manual port, acceptance pending)',
+    '准备电信入网策略': 'Preparing Telecom attach policy',
+    '原始电信配置尚未完成电脑备份和散列核验，未允许入网修改。请保留现场并重新检查。': 'The original Telecom configuration has not been backed up and verified on this computer. Attach changes are blocked. Preserve the state and check again.',
+    '已验证现有 Q20 旧 Root 适配，无需更换 Root 方案。': 'The existing Q20 legacy Root adapter is verified. No Root migration is required.',
+    '此 Q20 460-11 组合已有正常重启和拔 USB 双向短通话记录；当前状态仍需现场核验。': 'This Q20 460-11 combination has normal restart and USB-disconnected bidirectional short-call evidence. Check its current state separately.',
+    '现有 Q20 适配的全部固定文件校验通过；App 可查询、手动启动或停用恢复。': 'Every pinned file in the existing Q20 adapter is verified. The app can inspect, manually start, or disable and restore it.',
+    '电信入网前置流程': 'Telecom LTE attach preparation',
+    '电信入网前置流程仅开放散列和原始配置一致的 Q10 SQN100-3 手动试用；Q20 使用已验收的独立适配，Q30 仍待适配。': 'Manual Telecom attach testing is limited to Q10 SQN100-3 with matching hashes and original configuration. Q20 uses its accepted adapter; Q30 still needs adaptation.',
+    '电信当前尚未正常入网。手动试用会先保存并核验原始备份，再尝试入网；LTE 数据未就绪时不会配置 IMS。': 'Telecom is not attached normally yet. Manual testing first saves and verifies original backups, then attempts LTE attach. IMS is configured only after LTE data becomes ready.',
+    '等待电信 LTE 数据入网': 'Waiting for Telecom LTE data attach',
+    '运营商配置选择': 'Carrier configuration selection',
+    '这台 Q20 使用已验收的独立适配；请管理现有服务，通用安装器不会覆盖它。': 'This Q20 uses its accepted dedicated adapter. Manage the existing service; the standard installer preserves it.',
+    '配置已恢复，正常重启完成收尾': 'Configuration restored; restart normally to finish',
+    '配置选择路径与当前服务的文件不一致。保留现场，核对 XML 内容与运营商，避免套用其他运营商数据配置。': 'The selected configuration path differs from the current service file. Preserve the state and check the XML content and carrier before applying data configuration.',
     # Device-specific firmware downloads
     '国内下载（极空间）': 'China download (ZSpace)',
     '已打开极空间。请下载 {}，然后选择文件并校验导入；分享有效期和次数以网页为准。': 'Opened ZSpace. Download {}, then select the file and verify its import. The share page determines its expiration and usage limit.',

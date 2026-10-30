@@ -22,7 +22,8 @@ LEGACY_FILES = {'device/install.py', 'device/service.py', 'device/native.py',
                 'device/ims_image.py', 'device/radio_api.py', 'device/run.sh',
                 'device/addon-start.sh', 'driver/devnp-volte_swcrypto_probe.so'}
 V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
-FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
+V03_FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
+FILES = V03_FILES | {'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
 DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
@@ -304,7 +305,7 @@ def installed_state():
             return result
         manifest = json.loads(n.read(BASE + '/installation.json').decode('ascii'))
         names = set(manifest['files'])
-        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, FILES):
+        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, V03_FILES, FILES):
             return result
         for name, expected in manifest['files'].items():
             path = BASE + '/' + name
@@ -316,7 +317,7 @@ def installed_state():
         result = {'state': 'stopped', 'version': manifest.get('version'),
                   'enabled': os.path.isfile(BASE + '/enabled'), 'payload_verified': True,
                   'current_profile': names == FILES}
-        if names == FILES:
+        if names in (V03_FILES, FILES):
             if os.path.islink(BASE + '/carrier-profile.json'):
                 return {'state': 'conflict'}
             request = profiles.installed_request(BASE)
@@ -418,6 +419,9 @@ def observe(profile=None):
             except Exception:
                 s['native_read_status'][key] = 'failed'
                 s['native_read_error'] = True
+        if p.get('lte_attach'):
+            import telecom_attach
+            s['telecom_attach'] = telecom_attach.observe(BASE)
     return s
 
 
@@ -437,6 +441,18 @@ def evaluate(s, profile=None, allow_experimental=False):
     hashes = s.get('native_hashes', {})
     check('native', set(hashes) == set(n.STOCK_HASHES) and all(hashes.values()), 'native_hashes_required')
     checks.extend(network_checks(s, p))
+    attach = p.get('lte_attach') == 'telecom_data_centric_v1'
+    attach_facts = s.get('telecom_attach', {})
+    attach_candidate = False
+    if attach:
+        import telecom_attach
+        attach_candidate = (telecom_attach.supported(s) and
+            attach_facts.get('native_supported') is True and attach_facts.get('source_baseline') is True and
+            attach_facts.get('original_usage') is True and s.get('radio_on') is True and
+            not s.get('network_read_error') and s.get('data_services_status') != 'OFF' and
+            s.get('data_service_mode') != 'OFF')
+        check('telecom_attach', attach_candidate, 'telecom_attach_manual_port' if attach_candidate
+              else 'telecom_attach_needs_adaptation', 'adapt')
     check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
     experimental = not autostart_supported(device, p)
     check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else 'recorded_baseline', 'wait')
@@ -444,8 +460,13 @@ def evaluate(s, profile=None, allow_experimental=False):
         check('autostart_policy', not p['runtime']['autostart'],
               'experimental_manual_start_required', 'wait')
     statuses = [c['status'] for c in checks]
+    # Installation only prepares a manual attach plan. Network wait rows remain
+    # truthful; the service still requires LTE/data before any IMS configuration.
+    attach_pending = (attach_candidate and all(c['status'] == 'pass' or c['id'] in ('lte', 'apn')
+                                              for c in checks))
     outcome = ('unsupported' if 'block' in statuses else 'needs_adaptation' if 'adapt' in statuses
-               else 'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
+               else 'experimental' if attach_pending else
+               'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
     installation = s.get('installation', {'state': 'conflict'})
     pristine = (not s.get('native_read_error') and s.get('voice_policy') == 0 and
                 s.get('crypto') == {'swcr_id': -1, 'crypto_support': 0} and
@@ -467,6 +488,9 @@ def evaluate(s, profile=None, allow_experimental=False):
             'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),
             'network_diagnostics': public_network_diagnostics(s),
             'configuration_diagnostics': public_flags(s.get('configuration_diagnostics'), CONFIGURATION_FLAGS),
+            'telecom_attach': {key: attach_facts.get(key) is True for key in
+                               ('native_supported', 'source_baseline', 'original_usage', 'backup_verified')},
+            'lte_bootstrap_pending': attach_pending,
             'carrier_template': s.get('carrier_template'), 'checked_at': int(time.time()),
             'outcome': outcome, 'checks': checks,
             'facts': {key: s.get(key) for key in ('model', 'variant', 'os_version', 'mcc', 'mnc')},
@@ -476,7 +500,8 @@ def evaluate(s, profile=None, allow_experimental=False):
             'baseline_diagnostics': baseline_diagnostics(s),
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
-            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
+            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile
+                         and (not attach or attach_facts.get('backup_verified') is True),
             'can_enable': allowed and not experimental and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
             'can_restore': device_info.provider_lifecycle_supported(device),
             'hardware_validation': 'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',

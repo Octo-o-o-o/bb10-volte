@@ -54,6 +54,10 @@ def runtime_data():
                          'materials/sources.json', 'materials/stock-partitions.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
+    names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',
+                  'materials/q20-device-validation-2026-10-30.json',
+                  'materials/q20-telecom-research-2026-10-30.json',
+                  'materials/q20-peer-telecom-comparison-2026-10-31.json'})
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*.md'))
     return sorted(names)
