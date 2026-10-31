@@ -29,6 +29,7 @@ class NameStartupTests(unittest.TestCase):
         (self.base / 'enabled').touch()
         (self.base / 'state/telecom-autostart-acceptance.json').write_text('{}')
         self.marker = self.folder / 'root.ready'
+        self.entered = self.folder / 'entered'
         self.started = self.folder / 'started'
         self.trusted = self.folder / 'trusted'
         trust = self.script('trust-stub', "printf 'trust\\n' >> \"" + self.trusted.as_posix() + "\"\n")
@@ -38,6 +39,8 @@ class NameStartupTests(unittest.TestCase):
             'else\n  printf premature > "' + self.started.as_posix() + '"\n  exit 42\nfi\n')
         source = (ROOT / 'device/operator-name-start.sh').read_text(encoding='utf-8')
         source = source.replace('BASE=/var/rootdata/q10_volte', 'BASE="' + self.base.as_posix() + '"')
+        source = source.replace('test -f "$BASE/enabled"',
+            'printf entered > "' + self.entered.as_posix() + '"\ntest -f "$BASE/enabled"')
         source = source.replace('/tmp/root.done', self.marker.as_posix())
         source = source.replace('/proc/boot/pathtrust', '"' + trust.as_posix() + '"')
         source = source.replace('/usr/bin/python3.2', '"' + launch.as_posix() + '"')
@@ -54,7 +57,11 @@ class NameStartupTests(unittest.TestCase):
         process = subprocess.Popen([self.shell, '--noprofile', '--norc', str(self.entry)],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
-            time.sleep(0.3)
+            deadline = time.monotonic() + 3
+            while not self.entered.exists() and process.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.02)
+            self.assertTrue(self.entered.exists())
+            time.sleep(0.2)
             self.assertIsNone(process.poll())
             self.assertFalse(self.trusted.exists())
             self.assertFalse(self.started.exists())
