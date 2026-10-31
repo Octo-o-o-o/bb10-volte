@@ -1,13 +1,14 @@
 {
   "schema": 1,
   "date_local": "2026-10-31",
-  "version": "0.4.0-r3",
-  "artifact": "bb10-volte-0.4.0-r3-windows-x64.exe",
-  "sha256": "eb1387fa02eb2d92e3dd5740d8d2cedd93e70995c7e032424a1428a378949e80",
-  "bytes": 18711397,
+  "version": "0.4.0-r4",
+  "artifact": "bb10-volte-0.4.0-r4-windows-x64.exe",
+  "sha256": "3ff7ebbc583527000bc7e1ac35ee8bcb2ea38057d066484c4d05dcd493ce9033",
+  "bytes": 18721965,
+  "source_commit": "4d6d7feddad55fcfe42cf1f8e4f68b9bb440ed05",
   "regressions": {
-    "main_ran": 373,
-    "main_passed": 372,
+    "main_ran": 385,
+    "main_passed": 384,
     "main_skipped": 1,
     "q20_adapter_passed": 23
   },
@@ -15,17 +16,24 @@
   "packaged_GUI_selftest": true,
   "all_bundled_data_hashes_verified": true,
   "private_inputs_excluded": true,
-  "Q10_hardware": "native attach, LTE data, owned IMS and bidirectional short audio calls accepted; normal reboot pending",
-  "Q20_managed_adapter": "same pinned helper and manifest as r1; Q20 currently powered off with SIM temporarily in Q10",
+  "payload_files": 15,
+  "critical_runtime_files_unchanged_from_hardware_r3": 12,
+  "Q10_hardware": "short calls and automatic normal-reboot IMS registration accepted; post-reboot calls without USB pending",
+  "phone_still_runs_r3": true,
+  "phone_update_pending": true,
+  "final_per_SIM_acceptance_receipt_issued": false,
+  "Q20_managed_adapter": "same pinned helper and manifest as r1; Q20 off with SIM borrowed by Q10",
   "Passport": "not accessed; provider lifecycle gate retained",
   "new_fixes": [
-    "actual data OFF with user setting ON admits attach preparation while IMS retains its LTE/data gate",
-    "service preparation imports the verified installation destination"
+    "startup enable requires exact phone/SIM/profile/source-backup/runtime acceptance",
+    "enable does not restart registration",
+    "update preserves accepted enabled intent while retaining an explicit disable",
+    "identical accepted historical request preserved without new experimental opt-in"
   ],
   "not_accepted": [
     "20-second sustained calls",
-    "Q10 automatic normal reboot recovery",
     "Q10 USB-disconnected post-reboot calls",
+    "r4 metadata management on hardware",
     "macOS build in this session"
   ],
   "release_status": "local_candidate_not_published",
