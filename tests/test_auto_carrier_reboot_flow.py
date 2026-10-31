@@ -1,6 +1,8 @@
 """Exercise the extra normal reboot through both desktop entry points."""
 from pathlib import Path
 import sys
+import json
+import tempfile
 import tkinter as tk
 import unittest
 from unittest.mock import Mock, patch
@@ -91,6 +93,26 @@ class RebootPresentationTests(unittest.TestCase):
         self.assertIn('No reinstall', before['guidance'])
         self.assertEqual(before['status_button'], 'Restarted — check again')
         self.assertIn('verify calls', after['title'])
+
+    def test_exported_preflight_uses_the_verified_boot_snapshot(self):
+        import gui
+        for phone in (state(), state('running', status_from_current_boot=False), state('running')):
+            with self.subTest(phase=phone['phase'], current=phone['status_from_current_boot']), tempfile.TemporaryDirectory() as folder:
+                adapter = Adapter(Mock())
+                adapter.auto = Mock()
+                adapter.auto.action.return_value = phone
+                client = Mock()
+                client.preflight.return_value = adapter.inspect()
+                client.service.side_effect = AssertionError('Must keep the verified preflight snapshot')
+                destination = Path(folder) / 'report.json'
+                with patch.object(sys, 'argv', ['bb10-volte', '--preflight-report', str(destination)]), \
+                        patch.object(gui, 'prepare_external_programs'), \
+                        patch.object(gui, 'resolve_connection', return_value=(client, None)):
+                    code = gui.main()
+                report = json.loads(destination.read_text())
+                self.assertEqual(report['registered'], status_view(phone)['ready'])
+                self.assertEqual(code, 0 if report['registered'] else 2)
+                client.service.assert_not_called()
 
 
 class RebootWindowTests(unittest.TestCase):

@@ -57,6 +57,9 @@ def run(output):
     from auto_carrier import verify_package as verify_auto_package
     from auto_carrier_gui import AutoCarrierWindow
     auto_manifest = verify_auto_package()
+    acceptance = json.loads((bundle / 'materials/unified-carrier-acceptance.json').read_text(encoding='utf-8'))
+    assert acceptance['private_phone_identifiers_or_logs_included'] is False
+    assert acceptance['functional_combinations_total'] == 9
     automatic = AutoCarrierWindow(root, 'bb10-root', '')
     automatic.window.attributes('-alpha', 0.0)
     automatic.window.update()

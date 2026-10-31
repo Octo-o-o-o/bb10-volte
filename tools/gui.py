@@ -545,8 +545,10 @@ class App:
                     result = {'preflight': report}
                     if report['installation']['state'] in ('busy', 'stopped', 'recovery_required'):
                         try:
-                            state = public_status(client.service('status'))
-                            result.update(status=state, registered=registered(state))
+                            unified = report.get('managed_adapter') == 'unified_carriers'
+                            state = public_status(report['status'] if unified else client.service('status'))
+                            ready = unified_status_view(state)['ready'] if unified else registered(state)
+                            result.update(status=state, registered=ready)
                         except WorkflowError as error:
                             result['status_error'] = error.code
                 else:
@@ -929,8 +931,10 @@ def main():
             client, _ = resolve_connection(args.host, args.ssh_config, profile=selected_profile)
             report = client.preflight()
             if report['installation']['state'] in ('busy', 'stopped', 'recovery_required'):
-                status = public_status(client.service('status'))
-                report.update(status=status, registered=registered(status))
+                unified = report.get('managed_adapter') == 'unified_carriers'
+                status = public_status(report['status'] if unified else client.service('status'))
+                ready = unified_status_view(status)['ready'] if unified else registered(status)
+                report.update(status=status, registered=ready)
             code = 0 if report['outcome'] in ('compatible', 'experimental') else 2
         except WorkflowError as error:
             report, code = {'error': error.code}, 1
