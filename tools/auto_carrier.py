@@ -14,6 +14,7 @@ ROOT = resource_root()
 sys.path.insert(0, str(ROOT / 'device'))
 import carrier_policy as policy
 from unified_service import PAYLOAD_FILES
+from unified_install import PREVIOUS_PAYLOADS, UPDATE_FILES
 
 MANIFEST = 'materials/unified-payload.json'
 BASE = policy.BASE
@@ -102,7 +103,25 @@ class AutoClient:
             before = self.execute(stage, 'unified_install.py', ('probe',))
             self.variant = before['variant']
             if before.get('installed') and not before.get('installation_pending'):
-                raise WorkflowError('unified_already_installed')
+                if not before.get('can_update'):
+                    raise WorkflowError('unified_update_needs_stop_and_reboot' if before.get('update_available')
+                                        else 'unified_already_installed')
+                result = self.execute(stage, 'unified_install.py', ('update', stage), 420)
+                backup = result['phone_backup']
+                if not re.fullmatch(re.escape(BASE) + r'/archive/update-[a-f0-9]{12}', backup):
+                    raise WorkflowError('unified_backup_not_verified')
+                folder = private_root() / 'automatic-carrier-updates' / uuid.uuid4().hex
+                folder.mkdir(parents=True, exist_ok=False)
+                for name, expected in result['backup_files'].items():
+                    if name not in ('payload.before.json',) + UPDATE_FILES:
+                        raise WorkflowError('unified_backup_not_verified')
+                    destination = folder / name
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    self.download(backup + '/' + name, destination)
+                    if hashlib.sha256(destination.read_bytes()).hexdigest() != expected:
+                        raise WorkflowError('unified_backup_not_verified')
+                result['desktop_backup'] = str(folder)
+                return result
             prepared = self.execute(stage, 'unified_install.py', ('prepare', stage), 180)
             folder = private_root() / 'automatic-carrier-backups' / uuid.uuid4().hex
             folder.mkdir(parents=True, exist_ok=False)
@@ -135,8 +154,12 @@ class AutoClient:
         expected = verify_package()
         try:
             installed = json.loads(self.client.remote('cat ' + BASE + '/payload.json'))
-            if any(installed.get(key) != expected[key] for key in ('owner', 'schema', 'files')):
+            if any(installed.get(key) != expected[key] for key in ('owner', 'schema')):
                 raise ValueError('payload')
+            if installed.get('files') != expected['files']:
+                prior = hashlib.sha256(policy.profiles.canonical(installed.get('files'))).hexdigest()
+                if prior not in PREVIOUS_PAYLOADS:
+                    raise ValueError('payload')
         except (ValueError, TypeError, AttributeError):
             raise WorkflowError('unified_package_mismatch') from None
         if action == 'enable':

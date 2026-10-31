@@ -81,5 +81,6 @@ def restore_fields(actual, before, applied):
         original = before[key]
         if actual.get(key) not in (original, value):
             raise ValueError('carrier_configuration_changed')
-        changes[key] = original
+        if actual.get(key) != original:
+            changes[key] = original
     return changes

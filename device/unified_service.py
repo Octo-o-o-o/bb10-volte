@@ -183,7 +183,8 @@ def restore(previous_boot=False):
         assert path in (s.IMS, s.CDSC, s.VOICE,
             '/pps/services/carrier_config/ims/ir92', '/pps/services/ims/status_persistent')
         changes = policy.restore_fields(n.attrs(n.read(path)), s.j['pps_before'][path], applied)
-        n.update_pps(path, changes)
+        if changes:
+            n.update_pps(path, changes)
         assert all(n.attrs(n.read(path)).get(k) == v for k, v in changes.items())
     s.remove_owned(s.XML)
     s.remove_platform()

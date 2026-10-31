@@ -60,6 +60,29 @@ class UnifiedDesktopTests(unittest.TestCase):
         self.assertEqual(auto.execute.call_count, 1)
         self.assertEqual(auto.execute.call_args[0][2], ('status',))
 
+    def test_known_previous_candidate_remains_manageable_for_upgrade(self):
+        old = json.loads((a.ROOT / 'materials/unified-previous-payload.json').read_text())
+        transport = Mock()
+        transport.remote.return_value = json.dumps(old)
+        auto = a.AutoClient(transport)
+        auto.execute = Mock(return_value={'enabled': True})
+        self.assertEqual(auto.action('status'), {'enabled': True})
+
+    def test_cached_register_success_is_not_presented_as_a_live_registration(self):
+        from auto_carrier_gui import status_text
+        stale = {'phase': 'error_restored', 'manager_alive': False, 'native_alive': False,
+                 'status_from_current_boot': True, 'current': {'register_status': '200 OK', 'radio': ['gsm']}}
+        title, details = status_text(stale)
+        self.assertNotIn('200 OK', details)
+        self.assertIn('gsm', details)
+        stale['phase'] = 'running'
+        stopped_title, unused = status_text(stale)
+        live = dict(stale, manager_alive=True, native_alive=True,
+                    current={'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']})
+        live_title, live_details = status_text(live)
+        self.assertNotEqual(stopped_title, live_title)
+        self.assertIn('200 OK', live_details)
+
     def test_all_models_manage_unified_service_without_claiming_call_acceptance(self):
         for variant in a.policy.MODELS:
             adapter = managed.Adapter(Mock())

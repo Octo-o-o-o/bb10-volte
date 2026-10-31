@@ -66,10 +66,18 @@ def set_usage(desired, selected):
     changed = current_usage != desired or current != targets
     if not changed:
         return previous or {'owner': policy.OWNER, 'desired': desired, 'phase': 'ready', 'boot': None}
+    token = s.boot_token()
+    policy_boot = None
+    if previous is not None and previous.get('desired') == desired:
+        policy_boot = previous.get('policy_changed_boot', previous.get('boot'))
+    if current_usage != desired:
+        policy_boot = token
     # The transaction remains after interruption. Both old and intended bytes
     # are checked before any retry; unrelated source content is never replaced.
-    record = {'owner': policy.OWNER, 'boot': s.boot_token(), 'phase': 'applying',
+    record = {'owner': policy.OWNER, 'boot': token, 'phase': 'applying',
               'desired': desired, 'operator': selected['operator'],
+              'ue_usage_before': current_usage, 'policy_changed_boot': policy_boot,
+              'source_repair_only': current_usage == desired,
               'sim_sha256': selected['sim_sha256'], 'at': time.time()}
     n.atomic(RECORD, profiles.canonical(record))
     for name in dca.SOURCES:
@@ -79,6 +87,8 @@ def set_usage(desired, selected):
     assert 'error_type' not in record['publish'], 'dca_publish_failed'
     if desired == 0 and radio.ue_usage_policy() != 0:
         # Stock missing-key state alone does not necessarily revert NV.
+        record.update(policy_changed_boot=token, source_repair_only=False)
+        n.atomic(RECORD, profiles.canonical(record))
         for name in dca.SOURCES:
             dca.write_existing(dca.source_path(name), targets[name], dca.payload(values[name], 'voice_centric'), files[name])
         result = dca.publish(BACKUP, 'auto-explicit-original')
@@ -96,6 +106,33 @@ def set_usage(desired, selected):
         if radio.ue_usage_policy() == desired:
             break
         time.sleep(3)
+    if desired == 1 and radio.ue_usage_policy() == 0:
+        # A voice-policy reset can leave NV=0 while the published PPS value is
+        # already data_centric. Re-publishing identical bytes emits no change.
+        # The verified Passport recovery uses a bounded original->data edge,
+        # through the same backed-up DCA sources, before any native IMS launch.
+        assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+        record.update(phase='republishing_original', policy_changed_boot=token,
+                      source_repair_only=False)
+        n.atomic(RECORD, profiles.canonical(record))
+        for name in dca.SOURCES:
+            dca.write_existing(dca.source_path(name), targets[name],
+                               dca.payload(values[name], 'voice_centric'), files[name])
+        result = dca.publish(BACKUP, 'auto-republish-original')
+        assert 'error_type' not in result and radio.ue_usage_policy() == 0, 'usage_baseline_unconfirmed'
+        assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+        record['phase'] = 'republishing_data'
+        n.atomic(RECORD, profiles.canonical(record))
+        for name in dca.SOURCES:
+            dca.write_existing(dca.source_path(name), dca.payload(values[name], 'voice_centric'),
+                               targets[name], files[name])
+        result = dca.publish(BACKUP, 'auto-republish-data')
+        assert 'error_type' not in result, 'dca_publish_failed'
+        for unused in range(8):
+            if radio.ue_usage_policy() == 1:
+                break
+            time.sleep(3)
+        record['republish_readback_verified'] = radio.ue_usage_policy() == 1
     assert radio.ue_usage_policy() == desired, 'usage_readback_failed'
     assert all(n.read(dca.source_path(name)) == targets[name] for name in dca.SOURCES)
     record['phase'] = 'ready'
@@ -106,9 +143,12 @@ def set_usage(desired, selected):
 def prepare(selected):
     desired = 1 if selected['operator'] == 'telecom' else 0
     record = set_usage(desired, selected)
-    if selected['family'] == 'passport' and record.get('boot') == s.boot_token():
+    policy_boot = record.get('policy_changed_boot', record.get('boot'))
+    if selected['family'] == 'passport' and policy_boot == s.boot_token():
         # Passport's accepted path requires the selected UE policy at cold boot.
         # Airplane mode and native IMS restarts did not replace that requirement.
+        # DCA may regenerate its source objects at boot while the modem already
+        # has the selected NV value. Repairing those files is not a policy change.
         return False
     if desired and selected['family'] != 'passport':
         voice = n.voice_policy()

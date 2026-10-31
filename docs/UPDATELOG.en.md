@@ -2,6 +2,18 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r4 · Startup restoration and reboot decisions · 2026-10-31
+
+- Track modem-policy changes separately from DCA source repairs. Recreated source files alone no longer require another Passport restart; actual policy changes still require a normal restart.
+- Restore only carrier fields that differ from their originals, avoiding repeated deletion of absent voice settings.
+- Upgrade known r1/r2/r3 payloads with backups. Add regressions for consecutive boots and preservation of a required reboot within the current boot. Hardware SIM-switch acceptance remains ongoing.
+
+## 0.5.0-r3 · Telecom policy publication fix · 2026-10-31
+
+- Fix ineffective repeated publication when PPS is already data-centric but modem readback remains original. Original-to-data publication restored usage 1 on Passport; restart/call acceptance is still pending.
+- Add inactive upgrades of known r1/r2 payloads, previous-version backups and interrupted-update recovery without changing system binaries or boot entries.
+- Do not present cached REGISTER 200 as current registration.
+
 ## 0.5.0-r2 · Automatic carrier candidate · 2026-10-31
 
 - Windows and Mac share installation, original backups, legacy migration and SIM selection during phone startup. After installation, change SIM and restart without another flash. See [scope](AUTO-CARRIERS.en.md).

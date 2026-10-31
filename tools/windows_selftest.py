@@ -65,6 +65,11 @@ def run(output):
     automatic.refresh()
     assert str(automatic.buttons['enable'].cget('state')) == 'normal'
     assert str(automatic.buttons['disable'].cget('state')) == 'disabled'
+    automatic.report = {'installed': True, 'update_available': True, 'can_update': True, 'update_pending': True}
+    automatic.refresh()
+    assert str(automatic.buttons['install'].cget('state')) == 'normal'
+    assert automatic.buttons['install'].cget('text') == tr('更新自动适配')
+    assert str(automatic.buttons['status'].cget('state')) == 'disabled'
     for widget in list(automatic.buttons.values()) + [automatic.status, automatic.details]:
         x = widget.winfo_rootx() - automatic.window.winfo_rootx()
         y = widget.winfo_rooty() - automatic.window.winfo_rooty()

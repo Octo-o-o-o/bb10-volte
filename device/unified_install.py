@@ -16,6 +16,11 @@ import telecom_dca as dca
 import telecom_native as radio
 
 BASE = policy.BASE
+PREVIOUS_PAYLOADS = ('7352686da4a229135d7685ffc58c2aae8b1c5c588bcb72fe733799b2336b3a90',
+                     '4f92bfe1a7182b1b03f0aa875b864c27e15572b5d9a06aa5d8503d3f2cbab99b')
+UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
+                'device/unified_service.py', 'device/carrier_policy.py')
+UPDATE_PENDING = BASE + '/update-pending.json'
 ADDON = '/var/addons/bb10-unified-volte'
 BTOOL = '/apps/sys.android.gYABgKAOw1czN6neiAT72SGO.ns/native/system/xbin/btool'
 ROOT_V2_HASHES = ('d56cdb880878198f8fc3d5114313d3f0c880136a9bde6bdc2faecb63da098cc4',
@@ -57,7 +62,23 @@ def probe():
             result['can_install'] = pending['phase'] == 'awaiting_desktop_backup' and result['call_idle']
         else:
             u.setup()
-            result['status'] = u.public_status()
+            current = s.load(BASE + '/payload.json')
+            candidate = s.load(os.path.dirname(os.path.dirname(__file__)) + '/payload.json')
+            pending = s.load(UPDATE_PENDING) if os.path.isfile(UPDATE_PENDING) else None
+            result['update_pending'] = pending is not None
+            if pending is None:
+                result['status'] = u.public_status()
+            else:
+                assert pending['owner'] == policy.OWNER and pending['after'] == candidate
+                raw = s.read_status()
+                result['status'] = {k: raw.get(k) for k in ('phase', 'enabled', 'manager_alive',
+                    'native_alive', 'status_from_current_boot', 'current')}
+            known = n.digest(profiles.canonical(current['files'])) in PREVIOUS_PAYLOADS
+            result['update_available'] = known and current['files'] != candidate['files'] or pending is not None
+            finished = pending is not None and pending['phase'] == 'files_verified'
+            result['can_update'] = bool(result['update_available'] and (finished or
+                result['call_idle'] and not result['status'].get('manager_alive') and
+                n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}))
     else:
         result['root_kind'] = root_kind(facts)
         entry = migration.inspect(facts)
@@ -73,6 +94,82 @@ def probe():
         result['sim_supported'] = True
     except ValueError as error:
         result['sim_supported'], result['sim_reason'] = False, str(error)
+    return result
+
+
+def update(stage):
+    """Upgrade only the known inactive r1/r2 Python payload; retain its backup.
+
+    The boot marker is removed before replacing bytes, and the new manifest is
+    written last. A stopped partial update resumes only its recorded old/new
+    hashes. Native binaries, original DCA backups and boot hooks never change.
+    """
+    facts, unused = identity()
+    assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}\Z', stage) and os.path.realpath(stage) == stage
+    after = s.load(stage + '/payload.json')
+    assert after['owner'] == policy.OWNER and after['schema'] == 1
+    assert set(after['files']) == set(u.PAYLOAD_FILES)
+    for name, expected in after['files'].items():
+        assert not os.path.islink(stage + '/' + name) and n.digest(n.read(stage + '/' + name)) == expected
+    u.setup()
+    pending = s.load(UPDATE_PENDING) if os.path.isfile(UPDATE_PENDING) else None
+    before = pending['before'] if pending else s.load(BASE + '/payload.json')
+    assert before['owner'] == policy.OWNER and before['schema'] == 1
+    assert set(before['files']) == set(u.PAYLOAD_FILES)
+    assert n.digest(profiles.canonical(before['files'])) in PREVIOUS_PAYLOADS, 'unrecognized_previous_payload'
+    changed = sorted(name for name in after['files'] if before['files'][name] != after['files'][name])
+    assert changed and set(changed) <= set(UPDATE_FILES), 'update_scope_changed'
+    if pending:
+        assert pending['owner'] == policy.OWNER and pending['after'] == after
+        assert pending['variant'] == facts['variant'] and pending['changed'] == changed
+        folder = pending['backup']
+        assert re.match(r'\A' + re.escape(BASE) + r'/archive/update-[a-f0-9]{12}\Z', folder)
+        assert os.path.realpath(folder) == folder
+        assert s.load(folder + '/payload.before.json') == before
+        assert s.load(BASE + '/payload.json') in (before, after), 'installed_manifest_changed'
+        for name in changed:
+            assert n.digest(n.read(folder + '/' + name)) == before['files'][name]
+    for name, expected in before['files'].items():
+        allowed = (expected, after['files'][name]) if pending else (expected,)
+        assert not os.path.islink(BASE + '/' + name) and n.digest(n.read(BASE + '/' + name)) in allowed, 'installed_payload_changed'
+    if not pending or pending['phase'] != 'files_verified':
+        assert s.phone_idle() and not s.read_status().get('manager_alive'), 'update_service_active'
+        assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'update_reboot_required'
+        u.handoff()
+        assert not n.ims_pids() and not n.active_vpn_sessions()
+        if pending is None:
+            u.verify()
+            import binascii
+            folder = BASE + '/archive/update-' + binascii.hexlify(os.urandom(6)).decode('ascii')
+            os.mkdir(folder, 0o700)
+            os.mkdir(folder + '/device', 0o700)
+            n.atomic(folder + '/payload.before.json', n.read(BASE + '/payload.json'))
+            for name in changed:
+                n.atomic(folder + '/' + name, n.read(BASE + '/' + name))
+                assert n.digest(n.read(folder + '/' + name)) == before['files'][name]
+            pending = {'owner': policy.OWNER, 'phase': 'backed_up', 'variant': facts['variant'],
+                       'before': before, 'after': after, 'backup': folder, 'changed': changed,
+                       'was_enabled': os.path.isfile(BASE + '/enabled')}
+            n.atomic(UPDATE_PENDING, profiles.canonical(pending))
+        if os.path.isfile(BASE + '/enabled'):
+            os.unlink(BASE + '/enabled')
+        for name in changed:
+            n.atomic(BASE + '/' + name, n.read(stage + '/' + name), 0o600)
+            assert n.digest(n.read(BASE + '/' + name)) == after['files'][name]
+        n.atomic(BASE + '/payload.json', profiles.canonical(after))
+        u.verify()
+        pending['phase'] = 'files_verified'
+        n.atomic(UPDATE_PENDING, profiles.canonical(pending))
+    else:
+        assert s.load(BASE + '/payload.json') == after
+        u.verify()
+    result = {'updated': True, 'reboot_required': True, 'automatic_carrier_selection': True,
+              'phone_backup': folder, 'backup_files': {'payload.before.json': n.digest(n.read(folder + '/payload.before.json'))}}
+    result['backup_files'].update({name: before['files'][name] for name in changed})
+    n.atomic(folder + '/update-result.json', profiles.canonical(result))
+    if pending['was_enabled'] and not os.path.isfile(BASE + '/enabled'):
+        n.atomic(BASE + '/enabled', b'automatic selection preserved after verified update\n')
+    os.unlink(UPDATE_PENDING)
     return result
 
 
@@ -235,6 +332,8 @@ def main():
         result = prepare(sys.argv[2])
     elif action == 'activate':
         result = activate()
+    elif action == 'update':
+        result = update(sys.argv[2])
     elif action == 'cleanup-stage':
         result = cleanup_stage(sys.argv[2])
     else:

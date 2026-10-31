@@ -72,6 +72,11 @@ class CarrierSelectionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             p.restore_fields(dict(applied, domain=':another-carrier'), before, applied)
 
+    def test_restore_does_not_republish_already_original_carrier_fields(self):
+        before, applied = {'voice': None, 'domain': ':'}, {'voice': 'n:3', 'domain': ':ours'}
+        self.assertEqual(p.restore_fields(dict(before), before, applied), {})
+        self.assertEqual(p.restore_fields(dict(before, domain=':ours'), before, applied), {'domain': ':'})
+
     def test_template_binding_uses_actual_checked_stock_path(self):
         selected = p.select(facts(), card('00'))
         bound = p.bind_template(selected, {'path': '/etc/carrier/config/404.xml', 'sha256': 'a' * 64})
@@ -134,6 +139,7 @@ class DcaTransactionTests(unittest.TestCase):
             patch.object(d.s, 'phone_idle', return_value=True), patch.object(d.s, 'boot_token', side_effect=lambda: self.token),
             patch.object(d.n, 'ims_pids', return_value=[]), patch.object(d.n, 'active_vpn_sessions', return_value=[]),
             patch.object(d.n, 'read', side_effect=read), patch.object(d.n, 'atomic', side_effect=atomic),
+            patch.object(d.time, 'sleep'),
             patch.object(d.radio, 'verify'), patch.object(d.radio, 'ue_usage_policy', side_effect=lambda: self.usage),
             patch.object(d.dca, 'write_existing', side_effect=write), patch.object(d.dca, 'publish', side_effect=publish)]
         for item in patches:
@@ -147,6 +153,23 @@ class DcaTransactionTests(unittest.TestCase):
         self.token = ['second']
         self.assertTrue(d.prepare(self.selected))
         self.assertEqual(len(self.writes), 4)
+
+    def test_recreated_dca_sources_after_boot_do_not_require_endless_passport_reboots(self):
+        self.assertFalse(d.prepare(self.selected))
+        for token in (['second'], ['third']):
+            self.token = token
+            self.sources.update(self.original)
+            self.assertTrue(d.prepare(self.selected))
+            record = json.loads(self.files[d.RECORD])
+            self.assertTrue(record['source_repair_only'])
+            self.assertEqual(record['ue_usage_before'], 1)
+            self.assertEqual(record['policy_changed_boot'], ['first'])
+
+    def test_source_repair_cannot_clear_a_policy_reboot_required_this_boot(self):
+        self.assertFalse(d.prepare(self.selected))
+        self.sources.update(self.original)
+        self.assertFalse(d.prepare(self.selected))
+        self.assertEqual(json.loads(self.files[d.RECORD])['policy_changed_boot'], self.token)
 
     def test_interruption_resumes_only_owned_partial_sources(self):
         self.fail_after = 2
@@ -186,6 +209,35 @@ class DcaTransactionTests(unittest.TestCase):
         with patch.object(d.s, 'phone_idle', return_value=False), self.assertRaises(AssertionError):
             d.set_usage(1, self.selected)
         self.assertFalse(self.writes)
+
+    def stale_publisher(self):
+        self.published = 1
+        def publish(folder, label):
+            wanted = (1 if all(b'::data_centric' in raw for raw in self.sources.values()) else
+                      0 if all(b'::voice_centric' in raw for raw in self.sources.values()) else None)
+            if wanted is not None and wanted != self.published:
+                self.published = self.usage = wanted
+            return {}
+        return publish
+
+    def test_cached_data_notification_with_original_nv_is_republished_and_read_back(self):
+        with patch.object(d.dca, 'publish', side_effect=self.stale_publisher()):
+            record = d.set_usage(1, self.selected)
+        self.assertEqual(self.usage, 1)
+        self.assertTrue(record['republish_readback_verified'])
+        self.assertEqual(record['phase'], 'ready')
+        self.assertTrue(all(b'::data_centric' in raw for raw in self.sources.values()))
+
+    def test_interruption_during_notification_edge_resumes_only_owned_bytes(self):
+        self.fail_after = 6
+        with patch.object(d.dca, 'publish', side_effect=self.stale_publisher()):
+            with self.assertRaises(OSError):
+                d.set_usage(1, self.selected)
+            self.assertEqual(json.loads(self.files[d.RECORD])['phase'], 'republishing_original')
+            self.fail_after, self.token = None, ['second']
+            d.set_usage(1, self.selected)
+        self.assertEqual(self.usage, 1)
+        self.assertTrue(all(b'::data_centric' in raw for raw in self.sources.values()))
 
 
 if __name__ == '__main__':

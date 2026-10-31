@@ -83,6 +83,7 @@ NOTES = {
     'baseline_not_clean': tr('配置或服务状态不符合安装前条件，具体项目见检查详情。尚未安装本工具时，需先核实已有配置来源。'),
 }
 ERRORS = {
+    'unified_update_needs_stop_and_reboot': tr('有适配更新。请先停用，待恢复后正常重启，再检查并更新。'),
     'unified_already_installed': tr('手机已安装三网自动适配。请使用“三网自动适配”管理现有服务。'),
     'unified_package_mismatch': tr('手机自动适配版本与程序不匹配。请保留当前安装并导出报告。'),
     'telecom_backup_not_verified': tr('原始电信配置尚未完成电脑备份和散列核验，未允许入网修改。请保留现场并重新检查。'),
