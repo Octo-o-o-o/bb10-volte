@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated_utc": "2026-10-31T08:00:19.946679+00:00",
-  "state": "waiting_for_corrected_v2_automatic_reboot",
+  "updated_utc": "2026-10-31T08:20:53.108387+00:00",
+  "state": "complete_current_sim_short_calls_and_automatic_reboot_accepted",
   "device": {
     "variant": "SQW100-4",
     "board": "WINDERMERE4ROW",
@@ -179,11 +179,196 @@
     "sustained_20_second_call_accepted": false
   },
   "automatic_reboot": {
-    "state": "pending_v2",
-    "v2_change": "Bind the shared early telecom_attach.ensure_lte call to the Passport persisted cold-boot fast path before stock handoff."
+    "state": "accepted",
+    "proof": {
+      "status": {
+        "stock_handoff": {
+          "requested_at": 1793433864.51916,
+          "pid": 6721668,
+          "boot": [
+            497504668,
+            1793433852.0
+          ],
+          "reason": "sigterm_requested",
+          "attempted": true,
+          "signal_delivered": true
+        },
+        "error_present": false,
+        "manager_alive": true,
+        "configuration_restored": false,
+        "native_pid": 16912404,
+        "startup_timing": {
+          "manager_started": 1793433855.9022,
+          "stock_finished": 1793433868.58182,
+          "waiting_for_native_ims": 1793433864.7507,
+          "configuring": 1793433868.73992,
+          "registering": 1793433888.19642,
+          "stock_exit_requested": 1793433864.51916,
+          "waiting_for_ims_apn": 1793433880.64638,
+          "running": 1793433892.23664
+        },
+        "crypto": {
+          "swcr_id": 0,
+          "crypto_support": 0
+        },
+        "full_restore_verified": false,
+        "native_count": 1,
+        "current": {
+          "ran": "LTE",
+          "ims": "connected",
+          "register_status": "200 OK",
+          "radio": [
+            "lte"
+          ],
+          "power": "ON"
+        },
+        "native_alive": true,
+        "autostart": {
+          "profile_id": "passport-telecom-manual-research",
+          "enabled": true,
+          "last_boot_launch_is_current": true,
+          "profile_accepted": true,
+          "last_boot_launch": {
+            "previous_boot_files": [],
+            "manager_pid": 16592989,
+            "profile_id": "passport-telecom-manual-research",
+            "boot": [
+              497504668,
+              1793433852.0
+            ],
+            "source": "autoroot-v4-addon",
+            "at": 1793433854.34364,
+            "profile_sha256": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e",
+            "mode": "continue_previous_boot"
+          },
+          "addon_installed": true
+        },
+        "voice_policy": 3,
+        "phase": "running",
+        "reboot_verification_required": true,
+        "status_from_current_boot": true,
+        "phone_idle": true,
+        "lifecycle": "retain-provider-until-reboot",
+        "ims_observation_scope": "owned_native"
+      },
+      "current_boot_provider_verified": true,
+      "manager_pid": 16592989,
+      "native_ue_usage": 1,
+      "automatic_source": "autoroot-v4-addon",
+      "network_configuration_writes": 0,
+      "native_pid": 16912404,
+      "service_start_requests": 0,
+      "boot": [
+        497504668,
+        1793433852.0
+      ],
+      "manual_lease_and_watchdog_absent": true,
+      "network": {
+        "sim_state": "READY",
+        "observed_data_apn": "ctnet",
+        "mcc": "460",
+        "emergency_service": false,
+        "data_connected": true,
+        "lte": true,
+        "mnc": "11",
+        "lte_data_service": true
+      },
+      "subscriber_identity_exported": false,
+      "addon_entry_sha256": "1747fe236ba00102fa2447fd6d76a1653ec82bd8775bd17a04dfd4b5413827bb",
+      "mode": "continue_previous_boot",
+      "core_manifest_sha256": "dea79c1cc68e762130b18940baae249738ba8fa3b16522a7b05a88802ff00bfd",
+      "dca_source_states": {
+        "test": "data_centric",
+        "ims": "data_centric",
+        "omadm": "original",
+        "ims_defaults": "data_centric"
+      },
+      "manager_to_registration_seconds": 36.334,
+      "same_sim_plan_receipt_and_journal": true,
+      "accepted": true,
+      "profile_sha256": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e",
+      "all_dca_sources_match_owned_plan": true,
+      "desktop_captured_utc": "2026-10-31T08:07:44.241549+00:00",
+      "desktop_core_start_requests_in_window": 0,
+      "checked_utc": "2026-10-31T08:07:44.248372+00:00"
+    },
+    "whole_phone_boot_time_measured": false
   },
   "calls_after_reboot_without_usb": {
-    "state": "pending"
+    "state": "accepted_short_calls",
+    "owner_confirmed_bidirectional_audio_lte_and_name": true,
+    "sip": {
+      "schema": 1,
+      "label": "after-reboot",
+      "boot": [
+        497504668,
+        1793433852.0
+      ],
+      "profile_id": "passport-telecom-manual-research",
+      "profile_sha256": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "native_pid": 16912404,
+      "samples": 55,
+      "all_samples_lte": true,
+      "raw_log_sha256": "d54b28eb76bc280aed2cc01a639c9452e46ca21005a5e2a3ab8cc219adb4de63",
+      "packet_count": 34,
+      "calls": [
+        {
+          "direction": "incoming",
+          "invite_at": "16:09:10.721",
+          "invite_cseq": 1,
+          "answer_200_at": "16:09:16.838",
+          "ack_at": "16:09:17.242",
+          "bye_at": "16:09:22.710",
+          "bye_200_at": "16:09:22.931",
+          "established_seconds_to_bye": 5.872,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "outgoing",
+          "invite_at": "16:09:29.144",
+          "invite_cseq": 44854,
+          "answer_200_at": "16:09:33.764",
+          "ack_at": "16:09:33.787",
+          "bye_at": "16:09:47.505",
+          "bye_200_at": "16:09:47.721",
+          "established_seconds_to_bye": 13.741,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "attempts": [
+        {
+          "direction": "incoming",
+          "invite_at": "16:09:10.721",
+          "invite_cseq": 1,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        },
+        {
+          "direction": "outgoing",
+          "invite_at": "16:09:29.144",
+          "invite_cseq": 44854,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        }
+      ],
+      "both_directions_verified": true
+    },
+    "same_native_pid_after_reconnect": true,
+    "sustained_20_second_call_accepted": false
   },
   "autostart_enabled": true,
   "full_30_minute_hardware_soak_completed": false,
@@ -204,5 +389,60 @@
     "accepted": false,
     "missing_hook": "shared service.prepare_connection called the Q10 telecom_attach.ensure_lte before the Passport configure hook",
     "result": "Aborted by desktop stop before provider/owned IMS configuration; persisted UE1 and LTE retained. Not accepted as a working reboot."
-  }
+  },
+  "dca_after_cold_boot": {
+    "native_ue_usage": 1,
+    "source_states": {
+      "test": "data_centric",
+      "ims": "data_centric",
+      "omadm": "original",
+      "ims_defaults": "data_centric"
+    },
+    "all_match_backed_up_plan": true,
+    "note": "omadm has returned to its verified original missing-key state; no source was rewritten to satisfy an observation. The native persisted UE value remains 1."
+  },
+  "observer_correction": {
+    "initial_assertion": "all four source files must still contain data_centric after reboot",
+    "actual_supported_invariant": "Each source is original or its exact owned data_centric payload, as allowed by the original Cursor plan checker; native UE usage is 1 and normal LTE is connected.",
+    "network_or_config_modified_for_observer": false
+  },
+  "previous_manual_deadline_check": {
+    "deadline_local": "2026-10-31T16:16:57.541480+08:00",
+    "checked_utc": "2026-10-31T08:17:40.013621+00:00",
+    "past_old_deadline_seconds": 42.472,
+    "still_registered": true,
+    "same_manager_pid": 16592989,
+    "same_native_pid": 16912404,
+    "current_manual_lease_and_watchdog_absent": true,
+    "automatic_runtime_at_check_seconds": 804.111,
+    "full_30_minute_automatic_soak_claimed": false
+  },
+  "final_archive": {
+    "files": 365,
+    "bytes": 8929918,
+    "all_hashes_verified": true,
+    "raw_materials_kept_private": true,
+    "live_service_interrupted": false
+  },
+  "current_state": {
+    "enabled": true,
+    "boot": [
+      497504668,
+      1793433852.0
+    ],
+    "manager_pid": 16592989,
+    "native_pid": 16912404,
+    "ims": "connected",
+    "register_status": "200 OK",
+    "network": "LTE",
+    "native_ue_usage": 1,
+    "voice_policy": 3,
+    "name": "中国电信",
+    "desktop_service_starts_during_successful_boot": 0
+  },
+  "limitations": [
+    "Only the current accepted SQW100-4 / OS 10.3.3.3216 / 460-11 SIM is covered.",
+    "Answered calls observed were 5.1–13.7 seconds; sustained 20-second calls, SMS/MMS and long-term stability were not accepted.",
+    "A full 30-minute automatic-service soak was not performed; the previous manual deadline was crossed with the automatic manager still registered."
+  ]
 }
