@@ -407,6 +407,9 @@ def restore():
     assert n.voice_policy() == 0
     time.sleep(1.2)
     assert n.voice_policy() == 0
+    if ACTIVE_PROFILE.get('lte_attach'):
+        import telecom_attach
+        telecom_attach.restore(sys.modules[__name__])
     j.update(restore_completed=True, provider=None, native_pid=None)
     save_journal()
     status('stopped')
@@ -585,6 +588,9 @@ def request_idle_stock_exit():
 
 def prepare_connection():
     n.verify_stock()
+    if ACTIVE_PROFILE.get('lte_attach'):
+        import telecom_attach
+        telecom_attach.ensure_lte(sys.modules[__name__])
     if not wait_for_network():
         return False
     requested = request_idle_stock_exit()
@@ -719,6 +725,8 @@ def main():
         finally:
             os._exit(0)
     elif action == 'stop':
+        ACTIVE_REQUEST = profiles.installed_request(BASE)
+        ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
         if not device_info.provider_lifecycle_supported(device_info.identify(device_info.read_identity())):
             raise RuntimeError('Provider lifecycle needs validation; preserve state and see issue #1')
         if os.path.isfile(LOCK) and load(LOCK).get('boot') == boot_token() and alive(load(LOCK)['pid']):

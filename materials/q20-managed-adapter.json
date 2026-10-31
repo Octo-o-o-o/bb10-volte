@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "variant": "SQC100-2",
+  "board_type": "CLASSICATT",
+  "os_version": "10.3.3.3216",
+  "root_scheme": "existing_root_v2",
+  "base": "/var/q20_volte",
+  "manifest_sha256": "e6083151b98231a816d2fc151271014af7f28d06ce3427b8ca92a03c884a64ba",
+  "files": {
+    "device/install.py": "c5b4f29d550f28b23e17b453bea87be79d6e48a0e7c59b13aa0e465d7a55ade9",
+    "device/profiles.py": "fc5d4aaf469876aab33dce50938025bce80e3598b448a0d0537afda846b6a1db",
+    "profile-request.json": "71ae006f1e28d1b8dd5107e3ff363310df8ba02f4f65ed0858f85b6ed89d2cbb",
+    "q20_own_number_auto.py": "586ab3b709267a0cf09d476892823c9aac9601582428c9be29411b23f5ded55a",
+    "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+    "start.sh": "76f4c81c0ed3a4ddf105e19cd442036cdd1b2f0f51af26fd49495067052257f8",
+    "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
+    "device/service.py": "5d76780cdf3b36cfcb3b7031b7e29029202c9fede0145f3be041a10ba1922858",
+    "q20_volte_phone.py": "935f8828451949dc2366da35f1369a13b900b52092de9471a22b143bec76082d",
+    "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+    "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+    "device/compatibility.py": "5b4def0e180aeaceabc060f84b077cc9e835207e291973a3cf9ff5e0d6f9a984",
+    "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
+    "q20_telecom_carrier.py": "011bd82b7a31808dd0611d9cd477f2c07761343d1f384cc27b63eb8f1d7c5c83",
+    "q20_telecom_dca_usage_phone.py": "d2bccde6441b8717407a2af0cf8f31920d49c3df9b3bfdde5e9d954b7fa7edb4",
+    "q20_telecom_native_probe_phone.py": "9abcc271c0a50b26758b620c88f6533f4363a756965383a996f15577bce137ed"
+  },
+  "boot_hook_sha256": "bdcd111afbbfe802e4489a85a4c6eb2e0ba0b8dbe8a429f01ea88045e8b4d501",
+  "validation_record": "q20-device-validation-2026-10-30.json",
+  "probe_sha256": "fd70d670e5433d5f4b8604523d87ae6d21cfebff0f5e590657b055831052c92e",
+  "additional_manifest_sha256": [
+    "2451f798ac121462aea5fb53ebd3f87179b00dfda5aa0bb96d82aa1cc5e174f5"
+  ],
+  "additional_profile_validation": {
+    "q20-sqc100-2-mobile-46000": "q20-mobile-validation-2026-10-31.json"
+  }
+}

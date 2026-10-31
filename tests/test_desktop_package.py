@@ -118,7 +118,7 @@ class DesktopPackageTests(unittest.TestCase):
                     patch.object(client, 'execute', return_value={'stage_removed': True}):
                 with client.stage():
                     pass
-                self.assertEqual(run.call_count, 6)
+                self.assertEqual(run.call_count, 11)
                 for call in run.call_args_list:
                     self.assertEqual(call.args[0][:5], ['/test path/scp', '-S', '/test path/ssh', '-O', '-q'])
 
@@ -129,7 +129,7 @@ class DesktopPackageTests(unittest.TestCase):
         self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
         self.assertEqual({name for name in names if name.startswith('tools/')},
                          {'tools/stage_cleanup.py', 'tools/phone_pairing.py', 'tools/root_probe.py',
-                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1'})
+                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1', 'tools/q20_manage_probe.py'})
         self.assertIn('materials/first-run-tools.json', names)
         self.assertIn('materials/desktop-diagnostics.json', names)
 

@@ -1,17 +1,23 @@
 {
   "owner": "q10-unicom-volte-v1",
-  "version": "0.3.3",
+  "version": "0.5.0",
   "files": {
     "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
-    "device/compatibility.py": "124627144a7fb3d2e086bb6bd711f05a85bebd9b0653aae0b7cb8fe29fe15e13",
+    "device/autostart_evidence.py": "e98fb694668ac4b9854814d61d4e07a86f8c05bb2ad205f6dab6611d2161d267",
+    "device/compatibility.py": "70e6d883477047bb92fb9459be968ae27c2ae7e2cd63266fa02a7e8d6916cff1",
     "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
-    "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
-    "device/install.py": "c5b4f29d550f28b23e17b453bea87be79d6e48a0e7c59b13aa0e465d7a55ade9",
+    "device/ims_image.py": "cd1f308343e94aec79236ff8c7f1baf2e269e759a1f06f5655047d926fd0ac2c",
+    "device/install.py": "f21255abb5a5bc73867fa87d45ab384824994b89bfd7934146472dec11102706",
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
-    "device/profiles.py": "fc5d4aaf469876aab33dce50938025bce80e3598b448a0d0537afda846b6a1db",
+    "device/operator-name-start.sh": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
+    "device/operator_name.py": "cb4bcc38ac94b4df5861328373f53ec19a537826c036196f55985153ebc281c3",
+    "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
-    "device/run.sh": "5e980fc9799f05d7c0b70a018e4b6148184c105d1806c3a7d809bfe83707e878",
-    "device/service.py": "5d76780cdf3b36cfcb3b7031b7e29029202c9fede0145f3be041a10ba1922858",
+    "device/run.sh": "3af90e97913804e78e9f65c3807698f875d8e83a8a8a83ae59f5d3a79f3587a1",
+    "device/service.py": "348f92305de5fd41d95596350b5d0219ebfad98e3f410a5366c485845dd74655",
+    "device/telecom_attach.py": "2f8718583b7cb63fe4c84aa844e1b536f4d084ef09a2b71ffc8b1d5d26176b6b",
+    "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+    "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
   }
 }

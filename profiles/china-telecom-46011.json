@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "china-telecom-46011-data-centric",
+  "label": "China Telecom 460-11 / Q10 manual port",
+  "carrier": {
+    "mcc": "460",
+    "mncs": [
+      "11"
+    ],
+    "data_apns": [
+      "ctnet",
+      "ctlte"
+    ],
+    "stock_config": "auto",
+    "stock_sha256": ""
+  },
+  "ims": {
+    "apn": "ims",
+    "ip_family": "IPv4v6",
+    "home_domain": "auto",
+    "sms": true
+  },
+  "runtime": {
+    "sim_wait_seconds": 300,
+    "ims_apn_wait_seconds": 45,
+    "existing_ims_wait_seconds": 330,
+    "registration_wait_seconds": 180,
+    "poll_seconds": 3,
+    "autostart": false
+  },
+  "lte_attach": "telecom_data_centric_v1"
+}

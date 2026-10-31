@@ -1,5 +1,15 @@
 # bb10-volte
 
+<!-- unified-current:start -->
+**Current experimental release 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
+
+The 0.3/0.4 notes below preserve the history of the legacy single-carrier, connection and initial-Root workflows. Their legacy Passport installer restrictions are separate from the new unified entry.
+<!-- unified-current:end -->
+
+
+The `0.3.3-r8` Initial Root page adds **Download matching firmware**. Identifying one phone selects its exact hardware model and updates the filename, browser links, and import verification together. Download and Root preparation recheck the USB model before fetching files. Unknown, multiple, or conflicting devices stop the action without a Q10 fallback. Changing models clears the previous image selection and import path. Explicit offline selection is available with no phone connected. Q20 / Q30 firmware downloads are supported; automatic Root building and flashing remain Q10-only.
+
+
 Check details now prioritizes pending items and offers a pending-only filter. Each baseline observation shows its current value, required value, explanation, and next step. Select a row to read its full text in the wrapping pane. Failed or skipped reads remain unknown, while other successfully collected readings are retained. Passed autostart checks use success wording.
 
 Copy the troubleshooting summary or export the JSON report from the details window. The summary includes the desktop revision, hardware variant, check time, operation permissions and stable B/C diagnostic references, without keys, phone identifiers or raw configuration contents. The window and its exports retain the snapshot from when it opened. An absent installation never implies an owned running service or recommends the project's restore action. Differences still require investigation of their source.
@@ -7,6 +17,8 @@ Copy the troubleshooting summary or export the JSON report from the details wind
 Current source also presents the same I01–I06 incoming-configuration observations in details and the troubleshooting summary: IMS state, access network, VoLTE provisioning, engineering voice domain, DCA voice domain and IR92 preconditions. Missing or invalid values remain unknown. These observations have no required values and do not count as pending checks. Engineering and DCA voice-domain numbers belong to different interfaces and are not interchangeable; provisioning and preconditions values do not prove incoming calls work. Explanations reuse the existing snapshot without extra phone reads, writes or automatic repair. See the [upstream addon comparison](UPSTREAM-ADDON-COMPARISON.en.md) for sources and alternatives not adopted.
 
 [简体中文](GUI.md)
+
+Desktop `0.3.3-r9` firmware downloads also provide **Backup download (Baidu)** and **Copy backup link**. When an access code is required, it appears beside the buttons and is copied with the share URL. Download the original filename shown for the selected model, then use **Verify and import firmware**. Share pages remain outside automatic mirror ranking and resumable transfers.
 
 The local `0.3.3-r4` diagnostic test build recognizes Telecom `ctlte`. Check details and exported reports distinguish profile matching, actual data connectivity and individual baseline configuration observations. Only fixed public APN names are exported; other names become `other`. Existing custom profiles are not silently changed: reselect the Telecom template or review its APN list. Non-default settings do not establish corruption or ownership; preflight never resets an APN or deletes overrides. Old reports lack these details. Device data and baseline gates still apply, and Q20 Telecom hardware acceptance is pending.
 
@@ -18,7 +30,7 @@ On first use, connect and unlock the phone, then choose Connect phone. Connectio
 
 On reopening, the app rechecks the last successful connection once without automatically installing, flashing or enabling services. Incomplete phone pairing retains its original key, request ID and current step; multiple requests require explicit selection. Completed image preparation can be revalidated and resumed, while an uncertain flash outcome stays blocked. A failed connection never automatically routes to first Root preparation.
 
-The BlackBerry 10 desktop GUI uses the same fixed workflow as the CLI. Windows users can use the [standalone EXE](WINDOWS-EXE.en.md); macOS users can use the `.app` described in the [DMG guide](MACOS.en.md). Users do not need to install Python separately. Source execution requires Python 3.14 with Tk and OpenSSH. Both require a reachable device and your own verified root SSH configuration. The current Q10 passed Mac USB networking, daily checks and calls; see the [Mac connection guide](MACOS.en.md) for the exact scope. No AI account or cloud service is needed. The first UI is in Chinese; this guide describes its controls.
+The BlackBerry 10 desktop GUI uses the same fixed workflow as the CLI. Windows users can use the [standalone EXE](WINDOWS-EXE.en.md); macOS users can use the `.app` described in the [DMG guide](MACOS.en.md). Users do not need to install Python separately. Source execution requires Python 3.14 with Tk and OpenSSH. Both require a reachable device and your own verified root SSH configuration. The current Q10 passed Mac USB networking, daily checks and calls; see the [Mac connection guide](MACOS.en.md) for the exact scope. No AI account or cloud service is needed. The interface follows the system's preferred UI language at launch: Chinese for a Chinese preference or when it cannot be determined, English for other languages. Restart the app after changing the system language.
 
 On macOS, the connection card provides short cable/unlock and personal-profile/recovery instructions plus **Mac 连接说明 / Mac connection help**, available offline in the app. The [guide](MACOS.en.md) covers unrooted phones, rooted phones without files and rooted phones with personal materials. Without old Windows files, a working phone Root terminal can authorize an independent Mac key; `PAIR` persistently appends phone authorization. With neither materials nor a working Root terminal, direct connection is unavailable. The app does not automatically change IP settings, install old Link or weaken host verification.
 

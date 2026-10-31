@@ -1,20 +1,25 @@
 # bb10-volte Windows EXE
 
+<!-- unified-current:start -->
+**当前实验版 0.5.0-r8** 使用统一的“三网自动适配”入口。型号、运营商范围、号码显示与当前验收结果见[统一流程](AUTO-CARRIERS.md)；首次 Root 与日常换卡是独立步骤。
+<!-- unified-current:end -->
+
+
 [English](WINDOWS-EXE.en.md) · [GUI 操作](GUI.md) · [macOS / DMG](MACOS.md)
 
-下载 `bb10-volte-0.3.3-r3-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；启动和正常使用不需要管理员权限；首次驱动安装会单独请求 Windows UAC。
+使用本轮提供的候选包 `bb10-volte-0.5.0-r8-windows-x64.exe`，双击即可启动。Python、Tcl/Tk、SSH/SCP、运营商模板、固定手机端载荷、操作指南与第三方许可均已内置。不需要在测试者电脑安装 Python、OpenSSH、Git 或 Codex。EXE 为单文件便携版，启动时会解压到系统临时目录，正常退出后清理；启动和正常使用不需要管理员权限；首次驱动安装会单独请求 Windows UAC。
 
 目标为 Windows 10 / 11 x64，实际打包与启动验证在 Windows 11 x64 上完成。当前 EXE 未做 Windows Authenticode 签名；发布页同时提供 SHA-256。Apple 开发者证书不能用来签 Windows EXE。
 
 ## 发给测试者
 
-1. 从公开的 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 下载 EXE 和对应 `.exe.sha256`，也可直接传送这两个文件。
+1. 本轮实验版与对应 `.exe.sha256` 一起交付；公开 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 保存已发布版本。
 2. 已 Root 手机使用自己的可信连接；首次准备可进入“首次使用”，自动获取工具、驱动和 Q10 Root 材料。Q20 / Q30 首次 Root 必须使用匹配机型的方法。见[首次使用](FIRST-RUN.md)。
 3. 打开 EXE，点击“检查设备”自动查找已有个人配置；也可主动导入。默认 `bb10-root` 与旧 `q10-root` 都支持，别名不限定手机型号。
-4. 选择运营商模板或编辑配置，然后运行预检。Q20 / Q30 显示“未实测适配 · 可实验试用”，需勾选试用且通过所有技术检查。
-5. 预检通过并确认备份后，安装、回读、启动、观察注册。最后用手机系统拨号器做真实呼入、呼出和声音验收。
+4. 对本轮支持的三款准确型号进入“三网自动适配”，核对当前 SIM，并选择“备份并安装自动适配”。旧的单运营商模板入口保留自身的实验限制。
+5. 安装和回读通过后，用手机菜单正常重启并解锁，等待自动注册，再拔掉 USB 验证系统拨号器的呼入、呼出和声音。以后正常关机换卡即可由手机自动配置；Passport 改变电信入网策略时可能需要再重启一次。
 
-OS 仍要求 **10.3.3.3216**，原生文件哈希、ARM32、SIM 类型、APN 和原厂配置检查不放宽。Q20 / Q30 未完成实机适配验收，不能刷 Q10 Root 镜像。
+OS 仍要求 **10.3.3.3216**，原生文件哈希、ARM32、SIM 类型、APN 和原厂配置检查不放宽。当前三款准确变体与逐运营商验收见[三网自动适配](AUTO-CARRIERS.md)；Q20 / Passport 的首次 Root 需要对应机型的方法。
 
 ## 离线边界
 
@@ -32,7 +37,7 @@ OS 仍要求 **10.3.3.3216**，原生文件哈希、ARM32、SIM 类型、APN 和
 
 正常业务使用 SSH/SCP 到所选手机，并可读取直接 USB 地址的匿名机型发现信息。首次准备按固定清单下载 HTTPS 材料。自定义 `ssh_config` 可自行指定网络主机、代理或跳板，这会改变连接路径；准备步骤只运行已核验的固定工具与本项目脚本。操作系统本身的证书、杀毒或信誉查询不属于本程序逻辑，因此不承诺整台 Windows 电脑零网络流量。
 
-首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。Q10 的材料包括 AutoRoot v4、原版固件、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；Q20 / Q30 的对应固件仍由适配者核实。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
+首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。`0.3.3-r8` 按准确硬件型号获取 Q10、Classic（Q20）或 Passport（Q30）原版固件，自动下载、浏览器链接与导入校验使用同一映射。公共工具包括 AutoRoot v4、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；自动 Root 构建及刷写仍限 Q10。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
 
 ## 保存位置与升级
 
@@ -55,10 +60,10 @@ python -m venv .venv
 材料和构建依赖均已缓存时，可以运行 `tools/build_windows.py --offline`；缓存缺失或散列不符立即停止，不自动替换。可用以下离线诊断验证发布文件：
 
 ```powershell
-$app = Start-Process .\dist\bb10-volte-0.3.3-r3-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
+$app = Start-Process .\dist\bb10-volte-0.5.0-r8-windows-x64.exe -ArgumentList '--self-test selftest.json' -Wait -PassThru
 Get-Content .\selftest.json
 ```
 
 自检不连接手机，检查解释器、Tk 界面、编辑器往返、SSH/SCP、载荷散列和持久目录。构建脚本还回读 EXE 内部归档逐项校验资源，拒绝私钥、个人配置、固件和个人镜像混入。`--preflight-report report.json --ssh-config <个人配置>` 可执行只读兼容性预检；会在手机上传并清理检查脚本，不改通话配置。
 
-实测范围和未覆盖项见 [桌面打包验收](../materials/desktop-package-acceptance.json)。隔离 PATH 的实测不是一台完全没有安装过 Python 的全新虚拟机；Windows 10 和 Q20 / Q30 实机仍待验证。
+实测范围和未覆盖项见 [桌面打包验收](../materials/desktop-package-acceptance.json)。隔离 PATH 的实测不是一台完全没有安装过 Python 的全新虚拟机；Windows 10 仍待验证；三款准确变体的当前运营商验收见[统一流程](AUTO-CARRIERS.md)。

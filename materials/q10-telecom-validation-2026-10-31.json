@@ -1,0 +1,359 @@
+{
+  "schema": 1,
+  "date_local": "2026-10-31",
+  "status": "Q10_Telecom_short_calls_normal_reboot_unplugged_calls_and_name_auto_restore_accepted",
+  "selector": {
+    "variant": "SQN100-3",
+    "os_version": "10.3.3.3216",
+    "mcc": "460",
+    "mnc": "11",
+    "root_scheme": "existing_AutoRoot_v4"
+  },
+  "original_installation": {
+    "version": "0.3.2",
+    "profile": "unicom-46001-baseline",
+    "owned_IMS": "registered_LTE",
+    "backed_up_files": 78,
+    "backup_bytes": 11045837,
+    "all_backup_hashes_verified": true,
+    "restored_before_SIM_swap": true
+  },
+  "native_portability": {
+    "four_core_hashes_match_Q20": true,
+    "qct_sha256": "71835f701affcb9254eadb4ee299e8f7d07547543b3e0f61519456b8241dcb3b",
+    "dca_sha256": "5ebafa9b5b0949090fda37c1b5e6083362bac1007f281d6f1900772aedc1ae06",
+    "four_DCA_originals_match_Q20": true
+  },
+  "profile": {
+    "id": "china-telecom-46011-data-centric",
+    "sha256": "233775663e32f85c1b58da08711b0b3cda8d187c682d6ec1b1bd948a7c91e446",
+    "stock_config": "446",
+    "stock_sha256": "d94f9b7eaa664a9ac496475e706bb837c364635400dd1af9a79608337d57f407",
+    "data_apn_candidates": [
+      "ctnet",
+      "ctlte"
+    ],
+    "ims_apn": "ims",
+    "ims_ip_family": "IPv4v6",
+    "home_domain": "ims.mnc011.mcc460.3gppnetwork.org",
+    "native_ue_usage_setting": 1,
+    "native_voice_policy": 3,
+    "modem_reload": true
+  },
+  "manual": {
+    "owner_confirmed_both_directions_audio_and_LTE": true,
+    "sip": {
+      "schema": 1,
+      "label": "manual",
+      "boot": [
+        59460663,
+        1793381982.0
+      ],
+      "profile_id": "china-telecom-46011-data-centric",
+      "profile_sha256": "233775663e32f85c1b58da08711b0b3cda8d187c682d6ec1b1bd948a7c91e446",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "native_pid": 26480677,
+      "samples": 71,
+      "all_samples_lte": true,
+      "raw_log_sha256": "28c93d02282ea5ecbdcda1280fd560b73dc9bce4ec009a43b07eeee3850af207",
+      "packet_count": 35,
+      "calls": [
+        {
+          "direction": "outgoing",
+          "invite_at": "02:02:02.875",
+          "invite_cseq": 54519,
+          "answer_200_at": "02:02:09.388",
+          "ack_at": "02:02:09.403",
+          "bye_at": "02:02:14.400",
+          "bye_200_at": "02:02:14.685",
+          "established_seconds_to_bye": 5.012,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "02:02:18.385",
+          "invite_cseq": 1,
+          "answer_200_at": "02:02:23.089",
+          "ack_at": "02:02:23.478",
+          "bye_at": "02:02:27.306",
+          "bye_200_at": "02:02:27.522",
+          "established_seconds_to_bye": 4.217,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "attempts": [
+        {
+          "direction": "outgoing",
+          "invite_at": "02:02:02.875",
+          "invite_cseq": 54519,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "02:02:18.385",
+          "invite_cseq": 1,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        }
+      ],
+      "both_directions_verified": true,
+      "desktop_captured_utc": "2026-10-30T18:04:46.141698+00:00"
+    },
+    "manager_to_running_seconds": 95.807,
+    "full_system_boot_time_measured": false,
+    "enabled_during_first_manual_start": false,
+    "payload_files": {
+      "device/addon-start.sh": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
+      "device/compatibility.py": "f922a9ce78a3eb3ae3eafe37134db1b339aa4f2be2dd13010b3f5937eb24c44c",
+      "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+      "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
+      "device/install.py": "e1c0f4e438ff96cd994e485affb6cc2b8d077454d0b91ed600617ae399d19191",
+      "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+      "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
+      "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+      "device/run.sh": "3af90e97913804e78e9f65c3807698f875d8e83a8a8a83ae59f5d3a79f3587a1",
+      "device/service.py": "348f92305de5fd41d95596350b5d0219ebfad98e3f410a5366c485845dd74655",
+      "device/telecom_attach.py": "2f8718583b7cb63fe4c84aa844e1b536f4d084ef09a2b71ffc8b1d5d26176b6b",
+      "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+      "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+      "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+    }
+  },
+  "controlled_reboot": {
+    "enabled_after_manual_call_receipt": true,
+    "profile_parameters_changed": false,
+    "normal_reboot_acceptance": "accepted",
+    "before_boot": [
+      59460663,
+      1793381982.0
+    ],
+    "before_native_pid": 26480677,
+    "normal_menu_reboot_owner_confirmed": true,
+    "registration_verified": true,
+    "boot_changed": true,
+    "new_boot": [
+      1057088206,
+      1793408943.0
+    ],
+    "new_manager_pid": 18255909,
+    "new_native_pid": 20115551,
+    "owned_IMS": "connected/200 OK/LTE",
+    "desktop_service_starts": 0,
+    "manager_to_running_seconds": 311.549,
+    "full_system_boot_time_measured": false,
+    "enabled": true,
+    "post_reboot_calls_without_USB": "accepted",
+    "owner_opened_auxiliary_app_or_manually_started_VoLTE_this_boot": false,
+    "post_reboot_call_evidence": {
+      "schema": 1,
+      "label": "after-reboot",
+      "owner": {
+        "outgoing": true,
+        "incoming": true,
+        "audio_both_directions": true,
+        "lte": true,
+        "USB_disconnected": true,
+        "USB_reconnected": true
+      },
+      "boot": [
+        1057088206,
+        1793408943.0
+      ],
+      "native_pid": 20115551,
+      "manager_pid": 18255909,
+      "phone_service_calls": [
+        {
+          "direction": "outgoing",
+          "connected_at": "11:13:53.805",
+          "disconnected_at": "11:14:01.280",
+          "phone_state_interval_seconds": 7.475,
+          "connected_and_disconnected_verified": true
+        },
+        {
+          "direction": "incoming",
+          "connected_at": "11:14:10.592",
+          "disconnected_at": "11:14:17.302",
+          "phone_state_interval_seconds": 6.71,
+          "connected_and_disconnected_verified": true
+        }
+      ],
+      "connection_path": "ims_cellular",
+      "connection_type": "ir_92",
+      "both_call_state_cycles_verified": true,
+      "IMS_call_handles_count": 2,
+      "raw_hashes": {
+        "cellular_voice_service.log": "d1a4f7100be0403d3861de15961f9aae97370cc9286c22b6a5bfa586b72e603e",
+        "ims_rrm_if.log": "fdf7984efe02838278edb0d7b60feac4e36157cbea26c3d4efbe44480e687954",
+        "phone_service.log": "1a4ffd3eb3b5b3c56afbd4bbe513d1b99fa68afd71af9346e4699915fb8a05d3"
+      },
+      "post_reboot_full_SIP_dialogs_retained": false,
+      "SIP_limit": "bounded recorder finished before the calls; native ring retained partial incoming dialog only",
+      "twenty_second_sustained_acceptance": false,
+      "duration_limit": "phone state intervals include event delivery delays; neither call reached 20 seconds",
+      "desktop_captured_utc": "2026-10-31T03:26:49.417732+00:00"
+    },
+    "final_acceptance_receipt_sha256": "9188b990a5c1012afff17159940df03ab83f7a701b5b0222c34afaca24cdc785"
+  },
+  "root_after_first_SIM_swap": {
+    "SSH_initially_refused": true,
+    "manual_AppWorld_trigger_restored_Root_and_SSH": true,
+    "does_not_count_as_automatic_reboot_acceptance": true,
+    "primary_reference": "https://bb10.root.sx/blog/autoroot-v4/"
+  },
+  "app_fixes": {
+    "data_OFF_vs_user_mode_ON": "attach preparation allowed with user data setting ON; core still requires live LTE data before IMS",
+    "staged_service_import": "service imported from hash-verified PathTrusted installation destination",
+    "interrupted_preparation": "all written bytes, original native/source baseline, exact transaction and independently copied DCA backups verified before finalization; normal fixed installer update then passed",
+    "accepted_startup_management_r5": {
+      "strict_per_SIM_receipt_issued": true,
+      "critical_runtime_files_unchanged": 12,
+      "explicit_disable_preserved_on_update": true,
+      "operator_name_independent_of_IMS": true,
+      "normal_reboot_after_r5_update": "pending"
+    }
+  },
+  "acceptance_limits": [
+    "all accepted calls are short; 20-second sustained calls not accepted",
+    "post-reboot bounded recorder ended before calls; only partial incoming SIP retained; both IMS call-state cycles verified",
+    "own-number display not independently confirmed on Q10",
+    "SMS/MMS not tested",
+    "Q30 not accessed; lifecycle gate retained",
+    "r6 final boot verifies IMS and name restoration; calls use earlier same-SIM evidence with identical critical runtime bytes"
+  ],
+  "privacy": {
+    "raw_SIP_and_identity_XML": "private_only",
+    "phone_numbers_IMSI_ICCID_IMEI_or_keys_in_public_record": false
+  },
+  "accepted_before_r5_backup": {
+    "files": 124,
+    "bytes": 11988518,
+    "all_hashes_verified": true,
+    "service_interrupted": false
+  },
+  "r5_deployment": {
+    "revision": "0.4.0-r5",
+    "payload_files": 17,
+    "all_payload_hashes_verified": true,
+    "enabled_preserved_during_update": true,
+    "critical_runtime_files_unchanged": 12,
+    "accepted_SIM_profile_detected": true,
+    "enable_does_not_restart_IMS": true,
+    "operator_display": {
+      "name": "中国电信",
+      "table_overlay_owned": true,
+      "worker_alive": true
+    },
+    "current_IMS": {
+      "phase": "running",
+      "enabled": true,
+      "manager_alive": true,
+      "native_alive": true,
+      "current": {
+        "ims": "connected",
+        "register_status": "200 OK",
+        "ran": "LTE",
+        "radio": [
+          "lte"
+        ],
+        "power": "ON"
+      },
+      "status_from_current_boot": true,
+      "ims_observation_scope": "owned_native",
+      "startup_wait": {}
+    },
+    "normal_reboot_after_r5_update": "pending",
+    "regressions": {
+      "main_ran": 392,
+      "main_passed": 391,
+      "main_skipped": 1,
+      "Q20_adapter_passed": 23
+    }
+  },
+  "r5_actual_reboot": {
+    "IMS_auto_registered": true,
+    "name_auto_restored": false,
+    "boot": [
+      640426599,
+      1793419203.0
+    ],
+    "manager_pid": 17510502,
+    "native_pid": 18923629,
+    "old_name_worker_boot": [
+      1057088206,
+      1793408943.0
+    ],
+    "desktop_core_starts": 0,
+    "desktop_name_starts": 0,
+    "desktop_enables": 0,
+    "manager_to_registered_seconds": 299.582,
+    "full_boot_time_measured": false,
+    "root_cause": "name addon launched before root.done; it lacked the existing IMS addon readiness wait",
+    "root_boot_log_sha256": "6e6a3e984ceefe02d0833d9f2fadae609cf9d4bf74c32139203877b1b8b883d8",
+    "repair": "r6 adds bounded root.done wait; other 16 payload files unchanged",
+    "new_entry_normal_reboot_acceptance": "pending",
+    "desktop_captured_utc": "2026-10-31T04:07:19.127634+00:00"
+  },
+  "r6_name_boot_fix": {
+    "revision": "0.4.0-r6",
+    "fixed_file": "device/operator-name-start.sh",
+    "old_sha256": "b714615ba6eef24b8023eb29abbcaae6511e535442d601f6ceb928f10d0c0b0d",
+    "new_sha256": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
+    "other_payload_files_unchanged": 16,
+    "critical_runtime_files_unchanged": 12,
+    "bounded_root_readiness_wait_seconds": 120,
+    "root_pending_defers_trust_and_launch_test": true,
+    "missing_root_marker_exits_without_launch_test": true,
+    "targeted_startup_tests_passed": 2,
+    "IMS_remained_registered_and_same_processes_during_repair": true,
+    "current_display": {
+      "name": "中国电信",
+      "table_overlay_owned": true,
+      "worker_alive": true
+    },
+    "normal_reboot_display_restore_accepted": true
+  },
+  "r6_final_actual_reboot": {
+    "accepted_at": 1793422644.982706,
+    "name_auto_restored": true,
+    "manager_to_registered_seconds": 305.564,
+    "name_worker_pid": 17571947,
+    "variant": "SQN100-3",
+    "native_pid": 18350142,
+    "voice_policy": 3,
+    "owner": "q10-operator-name-autostart-accepted-v1",
+    "new_boot_and_processes_verified": true,
+    "name_entry_sha256": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
+    "manager_pid": 17584173,
+    "owner_top_bar_confirmed": true,
+    "displayed_name": "中国电信",
+    "network_or_IMS_writes_during_acceptance": 0,
+    "boot": [
+      1911078281,
+      1793421574.0
+    ],
+    "desktop_core_starts": 0,
+    "desktop_enables": 0,
+    "desktop_name_starts": 0,
+    "full_system_boot_time_measured": false,
+    "IMS_auto_registered": true,
+    "receipt_sha256": "3289a029f171578cc5333ed27bbaeb0dd56e8cc923a140380cb3ef34e2031e22",
+    "profile_sha256": "233775663e32f85c1b58da08711b0b3cda8d187c682d6ec1b1bd948a7c91e446",
+    "UE_usage_setting": 1,
+    "desktop_captured_utc": "2026-10-31T04:57:21.309423+00:00"
+  },
+  "normal_reboot_display_restore_accepted": true
+}

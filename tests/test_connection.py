@@ -69,7 +69,7 @@ class ConnectionTests(unittest.TestCase):
             with patch.object(c, 'Client') as client:
                 _, choice = c.resolve_connection('bb10-root', str(path))
                 self.assertEqual(choice['host'], 'q10-root')
-                client.assert_called_once_with('q10-root', str(path))
+                client.assert_called_once_with('q10-root', str(path), detect_managed=True)
 
     def test_wildcard_host_is_not_an_automatic_phone_configuration(self):
         with tempfile.TemporaryDirectory() as folder:

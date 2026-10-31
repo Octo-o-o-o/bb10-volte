@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "version": "0.4.0-r1",
+  "at_utc": "2026-10-30T17:05:19.472003+00:00",
+  "artifact": "bb10-volte-0.4.0-r1-windows-x64.exe",
+  "sha256": "312bff614898df043eaba4d0c255baf5635fbac3cb6b8fccbacdbe74b9eaa90f",
+  "bytes": 18706131,
+  "unit_regression": {
+    "ran": 371,
+    "passed": 370,
+    "skipped": 1
+  },
+  "q20_adapter_regression": {
+    "ran": 23,
+    "passed": 23
+  },
+  "source_gui_selftest": true,
+  "packaged_gui_selftest": true,
+  "bundled_hashes_verified": true,
+  "q20_packaged_readonly_preflight": {
+    "variant": "SQC100-2",
+    "managed_adapter": "q20_root_v2",
+    "registered": true,
+    "autostart_enabled": true,
+    "owned_xml_path_and_expected_content_verified": true,
+    "boot_hook_hash_verified": true,
+    "generic_install_blocked": true
+  },
+  "q20_app_start_stop_actions": "not_triggered_during_readonly_acceptance",
+  "q10_telecom_hardware_acceptance": "pending",
+  "q30": "not_accessed_provider_lifecycle_gate_retained",
+  "mac_app": "source_integration_only_not_built_or_validated_here",
+  "shared_checkout_modified": false,
+  "private_inputs_excluded": true,
+  "authenticode_signed": false,
+  "release_status": "local_candidate_not_published"
+}

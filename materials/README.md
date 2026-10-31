@@ -2,6 +2,8 @@
 
 机器可读的版本、来源和 SHA-256 在 [sources.json](sources.json)。安装载荷的逐文件哈希在 [payload-manifest.json](payload-manifest.json)。
 
+原版固件提供极空间与百度网盘手动下载入口。百度备用分享及提取码记录在每个固件条目的 `backup_manual_download_url`、`backup_manual_download_code` 中；分享网页不进入自动下载节点。用户下载后仍须按机型进行完整 SHA-256 校验导入。
+
 ## 已有匹配 Root 的 BB10 设备
 
 需要已验证的 BB10 设备 Root SSH 密钥、SSH 配置和 USB 网络。Windows EXE 已内置 Python 与 SSH；源码运行则需自行准备。手机端使用 BB10 自带 Python 3.2。安装器会在手机上读取并核验原厂文件，再生成 IMS 副本和 APN 文件。
@@ -15,6 +17,8 @@
 | 材料 | 固定版本 / 用途 |
 | --- | --- |
 | [AutoRoot v4](https://bb10.root.sx/blog/autoroot-v4) | 2026-10-22 发布包；保留 AppWorld 触发入口 |
+| [Classic / Q20 固件存档](https://archive.org/details/black-berry-classic-sqc-100) | `Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe`，完整原版系统文件；不自动运行 |
+| [Passport / Q30 固件存档](https://archive.org/details/blackberry-passport-apps-software) | `Passport_10.3.03.3216.7z`，含 SQW100-1/2/3/4 原版包；不自动刷写 |
 | [Q10 固件存档](https://archive.org/details/black-berry-q20) | `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，解出同名 EXE |
 | [libusb](https://github.com/libusb/libusb/releases/tag/v1.0.30) | 1.0.30；选 `VS2022/MS64/dll/libusb-1.0.dll` |
 | [MSYS2 LZO](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-3-any.pkg.tar.zst) | 2.10-3；将 `liblzo2-2.dll` 作为 `lzo2.dll` 放入构建器目录 |

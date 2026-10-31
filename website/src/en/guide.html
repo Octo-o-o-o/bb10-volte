@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complete User Guide | BB10 VoLTE</title>
+  <meta name="description" content="The complete BB10 VoLTE guide: verify downloads, launch on Windows or macOS, connect your phone, check compatibility, install, test real calls, restore settings, and export a redacted report.">
+  <meta name="theme-color" content="#f4f5f2">
+  <link rel="icon" type="image/png" href="../assets/icon.png">
+  <link rel="canonical" href="https://bb10-volte.octoooo.com/en/guide">
+  <link rel="alternate" hreflang="zh-CN" href="https://bb10-volte.octoooo.com/guide">
+  <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/guide">
+  <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/guide">
+  <meta property="og:title" content="Complete User Guide | BB10 VoLTE">
+  <meta property="og:description" content="Use BB10 VoLTE safely, from preparation to real-call checks with USB disconnected.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bb10-volte.octoooo.com/en/guide">
+  <meta property="og:site_name" content="BB10 VoLTE">
+  <meta property="og:locale" content="en_US">
+  <script src="../appearance.js"></script>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../guide.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="shell">
+      <a class="brand" href="index.html" aria-label="BB10 VoLTE home">
+        <img class="brand-mark" src="../assets/icon.png" alt="" width="40" height="40">
+        <span class="brand-name">BB10 VoLTE</span>
+        <span class="brand-edition">OCTOLAB</span>
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="index.html#how">How it works</a>
+        <a href="guide.html" aria-current="page">User guide</a>
+        <a href="index.html#compatibility">Compatibility</a>
+        <a href="index.html#download">Download</a>
+      </nav>
+      <div class="header-actions">
+        <a class="language-switch" data-language-switch="zh-CN" href="../guide.html" lang="zh-CN" hreflang="zh-CN" aria-label="切换为中文">中文</a>
+        <a class="github-link" href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <select class="theme-select" id="appearance" aria-label="Appearance">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open navigation menu">
+          <span class="menu-lines" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="guide-hero" aria-labelledby="guide-title">
+      <div class="shell">
+        <p class="eyebrow">Complete user guide · <span data-release-version>v0.5.0-r8</span></p>
+        <h1 id="guide-title">From download to real-call verification</h1>
+        <p class="guide-intro">Complete preparation, connection, preflight checks, installation, and call tests in order. “Registration passed” does not mean calls work: use the system dialer to test incoming and outgoing calls, and confirm clear audio in both directions.</p>
+        <p class="guide-intro">A few terms: root means administrator access to the phone; preflight means checks before installation; IMS registration means connecting to your carrier’s calling service. The English interface shown on this website previews the current source; older release packages may still display Chinese.</p>
+        <div class="guide-actions">
+          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe">Download for Windows x64</a>
+          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg">Download for macOS (Universal)</a>
+        </div>
+        <p class="guide-release">The current public release is <span data-release-version>v0.5.0-r8</span>. Verify its <a class="guide-release-link" href="#verify">SHA-256</a> after downloading. The matching checksum file is also on the <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r8" target="_blank" rel="noopener noreferrer">release page</a>.</p>
+      </div>
+    </section>
+
+    <div class="shell guide-layout">
+      <aside class="guide-toc" aria-labelledby="toc-title">
+        <p class="guide-toc-title" id="toc-title">On this page</p>
+        <nav aria-label="Guide chapters">
+          <ol>
+            <li><a href="#prepare">Preparation and risks</a></li>
+            <li><a href="#start">Launch the app</a></li>
+            <li><a href="#connect">Connect your phone</a></li>
+            <li><a href="#preflight">Preflight and installation</a></li>
+            <li><a href="#acceptance">Verify real calls</a></li>
+            <li><a href="#restore">Disable and restore</a></li>
+            <li><a href="#verify">Verify SHA-256</a></li>
+            <li><a href="#troubleshoot">Troubleshooting and redacted reports</a></li>
+            <li><a href="#documents">Official documentation</a></li>
+          </ol>
+        </nav>
+      </aside>
+
+      <div class="guide-content">
+        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">Preparation and risks</h2><p>Check the exact hardware variant under Settings → About. Automatic carrier support covers rooted Q10 SQN100-3, Q20 SQC100-2 and Passport (Q30) SQW100-4 on OS 10.3.3.3216, with matching native file hashes.</p><ul class="guide-list"><li>China Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM, without ISIM; the plan must provide VoLTE and working LTE data.</li><li>A reliable USB data cable, personal Root SSH key and verified host key are required for the initial installation.</li><li>Windows 10/11 x64; macOS universal package. No separate Python installation is needed. Current Mac physical USB testing remains pending; Intel hardware has not been tested.</li><li>Back up the phone. First-time Q10 Root preparation needs about 15 GB. Flashing for first-time Root erases data and remains experimental; Q20 and Passport need their own matching Root method. Never flash a Q10 image onto either.</li><li>Long-term standby, roaming, other regions and emergency calls have not been comprehensively validated.</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 of 9 combinations functionally accepted · 1 November 2026</caption><thead><tr><th scope="col">Device</th><th scope="col">China Mobile</th><th scope="col">China Unicom</th><th scope="col">China Telecom</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>Passed · r7</td><td>Passed · r7</td><td>Passed · r8</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>Passed · r7</td><td>Passed · r8</td><td>Passed · r7</td></tr><tr><th scope="row">Passport SQW100-4</th><td>Passed · r8</td><td>Passed · r7</td><td>Passed · r7</td></tr></tbody></table></div><p>Each cell names the version actually tested. All three phones now run r8; the matrix does not claim nine retests on identical r8 bytes. The r8 phone changes concern number display and restoration; attach policy and IMS remain from r7.</p></section>
+
+        <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>Direct downloads via Cloudflare R2.</strong> No GitHub connection is needed. Use the same-version GitHub copy below if this route is unavailable; file bytes and SHA-256 checksums match.</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub Source ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+          <p class="eyebrow">02 · Download and launch</p>
+          <h2 id="start-title">Launch on Windows / macOS</h2>
+          <div class="platform-grid">
+            <article class="platform-card" aria-labelledby="windows-title">
+              <h3 id="windows-title">Windows</h3>
+              <ol class="step-list">
+                <li>Download the current <code data-package-file="windows">bb10-volte-0.5.0-r8-windows-x64.exe</code> and its matching <code>.exe.sha256</code> file from the release.</li>
+                <li>Follow the <a href="#verify">SHA-256 verification</a> steps below before opening the EXE. Python, Tcl/Tk, SSH/SCP, carrier templates, and phone-side payloads are included.</li>
+                <li>This is a single-file portable app. It extracts into the system temporary directory at launch and cleans up after a normal exit. Launching and everyday use do not require administrator rights; first-time USB driver installation shows a separate Windows UAC prompt.</li>
+              </ol>
+              <p class="guide-note"><strong>Signing status:</strong> The current Windows EXE has no Authenticode signature, so Windows may show “Unknown publisher.” Download only from the project's releases and confirm the complete SHA-256 matches. Do not run it if verification fails.</p>
+            </article>
+
+            <article class="platform-card" aria-labelledby="macos-title">
+              <h3 id="macos-title">macOS</h3>
+              <ol class="step-list">
+                <li>Download the current <code data-package-file="mac">bb10-volte-0.5.0-r8-macos-universal.dmg</code> and matching <code>.dmg.sha256</code> file, then verify SHA-256 first.</li>
+                <li>Open the DMG, drag <code>bb10-volte.app</code> into Applications, and launch it from Applications. No separate Python, Tk, or OpenSSH installation is needed; the app uses the SSH/SCP included with macOS.</li>
+                <li>Connect and unlock the phone using a USB data cable, and allow the accessory connection when prompted by your Mac. If USB networking is unavailable, check “Connect to Mac” under Settings → Storage and Access → USB Connections on the phone.</li>
+              </ol>
+              <p class="guide-note"><strong>Signing and verification scope:</strong> The current Mac package is Universal, signed, and notarized. “Universal” means it contains Apple Silicon and Intel architectures, not that every Mac or Intel model has been tested on hardware. Intel has only passed package architecture inspection; no Intel hardware result is available.</p>
+            </article>
+          </div>
+          <div class="callout" role="note">
+            Initial Root support can differ between releases. For an unrooted phone, follow the first-run documentation for your downloaded version and actual model. A new interface in later source code does not mean an older package supports it.
+          </div>
+          <p>Once the app and phone service are prepared, they can run while the computer is offline. Initial Root or driver preparation downloads missing materials only after you explicitly enter and confirm that process. IMS registration and real calls always require the carrier network.</p>
+        </section>
+
+        <section class="chapter guide-section" id="connect" aria-labelledby="connect-title">
+          <p class="eyebrow">03 · Establish a trusted connection</p>
+          <h2 id="connect-title">Connect your phone</h2>
+          <ol class="step-list">
+            <li><strong>Establish USB networking first.</strong> Connect and unlock the phone using a data cable. Charging or a visible storage drive does not mean USB networking is ready. If the status does not update after reconnecting, click to check again. Do not preinstall old BlackBerry Link software, change IP addresses arbitrarily, or weaken host-key checking.</li>
+            <li><strong>Click “Connect phone” on the main screen.</strong> The app finds and actively verifies saved personal connections; the connection profile field can be left empty. Both the old <code>q10-root</code> and current <code>bb10-root</code> aliases are recognized. Custom settings are under More → Advanced connection settings.</li>
+            <li><strong>Open “Connection help” if needed.</strong> You can select the entire folder from a previous flash so the app can identify the single set of login materials inside. Confirm their source before creating a local profile. Keep private keys in a protected personal directory; never send them to an issue or group chat.</li>
+            <li><strong>Check the connection result.</strong> Confirm the model, hardware variant, OS, Root, and existing service status. Reopening the app only rechecks the last successfully connected phone; it does not automatically install or flash anything. Development mode, SSH, Root, and IMS are separate layers. With valid Root SSH, development mode does not need to stay enabled.</li>
+          </ol>
+
+          <h3>Choose a recovery method for your phone's current state</h3>
+          <ul class="guide-list">
+            <li><strong>Rooted, with your own connection files:</strong> Import your own <code>ssh_config</code> and ensure its referenced login private key and trusted <code>known_hosts</code> exist. Absolute Windows paths cannot be reused unchanged on a Mac; use the app's connection-recovery process to recreate the required setup.</li>
+            <li><strong>Rooted, without the old computer's files:</strong> Use an existing, working Root terminal on the phone to authorize this computer independently. Follow the exact numbered steps shown by the app to transfer the public script and results, and enter <code>PAIR</code> only after your personal confirmation. This persistently appends an SSH public key on the phone. The private key always stays on the computer.</li>
+            <li><strong>No materials and no working Root terminal:</strong> A direct connection is not possible. A connection failure alone does not prove the phone is unrooted. Check Root and SSH first; do not reflash as a speculative fix.</li>
+            <li><strong>Host fingerprint mismatch:</strong> Check the trusted materials originally used for that phone. Do not disable strict host checking or assume a changed fingerprint means a damaged key.</li>
+          </ul>
+
+          <h3>Windows first-time preparation: only for a confirmed unrooted Q10</h3>
+          <ol class="step-list">
+            <li>Open first-time preparation in Connect phone / Connection help. Check USB networking. If Windows drivers are missing, the wizard downloads and verifies pinned materials, then installs through UAC after your confirmation.</li>
+            <li>Open “Initial Root,” check that the actual variant is <code>SQN100-1</code> through <code>SQN100-5</code>, and reconfirm your backup and about 15 GB of free space.</li>
+            <li>Click “Automatically prepare Root image.” The app downloads and verifies pinned tools and Q10 firmware, then generates personal keys and an image unique to this phone. <strong>Preparing the image does not flash the phone.</strong></li>
+            <li>Start flashing only after reconfirming the backup and actual model and explicitly agreeing to erase the data. If an unknown exit, interruption, or undocumented error occurs, stop immediately and preserve the current state. Do not retry blindly.</li>
+            <li>Complete the required setup after first boot and activate Root using the original Root method (which may involve opening BlackBerry World once). Then return to the app and verify effective UID 0. Successful Root does not mean VoLTE or calls have passed.</li>
+          </ol>
+          <p class="guide-note">Q20 / Q30 require firmware and Root methods matching their own model. No Q10 image can substitute for this requirement. Automatic VoLTE operations on Passport also remain blocked.</p>
+        </section>
+
+        <section class="chapter guide-section" id="preflight" aria-labelledby="preflight-title"><h2 id="preflight-title">Install once, then change SIMs offline</h2><ol class="step-list"><li>Connect and unlock one rooted supported phone. Open <strong>Automatic carriers</strong> and confirm the exact model and current SIM.</li><li>Choose <strong>Back up and install automatic carriers</strong>. The program verifies and saves original network settings, startup entries and the old payload before writing the new version, then verifies the files read back from the phone.</li><li>Restart from the phone power menu, unlock, and allow around 3–5 minutes. Click <strong>Restarted — check again</strong>. The program checks the current boot, SIM, native IMS process, registration and LTE before showing success.</li><li>If Passport says another normal restart is needed, wait for the policy write to finish, then restart normally once more. Airplane mode is not a substitute. The screen explains the reason and retains the recheck button.</li><li>If USB disconnects, reconnect and recheck the connection. Reopening the app resumes from the actual phone state; it does not require reinstalling. If an update left autostart disabled, enable it first.</li></ol><h3>Future SIM changes: no computer required</h3><p>Power the phone off normally, change the SIM, then start and unlock it. The phone selects the carrier. When Passport enters or leaves the Telecom attach policy, allow around five minutes for startup, then perform one additional normal restart. Hot swapping is outside the tested process.</p><p>Supported models, OS, native hashes, backup receipts and idle-call state are checked. Unknown state or conflicting external changes stop writes. The automatic-carrier workflow does not perform first-time Root flashing.</p></section>
+
+        <section class="chapter guide-section" id="acceptance" aria-labelledby="acceptance-title"><h2 id="acceptance-title">Real call acceptance</h2><ol class="step-list acceptance-list"><li>Wait for current-boot registration, then unplug USB.</li><li>Use the system dialer to call out, then receive a call from another working phone. For each, wait until the connected-call timer reaches at least 00:35 before hanging up.</li><li>Check first-attempt connection, both audio directions, LTE throughout, your own number and the carrier name.</li><li>Test after normal restart and powered-off SIM changes without reconnecting to a computer. For Q10, include about 20 minutes of LTE standby before calls.</li><li>If searching for network, emergency-only service or a first-call failure appears, preserve the state and export a redacted report; avoid repeated redialing, reinstalling or restarting.</li></ol><p>All nine model/carrier combinations passed functional acceptance. Six cases include phone-only SIM changes; the three initial-card baselines are recorded separately. Some phone ring logs rotated, so owner-confirmed duration and audio are distinguished from complete retained SIP timing. Q10 Telecom acceptance uses the last successful pair; first-attempt success was not assessed because earlier attempts had peer-number issues.</p><p><a href="../acceptance.json" target="_blank" rel="noopener noreferrer">Read the structured acceptance evidence</a></p></section>
+
+        <section class="chapter guide-section" id="restore" aria-labelledby="restore-title"><h2 id="restore-title">Disable, restore or update</h2><ol class="step-list"><li>End all calls and keep USB connected. Open Automatic carriers and use its stop/restore action.</li><li>The program stops its manager, restores owned settings from verified backups and checks the result. Restart normally to clear old runtime components.</li><li>For a recognized older payload, install the new version after that restart, verify it, enable automatic startup and restart normally to launch it. Follow an additional Passport carrier-restart prompt if needed.</li></ol><p>Keep original backups and update receipts. Restoration does not remove Root or reflash firmware. Unknown files, missing receipts or conflicting changes stop the operation; inspect state before retrying an interrupted write.</p></section>
+
+        <section class="chapter guide-section" id="verify" aria-labelledby="verify-title">
+          <p class="eyebrow">07 · Before running</p>
+          <h2 id="verify-title">SHA-256 verification commands</h2>
+          <p>Download the package and matching <code>.sha256</code> file from the same release. These commands assume the package is in your user's Downloads folder. If it is elsewhere, replace the path with its actual full path.</p>
+
+          <figure class="code-block">
+            <figcaption>Windows PowerShell</figcaption>
+            <pre><code data-checksum-command="windows">Get-FileHash "$HOME\Downloads\bb10-volte-0.5.0-r8-windows-x64.exe" -Algorithm SHA256</code></pre>
+          </figure>
+
+          <figure class="code-block">
+            <figcaption>macOS Terminal</figcaption>
+            <pre><code data-checksum-command="mac">shasum -a 256 "$HOME/Downloads/bb10-volte-0.5.0-r8-macos-universal.dmg"</code></pre>
+          </figure>
+
+          <p>The command outputs a 64-character hexadecimal digest. It must <strong>match every character</strong> of the SHA-256 in the release's matching checksum file (hexadecimal letter case does not matter). Do not compare only the first few characters. If it differs, the files came from different sources, or you cannot confirm the match, do not run the package. Delete it and download it again from the release.</p>
+          <div class="guide-actions guide-download-links">
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe">Windows download</a>
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg">macOS download</a>
+          </div>
+        </section>
+
+        <section class="chapter guide-section" id="troubleshoot" aria-labelledby="troubleshoot-title">
+          <p class="eyebrow">08 · Preserve evidence and seek help safely</p>
+          <h2 id="troubleshoot-title">Troubleshooting and redacted reports</h2>
+          <div class="trouble-list">
+            <article class="trouble-item">
+              <h3>Cannot connect to the phone</h3>
+              <p>Check unlocking, data cable, USB mode, USB networking, SSH, and Root in order. Charging alone proves nothing about the connection. On Mac, check “Connect to Mac”; on Windows, let the first-time wizard handle drivers. If a host fingerprint changes, verify trusted materials first rather than disabling security checks.</p>
+            </article>
+            <article class="trouble-item">
+              <h3>Preflight fails or mobile data does not work</h3>
+              <p>Read the failed item's reason and advice. Check the SIM, LTE, actual MCC/MNC, data APN, and factory configuration. If mobile data does not work normally, do not bypass installation requirements. A non-default configuration is not automatically a damaged one.</p>
+            </article>
+            <article class="trouble-item">
+              <h3>Registration pending confirmation</h3>
+              <p>Preserve the current state, check status later, and confirm carrier service. The end of the default 180-second observation window does not mean installation automatically succeeded and must not trigger repeated reinstallation. This device passes only when every real-call checklist item passes.</p>
+            </article>
+            <article class="trouble-item">
+              <h3>Installation interrupted or state unknown</h3>
+              <p>Keep installation records and error messages, rerun preflight, check status, then contact the maintainer. Do not delete transaction records, force an overwrite, or Root the phone again. Do not publicly upload private installation records.</p>
+            </article>
+          </div>
+
+          <h3>Export and inspect a redacted JSON report</h3>
+          <ol class="step-list">
+            <li>Connect the phone and run a fresh check so the report reflects its current state. Open More → Export check report and save the JSON to a location you choose. The tool does not upload reports automatically.</li>
+            <li>The report keeps only allowlisted checks, results, and necessary model, OS, MCC/MNC, and similar information. It excludes full IMSI, IMEI, ICCID, PIN, phone numbers, SSH keys, host addresses, raw configuration contents, and raw SIP logs.</li>
+            <li><strong>Open and inspect it yourself before sharing.</strong> Check custom names and additional text for personal information. Do not additionally upload the <code>private</code> directory, private keys, <code>ssh_config</code>, <code>known_hosts</code>, private installation records, or raw communications logs.</li>
+            <li>When submitting a report to the project's GitHub Issues, include <span data-release-version>v0.5.0-r8</span>, Windows EXE or macOS DMG, computer OS, phone model and variant, full BB10 OS version, carrier and region of use, roaming or number-porting status, failed stage, and error message. For working results, also report each incoming-call, outgoing-call, two-way-audio, continuous-4G, USB-disconnected, and post-reboot result.</li>
+          </ol>
+          <p><a class="text-link" href="https://github.com/Octo-o-o-o/bb10-volte/issues" target="_blank" rel="noopener noreferrer">Report working or non-working results on GitHub Issues</a></p>
+        </section>
+
+        <section class="chapter guide-section" id="documents" aria-labelledby="documents-title">
+          <p class="eyebrow">09 · Read the source documentation</p>
+          <h2 id="documents-title">Official documentation</h2>
+          <p>This page covers the current public release, <span data-release-version>v0.5.0-r8</span>. The repository's main branch may contain later changes. Use the matching release's attachments and notes to determine what your downloaded package supports.</p>
+          <ul class="document-list">
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/docs/GUI.md" target="_blank" rel="noopener noreferrer"><strong>Desktop GUI user guide</strong><span>Connection, preflight, installation, status, and restoration</span></a></li>
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/docs/WINDOWS-EXE.md" target="_blank" rel="noopener noreferrer"><strong>Windows EXE guide</strong><span>Portable operation, signing status, drivers, and offline limits</span></a></li>
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/docs/MACOS.md" target="_blank" rel="noopener noreferrer"><strong>macOS app and connection</strong><span>DMG launch, USB networking, personal connection materials, and verification scope</span></a></li>
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/docs/COMPATIBILITY.md" target="_blank" rel="noopener noreferrer"><strong>Compatibility matrix</strong><span>Models, OS, SIM, carriers, and experimental-trial limits</span></a></li>
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/docs/FIRST-RUN.md" target="_blank" rel="noopener noreferrer"><strong>First use and connection preparation</strong><span>Q10 Root materials, data-wipe risk, and connection recovery</span></a></li>
+            <li><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/README.md" target="_blank" rel="noopener noreferrer"><strong>Project README</strong><span>How it works, tested scope, and open-source information</span></a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="shell guide-footer">
+      <p><strong>BB10 VoLTE</strong> · <a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT</a></p>
+      <p>
+        <a href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span aria-hidden="true"> · </span>
+        <a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab</a>
+      </p>
+      <p>© <span data-current-year>2026</span> OctoLab</p>
+    </div>
+  </footer>
+
+  <script type="module" src="../site.js"></script>
+</body>
+</html>

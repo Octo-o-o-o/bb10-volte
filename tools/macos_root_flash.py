@@ -7,6 +7,7 @@ import re
 import shlex
 import subprocess
 import sys
+from i18n import tr
 import time
 
 
@@ -142,8 +143,8 @@ def run_stage(folder, phase, token):
         sys.stderr = sys.stdout
     except OSError:
         raise SetupError('native_console_unavailable') from None
-    print('bb10-volte: ' + phase.upper() + ' native Mac Root flashing', flush=True)
-    print('Keep USB connected. Type the device password only if the native tool asks; input is hidden.', flush=True)
+    print(tr('bb10-volte：正在通过 Mac 原生工具刷写 {} Root').format(phase.upper()), flush=True)
+    print(tr('请保持 USB 连接；仅在原生工具提示时输入设备密码，输入内容不会显示。'), flush=True)
     pending = bytearray()
     with hidden_terminal_input(), (folder / ('flash-' + phase + '.log')).open('x', encoding='utf-8') as log:
         child = subprocess.Popen([str(tools['bb10mt']), 'flash', '-l', str(listing), '-r', str(tools['loaders'])],
@@ -173,5 +174,5 @@ def run_stage(folder, phase, token):
         json.dump(result, stream, indent=2)
     temporary.chmod(0o600)
     temporary.replace(output)
-    print('\nReturn to bb10-volte. Unknown or failed stages stay paused; do not rerun them.', flush=True)
+    print(tr('\n请返回 bb10-volte。状态未知或失败的阶段会保持暂停；不要重复运行。'), flush=True)
     return 0 if result['completed'] else 1

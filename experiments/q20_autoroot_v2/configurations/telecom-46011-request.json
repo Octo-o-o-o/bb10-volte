@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "profile": {
+    "label": "Q20 SQC100-2 China Telecom 460-11",
+    "ims": {
+      "sms": true,
+      "ip_family": "IPv4v6",
+      "apn": "ims",
+      "home_domain": "auto"
+    },
+    "carrier": {
+      "stock_sha256": "d94f9b7eaa664a9ac496475e706bb837c364635400dd1af9a79608337d57f407",
+      "data_apns": [
+        "ctnet",
+        "ctlte"
+      ],
+      "stock_config": "446",
+      "mcc": "460",
+      "mncs": [
+        "11"
+      ]
+    },
+    "runtime": {
+      "registration_wait_seconds": 180,
+      "existing_ims_wait_seconds": 330,
+      "poll_seconds": 3,
+      "ims_apn_wait_seconds": 45,
+      "autostart": false,
+      "sim_wait_seconds": 300
+    },
+    "id": "q20-sqc100-2-telecom-46011",
+    "schema": 1
+  },
+  "allow_experimental": true
+}

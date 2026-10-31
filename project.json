@@ -1,9 +1,9 @@
 {
   "name": "bb10-volte",
-  "version": "0.3.3",
-  "desktop_revision": 6,
-  "state": "community_research_integration_hardware_validation_pending",
+  "version": "0.5.0",
+  "desktop_revision": 8,
+  "state": "experimental_release_nine_combinations_functionally_accepted",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Q10 baseline has prior hardware acceptance; experimental combinations require manual start; Passport automatic operations paused pending provider lifecycle validation; exact OS/ABI/native hashes required"
+  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine functional cases accepted on recorded r7/r8 versions; all three phones installed r8. Current macOS physical USB acceptance pending."
 }

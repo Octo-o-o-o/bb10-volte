@@ -22,7 +22,22 @@
       "mirrors": [
         "https://ia600407.us.archive.org/24/items/black-berry-q20/Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z",
         "https://ia800407.us.archive.org/24/items/black-berry-q20/Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z"
-      ]
+      ],
+      "variants": [
+        "SQN100-1",
+        "SQN100-2",
+        "SQN100-3",
+        "SQN100-4",
+        "SQN100-5"
+      ],
+      "family": "q10",
+      "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
+      "manual_download_kind": "browser share page; never a raw HTTP mirror",
+      "manual_download_validity_days": 180,
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
     },
     {
       "id": "libusb",
@@ -64,5 +79,69 @@
   },
   "source_helper": "../driver/volte_swcrypto.c",
   "helper_sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
-  "toolchain": "Zig0.13.0 (optional rebuild)"
+  "toolchain": "Zig0.13.0 (optional rebuild)",
+  "additional_firmware": [
+    {
+      "id": "stock-classic",
+      "family": "classic",
+      "variants": [
+        "SQC100-1",
+        "SQC100-2",
+        "SQC100-3",
+        "SQC100-4",
+        "SQC100-5"
+      ],
+      "file": "Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe",
+      "size": 3073914372,
+      "url": "https://ia600607.us.archive.org/8/items/black-berry-classic-sqc-100/Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe",
+      "mirrors": [
+        "https://ia800607.us.archive.org/8/items/black-berry-classic-sqc-100/Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe",
+        "https://ia601804.us.archive.org/20/items/z30-10333216-sta100/Z30_10.3.3.3216_STA100.exe"
+      ],
+      "source_page": "https://archive.org/details/black-berry-classic-sqc-100",
+      "sha256": "d83b04dc9bb3e12b9b6a29b05d2aeb6350cabb6fca85866c231609ba575821e2",
+      "manufacturer_signature_verified": false,
+      "required_for": "Classic/Q20 stock recovery and separate model-specific root research",
+      "automatic_root_recipe": false,
+      "note": "Classic uses the STA100/Z30 stock autoloader. Downloading it does not enable automatic Root or establish VoLTE acceptance.",
+      "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
+      "manual_download_kind": "browser share page; never a raw HTTP mirror",
+      "manual_download_validity_days": 180,
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
+    },
+    {
+      "id": "stock-passport",
+      "family": "passport",
+      "variants": [
+        "SQW100-1",
+        "SQW100-2",
+        "SQW100-3",
+        "SQW100-4"
+      ],
+      "file": "Passport_10.3.03.3216.7z",
+      "size": 1572841956,
+      "url": "https://archive.org/download/blackberry-passport-apps-software/Passport_10.3.03.3216.7z",
+      "source_page": "https://archive.org/details/blackberry-passport-apps-software",
+      "sha256": "bddf3c0df422f2b594619dc436296dc1210b184a8841f3492dd0dd5fbb3931a7",
+      "extracted_file": "Passport_10.3.03.3216_SQW100-1-2-3-4.exe",
+      "extracted_sha256": "2c5b7759ba83e50cad96217a285fbfb2cc14f60438903757c9067e1571a03ed4",
+      "manufacturer_signature_verified": false,
+      "required_for": "Passport/Q30 stock recovery and separate model-specific root research",
+      "automatic_root_recipe": false,
+      "mirrors": [
+        "https://ia600908.us.archive.org/17/items/blackberry-passport-apps-software/Passport_10.3.03.3216.7z",
+        "https://ia800908.us.archive.org/17/items/blackberry-passport-apps-software/Passport_10.3.03.3216.7z"
+      ],
+      "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
+      "manual_download_kind": "browser share page; never a raw HTTP mirror",
+      "manual_download_validity_days": 180,
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
+    }
+  ]
 }

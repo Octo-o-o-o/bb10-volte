@@ -1,4 +1,5 @@
 """First-use preparation and explicitly confirmed Windows Q10 Root workflow."""
+from i18n import tr
 import json
 import hashlib
 import os
@@ -29,13 +30,50 @@ def catalog():
     return json.loads((ROOT / 'materials/first-run-tools.json').read_text(encoding='utf-8'))
 
 
-def stock_firmware():
+def firmware_entries():
     source = json.loads((ROOT / 'materials/sources.json').read_text(encoding='utf-8'))
-    return next(item for item in source['verified_inputs'] if item['id'] == 'stock-q10')
+    return [item for item in source['verified_inputs'] + source.get('additional_firmware', [])
+            if item['id'].startswith('stock-')]
 
 
-def import_stock_firmware(path, progress, cache_dir=None):
-    return str(import_material(stock_firmware(), path, folder=cache_dir, progress=progress))
+def firmware_variants():
+    return [variant for item in firmware_entries() for variant in item['variants']]
+
+
+def stock_firmware(variant=None):
+    if not variant:
+        raise SetupError('firmware_model_required')
+    matches = [item for item in firmware_entries() if variant in item['variants']]
+    if len(matches) != 1:
+        raise SetupError('firmware_model_unsupported')
+    return matches[0]
+
+
+def selected_firmware_variant(selected, usb):
+    """An attached device takes precedence; offline selection must be explicit."""
+    count = usb.get('usb_count')
+    detected = (usb.get('device') or {}).get('ModelName')
+    if isinstance(count, int) and count > 1:
+        raise SetupError('firmware_multiple_devices')
+    if detected or count == 1 or usb.get('usb_present'):
+        if count != 1 or not detected:
+            raise SetupError('firmware_device_unverified')
+        stock_firmware(detected)
+        if selected and selected != detected:
+            raise SetupError('firmware_model_mismatch')
+        return detected
+    stock_firmware(selected)
+    return selected
+
+
+def download_stock_firmware(variant, progress, proxy=None, cache_dir=None, offline=False):
+    item = stock_firmware(variant)
+    cache = fetch_entries([item], folder=cache_dir, progress=progress, proxy=proxy, verify_only=offline)
+    return str(cache / item['file'])
+
+
+def import_stock_firmware(path, progress, cache_dir=None, *, variant=None):
+    return str(import_material(stock_firmware(variant), path, folder=cache_dir, progress=progress))
 
 
 def powershell():
@@ -181,14 +219,15 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
         raise SetupError('insufficient_disk')
     tools = ensure_tools(progress, proxy, cache_dir, offline)
     source = json.loads((ROOT / 'materials/sources.json').read_text(encoding='utf-8'))
-    fetch_entries(source['verified_inputs'], tools['cache'], progress, proxy, verify_only=offline)
+    inputs = [item for item in source['verified_inputs'] if not item['id'].startswith('stock-')]
+    fetch_entries(inputs + [stock_firmware(variant)], tools['cache'], progress, proxy, verify_only=offline)
     folder = private_root() / ('root-kit-' + uuid.uuid4().hex[:12])
-    progress('生成本设备使用的个人密钥与 Root 镜像')
+    progress(tr('生成本设备使用的个人密钥与 Root 镜像'))
     import prepare_root
     prepare_root.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder),
                        '--cache', str(tools['cache']), '--openssl-dir', str(tools['openssl']),
                        '--ssh-keygen', str(tools['keygen'])])
-    progress('构建并校验系统与无线镜像；此步骤尚不刷写手机')
+    progress(tr('构建并校验系统与无线镜像；此步骤尚不刷写手机'))
     import build_root
     build_root.main(['--kit', str(folder)])
     (folder / 'setup-state.json').write_text(json.dumps({'variant': variant, 'stage': 'prepared'}, indent=2), encoding='utf-8')
@@ -293,7 +332,7 @@ def flash_root(folder, confirmed, progress):
     for name, image in zip(('os', 'radio'), images):
         state['stage'] = name + '_started'
         journal.write_text(json.dumps(state, indent=2), encoding='utf-8')
-        progress('正在刷写' + ('系统' if name == 'os' else '无线固件') + '。请保持 USB 连接，并按刷写窗口的密码提示操作。')
+        progress(tr('正在刷写') + (tr('系统') if name == 'os' else tr('无线固件')) + tr('。请保持 USB 连接，并按刷写窗口的密码提示操作。'))
         try:
             result = run_flash_stage(folder, name, state['confirmation_token'])
         except (SetupError, OSError, ValueError):
@@ -301,7 +340,7 @@ def flash_root(folder, confirmed, progress):
             journal.write_text(json.dumps(state, indent=2), encoding='utf-8')
             raise SetupError('flash_state_unknown') from None
         if result.get('expected_v4_os_security_result'):
-            progress('系统写入已完成，出现此 AutoRoot 配方的已知安全提示；继续无线固件步骤。')
+            progress(tr('系统写入已完成，出现此 AutoRoot 配方的已知安全提示；继续无线固件步骤。'))
     state['stage'] = 'flashed_waiting_for_root'
     state.pop('confirmation_token', None)
     journal.write_text(json.dumps(state, indent=2), encoding='utf-8')

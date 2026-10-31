@@ -46,6 +46,24 @@ The Windows and experimental Mac initial-Root recipes are Q10-only. Q20/Passport
 
 This iteration verified portable inputs, personal-key generation, construction and hash checks of both Root images, driver extraction/signatures, and read-only access to an already-rooted Q10. The flashing branch has simulated regression coverage but **has not been exercised on an unrooted phone**, and the current working phone was not reflashed. The wizard remains experimental. First preparation needs Internet access or correctly cached materials; normal prepared use has no activation, billing or AI dependency.
 
+## Prepare firmware by hardware model
+
+Desktop `0.3.3-r8` uses the exact hardware model for automatic downloads, browser links, and local import verification. Neither the application package name nor a Q10 default determines the target. A single identified phone supplies the model; unknown, multiple, or conflicting devices stop selection. For offline preparation, disconnect phones and explicitly choose the model.
+
+| Phone | Hardware variants | Pinned firmware | Size |
+| --- | --- | --- | --- |
+| Q10 | SQN100-1 through SQN100-5 | `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z` | 1.57 GB |
+| Classic / Q20 | SQC100-1 through SQC100-5 | `Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe` | 3.07 GB |
+| Passport / Q30 | SQW100-1 through SQW100-4 | `Passport_10.3.03.3216.7z` | 1.57 GB |
+
+The Q20 STA100/Z30 filename reflects its shared stock package. The complete original EXE is downloaded without executing it. Firmware selection does not enable Root or establish VoLTE compatibility for another model. Automatic Root image building and flashing retain the existing Q10 recipe. The [source manifest](../materials/sources.json) pins each file size and SHA-256; caches use distinct filenames and hashes, and imports for the wrong model are rejected.
+
+Source preparation: `python tools/fetch_materials.py --variant SQC100-1 --with-usb-drivers`, replacing the variant with the actual hardware model. Omitting `--variant` downloads shared tools only, with no default Q10 firmware.
+
+For mainland China networks, use **China download (ZSpace)** in the app or the [stock firmware share](https://t3.znas.cn/9jkbxczhAK4), download the filename shown for the selected model, then import it. The read-only folder contains three stock files and verification lists, without login or a passcode. The share was created on 2026-10-30 with a 180-day duration and a maximum of 1,000 uses; current availability follows the share page. Browser share pages are excluded from automatic mirror ranking and resumable transfers. A long-term automatic mirror should expose stable HTTPS file URLs with Range support.
+
+The backup is the [Baidu Netdisk firmware share](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r), access code `fp4r`. Select **Backup download (Baidu)** or **Copy backup link** in the app; copying includes the access code. Download the complete original filename shown for the selected model, then verify and import it. Availability follows the share page; it is not an automatic raw-file mirror.
+
 ## Interrupted or failing downloads
 
 Desktop `0.3.3-r3` adds automatic mirror ranking, failover, cross-mirror resume and verified offline firmware import. Existing EXE/DMG installations need updating. The Q10 archive is about 1.57 GB; status shows the current host, bytes, percentage, speed and switch reason.
@@ -58,10 +76,10 @@ Desktop `0.3.3-r3` adds automatic mirror ranking, failover, cross-mirror resume 
 
 Manual browser download and import:
 
-1. Open **Connect phone / Connection help → Initial Root**, then the manual Q10 firmware download/import section.
-2. Select the original host or a backup in **Browser download source**, then use **Download firmware in browser** for `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
+1. Open **Connect phone / Connection help → Initial Root**, detect or explicitly choose the exact hardware model, then find the matching firmware download/import section.
+2. Select the original host or a backup in **Browser download source**, then use **Download firmware in browser** for the model-specific filename shown in the app, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
 3. Choose the local file or paste its full path, then use **Verify and import firmware**. Quoted Windows “Copy as path” values and browser-added `(1)` filename suffixes are supported. The content is verified and stored under the canonical cache name.
-4. After success, use **Auto prepare Root images**. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
+4. After success, Q10 can use **Auto prepare Root images**; Q20 / Q30 require their own matching Root method. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
 
 Import shows progress and leaves the selected original file in place. Incomplete, corrupt or wrong-version files are rejected without changing existing cache files or resume progress. The cache disk needs room for a complete copy; selecting that same file already in the cache only verifies it.
 

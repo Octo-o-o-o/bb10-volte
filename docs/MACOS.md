@@ -1,8 +1,13 @@
 # macOS 应用与手机连接
 
+<!-- unified-current:start -->
+**本轮实验版：`bb10-volte-0.5.0-r8-macos-universal.dmg`。** 与 Windows 共用“三网自动适配”流程和手机载荷。首次安装及以后关机换卡见[统一流程](AUTO-CARRIERS.md)。本轮 Mac 实机 USB 验收按机主安排暂缓；签名、公证、软件自检和历史 USB 连接记录分别保留。下文已发布版本的记录注明其对应版本。
+<!-- unified-current:end -->
+
+
 [English](MACOS.en.md) · [首次使用](FIRST-RUN.md) · [连接恢复](RECOVER-CONNECTION.md)
 
-从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 下载 macOS 通用 `.dmg` 和同名 `.dmg.sha256`，核对 SHA-256 后打开 DMG，将 `bb10-volte.app` 拖到“应用程序”后启动。不需要另装 Python、Tk 或 OpenSSH，也不需要自行构建应用。应用使用系统 `/usr/bin/ssh` 和 `/usr/bin/scp`；私有文件保存在 `~/Library/Application Support/bb10-volte/private`。
+本轮候选提供 macOS 通用 `.dmg` 和同名 `.dmg.sha256`；已发布版本见 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases)。核对 SHA-256 后打开 DMG，将 `bb10-volte.app` 拖到“应用程序”后启动。不需要另装 Python、Tk 或 OpenSSH，也不需要自行构建应用。应用使用系统 `/usr/bin/ssh` 和 `/usr/bin/scp`；私有文件保存在 `~/Library/Application Support/bb10-volte/private`。
 
 ## 已有连接的日常使用
 

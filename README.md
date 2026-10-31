@@ -1,204 +1,76 @@
-# bb10-volte — 黑莓 BB10 4G 通话工具
+# bb10-volte — 让黑莓 Q10、Q20、Passport 用上 VoLTE
 
-<img src="assets/icon.png" width="96" alt="bb10-volte：黑色黑莓图形，4G 位于右上角">
+<img src="assets/icon.png" width="96" alt="BB10 VoLTE">
 
 **简体中文** | [English](README.en.md)
 
-为运行 **BlackBerry 10（BB10）** 的 **Q10、Classic（Q20）、Passport（常称 Q30）** 启用原生 **VoLTE / 4G 通话**，提供源码、Windows EXE 和 macOS DMG，项目采用 [MIT 许可证](LICENSE)。
+首次连接 Windows 或 Mac 安装一次；以后正常关机换卡、开机，手机自动适配移动、联通、电信，无需再次连接电脑刷机。继续使用自己的 SIM、号码、套餐和系统拨号器，在 LTE 下接打电话。
 
-**项目背景：** 这些 4G 手机原本可在 4G 下使用短信和数据，语音通话却会回落到 2G / 3G；随着所在地区运营商的 2G / 3G 退网，默认语音通话可能无法使用，因此有了这个项目。
+当前版本 **0.5.0-r8，实验版**。适用于已 Root 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**，系统 **10.3.3.3216**。Passport 切入或离开电信入网策略时，可能需要再正常重启一次；程序会解释原因并提示重新检查。
 
-**手机无需改动硬件，但需要通过 AutoRoot 获得 Root 权限。** 启用后继续使用手机自己的 SIM、原生 IMS 协议栈和系统拨号器。VoLTE 功能由本项目提供，无需再安装其他 VoLTE 项目或手机通话 App；EXE / DMG 用户无需另装 Python。首次 Root 和连接准备的实际范围见[使用方式](#使用方式)及[完整安装指南](docs/INSTALL.md)。
+[官网与下载](https://bb10-volte.octoooo.com/) · [使用指南](https://bb10-volte.octoooo.com/guide.html) · [Release](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r8) · [更新日志](docs/UPDATELOG.md)
 
-**本项目已有实机验收的组合是 Q10 SQN100-3＋BB10 OS 10.3.3.3216＋北京中国联通（460-01）。** 0.3.2 已验证手机菜单重启后自动注册，以及拔掉 USB 后的系统拨号器呼入、呼出、双向声音和通话全程 4G，详见[实机验收](materials/startup-latency-2026-10-28.json)。Q20、其他 Q10 版本和运营商仍需通过兼容性检查后实验试用，不能保证可用。**0.3.3 新增社区证据与只读来电诊断，尚未实机复测；未验收组合仅允许手动启动；Passport 因提供器停用后的网络栈重启报告，暂缓自动安装、启动和恢复操作。** 社区 Q20 呼出、Passport 双向通话报告与本工具验收分开记录，见[社区研究与适配进展](docs/COMMUNITY-RESEARCH.md)。欢迎测试过的朋友提交[反馈](https://github.com/Octo-o-o-o/bb10-volte/issues)，**可用和不可用的结果都欢迎**。当前版本仍属实验版，长通话与长期稳定性有待补充验证。
+## 下载
 
-[Windows EXE](docs/WINDOWS-EXE.md) · [macOS / DMG](docs/MACOS.md) · [桌面 GUI](docs/GUI.md) · [兼容性矩阵](docs/COMPATIBILITY.md) · [更新日志](docs/UPDATELOG.md) · [完整安装](docs/INSTALL.md) · [实机验收记录](docs/VALIDATION.md) · [源码构建](docs/BUILD.md) · [MIT 许可证](LICENSE)
+官网默认使用 Cloudflare R2，无法访问 GitHub 也可下载。两处提供同版本、相同字节的文件；运行前核对完整 SHA-256。镜像提供独立线路，不保证所有地区和网络均可访问。
 
-## 项目功能
+| 文件 | R2 直接下载 | GitHub 备用 |
+| --- | --- | --- |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/SHA256SUMS.txt) |
 
-`0.3.3-r5` 增加安装前状态的逐项读数、要求值、排查建议与可复制摘要，并补齐电信 `ctlte` 识别。Windows 与 Mac 共用诊断流程，见[界面说明](docs/GUI.md)。源码同时包含[Q10 演示与复现说明](docs/recordings/RECORDING_GUIDE.md)；演示录制于旧版，不代表本次手机验收。
+EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。本轮 Mac 真实 USB 验收按机主安排暂缓。
 
-- 创建独立 `ims` APN，从 BB10 设备本机 USIM 派生 IMS 身份，由 SIM 和原生 IMS 完成认证。
-- 生成经过哈希校验的原生 IMS 副本，使用隔离的平台配置，并修改普通语音 VoPS 判断的两个字节。
-- 启用 QNX 已有的软件加密提供器，通过原生无线接口选择 IMS 优先语音。
-- 安装手机端常驻服务，提供状态、启动、停止、更新、停用、采集及恢复命令。
-- 提供 Windows / macOS 桌面 GUI、脱敏兼容性报告和固定安装流程；安装前在手机上重新检查，文件不符或状态未知时停止。
-- 公开完整 Python、shell、C 源码、可复现构建的 5,264 字节辅助模块、固定材料清单和回归测试。
+## 当前验收
 
-原厂 `/radio/bin/ims_rrm` 不被覆盖，原生文件必须匹配公开的 SHA-256。这里的“解锁”指启用原生 VoLTE 通话能力；需要本身已开通 VoLTE 的有效套餐，不提供 SIM 解锁、免费通话或独立网络电话账号。
+九个准确机型／运营商组合已通过功能验收。以下标注**每项实际测试的手机载荷版本**；三台现均安装 r8，不等于九项都用同一份 r8 重新测试。
 
-## 所需环境与实测配置
+| 机型 / OS 10.3.3.3216 | 移动 460-00 | 联通 460-01 | 电信 460-11 |
+| --- | --- | --- | --- |
+| Q10 SQN100-3 | 通过 · r7 | 通过 · r7 | 通过 · r8 |
+| Q20 SQC100-2 | 通过 · r7 | 通过 · r8 | 通过 · r7 |
+| Passport SQW100-4 | 通过 · r8 | 通过 · r7 | 通过 · r7 |
 
-| 组件 | 要求 / 已记录的测试环境 |
-| --- | --- |
-| 手机 | **Q10 SQN100-3** 已实测；其他 Q10 变体、Q20 在全部检查通过后可实验试用；Passport / Q30 自动操作暂缓，仍可预检与导出报告 |
-| 手机系统（OS） | **BlackBerry 10 OS 10.3.3.3216**；固件包文件名写作 `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`，安装器严格检查原生文件哈希 |
-| SIM 与网络 | **北京中国联通 460-01 USIM**，4G 数据正常，套餐已确认支持 VoLTE；实测卡没有 ISIM |
-| 手机访问 | 可用的 **Root SSH**、个人私钥和已验证的主机密钥；服务使用 AutoRoot v4 的 addon 机制 |
-| 电脑 | **Windows 11 x64**；Mac mini / **Apple M6、macOS 27.2** 已验证既有 Root/VoLTE 的连接、状态与通话；r6新增 macOS 14+ 实验首次 Root 流程，未实机首刷；Linux 部署未验证 |
-| 电脑 Python | **EXE / DMG 用户无需安装**；源码运行 / 完整 Root 准备使用 Python 3.14（本次 3.14.9），含 Tk 和 Zstandard tar 支持 |
-| 手机 Python | BB10 自带 **Python 3.2**，以及安装器校验的原生库 |
-| 连接 | 稳定的 USB 数据线与 BlackBerry USB 网络；EXE 内置 `ssh` / `scp`，Windows 源码用户缺少 SSH 时，向导可自动获取连接组件 |
-| USB 驱动 | Windows：**BlackBerry USB Drivers 5.0.0.2 x64**，核验文件哈希和安装包 / CAT 签名；本轮 Mac 使用内置 CDC-NCM，无额外安装，不能泛化到所有 Mac |
-| 仅首次 Root 所需 | 向导获取固定 AutoRoot v4、Q10 固件和 7-Zip，预留约 **15 GB**；Windows 使用 libusb/LZO/MinGit 固定 DLL，Mac 使用原生 bb10mt 与私有 libusb/LZO，见 [Mac 工具清单](materials/macos-root-tools.json) |
-| 可选辅助模块重建 | **Zig 0.13.0**；安装随仓库提供的模块无需 QNX SDK |
+六项包含不连电脑换卡，另三项是安装后的初始卡基线。通话验收包括系统拨号器呼出／呼入、双方声音和 LTE；最后一轮三台的双向接通时长均由机主确认超过 35 秒，本机号码正确，Passport 移动名称正确。Q10 电信采用机主指定的最后一组成功通话；此前对端号码问题另记，本轮不判断首次呼出通过。
 
-精确文件名、原始下载地址及 SHA-256 见 [sources.json](materials/sources.json)、[usb-drivers.json](materials/usb-drivers.json)、[stock-partitions.json](materials/stock-partitions.json)。这些是已经记录的可工作版本，不应直接用最新版替换；散列不匹配时准备流程会停止。
+部分环形日志已轮转，机主确认的时长与完整保留的 SIP 计时分别记录。接回后的 LTE 快照不能代替全程连续采样。Q10 移动另有约 20 分钟持续驻网及双向通话记录。具体版本、证据与限制见[结构化验收矩阵](materials/unified-carrier-acceptance.json)。
 
-`0.3.3-r3` 已支持首次准备材料的断点续传、自动重试及下载进度；旧版 EXE / DMG 需更新构建才具备此能力。固件下载失败时保留缓存，也可预先下载完整文件后复用，见[下载故障处理](docs/FIRST-RUN.md#下载中断或一直失败)。
-
-当前源码还提供应用内“在浏览器下载固件 → 选择文件或粘贴路径 → 校验并导入固件”入口。导入可离线完成；通过校验的固件会在后续准备中直接复用，其他缺少的工具仍需下载。旧安装包需更新到包含此入口的构建。
+r8 修复三款手机的当前 SIM 本机号码显示和换卡旧缓存恢复；入网策略及 IMS 引擎沿用 r7。Q10 联通号码修复另已验证。未覆盖其他变体、系统、MNC、ISIM、所有地区、漫游、长期待机及紧急呼叫；仍属实验版。
 
 ## 快速开始
 
 ### 使用方式
 
-从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 获取对应平台的安装包或源码包，并核对同名 `.sha256` 文件。
+1. 先确认手机准确型号、系统、已开通 VoLTE 的有效 USIM（无 ISIM）、Root SSH 与可信连接材料。**自动适配安装不等于首次 Root。**
+2. 打开 Windows EXE 或将 Mac 应用拖入“应用程序”后启动。USB 连接并解锁一台手机，进入“三网自动适配”。
+3. 核对当前设备，点击“备份并安装自动适配”。程序保存、下载校验原始配置，再安装、回读和启用。
+4. 按手机电源菜单正常重启，解锁后等待约 3–5 分钟，点击“已重启，重新检查”。Passport 如提示还需一次正常重启，按原因说明完成。只有本次开机的 SIM、原生 IMS 注册和 LTE 均确认后才显示成功。
+5. 拔掉 USB，用系统拨号器呼出、呼入，各等**接通后的屏幕计时达到 00:35**，核对双向声音、全程 LTE、运营商与自己的号码。
+6. 以后正常关机换卡，再开机自动适配。Passport 切入或离开电信时，先等约 5 分钟，再正常重启一次。热插卡不在已验收流程内。
 
-| 方式 | 如何启动 | 说明 |
-| --- | --- | --- |
-| **Windows EXE** | 下载 Windows x64 `.exe`，双击启动 | 内置 Python、Tk、SSH/SCP、运营商配置和手机端载荷；无需另装 Python 或 OpenSSH，见 [EXE 指南](docs/WINDOWS-EXE.md) |
-| **macOS DMG** | 下载 macOS `.dmg`，将应用拖入“应用程序”后启动 | 内置 Python 和 Tk，使用 macOS 自带 SSH/SCP；发布包签名、公证及实测范围见 [Mac 指南](docs/MACOS.md) |
-| **源码** | 克隆仓库或解压源码 ZIP，运行 `python tools/gui.py` | 需要 Python 3.14（含 Tk）；Windows 向导可自动获取 SSH，macOS 使用系统 SSH；Windows 也可双击 `Start-GUI.cmd`，无需额外 pip 包 |
+升级已识别旧载荷时，先停止并恢复旧设置、正常重启清除旧组件，再安装启用新版并正常重启。保留原始备份和升级回执。未知文件、备份缺失、通话中或独立设置冲突会阻止写入。完整说明见[三网自动适配](docs/AUTO-CARRIERS.md)。
 
-三种方式共用机型识别、运营商配置、预检与 VoLTE 安装流程。**Windows 的“首次使用”向导可自动获取、校验工具和 Q10 固件，生成个人密钥、构建 Root 镜像，并在用户单独确认清空数据后顺序刷写；无需另装其他 Root 项目、Git 或 7-Zip。** 初次刷写分支仍属实验功能，未在未 Root 手机上实刷验收。r6新增 macOS 14+ 原生首次准备与确认后的分阶段刷写实验入口，基于上游工具链；**没有进行 Mac 实机首刷，已发布 r5 DMG 不包含新集成**，见[Mac 首次 Root 范围与步骤](docs/MACOS.md#mac-能否首次-root)。Q20 / Passport 的首次 Root 仍需匹配机型的方法，禁止刷入 Q10 镜像。详见[首次使用指南](docs/FIRST-RUN.md)。Mac 直连当前 Q10 的日常连接与双向通话已实测；首次授权、初次 Root 和手机重启不在本次 Mac 验收内，详见[Mac 使用步骤与三种手机现状](docs/MACOS.md)。
+### 首次 Root 与连接
 
-首次 Root 刷写会清空手机数据，请先备份。已有匹配 Root 和连接配置时，可以直接打开应用检查设备、选择运营商并安装 VoLTE 服务；准备完成后的预检与安装不需要电脑联网，手机注册与通话仍需要运营商服务。以下为源码方式。
+已 Root 且有可信 SSH 的手机无需重新刷机。Windows 提供 Q10 首次准备向导；macOS 14+ 提供原生实验入口。首次 Root 刷写会清空数据，必须备份并使用准确型号的固件，约需 15 GB 空间；未 Root 手机的实际首刷尚未完成验收。Q20、Passport 仍需各自匹配的 Root 方法，禁止刷入 Q10 镜像。
 
-### 1. 获取源码
+固件浏览器下载支持[极空间](https://t3.znas.cn/9jkbxczhAK4)及应用内百度网盘备用入口；下载后按机型校验导入，分享有效期以网页为准。它们与本页的 EXE/DMG 下载不同。见[首次使用](docs/FIRST-RUN.md)、[Mac 指南](docs/MACOS.md)和[连接说明](docs/GUI.md)。
+
+### 源码运行与构建
 
 ```powershell
 git clone https://github.com/Octo-o-o-o/bb10-volte.git
 cd bb10-volte
-python --version
-python tools/check_release.py
-```
-
-也可从 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 下载实验版 ZIP，解压后进入其顶层目录。
-
-### 2. 准备手机连接
-
-已有匹配 Root、USB 网络和 SSH 的 BB10 设备，可以直接使用原来的已验证 SSH 配置。下文以 `private/root-kit/ssh_config` 和 `bb10-root` 别名为例；旧配置可通过 `--host q10-root` 指定兼容别名；使用另一份配置时替换路径，必要时加 `--host` 指定自己的别名。
-
-尚未 Root 的 Q10 请先按 [完整安装指南](docs/INSTALL.md) 准备驱动、个人密钥与对应镜像；其他 BB10 机型必须使用各自机型的固件和 Root 方法。**首次 Root 刷写会清空用户数据**，先备份并保留对应的原版恢复镜像。离线材料准备脚本本身不会刷写手机。
-
-### 3. 安装并启动 VoLTE
-
-版本 `0.3.3-r3` 使用“连接手机 / 连接帮助”：普通用户无需先找 SSH 配置文件，可选择原刷机文件夹或逐步手机授权；关闭后会复查已保存连接，并支持继续未完成授权。Windows EXE、Mac DMG 与源码共用此流程。见[使用场景与方案](docs/CONNECTION-FLOW.md)。
-
-源码用户在完整解压的目录双击 **[Start-GUI.cmd](Start-GUI.cmd)**，点击“连接手机”验证已有连接，缺少材料时按“连接帮助”继续。桌面版本 `0.3.3-r3` 默认展示结论和待处理项，完整检查、报告与维护功能按需打开；手机端载荷版本为 `0.3.3`。已发布 EXE / DMG 的版本与验收范围以对应 Release 为准。界面使用 Python 自带 Tk，无需额外 pip 包；详见 [GUI 指南](docs/GUI.md)。初次 Root 可从“首次使用”进入，详见首次使用指南。
-
-或在仓库根目录执行同一套流程：
-
-```powershell
-python tools/bb10.py preflight --ssh-config private/root-kit/ssh_config
-python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
-
-# 如注册仍待确认，稍后查看状态：
-python tools/bb10.py status --ssh-config private/root-kit/ssh_config
-```
-
-`setup` 固定执行安装、回读、启动和可配置的注册观察（默认 180 秒）。应看到 `registration=verified`；`status` 输出中 `registered=true` 同时要求管理器与原生 IMS 存活、当前 IMS connected / 200 OK / LTE。超时显示 pending，不自动重装。第一次启动可能短暂重载无线网络。注册成功本身不能证明实际通话成功。
-
-v0.3.2 修订手机端已通过 Q10 升级回读、手机菜单重启自动恢复及拔 USB 双向短通话验收；最终 EXE 的完整手机安装未另行复测。移动、电信及其他联通 MNC 可选择模板或编辑参数后勾选实验试用，仍需满足 OS、ABI、原生哈希、SIM 和原厂配置检查；ISIM 仍不支持。CLI 试用添加 `--allow-experimental`，自定义配置添加 `--profile path/to/profile.json`，后续操作沿用相同选项。注册观察默认 180 秒，可在配置中修改。
-
-见 [配置指南](docs/PROFILES.md) 和 [资料调研](docs/CARRIER-RESEARCH.md)。**Root 固件准备仍为 Q10 专用；Q20 / Q30 必须准备对应机型的 Root SSH，不得使用 Q10 镜像刷写。**
-
-### 4. 实际通话与恢复
-
-使用系统拨号器呼出、接听，逐项确认双方声音与全程 4G；重启后和断开 USB 后分别复测。每台安装设备都应完成 [验收清单](docs/VALIDATION.md)。
-
-挂断电话后，停止并恢复本项目的配置：
-
-```powershell
-python tools/bb10.py stop --ssh-config private/root-kit/ssh_config
-python tools/bb10.py status --ssh-config private/root-kit/ssh_config
-python tools/bb10.py check --ssh-config private/root-kit/ssh_config
-
-# 同时禁止下次 Root 启动时自动运行：
-python tools/bb10.py disable --ssh-config private/root-kit/ssh_config
-```
-
-停止命令等待恢复，并返回 `restored=true`；预检的 `baseline` 项应通过，表示已回读原语音策略 `0`、软件提供器 `-1`、无 IMS/VPN 和覆盖冲突。`cleanup_required` 表示恢复需要排查。更新、私有诊断采集和移除启动入口的步骤见 [安装指南](docs/INSTALL.md)。
-
-## 测试验证范围
-
-| 检查 | 证据 / 状态 |
-| --- | --- |
-| 独立 IMS APN、AKA/IPsec、`REGISTER 200 OK` | Q10 实机通过 |
-| 系统拨号器呼出 | 2026-10-27 实测 `INVITE 200`、`ACK`、正常 `BYE` |
-| 来电接听 | 下午常驻版试验完成 `INVITE 200 / ACK / BYE`，接通后约 14.2 秒 |
-| 原始通话试验期间保持 LTE | 366 个采样状态全部为 LTE |
-| 双向声音与脱离电脑 | 机主在拔掉 USB 后完成呼入、呼出并确认双方声音和 4G，随后重新连接 |
-| 常驻服务安装、注册、停止恢复、再次启动 | Q10 实机通过 |
-| 常驻服务超过原 30 分钟窗口 | 15:34 启动的同一实例在 16:32 仍注册在线并保持 LTE（UTC+8） |
-| 修订版正常重启后自动恢复 | 16:36:20 重启，16:44:02.121 注册成功；无需手动打开 AppWorld 或电脑启动服务 |
-| 下午常驻版呼出 | `INVITE 200 / ACK / BYE`，接通后约 5.6 秒；本轮 64 个状态样本全部为 LTE / IMS connected |
-| 0.3.1 加固版重启与双向通话 | 自动恢复通过；呼出 7.362 秒、呼入 4.674 秒，208 个样本保持 LTE / IMS connected；本轮 USB 连接 |
-| 0.3.2 提速版重启与双向通话 | 手机菜单重启后自动恢复；拔 USB 呼入 6.088 秒、呼出 5.894 秒；163 个样本 LTE / IMS connected |
-| Mac `0.3.2-r5` 日常连接 | 单台 M6/macOS 27.2 + 当前 Q10：内置 CDC-NCM、严格 SSH/Root、状态、机主确认双向声音/LTE、USB 重连通过；首次向导有已知缺陷，见 [Mac 记录](materials/macos-device-validation-2026-10-28.json) |
-| 至少 20 秒及更长通话、长期稳定性 | **仍需补充验证** |
-| 其他机型、系统、运营商、漫游、切换小区、长期待机、紧急呼叫 | **未测试** |
-
-详见 [验收记录](docs/VALIDATION.md)、[下午断开 USB 通话证据](materials/call-acceptance-2026-10-27.json)、[0.3.1 加固版证据](materials/startup-hardening-2026-10-27.json)、[0.3.2 提速版验收](materials/startup-latency-2026-10-28.json) 和 [机器可读摘要](materials/validation-summary.json)。原始日志包含个人通信信息，保留在本地。自动测试不能替代实机验收。
-
-## 实现原理
-
-```mermaid
-flowchart LR
-  A[系统拨号器] --> B[经过哈希校验的原生 IMS 副本]
-  U[BB10 设备本机 USIM] -->|身份与 AKA| B
-  V[IMS 优先语音策略] --> B
-  B --> I[原生 IPsec]
-  S[已有软件加密提供器] --> I
-  I --> P[独立 IMS APN]
-  P --> N[中国联通 IMS 网络]
-```
-
-补丁修改隔离 PPS 配置路径，以及原有注册、RAT 和服务检查之后的一处普通语音分支。精确偏移、原件与结果哈希、接口行为和参考资料见 [设计说明](docs/DESIGN.md)。独立紧急呼叫代码没有修改，但紧急通话未经过实测。
-
-## 构建与检查
-
-```powershell
-python -m unittest discover -s tests -v
-python -m compileall -q device tools tests
 python tools/check_release.py --check-git
-python tools/package_release.py
-
-# 可选：从源码逐字节重建随仓库提供的辅助模块
-python tools/build_helper.py --zig C:\Tools\zig-0.13.0\zig.exe
+python tools/gui.py
 ```
 
-`--check-git` 检查 Git 跟踪文件与公开白名单完全一致；从 ZIP 解压使用时省略该参数。GitHub Actions 在 Windows 与 Linux 上执行源码检查和打包，仅证明桌面工具与发布包通过检查，不代表对应平台上的手机部署已验收。详见 [构建说明](docs/BUILD.md)。
+源码运行需要 Python 3.14（含 Tk）；完整 Root 准备使用该版本的 Zstandard 支持。原厂 `/radio/bin/ims_rrm` 不被覆盖，安装使用经过校验的独立副本；原生文件不匹配会停止。固定材料、上游来源与许可证见 [sources.json](materials/sources.json)及 [NOTICE](NOTICE.md)。
 
-## 目录结构
+完整桌面回归 474 项，473 项通过、1 项跳过。软件测试、冻结包自检、签名公证与真实手机通话分开验收。源码发布使用显式文件清单和敏感信息扫描；私钥、原始通信日志、号码与设备标识不在公开资料中。官网源码与测试见 [website/README](website/README.md)。
 
-| 路径 | 内容 |
-| --- | --- |
-| `device/` | Python 3.2 手机服务、安装器、原生接口与恢复逻辑 |
-| `driver/` | 完整 C 源码、导出符号表和可复现构建的辅助模块 |
-| `tools/` | SSH 控制器、材料准备、构建及发布检查 |
-| `tests/` | 所有权、恢复、超时、输出和重启状态回归测试 |
-| `materials/` | 来源、版本、哈希、安装载荷清单与证据摘要 |
-| `docs/` | 安装、原理、构建和验收文档 |
-| `docs/archive/` | 历史失败尝试与排查结论 |
-| `downloads/`、`private/`、`build/`、`dist/` | 本地材料、密钥、诊断与生成文件，由 Git 忽略 |
+[Windows 打包](docs/WINDOWS-EXE.md) · [macOS 打包](docs/MACOS.md) · [源码构建](docs/BUILD.md) · [统一流程](docs/AUTO-CARRIERS.md) · [贡献说明](CONTRIBUTING.md) · [MIT 许可证](LICENSE)
 
-## 参与贡献与许可证
-
-**欢迎 Q10、Q20、Passport 和其他 BB10 设备、其他地区与运营商的测试反馈，无论可用还是不可用。** 请提交 [Issue](https://github.com/Octo-o-o-o/bb10-volte/issues)，注明：
-
-- 手机型号与硬件变体、完整 BB10 版本、项目版本，以及源码 / EXE / DMG 使用方式和电脑系统。
-- 运营商、使用地区和 MCC/MNC（如能获取），以及是否漫游或携号转网。
-- 结果是可用还是不可用；可用时说明呼入、呼出、双向声音、全程 4G、拔 USB 和重启后的结果；不可用时说明失败阶段与错误提示。
-- 可选附上 GUI 导出的脱敏预检报告。不要上传手机号、SIM / 设备标识、密钥或原始 SIP 日志。
-
-中文和英文均可，见[反馈指南](docs/ISSUES.md)和 [CONTRIBUTING.md](CONTRIBUTING.md)。欢迎通过 [Pull Request](https://github.com/Octo-o-o-o/bb10-volte/pulls) 贡献适配与修复；新增支持仍需独立验证，不能直接跳过固件哈希检查。
-
-项目原创代码、文档及由源码构建的辅助模块采用 **[MIT 许可证](LICENSE)**。BlackBerry/QNX 固件、原生 IMS 二进制、第三方 Root 工具和 USB 安装包遵循各自条款，按清单单独获取。来源与分发范围见 [NOTICE.md](NOTICE.md)。
-
-## 致谢
-
-特别感谢 **[AutoRoot v4](https://bb10.root.sx/blog/autoroot-v4)** 自动 Root 项目及 **[bb10root / BB10 MultiTool（bb10mt）](https://github.com/bb10root/bb10mt)** 的作者与贡献者。他们提供的 BB10 Root、SSH 和固件构建基础，使本项目能够在真实 Q10 上开展原生 IMS 排查与通话验证。本项目的初次 Root 准备流程建立在这些工具之上，请支持原项目并保留其署名与许可证说明。
-
-感谢 **[imqinyu](https://github.com/imqinyu)** 及 **[BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch)** 的贡献者，通过 [issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) 分享 Classic / Passport / Z30 的实验记录、原生 IMS 与软件加密研究、来电配置线索及黑莓状态栏指示方案。这些资料帮助本项目补充社区证据、只读诊断和跨机型恢复检查。具体整合范围与证据等级见[社区研究说明](docs/COMMUNITY-RESEARCH.md)；第三方材料保留其来源与许可边界。
+历史单运营商适配、社区证据和旧版限制保留在各文档与更新日志，不能用来替代上面的当前统一流程范围。欢迎在 [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues) 提交准确机型和脱敏结果；不要上传私钥、private 目录或原始号码日志。

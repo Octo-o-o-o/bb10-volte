@@ -78,7 +78,7 @@ def verify_diagnostics():
 
 
 def registered(status):
-    current = status.get('current', {})
+    current = status.get('current') or {}
     return (status.get('phase') == 'running' and status.get('manager_alive') is True and status.get('native_alive') is True and
             current.get('ims') == 'connected' and current.get('register_status') == '200 OK' and
             current.get('ran') in ('LTE', 'lte') and current.get('radio') == ['lte'])
@@ -86,12 +86,17 @@ def registered(status):
 
 def public_status(raw):
     """Whitelist fields; old status files may contain private exception text."""
-    current = raw.get('current', {})
+    current = raw.get('current') or {}
     result = {'phase': raw.get('phase', 'unknown'), 'enabled': raw.get('enabled') is True,
             'manager_alive': raw.get('manager_alive') is True,
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    if raw.get('automatic_carrier_selection') is True:
+        result['automatic_carrier_selection'] = True
+        result['selected_this_boot'] = raw.get('selected_this_boot') is True
+        if raw.get('selected_operator') in ('mobile', 'unicom', 'telecom'):
+            result['selected_operator'] = raw['selected_operator']
     scope = raw.get('ims_observation_scope')
     result['ims_observation_scope'] = scope if scope in ('owned_native', 'system_status_only') else 'unknown'
     wait = raw.get('startup_wait', {})
@@ -115,10 +120,12 @@ def verified_windows_client(vendor):
 
 
 class Client:
-    def __init__(self, host='bb10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False):
+    def __init__(self, host='bb10-root', ssh_config=None, progress=None, profile=None, allow_experimental=False,
+                 detect_managed=False):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', host):
             raise WorkflowError('invalid_host')
         self.host = host
+        self.detect_managed = detect_managed is True
         try:
             value = profiles.read_json(str(profile)) if isinstance(profile, (str, Path)) else profile
             self.request = profiles.request(value, allow_experimental)
@@ -179,7 +186,12 @@ class Client:
         parent = path.rsplit('/', 1)[0]
         trust = ' && '.join('(test ! -e ' + shlex.quote(parent + '/' + name) +
                             ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/' + name) + ')'
-                            for name in ('native.py', 'profiles.py', 'device_info.py', 'compatibility.py'))
+                            for name in ('native.py', 'profiles.py', 'device_info.py', 'compatibility.py',
+                                         'telecom_attach.py', 'telecom_dca.py', 'telecom_native.py'))
+        trust += (' && (test ! -e ' + shlex.quote(parent + '/autostart_evidence.py') +
+                  ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/autostart_evidence.py') + ')')
+        trust += (' && (test ! -e ' + shlex.quote(parent + '/operator_name.py') +
+                  ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/operator_name.py') + ')')
         trust += ' && /proc/boot/pathtrust ' + shlex.quote('!' + path)
         output = self.remote(trust + ' && ' + ENV + '/usr/bin/python3.2 ' + shlex.quote(path) + ' ' + args, timeout)
         try:
@@ -199,7 +211,9 @@ class Client:
         path = '/var/rootdata/q10_volte_stage_' + uuid.uuid4().hex[:12]
         names = (['root-probe.py'] if diagnostic == 'root' else
                  FILES + ['payload-manifest.json'] if payload else
-                 ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py'])
+                 ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py',
+                  'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py',
+                  'device/autostart_evidence.py', 'device/operator_name.py'])
         names += ['profile-request.json', 'stage-cleanup.py']
         local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
         local_request.parent.mkdir(parents=True, exist_ok=True)
@@ -243,17 +257,61 @@ class Client:
         report = self.execute(path + '/device/compatibility.py', '--request ' + shlex.quote(path + '/profile-request.json'))
         if report.get('schema') != 2 or report.get('profile_sha256') != profiles.fingerprint(self.request):
             raise WorkflowError('invalid_device_response')
+        # Keep the historical request flag for an already accepted, identical
+        # installed configuration. This is not consent to a new experiment.
+        accepted = report.get('telecom_attach', {}).get('autostart_authorized') is True
+        saved = profiles.request(self.profile, True)
+        if (accepted and not self.request['allow_experimental'] and
+                report.get('installation', {}).get('carrier_profile_sha256') == profiles.fingerprint(saved)):
+            self.request = saved
+            local = private_root() / ('accepted-request-' + uuid.uuid4().hex + '.json')
+            local.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                local.write_bytes(profiles.canonical(saved))
+                self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options +
+                             [str(local), self.host + ':' + path + '/profile-request.json'], 40)
+            finally:
+                local.unlink(missing_ok=True)
+            result = self.inspect_stage(path)
+            result['use_installed_profile'] = True
+            return result
         report['community_research'] = evidence_for(report)
         self.progress('preflight', 'done')
         return report
 
     def preflight(self):
+        adapter = self.managed_adapter()
+        if adapter:
+            return adapter.inspect()
         with self.stage() as path:
             return self.inspect_stage(path)
+
+    def managed_adapter(self):
+        if not getattr(self, 'detect_managed', False):
+            return None
+        if not getattr(self, '_managed_adapter_checked', False):
+            marker = self.remote('if test -d /var/bb10_volte; then echo UNIFIED_CARRIERS; '
+                'elif test -d /var/q20_volte; then '
+                'case "$(cat /pps/services/deviceproperties)" in *"modelnumber::SQC100-2"*) '
+                'echo Q20_ACCEPTED_ADAPTER;; *) echo STANDARD;; esac; else echo STANDARD; fi', 15).strip()
+            self._managed_adapter_checked = True
+            self._managed_adapter_kind = marker
+            self._managed_adapter = None
+            if marker == 'UNIFIED_CARRIERS':
+                from auto_carrier_managed import Adapter
+                self._managed_adapter = Adapter(self)
+            elif marker == 'Q20_ACCEPTED_ADAPTER':
+                verify_package()
+                from q20_managed import Adapter
+                self._managed_adapter = Adapter(self)
+        return self._managed_adapter
 
     def service(self, action):
         if action not in ('status', 'start', 'stop'):
             raise WorkflowError('invalid_action')
+        adapter = self.managed_adapter()
+        if adapter:
+            return adapter.service(action)
         result = self.remote('/proc/boot/pathtrust ' + shlex.quote('!' + BASE + '/device/run.sh') +
                              ' && /bin/sh ' + shlex.quote(BASE + '/device/run.sh') + ' ' + action, 120)
         try:
@@ -264,6 +322,10 @@ class Client:
     def install(self, mode='install', start=False):
         if mode not in ('install', 'update'):
             raise WorkflowError('invalid_action')
+        adapter = self.managed_adapter()
+        if adapter:
+            raise WorkflowError('unified_already_installed' if self._managed_adapter_kind == 'UNIFIED_CARRIERS'
+                                else 'q20_managed_existing_only')
         with self.stage(payload=True) as path:
             report = self.inspect_stage(path)
             if not report.get('can_' + mode):
@@ -272,6 +334,8 @@ class Client:
             installed = self.execute(path + '/device/install.py', mode + ' ' + shlex.quote(path), 120)
             if installed.get('installed') is not True:
                 raise WorkflowError('installation_not_verified')
+            if self.profile.get('lte_attach'):
+                self.backup_telecom_plan(installed.get('telecom_plan'))
             self.progress('install', 'done')
             self.progress('verify', 'working')
             after = self.inspect_stage(path)
@@ -285,6 +349,37 @@ class Client:
         if start:
             result.update(self.action('start'))
         return result
+
+    def backup_telecom_plan(self, plan):
+        """Back up exact original DCA bytes before acknowledging any radio write."""
+        import telecom_attach
+        import telecom_dca
+        try:
+            folder = plan['folder']
+            if not re.fullmatch(re.escape(BASE) + r'/state/telecom-attach-[a-f0-9]{16}', folder):
+                raise ValueError('plan path')
+            destination = private_root() / ('telecom-backup-' + uuid.uuid4().hex)
+            destination.mkdir(parents=True)
+            for name in ['plan.json'] + [s + '.original' for s in telecom_dca.SOURCES]:
+                self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options +
+                             [self.host + ':' + folder + '/' + name, str(destination / name)], 40)
+            raw = (destination / 'plan.json').read_bytes()
+            value = json.loads(raw)
+            digest = hashlib.sha256(raw).hexdigest()
+            if (value['owner'] != telecom_attach.OWNER or digest != plan['plan_sha256'] or
+                    value['profile_sha256'] != profiles.fingerprint(self.request) or
+                    set(value['files']) != set(telecom_dca.SOURCES)):
+                raise ValueError('plan receipt')
+            for name, item in value['files'].items():
+                if hashlib.sha256((destination / (name + '.original')).read_bytes()).hexdigest() != item['original_sha256']:
+                    raise ValueError('original backup')
+            receipt = {'owner': telecom_attach.OWNER, 'plan_sha256': digest, 'all_original_hashes_verified': True}
+            local = destination / 'desktop-backup-receipt.json'
+            local.write_bytes(profiles.canonical(receipt))
+            self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options +
+                         [str(local), self.host + ':' + folder + '/desktop-backup-receipt.json'], 40)
+        except (KeyError, ValueError, TypeError, OSError):
+            raise WorkflowError('telecom_backup_not_verified') from None
 
     def wait_registration(self, timeout=None):
         timeout = self.profile['runtime']['registration_wait_seconds'] if timeout is None else timeout
@@ -303,6 +398,9 @@ class Client:
         return {'registration': 'pending', 'status': state, 'call_acceptance': 'pending'}
 
     def action(self, action):
+        adapter = self.managed_adapter()
+        if adapter:
+            return adapter.action(action)
         if action == 'collect':
             return self.collect()
         if action not in ('status', 'start', 'stop', 'enable', 'disable', 'uninstall'):
@@ -318,6 +416,9 @@ class Client:
             raise WorkflowError('provider_lifecycle_needs_adaptation', report)
         if action == 'enable' and not report.get('can_enable'):
             raise WorkflowError('preflight_blocked', report)
+        if action == 'enable' and report.get('telecom_attach', {}).get('autostart_authorized') is True:
+            self.execute(BASE + '/device/install.py', 'enable')
+            return {'enabled': True, 'preflight': report, 'registration_not_restarted': True}
         if action in ('start', 'enable'):
             if report['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request):
                 raise WorkflowError('profile_update_required', report)

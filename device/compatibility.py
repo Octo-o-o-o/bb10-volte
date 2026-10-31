@@ -22,14 +22,17 @@ LEGACY_FILES = {'device/install.py', 'device/service.py', 'device/native.py',
                 'device/ims_image.py', 'device/radio_api.py', 'device/run.sh',
                 'device/addon-start.sh', 'driver/devnp-volte_swcrypto_probe.so'}
 V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
-FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
+V03_FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
+V04_FILES = V03_FILES | {'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py'}
+V04_AUTH_FILES = V04_FILES | {'device/autostart_evidence.py'}
+FILES = V04_AUTH_FILES | {'device/operator_name.py', 'device/operator-name-start.sh'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
 DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
 NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
                  'radio_read_error', 'data_read_error', 'network_read_error',
                  'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
-                 'data_settings_read_error')
+                 'data_settings_read_error', 'emergency_service', 'lte_data_service')
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
 NETWORK_ENUMS = ('data_services_status', 'data_service_mode')
@@ -62,6 +65,13 @@ def public_flags(values, keys):
     return {key: values.get(key) if type(values.get(key)) is bool else None for key in keys}
 
 
+def network_service_flags(value):
+    """Decode the native bitmap, never compare it to one isolated flag value."""
+    valid = type(value) is int and 0 <= value <= 0xffffffff
+    return {'emergency_service': bool(value & 0x1) if valid else None,
+            'lte_data_service': bool(value & 0x200000) if valid else None}
+
+
 def public_network_diagnostics(values):
     values = values if isinstance(values, dict) else {}
     result = public_flags(values, NETWORK_FLAGS)
@@ -71,6 +81,7 @@ def public_network_diagnostics(values):
     for key in NETWORK_ENUMS:
         value = values.get(key)
         result[key] = value if isinstance(value, str) and value in ('ON', 'OFF') else None
+    result.update(network_service_flags(result['network_service']))
     apn = values.get('observed_data_apn')
     result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
     result['scope'] = 'snapshot_only_not_registration_or_band_proof'
@@ -242,22 +253,29 @@ def network_checks(s, profile=None):
         if carrier and supported:
             add('identity', 'pass' if s.get('identity_matches') else 'adapt',
                 'identity_layout_matches' if s.get('identity_matches') else 'identity_layout_unknown')
-    # Stock cellular-control service_to_str maps exactly 1 to EMERGENCY.
-    # Other/absent masks do not establish registration; live data is still required.
-    emergency = type(s.get('network_service')) is int and s['network_service'] == 1
-    online = s.get('radio_on') and s.get('lte') and not emergency
+    # Native service values are a bitmap. VoPS/concurrency capabilities may
+    # coexist with EMERGENCY and must never substitute for normal LTE data.
+    flags = network_service_flags(s.get('network_service'))
+    emergency = flags['emergency_service'] is True
+    radio_data = flags['emergency_service'] is False and flags['lte_data_service'] is True
+    online = s.get('radio_on') and s.get('lte') and radio_data
     add('lte', 'pass' if online else 'wait',
-        'lte_emergency_only' if emergency else 'lte_ready' if online else 'lte_not_ready')
+        'lte_emergency_only' if emergency else
+        'lte_not_ready' if not s.get('radio_on') or not s.get('lte') else
+        'lte_service_unknown' if flags['lte_data_service'] is None else
+        'lte_data_unavailable' if not radio_data else 'lte_ready')
     services_off = s.get('data_services_status') == 'OFF' or s.get('data_service_mode') == 'OFF'
     inactive = any(s.get(key) is False for key in
                    ('internet_present', 'internet_enabled', 'internet_connectable', 'internet_active'))
     data = (s.get('apn_matches') is True and s.get('data_connected') is True and
-            not s.get('network_read_error') and not services_off and not inactive and not emergency)
+            not s.get('network_read_error') and not services_off and not inactive and radio_data)
     code = ('data_apn_ready' if data else
             'data_apn_state_unknown' if s.get('network_read_error') else
             'data_services_off' if services_off else
             'data_internet_inactive' if inactive else
             'data_network_emergency_only' if emergency else
+            'data_network_service_unknown' if flags['lte_data_service'] is None else
+            'data_network_unavailable' if not radio_data else
             'data_apn_profile_mismatch' if s.get('apn_matches') is False else
             'data_apn_disconnected' if s.get('apn_matches') is True and s.get('data_connected') is False else
             'data_apn_state_unknown')
@@ -289,7 +307,7 @@ def installed_state():
             return result
         manifest = json.loads(n.read(BASE + '/installation.json').decode('ascii'))
         names = set(manifest['files'])
-        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, FILES):
+        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, V03_FILES, V04_FILES, V04_AUTH_FILES, FILES):
             return result
         for name, expected in manifest['files'].items():
             path = BASE + '/' + name
@@ -301,7 +319,7 @@ def installed_state():
         result = {'state': 'stopped', 'version': manifest.get('version'),
                   'enabled': os.path.isfile(BASE + '/enabled'), 'payload_verified': True,
                   'current_profile': names == FILES}
-        if names == FILES:
+        if names in (V03_FILES, V04_FILES, V04_AUTH_FILES, FILES):
             if os.path.islink(BASE + '/carrier-profile.json'):
                 return {'state': 'conflict'}
             request = profiles.installed_request(BASE)
@@ -403,6 +421,19 @@ def observe(profile=None):
             except Exception:
                 s['native_read_status'][key] = 'failed'
                 s['native_read_error'] = True
+        if p.get('lte_attach'):
+            import telecom_attach
+            s['telecom_attach'] = telecom_attach.observe(BASE)
+            try:
+                import autostart_evidence
+                s['telecom_attach'].update(autostart_evidence.observe(BASE, p))
+            except ImportError:
+                pass
+            try:
+                import operator_name
+                s['operator_display'] = operator_name.observe()
+            except ImportError:
+                pass
     return s
 
 
@@ -422,15 +453,38 @@ def evaluate(s, profile=None, allow_experimental=False):
     hashes = s.get('native_hashes', {})
     check('native', set(hashes) == set(n.STOCK_HASHES) and all(hashes.values()), 'native_hashes_required')
     checks.extend(network_checks(s, p))
+    attach = p.get('lte_attach') == 'telecom_data_centric_v1'
+    attach_facts = s.get('telecom_attach', {})
+    attach_candidate = False
+    if attach:
+        import telecom_attach
+        attach_candidate = (telecom_attach.supported(s) and
+            attach_facts.get('native_supported') is True and attach_facts.get('source_baseline') is True and
+            attach_facts.get('original_usage') is True and s.get('radio_on') is True and
+            not s.get('network_read_error') and not s.get('data_settings_read_error') and
+            s.get('data_service_mode') == 'ON')
+        # Actual cnice OFF is expected before the attach being repaired. Require
+        # the user's data setting ON; IMS still requires live LTE/data readiness.
+        owned_attach = attach_facts.get('owned_configuration') is True and s.get('voice_policy') == 3
+        check('telecom_attach', attach_candidate or owned_attach,
+              'telecom_attach_owned' if owned_attach else 'telecom_attach_manual_port' if attach_candidate
+              else 'telecom_attach_needs_adaptation', 'adapt')
     check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
-    experimental = not autostart_supported(device, p)
-    check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else 'recorded_baseline', 'wait')
+    telecom_authorized = attach and attach_facts.get('autostart_authorized') is True and device['variant'] == 'SQN100-3'
+    experimental = not (autostart_supported(device, p) or telecom_authorized)
+    recorded_code = 'telecom_recorded_acceptance' if telecom_authorized else 'recorded_baseline'
+    check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else recorded_code, 'wait')
     if experimental:
         check('autostart_policy', not p['runtime']['autostart'],
               'experimental_manual_start_required', 'wait')
     statuses = [c['status'] for c in checks]
+    # Installation only prepares a manual attach plan. Network wait rows remain
+    # truthful; the service still requires LTE/data before any IMS configuration.
+    attach_pending = (attach_candidate and all(c['status'] == 'pass' or c['id'] in ('lte', 'apn')
+                                              for c in checks))
     outcome = ('unsupported' if 'block' in statuses else 'needs_adaptation' if 'adapt' in statuses
-               else 'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
+               else ('experimental' if experimental else 'compatible') if attach_pending else
+               'not_ready' if 'wait' in statuses else 'experimental' if experimental else 'compatible')
     installation = s.get('installation', {'state': 'conflict'})
     pristine = (not s.get('native_read_error') and s.get('voice_policy') == 0 and
                 s.get('crypto') == {'swcr_id': -1, 'crypto_support': 0} and
@@ -451,7 +505,13 @@ def evaluate(s, profile=None, allow_experimental=False):
             'device': device, 'native_sha256': s.get('native_sha256', {}),
             'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),
             'network_diagnostics': public_network_diagnostics(s),
+            'operator_display': {key: s.get('operator_display', {}).get(key) for key in
+                                 ('name', 'table_overlay_owned', 'worker_alive')},
             'configuration_diagnostics': public_flags(s.get('configuration_diagnostics'), CONFIGURATION_FLAGS),
+            'telecom_attach': {key: attach_facts.get(key) is True for key in
+                               ('native_supported', 'source_baseline', 'original_usage', 'backup_verified',
+                                'owned_configuration', 'autostart_authorized')},
+            'lte_bootstrap_pending': attach_pending,
             'carrier_template': s.get('carrier_template'), 'checked_at': int(time.time()),
             'outcome': outcome, 'checks': checks,
             'facts': {key: s.get(key) for key in ('model', 'variant', 'os_version', 'mcc', 'mnc')},
@@ -461,10 +521,15 @@ def evaluate(s, profile=None, allow_experimental=False):
             'baseline_diagnostics': baseline_diagnostics(s),
             'can_install': allowed and state == 'absent',
             'can_update': allowed and state == 'stopped',
-            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
-            'can_enable': allowed and not experimental and state == 'stopped' and installation.get('current_profile') is True and matching_profile,
+            'can_start': allowed and state == 'stopped' and installation.get('current_profile') is True and matching_profile
+                         and (not attach or attach_facts.get('backup_verified') is True),
+            'can_enable': (allowed and not experimental and state == 'stopped' or
+                           telecom_authorized and outcome == 'compatible' and state in ('stopped', 'busy')
+                           and installation.get('payload_verified') is True)
+                          and installation.get('current_profile') is True and matching_profile,
             'can_restore': device_info.provider_lifecycle_supported(device),
-            'hardware_validation': 'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',
+            'hardware_validation': 'q10_telecom_per_sim_accepted' if telecom_authorized else
+                                   'not_hardware_validated' if experimental else 'single_q10_beijing_unicom_only',
             'carrier_provisioning': 'requires_user_confirmation_and_real_calls'}
 
 

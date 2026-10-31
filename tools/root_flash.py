@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from i18n import tr
 
 
 def classify_output(phase, exit_code, writing_complete, failed_to_load, security_error, done):
@@ -30,10 +31,12 @@ def run_stage(folder, phase, token):
         if not ctypes.windll.kernel32.AllocConsole():
             raise SetupError('native_console_unavailable')
     sys.stdin = open('CONIN$', 'r')
-    sys.stdout = open('CONOUT$', 'w')
+    # WindowsConsoleIO converts UTF-8 to wide console output, independently of
+    # the user's separate regional code page.
+    sys.stdout = open('CONOUT$', 'w', encoding='utf-8', errors='replace')
     sys.stderr = sys.stdout
-    print('bb10-volte: ' + phase.upper() + ' Root flashing', flush=True)
-    print('Keep USB connected. Enter the phone password here only if the BlackBerry tool asks for it.', flush=True)
+    print(tr('bb10-volte：正在刷写 {} Root').format(phase.upper()), flush=True)
+    print(tr('请保持 USB 连接；仅在黑莓工具提示时在此输入手机密码。'), flush=True)
     child = subprocess.Popen([str(image)], cwd=image.parent, stdin=None,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
     pending = bytearray()
@@ -60,7 +63,7 @@ def run_stage(folder, phase, token):
                 pending.clear()
     result = classify_output(phase, child.wait(), **flags)
     (Path(folder) / ('flash-' + phase + '.json')).write_text(json.dumps(result, indent=2), encoding='utf-8')
-    print('\nStage completed. Return to the bb10-volte window.', flush=True)
+    print(tr('\n本阶段已完成，请返回 bb10-volte 窗口。'), flush=True)
     return 0 if result['completed'] else 1
 
 

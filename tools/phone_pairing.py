@@ -7,9 +7,51 @@ import re
 import stat
 import struct
 import subprocess
+import sys
 
 PAIR_PUBLIC_KEY = None
 PAIR_REQUEST_ID = None
+PAIR_LANGUAGE = 'zh'
+
+PHONE_MESSAGES_ZH = {
+    'This adds this computer to the existing SSH authorization file. Existing keys are preserved.':
+        '此操作会将这台电脑加入现有 SSH 授权文件，并保留已有密钥。',
+    'Type PAIR to authorize this computer: ': '输入 PAIR 授权这台电脑：',
+    'Cancelled; no files changed.': '已取消；没有修改任何文件。',
+    'Public pairing result saved: ': '公开授权结果已保存：',
+    'Copy this result back to the desktop app, then test the connection.': '请将结果复制回电脑应用，再验证连接。',
+    'If SSH is disabled, you may start the existing server for the USB link now.': '如果 SSH 未启动，现在可以为 USB 连接启动已有服务。',
+    'Type START only if SSH is not already running (Enter to skip): ': '仅当 SSH 尚未运行时输入 START（按回车跳过）：',
+    'SSH start exit code: ': 'SSH 启动退出码：',
+    '. The desktop app must verify Root access.': '。电脑应用仍需验证 Root 权限。',
+    'This does not enable SSH at boot. If needed, enable it using the existing Root tools.':
+        '此操作不会启用开机 SSH。如有需要，请使用现有 Root 工具启用。',
+    'ROOT_REQUIRED: use the existing __root / u_root terminal; no files changed':
+        '需要 Root：请使用现有 __root / u_root 终端；没有修改文件。',
+    'ROOT_REQUIRED: enter an existing Root terminal first': '需要 Root：请先进入已有 Root 终端。',
+    'UNSUPPORTED_SSH_LAYOUT: original Root configuration needs review': 'SSH 配置布局不支持：请核对原 Root 配置。',
+    'Existing authorization file is required': '需要已有的授权文件。',
+    'Unexpected authorization file owner, mode or size': '授权文件的所有者、权限或大小不符合预期。',
+    'Phone Downloads directory is unavailable': '手机 Downloads 目录不可用。',
+    'Existing result must not be a symbolic link': '已有结果不能是符号链接。',
+    'Existing pairing result differs; preserve it for review': '已有授权结果不同；请保留以便检查。',
+    'Authorization readback failed': '授权回读校验失败。',
+    'Conditional SSH configuration needs manual review': '含条件的 SSH 配置需要人工检查。',
+    'Invalid pairing request': '授权请求无效。',
+    'Expected an RSA public key': '需要 RSA 公钥。',
+    'Invalid RSA public key': 'RSA 公钥无效。',
+}
+
+
+def phone_message(message):
+    translated = PHONE_MESSAGES_ZH.get(message, message) if PAIR_LANGUAGE == 'zh' else message
+    try:
+        translated.encode(sys.stdout.encoding or 'utf-8')
+    except (UnicodeError, LookupError):
+        # Old phone terminals may expose an ASCII-only output stream. Keep the
+        # authorization usable rather than raising before the confirmation.
+        return message
+    return translated
 
 
 def public_key(value):
@@ -125,26 +167,26 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
 def main():
     if os.geteuid() != 0:
         raise ValueError('ROOT_REQUIRED: use the existing __root / u_root terminal; no files changed')
-    print('This adds this computer to the existing SSH authorization file. Existing keys are preserved.')
-    if input('Type PAIR to authorize this computer: ').strip() != 'PAIR':
-        print('Cancelled; no files changed.')
+    print(phone_message('This adds this computer to the existing SSH authorization file. Existing keys are preserved.'))
+    if input(phone_message('Type PAIR to authorize this computer: ')).strip() != 'PAIR':
+        print(phone_message('Cancelled; no files changed.'))
         return
     output = authorize(PAIR_PUBLIC_KEY, PAIR_REQUEST_ID)
-    print('Public pairing result saved: ' + output)
-    print('Copy this result back to the desktop app, then test the connection.')
-    print('If SSH is disabled, you may start the existing server for the USB link now.')
-    if input('Type START only if SSH is not already running (Enter to skip): ').strip() == 'START':
+    print(phone_message('Public pairing result saved: ') + output)
+    print(phone_message('Copy this result back to the desktop app, then test the connection.'))
+    print(phone_message('If SSH is disabled, you may start the existing server for the USB link now.'))
+    if input(phone_message('Type START only if SSH is not already running (Enter to skip): ')).strip() == 'START':
         # Start the existing server once; do not rewrite its config, stop other
         # sessions, change boot flags or infer success from a listening port.
         code = subprocess.call(['/usr/sbin/sshd', '-f', '/etc/ssh/sshd_config',
                                 '-o', 'ListenAddress=169.254.0.1'])
-        print('SSH start exit code: ' + str(code) + '. The desktop app must verify Root access.')
-        print('This does not enable SSH at boot. If needed, enable it using the existing Root tools.')
+        print(phone_message('SSH start exit code: ') + str(code) + phone_message('. The desktop app must verify Root access.'))
+        print(phone_message('This does not enable SSH at boot. If needed, enable it using the existing Root tools.'))
 
 
 if __name__ == '__main__':
     try:
         main()
     except (OSError, ValueError) as error:
-        print(str(error))
+        print(phone_message(str(error)))
         raise SystemExit(1)

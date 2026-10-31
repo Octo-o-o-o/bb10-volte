@@ -10,6 +10,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+import i18n
+i18n.LANGUAGE = 'zh'  # These existing presentation assertions use Chinese text.
 import gui
 import connection
 
@@ -30,6 +32,35 @@ def report(ready=True, tested=True, installed=False):
 
 
 class GuiTests(unittest.TestCase):
+    def test_unified_preflight_retains_extra_restart_guidance_through_result_rendering(self):
+        from auto_carrier_managed import Adapter
+        from test_auto_carrier_reboot_flow import state
+        adapter = Adapter(MagicMock())
+        adapter.auto = MagicMock()
+        for phone, expected, color in ((state(), '还需一次正常重启', gui.AMBER),
+                (state('running', status_from_current_boot=False), '等待本次开机状态', gui.AMBER),
+                (state('running'), '本次开机注册成功', gui.GREEN)):
+            with self.subTest(expected=expected):
+                adapter.auto.action.return_value = phone
+                value = adapter.inspect()
+                self.app.events.put(('result', ('preflight', {'preflight': value,
+                    'status': gui.public_status(phone), 'registered': True})))
+                self.root.after_cancel(self.app._drain_job)
+                self.app.drain()
+                self.assertIn(expected, self.app.summary.cget('text'))
+                self.assertEqual(self.app.summary.cget('fg'), color)
+                if phone['phase'] == 'carrier_reboot_required':
+                    self.assertIn('已重启，重新检查', self.app.detail.cget('text'))
+
+    def test_unified_enable_is_pending_until_a_normal_boot_is_checked(self):
+        self.app.events.put(('result', ('enable', {'automatic_carrier_selection': True,
+                                                'enabled': True, 'reboot_required': True})))
+        self.root.after_cancel(self.app._drain_job)
+        self.app.drain()
+        self.assertEqual(self.app.summary.cget('fg'), gui.AMBER)
+        self.assertIn('请正常重启', self.app.summary.cget('text'))
+        self.assertIn('Passport', self.app.detail.cget('text'))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -91,7 +122,45 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(self.app.experiment_check.winfo_manager())
         self.assertFalse(self.app.ack_check.winfo_manager())
         self.assertEqual(self.app.allowed_actions(), {'preflight': True, 'install': False,
-                                                     'start': False, 'status': False, 'disable': False})
+                                                     'start': False, 'status': False,
+                                                     'enable': False, 'disable': False})
+
+    def test_device_shortcut_can_select_the_exact_carrier_without_experimental_consent(self):
+        profile = next(p for p in gui.presets() if p['id'] == 'china-telecom-46011-data-centric')
+        self.app.close()
+        self.root = tk.Tk(); self.root.withdraw()
+        self.app = gui.App(self.root, host='q10-telecom-root', profile=profile)
+        self.assertEqual(self.app.profile, profile)
+        self.assertFalse(self.app.experimental.get())
+        self.assertIsNone(self.app.report)
+        self.assertFalse(self.app.allowed_actions()['enable'])
+
+    def test_accepted_telecom_startup_requires_ack_and_current_connection(self):
+        value = report(installed=True)
+        value.update(hardware_validation='q10_telecom_per_sim_accepted', can_enable=True)
+        value['operator_display'] = {'name': '中国电信'}
+        value['installation'].update(state='busy', enabled=False)
+        self.app.render_report(value)
+        self.assertIn('当前 SIM 已验收', self.app.device_label.cget('text'))
+        self.assertIn('运营商：中国电信', self.app.device_label.cget('text'))
+        self.assertFalse(self.app.experiment_check.winfo_manager())
+        self.assertFalse(self.app.allowed_actions()['enable'])
+        self.app.ack.set(True)
+        self.assertTrue(self.app.allowed_actions()['enable'])
+        value['installation']['enabled'] = True
+        self.app.render_report(value)
+        self.assertFalse(self.app.allowed_actions()['enable'])
+        value['installation']['enabled'] = False
+        self.app.render_report(value)
+        self.app.host.set('another-device')
+        self.assertFalse(self.app.allowed_actions()['enable'])
+
+    def test_unknown_device_name_is_localized_without_changing_report(self):
+        value = report(ready=False)
+        value['device'].update(display_name='Unrecognized BB10 device', recognized=False)
+        self.app.render_report(value)
+        self.assertIn('未识别的 BB10 设备', self.app.device_label.cget('text'))
+        self.assertEqual(value['device']['display_name'], 'Unrecognized BB10 device')
 
     def test_only_problems_are_prominent_and_full_report_is_retained(self):
         value = report(ready=False)
@@ -142,11 +211,11 @@ class GuiTests(unittest.TestCase):
         value = report(ready=False, tested=False)
         value['network_diagnostics'] = {'data_service_mode': 'ON', 'data_services_status': 'OFF',
                                         'internet_present': True, 'internet_active': False,
-                                        'internet_connectable': False, 'network_service': 1}
+                                        'internet_connectable': False, 'network_service': 33555457}
         value['checks'] = [{'id': 'lte', 'status': 'wait', 'code': 'lte_emergency_only'},
                            {'id': 'apn', 'status': 'wait', 'code': 'data_services_off'}]
         self.app.render_report(value)
-        self.assertIn('仅紧急服务', self.app.table.item('lte', 'values')[2])
+        self.assertIn('紧急服务标志', self.app.table.item('lte', 'values')[2])
         self.assertIn('OFF', self.app.table.item('apn', 'values')[2])
         with patch.object(self.app, 'run') as action, patch.object(gui, 'Client') as client:
             self.app.show_checks()
@@ -158,6 +227,8 @@ class GuiTests(unittest.TestCase):
             rows = {table.item(key, 'values')[0]: table.item(key, 'values')[2] for key in table.get_children()}
             self.assertIn('当前：ON', rows['数据服务设置'])
             self.assertIn('当前：OFF', rows['数据服务实际状态'])
+            self.assertIn('当前：是', rows['网络含紧急服务标志'])
+            self.assertIn('当前：否', rows['无线层有 LTE 数据服务'])
             summary = self.app.diagnostic_text()
             self.assertIn(rows['数据服务设置'], summary)
             self.assertIn(rows['数据服务实际状态'], summary)
@@ -187,8 +258,8 @@ class GuiTests(unittest.TestCase):
             rows = [table.item(key, 'values') for key in table.get_children()]
             observations = {row[0]: row for row in rows if row[2].startswith('[I')}
             self.assertEqual(len(observations), 6)
-            self.assertEqual(observations['IR92 preconditions'][1], '未知')
-            self.assertIn('当前：未知', observations['IR92 preconditions'][2])
+            self.assertEqual(observations['IR92 前置条件'][1], '未知')
+            self.assertIn('当前：未知', observations['IR92 前置条件'][2])
             self.assertIn('不同接口', observations['工程语音域'][2])
             self.assertNotIn('private-customer-data', str(rows))
             self.assertEqual(self.app.allowed_actions(), actions)

@@ -13,6 +13,8 @@ import urllib.request
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+import i18n
+i18n.LANGUAGE = 'zh'  # Progress-message assertions below use Chinese.
 import fetch_materials as f
 
 

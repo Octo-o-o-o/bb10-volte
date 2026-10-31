@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BB10 VoLTE — 让老黑莓用上 4G 通话</title>
+  <meta name="description" content="让已 Root 的黑莓 Q10、Q20、Passport 用上 VoLTE。首次通过 Windows 或 Mac 安装一次，以后关机换卡、开机，手机自动适配移动、联通、电信，不用再连电脑刷机。">
+  <meta name="theme-color" content="#f4f5f2">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/app-icon.png">
+  <link rel="canonical" href="https://bb10-volte.octoooo.com/">
+  <link rel="alternate" hreflang="zh-CN" href="https://bb10-volte.octoooo.com/">
+  <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/">
+  <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/">
+  <meta property="og:title" content="BB10 VoLTE — 让老黑莓用上 4G 通话">
+  <meta property="og:description" content="让已 Root 的黑莓 Q10、Q20、Passport 用上 VoLTE。首次通过 Windows 或 Mac 安装一次，以后关机换卡、开机，手机自动适配移动、联通、电信，不用再连电脑刷机。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bb10-volte.octoooo.com/">
+  <meta property="og:site_name" content="BB10 VoLTE">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://bb10-volte.octoooo.com/assets/app-status.png">
+  <meta property="og:image:alt" content="BB10 VoLTE 电脑工具的网络注册状态界面">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="appearance.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home-page">
+  <a class="skip-link" href="#main">跳到正文</a>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="icon-external" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-9 9M18 13v6H5V6h6"/></symbol>
+      <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></symbol>
+      <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.7 3.1 7.8 7.5 9.5 4.4-1.7 7.5-4.8 7.5-9.5V6Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></symbol>
+      <symbol id="icon-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4m-3 14h2"/></symbol>
+      <symbol id="icon-sim" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6Z"/><path d="M9 11h6v7H9Zm0 3h6m-3-3v7"/></symbol>
+      <symbol id="icon-signal" viewBox="0 0 24 24"><path d="M4 18v2m5-6v6m5-10v10m5-15v15"/></symbol>
+      <symbol id="icon-github" viewBox="0 0 24 24"><path d="M12 2.7a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 2.9.8.1-.7.4-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.3 9.3 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.8-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.7Z"/></symbol>
+      <symbol id="icon-windows" viewBox="0 0 24 24"><path d="M3 5.2 10.5 4v7.2H3Zm9  -1.3L21 2.5v8.7h-9ZM3 12.7h7.5V20L3 18.8Zm9 0h9v8.8l-9-1.3Z"/></symbol>
+      <symbol id="icon-apple" viewBox="0 0 24 24"><path d="M16.8 12.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-3-4.2ZM14.5 5.4c.7-.8 1.1-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4Z"/></symbol>
+      <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H4Zm16 0h-4a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h4Z"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="site-header">
+    <div class="shell">
+      <a class="brand" href="index.html" aria-label="BB10 VoLTE 首页">
+        <img class="brand-mark" src="assets/icon.png" alt="" width="40" height="40">
+        <span class="brand-name">BB10 VoLTE</span>
+        <span class="brand-edition">OCTOLAB</span>
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a href="#how">工作原理</a>
+        <a href="guide.html">使用指南</a>
+        <a href="#compatibility">兼容性</a>
+        <a href="#download">下载</a>
+      </nav>
+      <div class="header-actions">
+        <a class="language-switch" data-language-switch="en" href="en/index.html" lang="en" hreflang="en" aria-label="Switch to English">English</a>
+        <a class="github-link" href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看并为 BB10 VoLTE 加星">
+          <svg class="icon icon-fill" aria-hidden="true"><use href="#icon-github"/></svg>
+          <span>Star</span>
+        </a>
+        <select class="theme-select" id="appearance" aria-label="外观">
+          <option value="system">跟随系统</option>
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
+        </select>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="打开导航菜单"><span class="menu-lines" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="shell">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span>BLACKBERRY 10 · NATIVE VOLTE</p>
+            <h1 id="hero-title">让黑莓 Q10、Q20、Passport<br><em>用上 VoLTE。</em></h1>
+            <p class="hero-lead">首次连接 Windows 或 Mac 安装一次。以后关机换卡、正常开机，手机自动适配移动、联通、电信，不用再连电脑刷机。继续用自己的号码和手机自带的拨号器，在 4G 下接打电话。</p>
+            <div class="hero-actions">
+              <a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe" target="_blank" rel="noopener noreferrer">
+                <svg class="icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg>下载 Windows 版<svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>
+              </a>
+              <a class="button button-secondary" href="guide.html"><svg class="icon" aria-hidden="true"><use href="#icon-book"/></svg>查看使用说明</a>
+            </div>
+            <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg>下载 macOS 通用版<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+            <p class="hero-note"><span data-release-version>v0.5.0-r8</span> · 实验版。适用于已 Root 的 SQN100-3 / SQC100-2 / SQW100-4，系统 10.3.3.3216。Passport 切入或离开电信时，可能需要再正常重启一次。</p>
+          </div>
+
+          <div class="hero-visual">
+            <div class="visual-index" aria-hidden="true">BB10 / 4G</div>
+            <figure class="software-figure">
+              <div class="software-topbar"><span>BB10 VOLTE / DESKTOP</span><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+              <img src="assets/app-status.png" width="1000" height="780" alt="BB10 VoLTE 旧版界面：Q10 已连接、网络已注册，仍需实际拨打电话测试">
+              <figcaption><span><i class="status-dot" aria-hidden="true"></i>查看手机是否已连上通话服务</span><small>旧版界面，仅作展示</small></figcaption>
+            </figure>
+            <div class="signal-note" aria-hidden="true">
+              <svg viewBox="0 0 90 44"><path d="M2 36h12l7-24 9 29 10-36 10 31h12l7-15 7 15h12"/></svg>
+              <span>KEEP THE SIGNAL.<br>KEEP THE BLACKBERRY.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="proof-strip"><div><span class="proof-number">9 / 9</span><p><strong>三款机型，三家运营商</strong><small>九项组合已通过功能验收</small></p></div><div><span class="proof-number">一次安装</span><p><strong>以后换卡由手机自动适配</strong><small>关机换卡、正常开机即可</small></p></div><div><span class="proof-number">原生通话</span><p><strong>保留自己的号码和拨号器</strong><small>接打电话全程使用 LTE</small></p></div><a href="#compatibility">查看实测机型与范围</a></div></div></section>
+
+    <section class="region how-region" id="how" aria-labelledby="how-title">
+      <div class="shell">
+        <div class="chapter"><span>01 / HOW IT WORKS</span><span>保留你的号码，也保留熟悉的操作。</span></div>
+        <div class="section-heading">
+          <h2 id="how-title">不用装网络电话。<br><em>还是原来的号码。</em></h2>
+          <p>VoLTE 就是通过运营商的 4G 网络打电话。<br>这个工具尝试启用 BB10 已有的通话能力，<br>不是免费电话，也不提供网络电话账号。</p>
+        </div>
+
+        <div class="signal-flow" role="group" aria-label="使用手机里的 SIM 卡，通过手机自带的通话服务和系统拨号器进行 4G 通话">
+          <article class="flow-node">
+            <span class="flow-icon"><svg class="icon" aria-hidden="true"><use href="#icon-sim"/></svg></span>
+            <span class="flow-index">IDENTITY / 01</span>
+            <h3>你的 SIM 卡</h3>
+            <p>继续用自己的号码和套餐。<br>SIM 卡需要已开通 VoLTE。</p>
+          </article>
+          <div class="flow-connector" aria-hidden="true"><span></span><svg viewBox="0 0 100 24"><path d="M0 12h96m-8-8 8 8-8 8"/></svg><small>SIM 身份认证</small></div>
+          <article class="flow-node flow-node-emphasis">
+            <span class="flow-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg></span>
+            <span class="flow-index">NATIVE IMS / 02</span>
+            <h3>手机自带的通话服务</h3>
+            <p>启用 BB10 自带的 IMS 服务。<br>先校验文件，再在独立副本上修改。</p>
+          </article>
+          <div class="flow-connector" aria-hidden="true"><span></span><svg viewBox="0 0 100 24"><path d="M0 12h96m-8-8 8 8-8 8"/></svg><small>专用通话网络配置</small></div>
+          <article class="flow-node">
+            <span class="flow-icon"><svg class="icon" aria-hidden="true"><use href="#icon-signal"/></svg></span>
+            <span class="flow-index">VOICE / 03</span>
+            <h3>用 4G 接打电话</h3>
+            <p>还是手机自带的拨号界面。<br>按运营商套餐计费。</p>
+          </article>
+        </div>
+
+        <div class="principles">
+          <article><span>不需要改硬件</span><h3>需要先取得 Root 权限</h3><p>Root 是手机的系统管理员权限。需要它来启用 VoLTE，但不用拆机，也不用另装拨号 App。</p></article>
+          <article><span>保留原厂文件</span><h3>修改副本，不覆盖原件</h3><p>不会覆盖原厂 <code>/radio/bin/ims_rrm</code>。安装前会校验原生文件，确保与项目要求一致。</p></article>
+          <article><span>不跳过检查</span><h3>先检查，符合条件再安装</h3><p>安装前会检查机型、系统、SIM 卡、4G 网络和网络配置。关键条件不符合，就会停止。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="region journey-region" aria-labelledby="journey-title">
+      <div class="shell">
+        <div class="chapter"><span>02 / FROM USB TO 4G</span><span>按步骤来，最后记得真的打一次电话。</span></div>
+        <div class="section-heading">
+          <h2 id="journey-title">连上电脑设置，<br><em>拔掉线再试着打电话。</em></h2>
+          <p>电脑负责连接、检查和安装。<br>是否真的能用，<br>要在手机上接打电话才能确定。</p>
+        </div>
+        <div class="journey-grid">
+          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>CONNECT</small><h3>连接已 Root 的手机</h3><p>使用可信 USB 连接，核对准确硬件型号。</p></div><span class="step-mark">先准备好 Root 和 SSH</span></li><li><span class="journey-number">02</span><div><small>INSTALL</small><h3>安装三网自动适配</h3><p>进入“三网自动适配”，备份并安装，然后按提示正常重启。</p></div><span class="step-mark">需要额外重启时界面会说明</span></li><li><span class="journey-number">03</span><div><small>SWAP</small><h3>以后换卡不用电脑</h3><p>正常关机换卡，再开机。Passport 切入或离开电信时可能要再重启一次。</p></div><span class="step-mark">不用重复安装或刷机</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>实际接打电话验收</h3><p>断开 USB，呼出、呼入各接通至少 35 秒，核对双向声音、LTE 和自己的号码。</p></div><span class="step-mark">继续用系统拨号器</span></li></ol>
+
+          <article class="acceptance-paper">
+            <div class="paper-heading"><span>FIELD CHECK / 3 MODELS</span><svg class="icon" aria-hidden="true"><use href="#icon-phone"/></svg></div>
+            <p class="paper-kicker">安装后，照着这张清单试一遍</p>
+            <h3>显示“已注册”，<br>还得试试能不能通话。</h3>
+            <ul>
+              <li><span aria-hidden="true"></span>能用自带拨号器打出、接听</li>
+              <li><span aria-hidden="true"></span>双方都能听清声音</li>
+              <li><span aria-hidden="true"></span>通话全程保持 4G</li>
+              <li><span aria-hidden="true"></span>拔掉 USB 后再测一次</li>
+              <li><span aria-hidden="true"></span>正常重启手机后再测一次</li>
+            </ul>
+            <p class="paper-note">每一项都要亲自测试。<br>工具不会自动替你拨号。</p>
+            <a class="text-link" href="guide.html#acceptance">查看详细通话测试步骤<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a>
+          </article>
+        </div>
+        <div class="validation-note"><span class="status-dot" aria-hidden="true"></span><p><strong>三机三网功能验收已完成</strong>九项组合已在 r7／r8 上完成功能验收，三台现均安装 r8。每项保留实际测试版本，不等于九项都用同一份 r8 重新测过。本轮 Mac 真实 USB 验收暂缓。</p></div>
+      </div>
+    </section>
+
+    <section class="region compatibility-region" id="compatibility" aria-labelledby="compatibility-title">
+      <div class="shell">
+        <div class="chapter"><span>03 / KNOW YOUR DEVICE</span><span>不同机型，进展不一样。</span></div>
+        <div class="section-heading">
+          <h2 id="compatibility-title">你的黑莓，<br><em>现在能用吗？</em></h2>
+          <p>目前还是实验版，不能保证都能用。<br>请确认完整型号和系统版本，<br>以及 SIM 卡和运营商。</p>
+        </div>
+        <div class="compatibility-grid"><article class="device-card"><div class="device-card-top"><span class="device-code">Q10</span><span class="status status-verified">三网功能验收通过</span></div><h3>BlackBerry Q10</h3><p><strong>SQN100-3</strong> · OS 10.3.3.3216</p><p>移动 460-00、联通 460-01、电信 460-11。已修正移动持续驻网与联通本机号码显示。</p><dl><div><dt>其他硬件变体</dt><dd>不在本轮验收范围</dd></div></dl></article><article class="device-card"><div class="device-card-top"><span class="device-code">Q20</span><span class="status status-verified">三网功能验收通过</span></div><h3>BlackBerry Classic</h3><p><strong>SQC100-2</strong> · OS 10.3.3.3216</p><p>移动 460-00、联通 460-01、电信 460-11。三网自动启动、系统拨号器双向通话均已验收。</p><dl><div><dt>其他硬件变体</dt><dd>不在本轮验收范围</dd></div></dl></article><article class="device-card"><div class="device-card-top"><span class="device-code">Q30</span><span class="status status-verified">三网功能验收通过</span></div><h3>BlackBerry Passport</h3><p><strong>SQW100-4</strong> · OS 10.3.3.3216</p><p>移动 460-00、联通 460-01、电信 460-11。切入或离开电信入网策略时，可能需要再正常重启一次。</p><dl><div><dt>其他硬件变体</dt><dd>不在本轮验收范围</dd></div></dl></article></div><div class="guide-table-wrap"><table class="guide-table"><caption>9 / 9 项功能验收通过 · 2026 年 11 月 1 日</caption><thead><tr><th scope="col">实测机型</th><th scope="col">中国移动</th><th scope="col">中国联通</th><th scope="col">中国电信</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>通过 · r7</td><td>通过 · r7</td><td>通过 · r8</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>通过 · r7</td><td>通过 · r8</td><td>通过 · r7</td></tr><tr><th scope="row">Passport SQW100-4</th><td>通过 · r8</td><td>通过 · r7</td><td>通过 · r7</td></tr></tbody></table></div><p class="acceptance-scope">证据包括机主确认的声音、LTE、接通时长，以及接回后本次开机的状态回读。部分环形日志已轮转，通话后快照不代表全程连续记录。Q10 电信按最后一组成功通话验收，早前对端号码问题另记，本轮不判定首次拨号成功。详见<a href="acceptance.json" target="_blank" rel="noopener noreferrer">验收记录</a>。</p><div class="requirement-row"><span>所有机型都需要</span><strong>OS 10.3.3.3216</strong><strong>有效 USIM 卡，已开通 VoLTE</strong><strong>Root 权限和 SSH 连接</strong><strong>原生文件校验通过</strong></div>
+        <div class="risk-banner" role="note"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>首次 Root 刷机会清空手机数据。</strong>请先备份。不要把 Q10 的 Root 镜像刷到 Q20 / Q30 上。首次刷写流程仍是实验功能，尚未在未 Root 的手机上完成实测。</p><a href="guide.html#prepare">先看准备与风险<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
+      </div>
+    </section>
+
+    <section class="region download-region" id="download" aria-labelledby="download-title">
+      <div class="shell">
+        <div class="chapter"><span>04 / DOWNLOAD</span><span>下载到电脑，不是安装到手机的 App。</span></div>
+        <div class="section-heading">
+          <h2 id="download-title">你用哪种电脑？<br><em>下载对应版本就好。</em></h2>
+          <div class="release-summary"><p>当前下载版本<br><strong data-release-version>v0.5.0-r8</strong> · 实验版</p><a class="text-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r8" target="_blank" rel="noopener noreferrer">查看版本说明<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+        </div>
+        <div class="download-grid">
+          <article class="download-card">
+            <div class="platform-heading"><svg class="platform-icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg><span>FOR DESKTOP / 01</span></div>
+            <h3>Windows</h3>
+            <p class="platform-spec">Windows 10 / 11 · x64 · 双击运行</p>
+            <p>下载后双击 EXE 即可打开，所需组件已包含在内。不用另装 Python 或 OpenSSH。</p>
+            <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 Windows 版</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <small class="package-note">目前 EXE 没有发布者签名，运行前请先核对文件校验码。主要在 Windows 11 x64 上测试启动。</small>
+          </article>
+          <article class="download-card">
+            <div class="platform-heading"><svg class="platform-icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span>FOR DESKTOP / 02</span></div>
+            <h3>macOS</h3>
+            <p class="platform-spec">Apple 芯片 + Intel · 通用 DMG</p>
+            <p>打开 DMG，把应用拖进“应用程序”后启动。不用另装 Python 或 Tk，SSH/SCP 使用系统自带版本。</p>
+            <div class="download-actions"><a class="button button-primary" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 macOS 通用版</a><a class="checksum-link" data-download="mac-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <small class="package-note">应用和 DMG 已签名、公证并完成包内自检。本轮 Mac 真实 USB 验收暂缓；Intel 仅核对包内架构，未实机运行。</small>
+          </article>
+        </div>
+        <div class="source-download"><p><strong>想从源码运行？</strong>安装 Python 3.14（含 Tk），然后运行 <code>python tools/gui.py</code>。</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip" target="_blank" rel="noopener noreferrer">源码 ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">源码校验码</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">全部文件校验码</a></div></div><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+        <p class="download-guide-link"><a class="text-link" href="guide.html#verify">下载好了？先核对文件，再按指南操作<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></p>
+      </div>
+    </section>
+
+    <section class="region open-region" aria-labelledby="open-title">
+      <div class="shell">
+        <div class="chapter"><span>05 / OPEN SOURCE</span><span>代码公开，也欢迎分享你的使用结果。</span></div>
+        <div class="open-grid">
+          <div><h2 id="open-title">觉得这个项目有用？<br><em>欢迎点个 Star。</em></h2><p>让更多还在用黑莓的人找到它。<br>无论成功还是失败，都欢迎告诉我们你的机型和测试结果。</p></div>
+          <div class="star-actions"><a class="button button-primary" href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-star"/></svg><span data-star-count>在 GitHub 点个 Star</span><svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a><a class="text-link" href="https://github.com/Octo-o-o-o/bb10-volte/issues" target="_blank" rel="noopener noreferrer">反馈使用结果<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+        </div>
+        <div class="open-facts"><span><svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg>MIT 开源许可</span><span><svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg>Python / Shell / C 完整源码</span><span><svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg>无需账号、在线激活，不自动上传使用数据</span><a href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">查看源代码<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
+      </div>
+    </section>
+
+    <section class="region faq-region" id="faq" aria-labelledby="faq-title">
+      <div class="shell">
+        <div class="chapter"><span>06 / BEFORE YOU START</span><span>还有疑问？先看这几条。</span></div>
+        <div class="faq-layout">
+          <div class="faq-intro"><h2 id="faq-title">你可能还想问。<br><em>答案在这里。</em></h2><p>想一步步跟着操作，<br>请打开完整使用指南。</p><a class="button button-secondary" href="guide.html">打开完整使用指南<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
+          <div class="faq-list">
+            <details><summary>所有黑莓手机都能用吗？<span aria-hidden="true"></span></summary><p>实测范围是 Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4，系统 10.3.3.3216，以及移动 460-00、联通 460-01、电信 460-11 的 USIM 无 ISIM 路线。其他变体与 SIM 类型未验收。首次 Root 和安装三网自动适配是不同步骤。</p></details>
+            <details><summary>一定要 Root 吗？会不会丢数据？<span aria-hidden="true"></span></summary><p>需要。Root 就是取得手机的系统管理员权限。已经 Root、也有可信 SSH 连接的手机不用重刷；未 Root 的 Q10 可使用首次准备向导，但刷机会清空数据，而且这个流程仍是实验功能。请先备份。</p></details>
+            <details><summary>这是网络电话吗？打电话免费吗？<span aria-hidden="true"></span></summary><p>不是网络电话服务，也不提供免费通话。你仍使用自己的 SIM 卡、号码和套餐，费用按运营商标准收取。SIM 要已开通 VoLTE，并能正常使用 4G 数据。本项目也不提供 SIM 解锁。</p></details>
+            <details><summary>显示“已注册”，就一定能打电话了吗？<span aria-hidden="true"></span></summary><p>还不能确定。“已注册”只表示连上了运营商的通话服务。请用自带拨号器打出、接听，确认双方声音和全程 4G，再分别拔掉 USB、正常重启后复测。长期稳定性和紧急呼叫仍未得到完整验证，请不要依赖它作为唯一的紧急联络方式。</p></details>
+            <details><summary>还要自己安装 Python 吗？<span aria-hidden="true"></span></summary><p>使用 Windows EXE 或 macOS DMG 都不需要。只有从源码运行，才需要自己安装 Python 3.14（含 Tk）。请从同一个版本的发布页面下载安装包和对应的 SHA-256 校验文件。</p></details>
+            <details><summary>我的手机信息会自动上传吗？<span aria-hidden="true"></span></summary><p>不会。只有你主动选择，工具才会把去除敏感信息的检查报告保存到本地，不会自动上传。分享前请再检查一遍，不要附上 private 文件夹、私钥或私有安装记录。</p></details>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      <div class="footer-brand"><a class="brand" href="index.html"><img class="brand-mark" src="assets/icon.png" alt="" width="40" height="40"><span class="brand-name">BB10 VoLTE</span></a><p>让老黑莓再多用一阵。</p></div>
+      <div class="footer-links"><a href="guide.html">使用指南</a><a href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+      <div class="footer-bottom"><span>© <span data-current-year>2026</span> OctoLab · MIT License</span><span>独立开源项目，与 BlackBerry 官方无关。</span></div>
+    </div>
+  </footer>
+  <script type="module" src="site.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "updated_at_utc": "2026-10-31T05:39:22.447413+00:00",
+  "state": "manual_calls_pending",
+  "device": {
+    "family": "Classic",
+    "variant": "SQC100-2",
+    "board": "CLASSICATT",
+    "os_version": "10.3.3.3216",
+    "root_scheme": "existing_root_v2"
+  },
+  "carrier": {
+    "mcc": "460",
+    "mnc": "00",
+    "sim_route": "USIM without ISIM",
+    "data_apn": "cmnet",
+    "ims_apn": "ims",
+    "ims_ip_family": "IPv4v6",
+    "home_domain": "ims.mnc000.mcc460.3gppnetwork.org",
+    "stock_config": "404",
+    "stock_sha256": "01093873ac626da82ec30c45a2db18925af12f5f9dec1fdca63c7ef3c70f0598"
+  },
+  "profile_id": "q20-sqc100-2-mobile-46000",
+  "profile_sha256": "d35ba3d9e68e5b05bc55d8a9e33ca2a8275ba24c75a8795731a64f53779c7cb9",
+  "transition": {
+    "old_carrier": "Telecom 460-11",
+    "private_backup_files": 203,
+    "private_backup_bytes": 9919546,
+    "backup_hashes_verified": true,
+    "owned_configuration_restored": true,
+    "normal_menu_reboot_owner_confirmed": true,
+    "post_reboot_crypto_provider": -1,
+    "post_reboot_voice_policy": 0,
+    "post_reboot_configuration_clean": true,
+    "telecom_bootstrap_for_mobile": false
+  },
+  "manual_stock_handoff": {
+    "pids": [
+      7590015
+    ],
+    "stock_handoff_requested": true,
+    "exact_stock_arguments": true,
+    "no_profiles_wait": true,
+    "register_or_invite_observed": false,
+    "telecom_usage_policy_applied": false,
+    "configuration_writes": 0
+  },
+  "manual_acceptance": {
+    "state": "not_tested"
+  },
+  "normal_reboot_acceptance": {
+    "state": "not_tested"
+  },
+  "post_reboot_calls_without_usb": {
+    "state": "not_tested"
+  },
+  "automatic_start_enabled": false,
+  "passport_operated": false,
+  "q10_operated": false,
+  "limitations": [
+    "This evidence applies only to the observed SQC100-2 and 460-00 SIM.",
+    "SMS/MMS, other Mobile MNCs, and long-term stability have not been tested."
+  ],
+  "private_data_exported": false,
+  "manual_registration": {
+    "phase": "running",
+    "boot": [
+      "q20-volte-boot-v1",
+      "7d722fbb90a62b4f24a2a6304f0e2952c4f2e462c03daf3b"
+    ],
+    "manager_pid": 19513449,
+    "native_pid": 20000872,
+    "manager_alive": true,
+    "native_alive": true,
+    "registered": true,
+    "current": {
+      "ran": "LTE",
+      "ims": "connected",
+      "register_status": "200 OK",
+      "radio": [
+        "lte"
+      ],
+      "power": "ON"
+    },
+    "startup_timing": {
+      "manager_started": 1793425022.827041,
+      "stock_finished": 1793425024.773933,
+      "registering": 1793425080.43008,
+      "configuring": 1793425025.006593,
+      "waiting_for_ims_apn": 1793425072.045248,
+      "running": 1793425086.26975
+    }
+  },
+  "app_source_preflight": {
+    "passed": true,
+    "installed_mobile_profile_detected": true,
+    "carrier_xml_content_verified": true,
+    "service_or_configuration_restarted": false
+  }
+}

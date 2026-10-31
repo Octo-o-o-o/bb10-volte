@@ -2,6 +2,74 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r8 · Q10 and Passport own-number display · 2026-11-01
+
+Q10 could call after switching to Unicom while its dialer number remained blank; the unified service previously invoked authenticated number filling only on Q20. r8 enables it for all three supported models, retaining current-boot, current-SIM and native-process REGISTER-200 proof. Display-cache updates and restoration do not write SIM records or radio settings.
+
+The update also prevents a previous SIM's number from becoming the new SIM's rollback value, preserves rollback state across interrupted writes, and caches fresh authentication even when the display is already correct. Recognized r7 payloads can be backed up and upgraded. Attach policy and the IMS engine retain r7 content.
+
+The shared Windows/Mac workflow now shows an explicit additional-restart stage, its reason and a **Restarted — check again** button. Both windows derive readiness from the current boot; old registration cache, LTE alone or just enabling startup cannot show registration success. Reconnection triggers a fresh check, and a disabled update first prompts enabling, avoiding repeated restarts or reinstalls.
+
+The full regression run contains 474 tests: 473 passed and one skipped. The owner confirmed Q10's correct Unicom number; its r8 USB-disconnected outgoing call lasted 48.268 seconds, with all samples on LTE. Passport r8 registered automatically on Telecom after its second normal boot. Hardware calls, SIM changes and number-display checks retain their actual payload versions. See the current [acceptance matrix](../materials/unified-carrier-acceptance.json) and [unified workflow](AUTO-CARRIERS.en.md).
+
+Final acceptance on 2026-11-01: all nine exact-model/carrier combinations passed functional checks on recorded r7/r8 payloads; all three phones now have r8. The final phone-only swaps passed Q10 Telecom, Q20 Unicom and Passport Mobile, with both calls over 35 connected seconds, audio, LTE and own-number display confirmed. Passport also displayed China Mobile correctly. Q10 Telecom uses the final pair, with earlier peer-number failures excluded and first-attempt success unassessed. Six cases document phone-only swaps; three initial-card baselines remain distinct. Retained SIP timing and owner-confirmed duration are recorded separately. Current Mac physical USB acceptance is deferred; software packaging, signatures and notarization do not replace it.
+
+The bilingual website now documents one installation followed by automatic carrier selection after powered-off SIM swaps, the extra Passport restart, the acceptance matrix and version-matched R2/GitHub downloads. Website source is included in this repository and source archive.
+
+## 0.5.0-r7 · Q10 Mobile LTE retention policy · 2026-10-31
+
+r7 acceptance update: r6 passed automatic registration after normal boot and USB-disconnected bidirectional calls on Q20 Telecom and Passport Unicom. Established calls lasted 58.3/54.1 and 36.9/37.7 seconds respectively; all 450 samples on each device were LTE. The owner cancelled an earlier unanswered Q20 outgoing call. Q10 Mobile r6 initially registered but later received network rejection cause 18; the modem removed LTE from its enabled technologies (19 to 3), and calls failed. This run did not pass. r7 adds backed-up data-centric setup specifically for Q10 Mobile, retains the existing Telecom policy, and restores the original policy on switching to Unicom. Hardware retesting remains pending; all nine combinations have not passed. Passport Unicom still has a blank own-number field, recorded separately as a display limitation. A number or 4G icon does not establish calling acceptance.
+
+## 0.5.0-r6 · Wait for idle startup resources · 2026-10-31
+
+r6 acceptance update: Q10 Telecom r5 passed USB-disconnected calls lasting over 35 seconds in both directions. The owner confirmed bidirectional calls after a phone-only power-off SIM switch to Mobile; log collection is pending. Q20 switching to Telecom and Passport switching to Unicom selected the correct carriers but stopped at the idle-resource check before IMS startup. r6 waits for two consecutive idle observations of call services, IMS and VPN, bounded to 180 seconds. Timeout or stop does not proceed to new policy writes. Hardware retesting is pending; the nine combinations have not all passed. A 4G icon or own-number display alone does not prove voice registration.
+
+## 0.5.0-r5 · Restore LTE in the saved technology selection · 2026-10-31
+
+- Q10 retained a 2G/3G-only selection despite correct attach policy. Use the pinned stock `configure_rats` interface to add LTE, retain other technologies, and require its reply plus both status readbacks.
+- Record the original before writing and restore its technologies and preference on disable. Keep the original unset sentinel -1 in the backup; encode it as the protocol's no-preference mask 0. Preserve independent changes.
+- Passport Telecom r4 passed automatic registration after restart and USB-disconnected bidirectional short calls. r5 and cross-carrier SIM switching still need hardware acceptance.
+
+## 0.5.0-r4 · Startup restoration and reboot decisions · 2026-10-31
+
+- Track modem-policy changes separately from DCA source repairs. Recreated source files alone no longer require another Passport restart; actual policy changes still require a normal restart.
+- Restore only carrier fields that differ from their originals, avoiding repeated deletion of absent voice settings.
+- Upgrade known r1/r2/r3 payloads with backups. Add regressions for consecutive boots and preservation of a required reboot within the current boot. Hardware SIM-switch acceptance remains ongoing.
+
+## 0.5.0-r3 · Telecom policy publication fix · 2026-10-31
+
+- Fix ineffective repeated publication when PPS is already data-centric but modem readback remains original. Original-to-data publication restored usage 1 on Passport; restart/call acceptance is still pending.
+- Add inactive upgrades of known r1/r2 payloads, previous-version backups and interrupted-update recovery without changing system binaries or boot entries.
+- Do not present cached REGISTER 200 as current registration.
+
+## 0.5.0-r2 · Automatic carrier candidate · 2026-10-31
+
+- Windows and Mac share installation, original backups, legacy migration and SIM selection during phone startup. After installation, change SIM and restart without another flash. See [scope](AUTO-CARRIERS.en.md).
+- Main-window management prioritizes the unified service and blocks legacy reinstallation; add re-enable control.
+- r2 changes desktop management only; phone payload bytes match r1. Q20 Mobile passed restart, USB-disconnected and bidirectional short calls; other combinations and SIM changes remain under acceptance.
+
+## 0.4.0-r1 · Local Telecom candidate · 2026-10-31
+
+Accepted Q20 SQC100-2 Telecom bidirectional short calls, normal restart recovery and calls without USB. Added hash-pinned management of its existing legacy Root adapter, and a manual Q10 SQN100-3 / 460-11 attach port with independently verified desktop backups and the original LTE-before-IMS gate. Passport lifecycle restrictions remain. Added peer-report comparison and carrier path/content verification. See [scope and limits](TELECOM-PORT.en.md).
+
+## 0.3.3-r9 · Baidu Netdisk backup download · 2026-10-31
+
+- Add a browser backup for Q10, Classic / Q20, and Passport / Q30, displaying the access code and copying the complete share information.
+- Retain ZSpace and model-specific import verification. Baidu share pages are excluded from automatic speed ranking, raw-file downloads and resumable transfers.
+
+## 0.3.3-r8 · Firmware downloads by hardware model · 2026-10-30
+
+- Add **China download (ZSpace)** with three uploaded stock files and verification lists. Browser shares remain separate from automatic raw-file mirrors; model-specific import verification is retained.
+- Automatic downloads, browser links, and local import verification share one exact-model mapping for Q10, Classic / Q20, and Passport / Q30, without a Q10 default.
+- Unknown, conflicting, and multiple-device identities stop the action. Explicit offline selection is available. Downloads and Root preparation recheck the connected model; model changes clear old image selections.
+- Pin Q20 / Passport stock file sizes, SHA-256 digests, and checked download servers. Automatic Root building and flashing remain Q10-only, with existing phone compatibility gates preserved.
+
+## 0.3.3-r7 · Combined network-service flag correction · 2026-10-29
+
+- Fix r6's equality-to-1 check: combined emergency flags such as 33555457 also block installation, update and start.
+- Require the LTE data-service bit and no emergency bit, retaining unknown for missing/invalid bitmaps. cnice connected=true alone cannot authorize actions; reports and UI explain both bits.
+- Preserve APN-overlay restrictions. This corrects the misleading preflight result and does not establish recovery of the reported device's actual network access.
+
 ## 0.3.3-r6 · Local Q20 network diagnostic test build · 2026-10-29
 
 - Stop reporting the LTE check as passed when the snapshot explicitly reports emergency-only service. Negative service observations also block stale connected=true readings.

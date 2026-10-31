@@ -67,3 +67,19 @@ def proven_owned_profiles(configs, original_ids, event_text, native_stdout, pid)
             owned[uid] = name
     assert set(uid.encode('ascii') for uid in owned) == added, 'New profile not decoded exactly'
     return owned
+
+
+def mobile_binary(original, normal_voice=False):
+    """Accepted Q20/Passport Mobile fix; only the temporary copy is changed."""
+    assert normal_voice is True
+    changed, patches = temporary_binary(original, normal_voice)
+    offset = 0xb8eb0
+    assert changed[offset:offset + 4] == b'\x02\x21\x78\x44'
+    result = bytearray(changed)
+    result[offset] = 0
+    result = bytes(result)
+    assert result[:offset] == changed[:offset] and result[offset + 1:] == changed[offset + 1:]
+    assert hashlib.sha256(result).hexdigest() == '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494'
+    patches.append({'file_offset': offset, 'bytes_before': '0221', 'bytes_after': '0021',
+                    'config_key': 'MediaDialog.EarlySdp', 'purpose': 'Reliable 180 without repeated SDP'})
+    return result, patches
