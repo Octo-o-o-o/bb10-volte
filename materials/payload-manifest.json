@@ -9,7 +9,7 @@
     "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
     "device/install.py": "f21255abb5a5bc73867fa87d45ab384824994b89bfd7934146472dec11102706",
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
-    "device/operator-name-start.sh": "b714615ba6eef24b8023eb29abbcaae6511e535442d601f6ceb928f10d0c0b0d",
+    "device/operator-name-start.sh": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
     "device/operator_name.py": "cb4bcc38ac94b4df5861328373f53ec19a537826c036196f55985153ebc281c3",
     "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",

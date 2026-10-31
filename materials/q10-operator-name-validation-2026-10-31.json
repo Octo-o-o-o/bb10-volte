@@ -71,5 +71,48 @@
       "Q20_adapter_passed": 23
     }
   },
-  "overlay_readable_as_UID_355": true
+  "overlay_readable_as_UID_355": true,
+  "r5_actual_reboot": {
+    "IMS_auto_registered": true,
+    "name_auto_restored": false,
+    "boot": [
+      640426599,
+      1793419203.0
+    ],
+    "manager_pid": 17510502,
+    "native_pid": 18923629,
+    "old_name_worker_boot": [
+      1057088206,
+      1793408943.0
+    ],
+    "desktop_core_starts": 0,
+    "desktop_name_starts": 0,
+    "desktop_enables": 0,
+    "manager_to_registered_seconds": 299.582,
+    "full_boot_time_measured": false,
+    "root_cause": "name addon launched before root.done; it lacked the existing IMS addon readiness wait",
+    "root_boot_log_sha256": "6e6a3e984ceefe02d0833d9f2fadae609cf9d4bf74c32139203877b1b8b883d8",
+    "repair": "r6 adds bounded root.done wait; other 16 payload files unchanged",
+    "new_entry_normal_reboot_acceptance": "pending",
+    "desktop_captured_utc": "2026-10-31T04:07:19.127634+00:00"
+  },
+  "r6_name_boot_fix": {
+    "revision": "0.4.0-r6",
+    "fixed_file": "device/operator-name-start.sh",
+    "old_sha256": "b714615ba6eef24b8023eb29abbcaae6511e535442d601f6ceb928f10d0c0b0d",
+    "new_sha256": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
+    "other_payload_files_unchanged": 16,
+    "critical_runtime_files_unchanged": 12,
+    "bounded_root_readiness_wait_seconds": 120,
+    "root_pending_defers_trust_and_launch_test": true,
+    "missing_root_marker_exits_without_launch_test": true,
+    "targeted_startup_tests_passed": 2,
+    "IMS_remained_registered_and_same_processes_during_repair": true,
+    "current_display": {
+      "name": "中国电信",
+      "table_overlay_owned": true,
+      "worker_alive": true
+    },
+    "normal_reboot_display_restore_accepted": false
+  }
 }

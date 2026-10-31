@@ -2,7 +2,7 @@
 
 [简体中文](TELECOM-PORT.md)
 
-Local candidate **0.4.0-r5** records Q20 hardware acceptance and ports LTE attach preparation to Q10. Q10 automatic registration and bidirectional audio/LTE calls without USB after a normal restart are accepted. Restart acceptance for the new carrier-name addon remains pending. A new official release and Mac validation have not been performed in this session.
+Local candidate **0.4.0-r6** records Q20 hardware acceptance and ports LTE attach preparation to Q10. Q10 automatic registration and bidirectional audio/LTE calls without USB after a normal restart are accepted. A name-addon startup-order defect is repaired; its next normal restart remains pending acceptance. A new official release and Mac validation have not been performed in this session.
 
 | Combination | Evidence | App behavior |
 | --- | --- | --- |
@@ -35,6 +35,8 @@ r5 startup management requires a maintainer-written acceptance receipt matching 
 This SIM provides no usable SPN/PNN/OPL name, and the stock SE13 table returns empty names for 460-11, causing a numeric fallback. The stock override table includes Telecom 460-03 but omits 460-11. A verified full copy gains one `China Telecom|China Telecom|460|11` row, using the Chinese display name in UTF-8. A QNX path-manager link exposes the copy without rewriting the stock read-only file. ONS, RUM and navigator now read back China Telecom, while the IMS process remains registered on LTE.
 
 Only this accepted phone/SIM on non-roaming home 460-11 normal LTE service is eligible for a display notification. MCC/MNC, service state, APNs, IMS, SIM files and caller identity are unchanged. Disable or an ineligible SIM removes the owned mapping; unknown tables/links are preserved. QNX links are [lost after reboot](https://qnx.com/developers/docs/6.6.0_anm11_wf10/com.qnx.doc.neutrino.lib_ref/topic/p/pathmgr_symlink.html), so a separate Root addon waits for SIM authorization and restores the name. Normal-restart acceptance of that additional addon is pending and remains separate from the already accepted IMS startup.
+
+An actual r5 reboot automatically registered IMS again (299.582 seconds from manager startup, zero desktop starts), but the name addon exited after launching before `/tmp/root.done` existed. r6 adds the original IMS addon's bounded readiness wait to the independent name script; the other 16 payload files, including all 12 critical runtime files, retain identical bytes. Real shell tests verify deferred trust/launch until readiness and bounded failure without readiness. Manual name restoration kept the same IMS processes; it is not counted as name startup acceptance. The repaired entry still needs its next normal restart.
 
 ## Peer report comparison
 
