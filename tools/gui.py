@@ -19,6 +19,7 @@ from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
 from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
+from auto_carrier_view import status_view as unified_status_view, restart_guidance as unified_restart_guidance
 
 BG, INK, MUTED = '#F2F5F9', '#18273F', '#62738B'
 BLUE, GREEN, AMBER, RED = '#235BD7', '#137860', '#9A610B', '#BA3C42'
@@ -31,7 +32,9 @@ NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr
 NOTES = {
     'unified_payload_verified': tr('三网自动适配文件及原始备份回执已核验。'),
     'unified_running': tr('本次开机自动选择的运营商已注册；双向通话仍需实机确认。'),
-    'unified_waiting': tr('自动适配尚未完成注册。首次安装或换卡后请正常重启，再查看状态。'),
+    'unified_waiting': tr('自动适配尚未完成注册。请按当前阶段的提示处理，再检查状态。'),
+    'unified_carrier_reboot_required': tr('入网策略已保存，还需一次正常重启；重启后重新检查注册。'),
+    'unified_reboot_required': tr('需要正常重启手机，开机解锁后重新检查注册。'),
     'telecom_attach_manual_port': tr('Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。'),
     'telecom_attach_owned': tr('当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。'),
     'telecom_recorded_acceptance': tr('这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。'),
@@ -468,8 +471,9 @@ class App:
         if baseline_blocked and outcome in ('compatible', 'experimental'):
             title, color = tr('安装前状态需处理'), AMBER
         if report.get('managed_adapter') == 'unified_carriers':
-            title, color = tr('三网自动适配已安装'), GREEN if registered(service_status or report.get('status', {})) else AMBER
-            detail = tr('换卡并正常重启后由手机选择运营商，无需再次连接电脑。管理和恢复请使用“三网自动适配”。')
+            view = unified_status_view(service_status or report.get('status', {}))
+            title, color = view['title'], GREEN if view['ready'] else AMBER
+            detail = view['guidance']
         elif report.get('can_restore') is False:
             detail = tr('此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。')
         elif state == 'busy':
@@ -623,8 +627,14 @@ class App:
                         self.summary.configure(text=tr('已关闭自动启动。请等待恢复完成，再正常重启。'), fg=AMBER)
                         self.detail.configure(text=tr('原始备份和旧版本文件仍保留，可用于恢复。'))
                     elif result.get('automatic_carrier_selection') and result.get('enabled'):
-                        self.summary.configure(text=tr('已启用自动适配，请正常重启。'), fg=GREEN)
-                        self.detail.configure(text=tr('重启后由手机识别当前 SIM，无需再次连接电脑。'))
+                        self.summary.configure(text=tr('已启用自动适配，请正常重启。'), fg=AMBER)
+                        self.detail.configure(text=unified_restart_guidance())
+                    elif (report or {}).get('managed_adapter') == 'unified_carriers':
+                        # Do not overwrite the unified restart/waiting steps with
+                        # legacy generic status text or cached registration flags.
+                        view = unified_status_view(result.get('status') or report.get('status', {}))
+                        self.summary.configure(text=view['title'], fg=GREEN if view['ready'] else AMBER)
+                        self.detail.configure(text=view['guidance'])
                     elif result.get('restored'):
                         self.summary.configure(text=tr('已停用并确认恢复'), fg=GREEN)
                         self.detail.configure(text=tr('Q20 配置已恢复，请用电源菜单正常重启，完成提供器收尾。') if result.get('reboot_required') else

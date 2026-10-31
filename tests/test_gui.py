@@ -32,6 +32,35 @@ def report(ready=True, tested=True, installed=False):
 
 
 class GuiTests(unittest.TestCase):
+    def test_unified_preflight_retains_extra_restart_guidance_through_result_rendering(self):
+        from auto_carrier_managed import Adapter
+        from test_auto_carrier_reboot_flow import state
+        adapter = Adapter(MagicMock())
+        adapter.auto = MagicMock()
+        for phone, expected, color in ((state(), '还需一次正常重启', gui.AMBER),
+                (state('running', status_from_current_boot=False), '等待本次开机状态', gui.AMBER),
+                (state('running'), '本次开机注册成功', gui.GREEN)):
+            with self.subTest(expected=expected):
+                adapter.auto.action.return_value = phone
+                value = adapter.inspect()
+                self.app.events.put(('result', ('preflight', {'preflight': value,
+                    'status': gui.public_status(phone), 'registered': True})))
+                self.root.after_cancel(self.app._drain_job)
+                self.app.drain()
+                self.assertIn(expected, self.app.summary.cget('text'))
+                self.assertEqual(self.app.summary.cget('fg'), color)
+                if phone['phase'] == 'carrier_reboot_required':
+                    self.assertIn('已重启，重新检查', self.app.detail.cget('text'))
+
+    def test_unified_enable_is_pending_until_a_normal_boot_is_checked(self):
+        self.app.events.put(('result', ('enable', {'automatic_carrier_selection': True,
+                                                'enabled': True, 'reboot_required': True})))
+        self.root.after_cancel(self.app._drain_job)
+        self.app.drain()
+        self.assertEqual(self.app.summary.cget('fg'), gui.AMBER)
+        self.assertIn('请正常重启', self.app.summary.cget('text'))
+        self.assertIn('Passport', self.app.detail.cget('text'))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

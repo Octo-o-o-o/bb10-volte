@@ -77,7 +77,7 @@ class UnifiedDesktopTests(unittest.TestCase):
         self.assertIn('gsm', details)
         stale['phase'] = 'running'
         stopped_title, unused = status_text(stale)
-        live = dict(stale, manager_alive=True, native_alive=True,
+        live = dict(stale, manager_alive=True, native_alive=True, enabled=True, selected_this_boot=True,
                     current={'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']})
         live_title, live_details = status_text(live)
         self.assertNotEqual(stopped_title, live_title)
@@ -88,7 +88,7 @@ class UnifiedDesktopTests(unittest.TestCase):
             adapter = managed.Adapter(Mock())
             adapter.auto = Mock()
             state = {'variant': variant, 'phase': 'running', 'manager_alive': True,
-                     'native_alive': True, 'status_from_current_boot': True, 'enabled': True,
+                     'native_alive': True, 'status_from_current_boot': True, 'selected_this_boot': True, 'enabled': True,
                      'current': {'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']}}
             adapter.auto.action.return_value = state
             report = adapter.inspect()

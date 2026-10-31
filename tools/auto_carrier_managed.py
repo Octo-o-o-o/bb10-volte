@@ -1,7 +1,8 @@
 """Show the unified installation in the main desktop workflow on both OSes."""
 import time
 from auto_carrier import AutoClient, policy
-from workflow import WorkflowError, registered
+from workflow import WorkflowError
+from auto_carrier_view import registration_ready, status_view
 
 
 class Adapter:
@@ -21,13 +22,14 @@ class Adapter:
         device = identify({'variant': variant, 'board_type': board, 'os_version': policy.OS_VERSION})
         device['hardware_tested'] = False
         alive = state.get('manager_alive') is True
-        ready = registered(state) and state.get('status_from_current_boot') is True
+        view = status_view(state)
+        ready = view['ready']
         checks = [{'id': key, 'status': 'pass', 'code': code} for key, code in (
             ('model', 'device_identified'), ('os', 'os_3216_required'),
             ('root', 'root_qnx_arm32_required'), ('native', 'native_hashes_required'),
             ('installation', 'unified_payload_verified'))]
         checks.append({'id': 'carrier_selection', 'status': 'pass' if ready else 'wait',
-                       'code': 'unified_running' if ready else 'unified_waiting'})
+                       'code': view['check_code']})
         return {'schema': 2, 'managed_adapter': 'unified_carriers', 'checked_at': int(time.time()),
                 'device': device, 'checks': checks, 'status': state,
                 'outcome': 'compatible' if ready else 'not_ready',
@@ -50,7 +52,7 @@ class Adapter:
     def action(self, action):
         if action == 'status':
             report = self.inspect()
-            return {'preflight': report, 'status': report['status'], 'registered': registered(report['status'])}
+            return {'preflight': report, 'status': report['status'], 'registered': registration_ready(report['status'])}
         if action not in ('start', 'enable', 'disable', 'stop'):
             raise WorkflowError(self.install_block_code)
         result = self.auto.action('disable' if action == 'stop' else action)

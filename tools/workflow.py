@@ -78,7 +78,7 @@ def verify_diagnostics():
 
 
 def registered(status):
-    current = status.get('current', {})
+    current = status.get('current') or {}
     return (status.get('phase') == 'running' and status.get('manager_alive') is True and status.get('native_alive') is True and
             current.get('ims') == 'connected' and current.get('register_status') == '200 OK' and
             current.get('ran') in ('LTE', 'lte') and current.get('radio') == ['lte'])
@@ -86,12 +86,17 @@ def registered(status):
 
 def public_status(raw):
     """Whitelist fields; old status files may contain private exception text."""
-    current = raw.get('current', {})
+    current = raw.get('current') or {}
     result = {'phase': raw.get('phase', 'unknown'), 'enabled': raw.get('enabled') is True,
             'manager_alive': raw.get('manager_alive') is True,
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    if raw.get('automatic_carrier_selection') is True:
+        result['automatic_carrier_selection'] = True
+        result['selected_this_boot'] = raw.get('selected_this_boot') is True
+        if raw.get('selected_operator') in ('mobile', 'unicom', 'telecom'):
+            result['selected_operator'] = raw['selected_operator']
     scope = raw.get('ims_observation_scope')
     result['ims_observation_scope'] = scope if scope in ('owned_native', 'system_status_only') else 'unknown'
     wait = raw.get('startup_wait', {})

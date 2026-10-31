@@ -70,11 +70,30 @@ def run(output):
     assert str(automatic.buttons['install'].cget('state')) == 'normal'
     assert automatic.buttons['install'].cget('text') == tr('更新自动适配')
     assert str(automatic.buttons['status'].cget('state')) == 'disabled'
+    # Exercise the actual frozen UI without touching a phone or a connection.
+    reboot = {'phase': 'carrier_reboot_required', 'enabled': True,
+              'status_from_current_boot': True, 'selected_this_boot': True,
+              'selected_operator': 'telecom', 'manager_alive': False, 'native_alive': False,
+              'current': {'ims': None, 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']}}
+    automatic.window.after_cancel(automatic.poll_job)
+    automatic.events.put(('probe', {'variant': 'SQW100-4', 'installed': True, 'status': reboot}, None))
+    automatic.poll()
+    assert automatic.status.cget('text') == tr('还需一次正常重启，适配尚未完成')
+    assert automatic.buttons['status'].cget('text') == tr('已重启，重新检查')
+    assert '200 OK' not in automatic.details.get('1.0', 'end')
+    automatic.window.update_idletasks()
     for widget in list(automatic.buttons.values()) + [automatic.status, automatic.details]:
         x = widget.winfo_rootx() - automatic.window.winfo_rootx()
         y = widget.winfo_rooty() - automatic.window.winfo_rooty()
         assert 0 <= x and x + widget.winfo_width() <= automatic.window.winfo_width()
         assert 0 <= y and y + widget.winfo_height() <= automatic.window.winfo_height()
+    ready = dict(reboot, phase='running', manager_alive=True, native_alive=True,
+                 current={'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']})
+    automatic.window.after_cancel(automatic.poll_job)
+    automatic.events.put(('status', ready, None))
+    automatic.poll()
+    assert automatic.status.cget('text') == tr('本次开机注册成功，请验收通话')
+    assert automatic.buttons['status'].cget('text') == tr('刷新状态')
     automatic.close()
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
@@ -213,6 +232,7 @@ def run(output):
               'payload_files_verified': len(manifest['files']),
               'automatic_carrier_payload_files_verified': len(auto_manifest['files']),
               'automatic_carrier_management_ui_verified': True,
+              'automatic_carrier_extra_reboot_workflow_verified': True,
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
