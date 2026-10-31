@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r5 · Restore LTE in the saved technology selection · 2026-10-31
+
+- Q10 retained a 2G/3G-only selection despite correct attach policy. Use the pinned stock `configure_rats` interface to add LTE, retain other technologies, and require its reply plus both status readbacks.
+- Record the original before writing and restore its technologies and preference on disable. Keep the original unset sentinel -1 in the backup; encode it as the protocol's no-preference mask 0. Preserve independent changes.
+- Passport Telecom r4 passed automatic registration after restart and USB-disconnected bidirectional short calls. r5 and cross-carrier SIM switching still need hardware acceptance.
+
 ## 0.5.0-r4 · Startup restoration and reboot decisions · 2026-10-31
 
 - Track modem-policy changes separately from DCA source repairs. Recreated source files alone no longer require another Passport restart; actual policy changes still require a normal restart.

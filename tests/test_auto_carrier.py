@@ -134,7 +134,8 @@ class DcaTransactionTests(unittest.TestCase):
             elif all(b'ue_usage_setting::voice_centric' in raw for raw in values):
                 self.usage = 0
             return {}
-        patches = [patch.object(d, 'originals', return_value=(self.meta, self.original)),
+        patches = [patch.object(d, 'ensure_lte_mode'),
+            patch.object(d, 'originals', return_value=(self.meta, self.original)),
             patch.object(d.os.path, 'isfile', side_effect=exists), patch.object(d.s, 'load', side_effect=load),
             patch.object(d.s, 'phone_idle', return_value=True), patch.object(d.s, 'boot_token', side_effect=lambda: self.token),
             patch.object(d.n, 'ims_pids', return_value=[]), patch.object(d.n, 'active_vpn_sessions', return_value=[]),

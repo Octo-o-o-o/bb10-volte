@@ -1,7 +1,7 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 4,
+  "desktop_revision": 5,
   "state": "unified_automatic_carrier_candidate_pending_hardware_acceptance",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",

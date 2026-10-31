@@ -3,7 +3,10 @@
 The original four source files are independent of the SIM. Each later SIM
 transition gets its own transaction; no desktop receipt is invented per SIM.
 """
+import errno
+import json
 import os
+import select
 import sys
 import time
 import native as n
@@ -16,6 +19,133 @@ import telecom_native as radio
 BASE = policy.BASE
 BACKUP = BASE + '/backup'
 RECORD = BASE + '/state/dca.json'
+MODE_RECORD = BASE + '/state/radio-mode.json'
+RADIO_CONTROL = '/pps/services/cellular/radioctrl/control'
+RADIO_STATUS = '/pps/services/cellular/radioctrl/status_persistent'
+MODE_STATUS = '/pps/services/radioctrl/modem0/status_persistent'
+CELLULAR_IMAGE = '/radio/bin/cellular-control'
+CELLULAR_HASH = '1fb9b34d9e4b401ce2e7add1dff20f1c8c08dc926d6f25b0ae6b586f122470ec'
+TECH_BITS = ((1, 'gsm'), (2, 'umts'), (4, 'cdma_1x'), (8, 'evdo'), (16, 'lte'))
+
+
+def mode_snapshot():
+    assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
+    raw = n.value(n.attrs(n.read(MODE_STATUS)), 'configure_rats_state')
+    assert isinstance(raw, dict) and set(raw) == {'enabled_technologies', 'preferred_technologies'}, 'unknown_network_mode'
+    enabled, preferred = raw['enabled_technologies'], raw['preferred_technologies']
+    assert type(enabled) is int and 0 < enabled <= 31, 'unknown_network_mode'
+    assert type(preferred) is int and (preferred == -1 or 0 <= preferred <= 31), 'unknown_network_preference'
+    public = n.attrs(n.read(RADIO_STATUS))
+    configured = n.value(public, 'configured_technologies', {})
+    assert set(configured.get('enabled', [])) == {name for bit, name in TECH_BITS if enabled & bit}, 'network_mode_readback_conflict'
+    allowed = n.value(public, 'swoop_technologies', {}).get('enabled', [])
+    assert 'lte' in allowed, 'carrier_lte_not_allowed'
+    return dict(raw)
+
+
+def wire_mode(value):
+    # The stock handler uses -1 as its missing-argument sentinel and rejects it.
+    # Persisted -1 means no preferred technology; the request form is mask 0.
+    result = dict(value)
+    if result['preferred_technologies'] == -1:
+        result['preferred_technologies'] = 0
+    return result
+
+
+def same_mode(first, second):
+    return wire_mode(first) == wire_mode(second)
+
+
+def request_mode(value):
+    # The pinned stock handler at 0x5be5e parses these two integers, calls its
+    # capability/carrier-filtered setter at 0x5ef7c, then persists the selection.
+    # Its 0x5af70 table maps LTE to 16 (the QMI NAS mask uses different bits).
+    value = wire_mode(value)
+    identifier = 'bb10-auto-rat-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
+    request = ('msg::configure_rats\nid::' + identifier + '\ndat:json:' + json.dumps(value) + '\n').encode('ascii')
+    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
+    try:
+        assert os.write(fd, request) == len(request)
+        deadline = time.time() + 15
+        acknowledged = False
+        while time.time() < deadline:
+            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
+            if not ready:
+                break
+            try:
+                reply = n.attrs(os.read(fd, 262144))
+            except OSError as error:
+                if error.errno == errno.EAGAIN:
+                    continue
+                raise
+            if n.value(reply, 'id') != identifier:
+                continue
+            if 'res' in reply or 'err' in reply:
+                assert n.value(reply, 'res') == 'configure_rats' and 'err' not in reply, 'network_mode_rejected'
+                acknowledged = True
+                break
+        assert acknowledged, 'network_mode_reply_timeout'
+    finally:
+        os.close(fd)
+    for unused in range(8):
+        try:
+            if same_mode(mode_snapshot(), value):
+                return
+        except AssertionError as error:
+            if str(error) != 'network_mode_readback_conflict':
+                raise
+        time.sleep(1)
+    raise RuntimeError('network_mode_readback_failed')
+
+
+def ensure_lte_mode(selected):
+    assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+    current = mode_snapshot()
+    previous = s.load(MODE_RECORD) if os.path.isfile(MODE_RECORD) else None
+    if previous:
+        assert previous['owner'] == policy.OWNER
+        if not previous.get('restored'):
+            assert any(same_mode(current, value) for value in (previous['before'], previous['applied'])), 'network_mode_changed'
+    if current['enabled_technologies'] & 16:
+        if previous and not previous.get('restored') and previous.get('phase') != 'ready':
+            previous['phase'] = 'ready'
+            n.atomic(MODE_RECORD, profiles.canonical(previous))
+        return
+    assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'network_mode_requires_fresh_boot'
+    if previous:
+        assert same_mode(current, previous['before']), 'network_mode_changed'
+        record = dict(previous)
+        record['applied'] = wire_mode(record['applied'])
+    else:
+        applied = wire_mode(dict(current, enabled_technologies=current['enabled_technologies'] | 16))
+        record = {'owner': policy.OWNER, 'before': current, 'applied': applied}
+    record.update(boot=s.boot_token(), phase='applying', restored=False,
+                  operator=selected['operator'], sim_sha256=selected['sim_sha256'])
+    n.atomic(MODE_RECORD, profiles.canonical(record))
+    request_mode(record['applied'])
+    assert same_mode(mode_snapshot(), record['applied']), 'network_mode_readback_failed'
+    record['phase'] = 'ready'
+    n.atomic(MODE_RECORD, profiles.canonical(record))
+
+
+def restore_lte_mode():
+    if not os.path.isfile(MODE_RECORD):
+        return
+    record = s.load(MODE_RECORD)
+    assert record['owner'] == policy.OWNER
+    if record.get('restored'):
+        return
+    assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+    current = mode_snapshot()
+    assert any(same_mode(current, value) for value in (record['before'], record['applied'])), 'network_mode_changed'
+    record['phase'] = 'restoring'
+    n.atomic(MODE_RECORD, profiles.canonical(record))
+    if not same_mode(current, record['before']):
+        request_mode(record['before'])
+    observed = mode_snapshot()
+    assert same_mode(observed, record['before']), 'network_mode_restore_unconfirmed'
+    record.update(phase='restored', restored=True, restore_readback=observed)
+    n.atomic(MODE_RECORD, profiles.canonical(record))
 
 
 def context():
@@ -141,6 +271,7 @@ def set_usage(desired, selected):
 
 
 def prepare(selected):
+    ensure_lte_mode(selected)
     desired = 1 if selected['operator'] == 'telecom' else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))
@@ -162,4 +293,6 @@ def prepare(selected):
 
 
 def restore_original():
-    return set_usage(0, {'operator': 'original', 'sim_sha256': None})
+    result = set_usage(0, {'operator': 'original', 'sim_sha256': None})
+    restore_lte_mode()
+    return result

@@ -17,7 +17,9 @@ import telecom_native as radio
 
 BASE = policy.BASE
 PREVIOUS_PAYLOADS = ('7352686da4a229135d7685ffc58c2aae8b1c5c588bcb72fe733799b2336b3a90',
-                     '4f92bfe1a7182b1b03f0aa875b864c27e15572b5d9a06aa5d8503d3f2cbab99b')
+                     '4f92bfe1a7182b1b03f0aa875b864c27e15572b5d9a06aa5d8503d3f2cbab99b',
+                     '93ed64504ccf1845bce246e35dbbeea9a04912c72ceb005be2f863a3ffa222a5',
+                     '5c2d9d893f88d40b6fde943f85722471da8cd3aa3a61ece7e403e03a48c84943')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
