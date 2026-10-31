@@ -168,6 +168,14 @@ class SetupWizard(tk.Toplevel):
         self.copy_download_button.pack(side='left', padx=(8, 0))
         self.domestic_download_button = ttk.Button(links, text=tr('国内下载（极空间）'), command=self.open_domestic_download)
         self.domestic_download_button.pack(side='left', padx=(8, 0))
+        backup_links = ttk.Frame(manual)
+        backup_links.pack(fill='x', pady=(0, 8))
+        self.backup_download_button = ttk.Button(backup_links, text=tr('备用下载（百度网盘）'), command=self.open_backup_download)
+        self.backup_download_button.pack(side='left')
+        self.copy_backup_download_button = ttk.Button(backup_links, text=tr('复制备用链接'), command=self.copy_backup_link)
+        self.copy_backup_download_button.pack(side='left', padx=(8, 0))
+        self.backup_download_hint = ttk.Label(backup_links, wraplength=250)
+        self.backup_download_hint.pack(side='left', padx=(8, 0))
         ttk.Label(manual, text=tr('2. 下载完成后，选择文件或粘贴本地完整路径：'), wraplength=680).pack(anchor='w')
         file_row = ttk.Frame(manual)
         file_row.pack(fill='x', pady=(8, 8))
@@ -241,6 +249,11 @@ class SetupWizard(tk.Toplevel):
                        self.browse_firmware_button, self.import_firmware_button):
             button.configure(state='normal' if ready else 'disabled')
         self.domestic_download_button.configure(state='normal' if ready and item.get('manual_download_url') else 'disabled')
+        backup_url = item.get('backup_manual_download_url') if item else None
+        for button in (self.backup_download_button, self.copy_backup_download_button):
+            button.configure(state='normal' if ready and backup_url else 'disabled')
+        backup_code = item.get('backup_manual_download_code') if backup_url else None
+        self.backup_download_hint.configure(text=tr('百度网盘提取码：{}').format(backup_code) if backup_code else '')
         self.prepare_button.configure(state='normal' if ready and variant in catalog()['auto_root_variants'] and
                                       sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
@@ -368,6 +381,37 @@ class SetupWizard(tk.Toplevel):
         url = item.get('manual_download_url')
         if url and self.open_firmware_download(url):
             self.status.configure(text=tr('已打开极空间。请下载 {}，然后选择文件并校验导入；分享有效期和次数以网页为准。').format(item['file']))
+
+    def open_backup_download(self):
+        if self.busy:
+            return
+        variant = self.firmware_target()
+        if not variant:
+            return
+        item = stock_firmware(variant)
+        url = item.get('backup_manual_download_url')
+        if not url:
+            return
+        if self.open_firmware_download(url):
+            self.status.configure(text=tr('已打开百度网盘。请下载 {}，下载完成后选择文件并校验导入。').format(item['file']))
+        else:
+            self.status.configure(text=tr('未能自动打开百度网盘。请点击“复制备用链接”，在浏览器中手动打开。'))
+
+    def copy_backup_link(self):
+        if self.busy:
+            return
+        variant = self.firmware_target()
+        if not variant:
+            return
+        item = stock_firmware(variant)
+        url = item.get('backup_manual_download_url')
+        if not url:
+            return
+        code = item.get('backup_manual_download_code')
+        text = url + ('\n' + tr('百度网盘提取码：{}').format(code) if code else '')
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.status.configure(text=tr('已复制百度网盘备用链接。请下载 {}，然后校验并导入。').format(item['file']))
 
     def copy_firmware_link(self):
         if not self.busy and self.firmware_target():

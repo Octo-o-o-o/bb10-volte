@@ -285,12 +285,17 @@ class Client:
         if not getattr(self, 'detect_managed', False):
             return None
         if not getattr(self, '_managed_adapter_checked', False):
-            marker = self.remote('if test -d /var/q20_volte; then '
+            marker = self.remote('if test -d /var/bb10_volte; then echo UNIFIED_CARRIERS; '
+                'elif test -d /var/q20_volte; then '
                 'case "$(cat /pps/services/deviceproperties)" in *"modelnumber::SQC100-2"*) '
                 'echo Q20_ACCEPTED_ADAPTER;; *) echo STANDARD;; esac; else echo STANDARD; fi', 15).strip()
             self._managed_adapter_checked = True
+            self._managed_adapter_kind = marker
             self._managed_adapter = None
-            if marker == 'Q20_ACCEPTED_ADAPTER':
+            if marker == 'UNIFIED_CARRIERS':
+                from auto_carrier_managed import Adapter
+                self._managed_adapter = Adapter(self)
+            elif marker == 'Q20_ACCEPTED_ADAPTER':
                 verify_package()
                 from q20_managed import Adapter
                 self._managed_adapter = Adapter(self)
@@ -312,8 +317,10 @@ class Client:
     def install(self, mode='install', start=False):
         if mode not in ('install', 'update'):
             raise WorkflowError('invalid_action')
-        if self.managed_adapter():
-            raise WorkflowError('q20_managed_existing_only')
+        adapter = self.managed_adapter()
+        if adapter:
+            raise WorkflowError('unified_already_installed' if self._managed_adapter_kind == 'UNIFIED_CARRIERS'
+                                else 'q20_managed_existing_only')
         with self.stage(payload=True) as path:
             report = self.inspect_stage(path)
             if not report.get('can_' + mode):

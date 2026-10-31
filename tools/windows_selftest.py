@@ -54,6 +54,23 @@ def run(output):
     root.withdraw()
     app = App(root)
     assert ttk.Style(root).theme_use() == 'bb10'
+    from auto_carrier import verify_package as verify_auto_package
+    from auto_carrier_gui import AutoCarrierWindow
+    auto_manifest = verify_auto_package()
+    automatic = AutoCarrierWindow(root, 'bb10-root', '')
+    automatic.window.attributes('-alpha', 0.0)
+    automatic.window.update()
+    assert str(automatic.buttons['install'].cget('state')) == 'disabled'
+    automatic.report = {'installed': True, 'status': {'enabled': False}}
+    automatic.refresh()
+    assert str(automatic.buttons['enable'].cget('state')) == 'normal'
+    assert str(automatic.buttons['disable'].cget('state')) == 'disabled'
+    for widget in list(automatic.buttons.values()) + [automatic.status, automatic.details]:
+        x = widget.winfo_rootx() - automatic.window.winfo_rootx()
+        y = widget.winfo_rooty() - automatic.window.winfo_rooty()
+        assert 0 <= x and x + widget.winfo_width() <= automatic.window.winfo_width()
+        assert 0 <= y and y + widget.winfo_height() <= automatic.window.winfo_height()
+    automatic.close()
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
     assert editor.value() == app.profile
@@ -70,11 +87,15 @@ def run(output):
     assert wizard.browser_download_button.cget('command')
     assert wizard.browse_firmware_button.cget('command')
     assert wizard.import_firmware_button.cget('command')
+    assert wizard.backup_download_button.cget('command')
+    assert wizard.copy_backup_download_button.cget('command')
     assert wizard.firmware_urls == []
     assert str(wizard.download_firmware_button.cget('state')) == 'disabled'
     wizard.variant.set('SQN100-3')
     assert len(wizard.firmware_urls) == 3
     assert str(wizard.domestic_download_button.cget('state')) == 'normal'
+    assert str(wizard.backup_download_button.cget('state')) == 'normal'
+    assert str(wizard.copy_backup_download_button.cget('state')) == 'normal'
     assert str(wizard.firmware_source.cget('state')) == 'readonly'
     wizard.firmware_source.current(1)
     assert wizard.firmware_source.get() == 'ia600407.us.archive.org'
@@ -87,6 +108,11 @@ def run(output):
         assert item['file'] in wizard.firmware_label.cget('text')
         assert wizard.firmware_urls[0] == item['url']
         assert item['manual_download_url'] not in wizard.firmware_urls
+        backup_url = item['backup_manual_download_url']
+        assert str(wizard.backup_download_button.cget('state')) == 'normal'
+        assert str(wizard.copy_backup_download_button.cget('state')) == 'normal'
+        assert backup_url not in wizard.firmware_urls
+        assert item['backup_manual_download_code'] in wizard.backup_download_hint.cget('text')
         assert str(wizard.domestic_download_button.cget('state')) == 'normal'
         assert str(wizard.download_firmware_button.cget('state')) == 'normal'
         assert str(wizard.prepare_button.cget('state')) == 'disabled'
@@ -100,6 +126,7 @@ def run(output):
     wizard.variant.set('')
     assert wizard.firmware_urls == []
     assert str(wizard.download_firmware_button.cget('state')) == 'disabled'
+    assert str(wizard.backup_download_button.cget('state')) == 'disabled'
     wizard.close()
     from fetch_materials import import_material, fetch_entries
     # Verify the bundled importer under the network-denying audit hook.
@@ -179,6 +206,8 @@ def run(output):
               'bundled_ssh': client.ssh.startswith(str(bundle / 'vendor/openssh')),
               'ssh_version': ssh.stderr.strip(), 'scp_available': True,
               'payload_files_verified': len(manifest['files']),
+              'automatic_carrier_payload_files_verified': len(auto_manifest['files']),
+              'automatic_carrier_management_ui_verified': True,
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,
@@ -191,6 +220,7 @@ def run(output):
               'device_firmware_routing_verified': True,
               'firmware_without_q10_default_verified': True,
               'domestic_manual_download_ui_verified': True,
+              'baidu_backup_download_ui_verified': True,
               'offline_material_import_verified': True,
               'existing_root_recovery_ui_verified': True,
               'connection_help_ui_verified': True,

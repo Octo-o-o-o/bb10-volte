@@ -62,6 +62,8 @@ Source preparation: `python tools/fetch_materials.py --variant SQC100-1 --with-u
 
 For mainland China networks, use **China download (ZSpace)** in the app or the [stock firmware share](https://t3.znas.cn/9jkbxczhAK4), download the filename shown for the selected model, then import it. The read-only folder contains three stock files and verification lists, without login or a passcode. The share was created on 2026-10-30 with a 180-day duration and a maximum of 1,000 uses; current availability follows the share page. Browser share pages are excluded from automatic mirror ranking and resumable transfers. A long-term automatic mirror should expose stable HTTPS file URLs with Range support.
 
+The backup is the [Baidu Netdisk firmware share](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r), access code `fp4r`. Select **Backup download (Baidu)** or **Copy backup link** in the app; copying includes the access code. Download the complete original filename shown for the selected model, then verify and import it. Availability follows the share page; it is not an automatic raw-file mirror.
+
 ## Interrupted or failing downloads
 
 Desktop `0.3.3-r3` adds automatic mirror ranking, failover, cross-mirror resume and verified offline firmware import. Existing EXE/DMG installations need updating. The Q10 archive is about 1.57 GB; status shows the current host, bytes, percentage, speed and switch reason.

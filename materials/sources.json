@@ -34,7 +34,10 @@
       "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
       "manual_download_kind": "browser share page; never a raw HTTP mirror",
       "manual_download_validity_days": 180,
-      "manual_download_maximum_uses": 1000
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
     },
     {
       "id": "libusb",
@@ -104,7 +107,10 @@
       "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
       "manual_download_kind": "browser share page; never a raw HTTP mirror",
       "manual_download_validity_days": 180,
-      "manual_download_maximum_uses": 1000
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
     },
     {
       "id": "stock-passport",
@@ -132,7 +138,10 @@
       "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
       "manual_download_kind": "browser share page; never a raw HTTP mirror",
       "manual_download_validity_days": 180,
-      "manual_download_maximum_uses": 1000
+      "manual_download_maximum_uses": 1000,
+      "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
+      "backup_manual_download_code": "fp4r",
+      "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror"
     }
   ]
 }

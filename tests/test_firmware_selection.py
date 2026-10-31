@@ -38,6 +38,10 @@ class FirmwareSelectionTests(unittest.TestCase):
             item = r.stock_firmware(variant)
             self.assertEqual(item['manual_download_url'], 'https://t3.znas.cn/9jkbxczhAK4')
             self.assertNotIn(item['manual_download_url'], f.source_urls(item))
+            self.assertEqual(item['backup_manual_download_url'],
+                             'https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r')
+            self.assertEqual(item['backup_manual_download_code'], 'fp4r')
+            self.assertNotIn(item['backup_manual_download_url'], f.source_urls(item))
 
     def test_single_detected_device_is_authoritative(self):
         usb = {'usb_count': 1, 'device': {'ModelName': 'SQW100-4'}}

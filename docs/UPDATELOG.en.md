@@ -2,9 +2,20 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r2 · Automatic carrier candidate · 2026-10-31
+
+- Windows and Mac share installation, original backups, legacy migration and SIM selection during phone startup. After installation, change SIM and restart without another flash. See [scope](AUTO-CARRIERS.en.md).
+- Main-window management prioritizes the unified service and blocks legacy reinstallation; add re-enable control.
+- r2 changes desktop management only; phone payload bytes match r1. Q20 Mobile passed restart, USB-disconnected and bidirectional short calls; other combinations and SIM changes remain under acceptance.
+
 ## 0.4.0-r1 · Local Telecom candidate · 2026-10-31
 
 Accepted Q20 SQC100-2 Telecom bidirectional short calls, normal restart recovery and calls without USB. Added hash-pinned management of its existing legacy Root adapter, and a manual Q10 SQN100-3 / 460-11 attach port with independently verified desktop backups and the original LTE-before-IMS gate. Passport lifecycle restrictions remain. Added peer-report comparison and carrier path/content verification. See [scope and limits](TELECOM-PORT.en.md).
+
+## 0.3.3-r9 · Baidu Netdisk backup download · 2026-10-31
+
+- Add a browser backup for Q10, Classic / Q20, and Passport / Q30, displaying the access code and copying the complete share information.
+- Retain ZSpace and model-specific import verification. Baidu share pages are excluded from automatic speed ranking, raw-file downloads and resumable transfers.
 
 ## 0.3.3-r8 · Firmware downloads by hardware model · 2026-10-30
 

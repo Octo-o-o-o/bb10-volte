@@ -11,6 +11,8 @@ Current source also presents the same I01–I06 incoming-configuration observati
 
 [简体中文](GUI.md)
 
+Desktop `0.3.3-r9` firmware downloads also provide **Backup download (Baidu)** and **Copy backup link**. When an access code is required, it appears beside the buttons and is copied with the share URL. Download the original filename shown for the selected model, then use **Verify and import firmware**. Share pages remain outside automatic mirror ranking and resumable transfers.
+
 The local `0.3.3-r4` diagnostic test build recognizes Telecom `ctlte`. Check details and exported reports distinguish profile matching, actual data connectivity and individual baseline configuration observations. Only fixed public APN names are exported; other names become `other`. Existing custom profiles are not silently changed: reselect the Telecom template or review its APN list. Non-default settings do not establish corruption or ownership; preflight never resets an APN or deletes overrides. Old reports lack these details. Device data and baseline gates still apply, and Q20 Telecom hardware acceptance is pending.
 
 Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. Passport automatic installation, start and restore are paused; see [community research](COMMUNITY-RESEARCH.en.md).

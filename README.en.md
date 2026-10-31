@@ -6,9 +6,11 @@
 
 A toolkit for native **VoLTE / 4G calling** on **BlackBerry 10 (BB10)** phones, including **Q10, Classic (Q20) and Passport (often called Q30)**. It provides source code, a Windows EXE and a macOS DMG; original project code uses the [MIT license](LICENSE).
 
-Desktop `0.3.3-r8` selects Q10, Classic (Q20), or Passport (Q30) firmware by exact hardware model for automatic downloads, browser links, and local imports. Missing, conflicting, or multiple-device identification never defaults to Q10. Disconnect devices to explicitly select a model for offline preparation. Automatic Root building and flashing remain Q10-only. See [First use](docs/FIRST-RUN.en.md).
+**Current local candidate 0.5.0-r2:** Windows and Mac share an Automatic carrier setup workflow for rooted Q10 SQN100-3, Q20 SQC100-2 and Passport SQW100-4 on OS 10.3.3.3216, with Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIMs without ISIM. After installation, change SIM and boot normally; configuration is generated on the phone without another computer connection or flash. Passport may require a second restart when its Telecom attach policy changes. **Hardware acceptance of all nine combinations is ongoing.** The new Q20 Mobile payload has passed restart, USB-disconnected and bidirectional short-call checks. See [scope and use](docs/AUTO-CARRIERS.en.md). The 0.3/0.4 records below are historical baselines. The legacy Passport installer remains gated; the new workflow retains the provider until restart.
 
-Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.cn/9jkbxczhAK4), then verify and import the file for the selected model, or choose **China download (ZSpace)** in the app. Availability follows the share expiration and usage limit. Stock files contain no owner-specific Root images or keys.
+Desktop `0.3.3-r9` selects Q10, Classic (Q20), or Passport (Q30) firmware by exact hardware model for automatic downloads, browser links, and local imports. Missing, conflicting, or multiple-device identification never defaults to Q10. Disconnect devices to explicitly select a model for offline preparation. Automatic Root building and flashing remain Q10-only. See [First use](docs/FIRST-RUN.en.md).
+
+Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.cn/9jkbxczhAK4), then verify and import the file for the selected model, or choose **China download (ZSpace)** in the app. Availability follows the share expiration and usage limit. Stock files contain no owner-specific Root images or keys. Revision `0.3.3-r9` also adds **Backup download (Baidu)** and **Copy backup link**, with the access code displayed and copied. Downloaded files still undergo model-specific import verification.
 
 **Background:** These 4G phones could use messaging and data on 4G while voice calls fell back to 2G/3G; as carriers retire those networks in users' regions, default voice calling may stop working, which motivated this project.
 
@@ -37,9 +39,9 @@ The stock `/radio/bin/ims_rrm` is not overwritten. Original firmware files must 
 
 | Component | Requirement / recorded environment |
 | --- | --- |
-| Phone | **BlackBerry Q10 SQN100-3**; other Q10 variants and Q20 remain experimental; Passport automatic operations are paused, with preflight/report export available |
+| Phone | Unified candidate: **Q10 SQN100-3, Q20 SQC100-2, Passport SQW100-4**; per-device and per-SIM acceptance is in progress. Other variants are outside this scope |
 | Phone operating system | **BlackBerry 10 OS 10.3.3.3216**; the firmware archive is named `Q10_10.3.03.3216_SQN100-1-2-3-4-5.7z`. Exact native file hashes are enforced by the installer |
-| SIM and network | **China Unicom 460-01 USIM in Beijing**, working LTE data and a subscription confirmed to support VoLTE; the tested SIM had no ISIM |
+| SIM and network | Unified candidate: Mobile **460-00**, Unicom **460-01**, Telecom **460-11** USIM without ISIM; a VoLTE subscription and per-SIM LTE data/call acceptance are required |
 | Phone access | Working **root SSH**, the owner's private key and a verified host key; the service uses the AutoRoot v4 addon mechanism |
 | Computer | **Windows 11 x64**; a Mac mini / **Apple M6, macOS 27.2** passed existing Root/VoLTE connection, status and calling checks. r6 adds experimental initial Root on macOS 14+, without hardware first-flash acceptance. Linux deployment remains untested |
 | Desktop Python | **Not required for EXE/DMG users**; source execution / full Root preparation uses Python 3.14 (tested 3.14.9), including Tk and Zstandard tar support |

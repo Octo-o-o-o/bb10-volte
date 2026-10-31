@@ -1,9 +1,9 @@
 {
   "name": "bb10-volte",
-  "version": "0.4.0",
-  "desktop_revision": 6,
-  "state": "q10_telecom_short_calls_reboot_and_operator_name_accepted",
+  "version": "0.5.0",
+  "desktop_revision": 2,
+  "state": "unified_automatic_carrier_candidate_pending_hardware_acceptance",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Q20 SQC100-2 and Q10 SQN100-3 Telecom short calls, normal reboot and calls without USB accepted; Q10 carrier name automatically restored after r6 normal reboot; per-SIM acceptance gate; Passport lifecycle gate retained"
+  "scope": "Unified phone-local SIM selection for SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; 460-00, 460-01, 460-11 USIM without ISIM; new payload and SIM transitions require hardware acceptance"
 }

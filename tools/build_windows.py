@@ -54,6 +54,8 @@ def runtime_data():
                          'materials/sources.json', 'materials/stock-partitions.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
+    from auto_carrier import PAYLOAD_FILES
+    names.update(set(PAYLOAD_FILES) | {'materials/unified-payload.json'})
     names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',
                   'materials/q20-mobile-validation-2026-10-31.json',
                   'materials/q20-device-validation-2026-10-30.json',
@@ -153,7 +155,8 @@ def main():
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
     assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
-            'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en'} <= set(archive_modules)
+            'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
+            'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'carrier_policy', 'unified_service'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')

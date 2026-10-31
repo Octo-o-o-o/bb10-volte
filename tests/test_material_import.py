@@ -313,6 +313,68 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.wizard.variant.set('')
         self.assertEqual(str(self.wizard.domestic_download_button.cget('state')), 'disabled')
 
+    def test_backup_share_preserves_each_selected_firmware_and_never_uses_the_downloader(self):
+        for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
+            self.wizard.variant.set(variant)
+            item = dict(root_setup.stock_firmware(variant),
+                        backup_manual_download_url='https://example.invalid/baidu/' + variant,
+                        backup_manual_download_code='b10x')
+            with patch.object(w, 'stock_firmware', return_value=item), \
+                    patch.object(w.webbrowser, 'open', return_value=True) as browser, \
+                    patch.object(w, 'download_stock_firmware') as fetch:
+                self.wizard.refresh()
+                self.wizard.backup_download_button.invoke()
+            browser.assert_called_once_with(item['backup_manual_download_url'], new=2)
+            fetch.assert_not_called()
+            self.assertNotIn(item['backup_manual_download_url'], self.wizard.firmware_urls)
+            self.assertIn(item['file'], self.wizard.status.cget('text'))
+            self.assertIn('b10x', self.wizard.backup_download_hint.cget('text'))
+
+    def test_copy_backup_includes_baidu_share_url_and_access_code(self):
+        item = dict(root_setup.stock_firmware('SQN100-3'),
+                    backup_manual_download_url='https://example.invalid/baidu/q10',
+                    backup_manual_download_code='b10x')
+        with patch.object(w, 'stock_firmware', return_value=item), \
+                patch.object(self.wizard, 'clipboard_clear') as clear, \
+                patch.object(self.wizard, 'clipboard_append') as append:
+            self.wizard.refresh()
+            self.wizard.copy_backup_download_button.invoke()
+        clear.assert_called_once_with()
+        append.assert_called_once_with(item['backup_manual_download_url'] + '\n百度网盘提取码：b10x')
+        self.assertIn(item['file'], self.wizard.status.cget('text'))
+
+    def test_backup_is_disabled_without_a_link_and_while_busy_or_model_is_ambiguous(self):
+        item = dict(root_setup.stock_firmware('SQN100-3'))
+        item.pop('backup_manual_download_url', None)
+        with patch.object(w, 'stock_firmware', return_value=item), \
+                patch.object(w.webbrowser, 'open') as browser:
+            self.wizard.refresh()
+            self.assertEqual(str(self.wizard.backup_download_button.cget('state')), 'disabled')
+            self.wizard.open_backup_download()
+        browser.assert_not_called()
+        item['backup_manual_download_url'] = 'https://example.invalid/baidu/q10'
+        with patch.object(w, 'stock_firmware', return_value=item), \
+                patch.object(w.webbrowser, 'open') as browser:
+            self.wizard.busy = True
+            self.wizard.refresh()
+            self.wizard.open_backup_download()
+            self.assertEqual(str(self.wizard.backup_download_button.cget('state')), 'disabled')
+            self.wizard.busy = False
+            self.wizard.usb = {'usb_count': 2}
+            self.wizard.refresh()
+            self.wizard.open_backup_download()
+            self.assertEqual(str(self.wizard.backup_download_button.cget('state')), 'disabled')
+        browser.assert_not_called()
+
+    def test_backup_browser_failure_points_to_the_backup_copy_action(self):
+        item = dict(root_setup.stock_firmware('SQN100-3'),
+                    backup_manual_download_url='https://example.invalid/baidu/q10')
+        with patch.object(w, 'stock_firmware', return_value=item), \
+                patch.object(w.webbrowser, 'open', side_effect=OSError('browser unavailable')):
+            self.wizard.refresh()
+            self.wizard.backup_download_button.invoke()
+        self.assertIn('复制备用链接', self.wizard.status.cget('text'))
+
 
 if __name__ == '__main__':
     unittest.main()

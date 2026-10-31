@@ -29,6 +29,9 @@ NAMES = {'model': tr('手机型号'), 'os': tr('系统版本'), 'root': tr('Root
          'provider_lifecycle': tr('机型恢复验证'), 'autostart_policy': tr('开机启动验证')}
 NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'))
 NOTES = {
+    'unified_payload_verified': tr('三网自动适配文件及原始备份回执已核验。'),
+    'unified_running': tr('本次开机自动选择的运营商已注册；双向通话仍需实机确认。'),
+    'unified_waiting': tr('自动适配尚未完成注册。首次安装或换卡后请正常重启，再查看状态。'),
     'telecom_attach_manual_port': tr('Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。'),
     'telecom_attach_owned': tr('当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。'),
     'telecom_recorded_acceptance': tr('这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。'),
@@ -80,6 +83,8 @@ NOTES = {
     'baseline_not_clean': tr('配置或服务状态不符合安装前条件，具体项目见检查详情。尚未安装本工具时，需先核实已有配置来源。'),
 }
 ERRORS = {
+    'unified_already_installed': tr('手机已安装三网自动适配。请使用“三网自动适配”管理现有服务。'),
+    'unified_package_mismatch': tr('手机自动适配版本与程序不匹配。请保留当前安装并导出报告。'),
     'telecom_backup_not_verified': tr('原始电信配置尚未完成电脑备份和散列核验，未允许入网修改。请保留现场并重新检查。'),
     'q20_managed_existing_only': tr('这台 Q20 使用已验收的独立适配；请管理现有服务，通用安装器不会覆盖它。'),
     'provider_lifecycle_needs_adaptation': tr('此机型的提供器停用策略尚未验证。请保留当前状态并导出报告，参阅“社区研究与适配进展”。'),
@@ -112,6 +117,11 @@ PHASES = {'package': tr('校验安装包'), 'connection': tr('连接设备'), 't
           'start': tr('启动服务'), 'registration': tr('验证 IMS 注册'), 'restore': tr('停用并恢复'),
           'stage_cleanup': tr('临时检查文件清理')}
 SERVICE_PHASES = {'waiting_for_native_ims': tr('等待系统 IMS 初始化结束'),
+                  'waiting_for_sim': tr('等待 SIM 就绪'),
+                  'waiting_for_lte_and_usim': tr('等待 SIM 和正常 LTE 数据服务'),
+                  'reboot_required': tr('请使用手机电源菜单正常重启'),
+                  'carrier_reboot_required': tr('运营商入网策略已保存，请再正常重启一次'),
+                  'unsupported_sim': tr('当前 SIM 不在支持范围内，未启动自动适配'),
                   'telecom_bootstrap_configuring': tr('准备电信入网策略'),
                   'telecom_waiting_for_lte_data': tr('等待电信 LTE 数据入网'),
                   'configuration_restored_reboot_required': tr('配置已恢复，正常重启完成收尾'),
@@ -184,6 +194,8 @@ class App:
         header = tk.Frame(main, bg=BG)
         header.pack(fill='x')
         self.label(header, 'BB10 VoLTE', 22, bold=True).pack(side='left')
+        self.auto_carrier_button = ttk.Button(header, text=tr('三网自动适配'), command=self.auto_carrier)
+        self.auto_carrier_button.pack(side='left', padx=20)
         self.more_button = ttk.Menubutton(header, text=tr('更多'))
         self.more_button.pack(side='right')
         self.menu = tk.Menu(self.more_button, tearoff=False, font=(FONT, 11))
@@ -361,7 +373,10 @@ class App:
         for widget in (self.config_entry, self.host_entry, self.browse_button, self.edit_button,
                        self.experiment_check, self.ack_check, self.setup_button):
             widget.configure(state='disabled' if self.busy else 'normal')
-        managed = r.get('managed_adapter') == 'q20_root_v2'
+        managed = r.get('managed_adapter') in ('q20_root_v2', 'unified_carriers')
+        self.menu.entryconfigure(self.menu_actions['enable'], label=tr('启用自动适配')
+            if r.get('managed_adapter') == 'unified_carriers' else tr('启用已验收的开机恢复'))
+        self.auto_carrier_button.configure(state='disabled' if self.busy else 'normal')
         accepted_telecom = r.get('hardware_validation') == 'q10_telecom_per_sim_accepted'
         self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
         self.edit_button.configure(state='disabled' if self.busy or managed else 'normal')
@@ -411,6 +426,8 @@ class App:
             badge = tr('Passport 恢复策略待验证')
         elif report.get('managed_adapter') == 'q20_root_v2':
             badge = tr('Q20 运营商适配')
+        elif report.get('managed_adapter') == 'unified_carriers':
+            badge = tr('三网自动适配 · 实机验收版')
         elif report.get('hardware_validation') == 'q10_telecom_per_sim_accepted':
             badge = tr('Q10 电信：本机与当前 SIM 已验收')
         display_name = device.get('display_name', tr('未知设备'))
@@ -448,7 +465,10 @@ class App:
         baseline_blocked = any(c['id'] == 'baseline' and c['status'] != 'pass' for c in problems)
         if baseline_blocked and outcome in ('compatible', 'experimental'):
             title, color = tr('安装前状态需处理'), AMBER
-        if report.get('can_restore') is False:
+        if report.get('managed_adapter') == 'unified_carriers':
+            title, color = tr('三网自动适配已安装'), GREEN if registered(service_status or report.get('status', {})) else AMBER
+            detail = tr('换卡并正常重启后由手机选择运营商，无需再次连接电脑。管理和恢复请使用“三网自动适配”。')
+        elif report.get('can_restore') is False:
             detail = tr('此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。')
         elif state == 'busy':
             detail = tr('已有服务正在运行或持有锁。更新前请先停用并恢复；本次不会覆盖安装。')
@@ -469,6 +489,12 @@ class App:
         self.detail.configure(text=detail)
         self.refresh_buttons()
 
+    def auto_carrier(self):
+        if self.busy:
+            return
+        from auto_carrier_gui import AutoCarrierWindow
+        AutoCarrierWindow(self.root, self.host.get().strip(), self.config.get().strip())
+
     def run(self, action):
         if not self.allowed_actions().get(action):
             return
@@ -485,6 +511,9 @@ class App:
                 message += tr(' Q20 会保留软件提供器至正常重启；请在恢复完成后用电源菜单重启。')
             if action == 'enable':
                 message = tr('将按当前设备、配置和 SIM 的实机验收记录启用开机恢复。')
+            if (self.report or {}).get('managed_adapter') == 'unified_carriers':
+                message = (tr('将停用自动适配并恢复其配置，恢复后请正常重启。') if action == 'disable' else
+                           tr('将启用自动适配；请正常重启，由手机识别当前 SIM。'))
             if not messagebox.askokcancel(tr('确认设备操作'), message + tr('\n\n请保持 USB 连接，操作期间不要换卡或拨打电话。'), parent=self.root):
                 return
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
@@ -588,7 +617,13 @@ class App:
                     if action != 'preflight':
                         # Every device action invalidates previously enabled mutation buttons.
                         self.report, self.report_connection = None, None
-                    if result.get('restored'):
+                    if result.get('automatic_carrier_selection') and result.get('disabled'):
+                        self.summary.configure(text=tr('已关闭自动启动。请等待恢复完成，再正常重启。'), fg=AMBER)
+                        self.detail.configure(text=tr('原始备份和旧版本文件仍保留，可用于恢复。'))
+                    elif result.get('automatic_carrier_selection') and result.get('enabled'):
+                        self.summary.configure(text=tr('已启用自动适配，请正常重启。'), fg=GREEN)
+                        self.detail.configure(text=tr('重启后由手机识别当前 SIM，无需再次连接电脑。'))
+                    elif result.get('restored'):
                         self.summary.configure(text=tr('已停用并确认恢复'), fg=GREEN)
                         self.detail.configure(text=tr('Q20 配置已恢复，请用电源菜单正常重启，完成提供器收尾。') if result.get('reboot_required') else
                                               tr('恢复检查通过。再次安装或更新前，请重新预检。'))
