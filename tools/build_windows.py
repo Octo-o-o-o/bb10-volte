@@ -55,6 +55,7 @@ def runtime_data():
                          'materials/usb-drivers.json', 'materials/first-run-tools.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
     names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',
+                  'materials/q20-mobile-validation-2026-10-31.json',
                   'materials/q20-device-validation-2026-10-30.json',
                   'materials/q10-telecom-validation-2026-10-31.json',
                   'materials/q10-operator-name-validation-2026-10-31.json',

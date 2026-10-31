@@ -35,7 +35,7 @@ NOTES = {
     'telecom_attach_needs_adaptation': tr('电信入网前置流程仅开放散列和原始配置一致的 Q10 SQN100-3 手动试用；Q20 使用已验收的独立适配，Q30 仍待适配。'),
     'q20_root_v2_verified': tr('已验证现有 Q20 旧 Root 适配，无需更换 Root 方案。'),
     'q20_adapter_verified': tr('现有 Q20 适配的全部固定文件校验通过；App 可查询、手动启动或停用恢复。'),
-    'q20_boot_accepted': tr('此 Q20 460-11 组合已有正常重启和拔 USB 双向短通话记录；当前状态仍需现场核验。'),
+    'q20_boot_accepted': tr('Q20 开机入口已核验；请参照当前运营商的实机验收记录。'),
     'q20_boot_hook_changed': tr('Q20 开机入口与已验收版本不同，自动恢复需要复核；请保留当前配置并导出报告。'),
     'carrier_selection_conflict': tr('配置选择路径与当前服务的文件不一致。保留现场，核对 XML 内容与运营商，避免套用其他运营商数据配置。'),
     'device_identified': tr('已自动识别型号和硬件变体；实测状态见顶部'),
@@ -410,7 +410,7 @@ class App:
         elif any(c['code'] == 'passport_provider_lifecycle_unvalidated' for c in report['checks']):
             badge = tr('Passport 恢复策略待验证')
         elif report.get('managed_adapter') == 'q20_root_v2':
-            badge = tr('Q20 电信短通话与重启已验收')
+            badge = tr('Q20 运营商适配')
         elif report.get('hardware_validation') == 'q10_telecom_per_sim_accepted':
             badge = tr('Q10 电信：本机与当前 SIM 已验收')
         display_name = device.get('display_name', tr('未知设备'))

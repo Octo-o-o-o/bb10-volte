@@ -26,5 +26,11 @@
   },
   "boot_hook_sha256": "bdcd111afbbfe802e4489a85a4c6eb2e0ba0b8dbe8a429f01ea88045e8b4d501",
   "validation_record": "q20-device-validation-2026-10-30.json",
-  "probe_sha256": "30345d4d7ac3eaef8fe1a074c3e1d469ebd0d529f250685357e6d1dcf35a1cd6"
+  "probe_sha256": "fd70d670e5433d5f4b8604523d87ae6d21cfebff0f5e590657b055831052c92e",
+  "additional_manifest_sha256": [
+    "2451f798ac121462aea5fb53ebd3f87179b00dfda5aa0bb96d82aa1cc5e174f5"
+  ],
+  "additional_profile_validation": {
+    "q20-sqc100-2-mobile-46000": "q20-mobile-validation-2026-10-31.json"
+  }
 }

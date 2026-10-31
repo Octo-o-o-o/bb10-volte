@@ -73,7 +73,9 @@ def inspect(q):
                 baseline.get('crypto') == {'swcr_id': -1, 'crypto_support': 0} and
                 baseline.get('ims_count') == 0 and baseline.get('vpn_count') == 0 and
                 baseline.get('clean_configuration') is True and q.s.phone_idle())
-    current_card = network.get('mcc') == '460' and network.get('mnc') == '11' and network.get('sim_state') == 'READY'
+    carrier = request['profile']['carrier']
+    current_card = (network.get('mcc') == carrier['mcc'] and
+                    network.get('mnc') in carrier['mncs'] and network.get('sim_state') == 'READY')
     checks.append({'id': 'baseline', 'status': 'pass' if pristine else 'wait',
                    'code': 'baseline_clean' if pristine else 'baseline_not_clean'})
     alive = state.get('manager_alive') is True
@@ -107,7 +109,7 @@ def inspect(q):
             'outcome': 'compatible' if current_card and path_ok else 'needs_adaptation',
             'can_install': False, 'can_update': False, 'can_enable': False,
             'can_start': pristine and current_card, 'can_restore': True,
-            'hardware_validation': 'q20_sqc100_2_46011_short_calls_and_normal_reboot',
+            'hardware_validation': 'q20_sqc100_2_' + carrier['mcc'] + ''.join(carrier['mncs']) + '_see_validation_record',
             'provider_lifecycle': 'retain_provider_until_normal_reboot'}
 
 
@@ -117,6 +119,10 @@ def perform(q, action):
     if action == 'prepare':
         report = inspect(q)
         assert report['can_start'] is True
+        if q.s.ACTIVE_PROFILE['carrier']['mncs'] != ['11']:
+            q.precheck()
+            return {'prepared': True, 'backup_required': False,
+                    'profile_sha256': q.profiles.fingerprint(q.s.ACTIVE_REQUEST)}
         import q20_telecom_dca_usage_phone as dca
         try:
             q.precheck()

@@ -34,12 +34,17 @@ class Adapter:
             raise WorkflowError('package_mismatch') from None
         stage = '/var/q20_app_probe_' + uuid.uuid4().hex[:12]
         c = self.client
+        raw = c.remote(GUARD + 'cat ' + BASE + '/payload-manifest.json').encode('ascii')
+        expected = hashlib.sha256(raw).hexdigest()
+        accepted = {spec['manifest_sha256']} | set(spec.get('additional_manifest_sha256', []))
+        if expected not in accepted:
+            raise WorkflowError('package_mismatch')
         c.remote(GUARD + 'test ! -e ' + stage + ' && mkdir -m 700 ' + stage)
         c.process([c.scp, '-S', c.ssh, '-O', '-q'] + c.options +
                   [str(source), c.host + ':' + stage + '/probe.py'], 40)
         output = c.remote(GUARD + '/proc/boot/pathtrust !' + stage + '/probe.py && ' + ENV +
                           '/usr/bin/python3.2 ' + stage + '/probe.py ' + shlex.quote(action) +
-                          ' ' + spec['manifest_sha256'], 180)
+                          ' ' + expected, 180)
         try:
             return json.loads(output)
         except ValueError:
@@ -103,7 +108,12 @@ class Adapter:
                         'registration': 'verified' if registered(report['status']) else 'pending'}
             if not report['can_start']:
                 raise WorkflowError('preflight_blocked', report)
-            self.backup(self.invoke('prepare'))
+            plan = self.invoke('prepare')
+            if report['profile_parameters']['carrier']['mncs'] == ['11']:
+                self.backup(plan)
+            elif not (plan.get('prepared') is True and plan.get('backup_required') is False and
+                      plan.get('profile_sha256') == report['profile_sha256']):
+                raise WorkflowError('preflight_blocked', report)
             self.invoke('start')
             return self.client.wait_registration(timeout=report['profile_parameters']['runtime']['registration_wait_seconds'])
         if action in ('stop', 'disable'):
