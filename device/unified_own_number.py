@@ -67,7 +67,7 @@ def synchronize(n, pid, boot, imsi, configured_sim_fingerprint, apply=True):
     assert configured_sim_fingerprint == fingerprint, 'SIM changed since this native IMS process was configured'
     old = load(n, JOURNAL) if os.path.isfile(JOURNAL) else None
     cached = (old and old.get('owner') == 'q20-own-number-display-v1' and old.get('boot') == boot
-              and old.get('sim_fingerprint') == fingerprint and old.get('phase') == 'applied')
+              and old.get('sim_fingerprint') == fingerprint and old.get('phase') in ('applied', 'write_pending'))
     if cached:
         number = old['number']
     else:
@@ -87,7 +87,7 @@ def synchronize(n, pid, boot, imsi, configured_sim_fingerprint, apply=True):
               'cache_fields_to_write': len(changes), 'sim_write_requests': 0, 'radio_setting_write_requests': 0}
     if not apply:
         return result
-    if not changes:
+    if not changes and cached and old['phase'] == 'applied':
         result.update(display_updated=True, readback_verified=True)
         return result
     if old and not cached:
@@ -95,9 +95,17 @@ def synchronize(n, pid, boot, imsi, configured_sim_fingerprint, apply=True):
         if not os.path.isdir(history):
             os.mkdir(history, 0o700)
         n.atomic(history + '/before-' + str(int(time.time())) + '.json', json.dumps(old).encode('ascii'))
+    restore_before = dict(before)
+    if old and old.get('owner') == 'q20-own-number-display-v1' and old.get('sim_fingerprint') != fingerprint:
+        # A display value owned by the previous SIM is not this SIM's original
+        # value. Stopping the new service must not bring the old number back.
+        for path, value in before.items():
+            if value == stale_owned:
+                restore_before[path] = ':'
     journal = old if cached else {'owner': 'q20-own-number-display-v1', 'boot': boot,
-        'sim_fingerprint': fingerprint, 'before': before, 'number': number,
+        'sim_fingerprint': fingerprint, 'before': restore_before, 'number': number,
         'source': 'current_native_REGISTER_200_on_boot_and_SIM_pinned_PID', 'changed_paths': changes}
+    journal['changed_paths'] = sorted(set(journal.get('changed_paths', journal['before'])) | set(changes))
     journal['phase'] = 'write_pending'
     n.atomic(JOURNAL, json.dumps(journal).encode('ascii'))
     for path in changes:

@@ -206,7 +206,7 @@ def restore(previous_boot=False):
             unified_operator_name.restore(selected, boot_token())
         except Exception as error:
             save(BASE + '/state/operator-name-status.json', {'error_type': type(error).__name__})
-        if selected['family'] == 'classic' and not previous_boot:
+        if not previous_boot:
             try:
                 import unified_own_number
                 unified_own_number.restore(n, boot_token(), s.current_usim())
@@ -309,7 +309,7 @@ def collect():
     except Exception as error:
         save(BASE + '/state/operator-name-status.json', {'error_type': type(error).__name__})
     current = live()
-    if selected['family'] == 'classic' and current['ims'] == 'connected' and current['register_status'] == '200 OK':
+    if current['ims'] == 'connected' and current['register_status'] == '200 OK':
         try:
             import unified_own_number
             result = unified_own_number.synchronize(n, s.j['native_pid'], boot_token(), s.current_usim(),

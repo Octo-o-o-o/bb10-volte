@@ -2,7 +2,7 @@
   "schema": 1,
   "owner": "bb10-unified-carriers-v1",
   "version": "0.5.0",
-  "desktop_revision": 7,
+  "desktop_revision": 8,
   "files": {
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
     "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
@@ -14,13 +14,13 @@
     "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
     "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
     "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
-    "device/unified_service.py": "1ac118e56240194117245e17c60474762a6cdc9cf0a033fd6383f188c8637cf7",
+    "device/unified_service.py": "b85af72805abf614ec63cc0935db2da2b5ecfb876abef3dcf03c0429b7b1901a",
     "device/unified_dca.py": "a49ad390115cd6dfd89cd01121d80d24dcde46f7294f69051175bbe149055cef",
-    "device/unified_install.py": "a89b68da942f510af423657f74dcb96adc4d363f7b27f005c8eb79f9c7e907c2",
+    "device/unified_install.py": "69c552c86eb6cf607a0a4b5d26eb2eeef6f758b5764d5080f176694bd188b90c",
     "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
     "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
     "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
-    "device/unified_own_number.py": "d46176dbfcc57d097878017f93e6fa55fc79347110008216485145178ec4280e",
+    "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
   }
 }
