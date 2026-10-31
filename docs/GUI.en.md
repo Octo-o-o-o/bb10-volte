@@ -1,5 +1,12 @@
 # bb10-volte
 
+<!-- unified-current:start -->
+**Current local candidate 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
+
+The 0.3/0.4 notes below preserve the history of the legacy single-carrier, connection and initial-Root workflows. Their legacy Passport installer restrictions are separate from the new unified entry.
+<!-- unified-current:end -->
+
+
 The `0.3.3-r8` Initial Root page adds **Download matching firmware**. Identifying one phone selects its exact hardware model and updates the filename, browser links, and import verification together. Download and Root preparation recheck the USB model before fetching files. Unknown, multiple, or conflicting devices stop the action without a Q10 fallback. Changing models clears the previous image selection and import path. Explicit offline selection is available with no phone connected. Q20 / Q30 firmware downloads are supported; automatic Root building and flashing remain Q10-only.
 
 

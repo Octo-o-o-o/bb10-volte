@@ -2,6 +2,16 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r8 · Q10 and Passport own-number display · 2026-11-01
+
+Q10 could call after switching to Unicom while its dialer number remained blank; the unified service previously invoked authenticated number filling only on Q20. r8 enables it for all three supported models, retaining current-boot, current-SIM and native-process REGISTER-200 proof. Display-cache updates and restoration do not write SIM records or radio settings.
+
+The update also prevents a previous SIM's number from becoming the new SIM's rollback value, preserves rollback state across interrupted writes, and caches fresh authentication even when the display is already correct. Recognized r7 payloads can be backed up and upgraded. Attach policy and the IMS engine retain r7 content.
+
+The shared Windows/Mac workflow now shows an explicit additional-restart stage, its reason and a **Restarted — check again** button. Both windows derive readiness from the current boot; old registration cache, LTE alone or just enabling startup cannot show registration success. Reconnection triggers a fresh check, and a disabled update first prompts enabling, avoiding repeated restarts or reinstalls.
+
+The full regression run contains 473 tests: 472 passed and one skipped. The owner confirmed Q10's correct Unicom number; its r8 USB-disconnected outgoing call lasted 48.268 seconds, with all samples on LTE. Passport r8 registered automatically on Telecom after its second normal boot. Hardware calls, SIM changes and number-display checks retain their actual payload versions. See the current [acceptance matrix](../materials/unified-carrier-acceptance.json) and [unified workflow](AUTO-CARRIERS.en.md).
+
 ## 0.5.0-r7 · Q10 Mobile LTE retention policy · 2026-10-31
 
 r7 acceptance update: r6 passed automatic registration after normal boot and USB-disconnected bidirectional calls on Q20 Telecom and Passport Unicom. Established calls lasted 58.3/54.1 and 36.9/37.7 seconds respectively; all 450 samples on each device were LTE. The owner cancelled an earlier unanswered Q20 outgoing call. Q10 Mobile r6 initially registered but later received network rejection cause 18; the modem removed LTE from its enabled technologies (19 to 3), and calls failed. This run did not pass. r7 adds backed-up data-centric setup specifically for Q10 Mobile, retains the existing Telecom policy, and restores the original policy on switching to Unicom. Hardware retesting remains pending; all nine combinations have not passed. Passport Unicom still has a blank own-number field, recorded separately as a display limitation. A number or 4G icon does not establish calling acceptance.

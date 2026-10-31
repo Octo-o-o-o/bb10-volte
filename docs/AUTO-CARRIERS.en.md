@@ -1,37 +1,45 @@
-# Automatic carrier setup candidate
+# Automatic carrier setup
 
-[简体中文](AUTO-CARRIERS.md)
+[简体中文](AUTO-CARRIERS.md) · [Windows](WINDOWS-EXE.en.md) · [macOS](MACOS.en.md)
 
-Desktop `0.5.0-r7` uses the same installation workflow and phone payload on Windows and macOS. After the initial installation, a normal phone boot reads the current SIM and generates its IMS identity, carrier domain and data configuration. Subsequent SIM changes need no computer connection or flash.
+The current local candidate is **0.5.0-r8**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash.
 
-The scope is **SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216**, with Mobile **460-00**, Unicom **460-01** and Telecom **460-11** USIMs without ISIM. Other variants, operating systems, MNCs and SIM routes are rejected. Root and a trusted SSH connection must already work; this workflow does not perform the initial Root flash.
+## Scope and acceptance
 
-This unified payload needs its own hardware acceptance. Earlier model-specific trials are not proof that all nine new combinations work. As of 2026-10-31, the r1/r2 Q20 Mobile payload passed installation, automatic registration after a normal restart and bidirectional calls with USB disconnected. The two established calls lasted about 4.2 and 4.8 seconds; the first outgoing attempt connected, the owner confirmed two-way audio and LTE, and all 151 radio samples were LTE. Calls longer than 30 seconds and cross-carrier SIM changes remain pending. The first Passport migration boot exposed cached data-centric PPS with modem usage still at 0. Re-publishing the original policy and then data-centric produced verified modem usage 1; r3 includes this fix. Q10 is installed but its first unified boot did not reach LTE. Passport reached LTE while r3 still requested another restart. r4 separates modem-policy changes from boot-time source repairs so repairs alone do not require repeated restarts. Passport Telecom r4 subsequently registered automatically after a normal restart. Q10 retained a 3G/2G-only selection; r5 adds the stock radioctrl selection workflow to enable LTE, save the original mode and restore it on disable. r5 restart, call and SIM-switch acceptance remains pending.
+Scope: **SQN100-3, SQC100-2, SQW100-4, OS 10.3.3.3216**, with **Mobile 460-00, Unicom 460-01 and Telecom 460-11** USIMs without ISIM. Model-appropriate Root, trusted SSH and working carrier service are prerequisites. Automatic carrier setup does not perform the initial Root flash.
 
-r7 acceptance update: r6 passed automatic registration after normal boot and USB-disconnected bidirectional calls on Q20 Telecom and Passport Unicom. Established calls lasted 58.3/54.1 and 36.9/37.7 seconds respectively; all 450 samples on each device were LTE. The owner cancelled an earlier unanswered Q20 outgoing call. Q10 Mobile r6 initially registered but later received network rejection cause 18; the modem removed LTE from its enabled technologies (19 to 3), and calls failed. This run did not pass. r7 adds backed-up data-centric setup specifically for Q10 Mobile, retains the existing Telecom policy, and restores the original policy on switching to Unicom. Hardware retesting remains pending; all nine combinations have not passed. Passport Unicom still has a blank own-number field, recorded separately as a display limitation. A number or 4G icon does not establish calling acceptance.
+Currently **6/9** combinations have functional acceptance:
 
-## Use
+| Model | Mobile | Unicom | Telecom |
+| --- | --- | --- | --- |
+| Q10 SQN100-3 | Passed (r7) | Passed (r7) | Pending |
+| Q20 SQC100-2 | Passed (r7) | Pending | Passed (r7) |
+| Passport SQW100-4 | Pending | Passed (r7) | Passed (r7) |
 
-1. Connect the target phone, open **Automatic carrier setup**, and check its exact model and current SIM.
-2. Choose **Back up and install**. The app downloads and verifies the four original radio configuration files and, where applicable, the old Root boot script. It then retires the old manager and installs the new startup entry. Previous files and acceptance records remain available.
-3. Restart from the phone's power menu. Wait for normal LTE and IMS registration before testing incoming/outgoing calls, two-way audio and LTE throughout.
-4. For later SIM changes, power off, change SIM and boot normally. Configuration is generated on the phone. A hot-swap snapshot is not completed acceptance.
-5. To restore automatic startup after disabling it, wait for the manager to finish restoring, choose **Enable automatic setup**, then restart. Main-window management prioritizes the unified service to prevent reactivating the migrated legacy service.
-6. Passport may need one additional normal restart when changing the Telecom attach policy. The app reports this as **Carrier attach policy saved. Restart normally once more.** Airplane mode does not replace that restart.
+The [structured acceptance record](../materials/unified-carrier-acceptance.json) identifies the actual payload version and boot, USB, SIM-switch and call evidence for each case. Installed-SIM baseline calls and computer-free SIM changes are separate checks. The owner checks the connected-call timer, bidirectional audio, first outgoing call and LTE throughout; reconnection verifies the current boot's SIM, profile and native process. Rotating phone logs may retain only the end of a call. Complete bidirectional SIP evidence and owner-confirmed calls are labeled separately. A post-call LTE snapshot is not continuous call-time sampling.
 
-Installed r1/r2/r3/r4/r5/r6 candidates can be upgraded from the same window after the manager stops and a normal restart clears the provider. Previous Python files are backed up on the phone and downloaded for verification. An interrupted update leaves automatic startup disabled and resumes only recorded old/new hashes. Original radio backups, system binaries and boot entries are retained.
+Current Mac physical USB acceptance is deferred by the owner. Historical Mac transport checks, software self-tests, signatures and notarization are separate evidence. Other variants, systems, PLMNs, SIM routes, locations, roaming and long-term reliability remain unverified.
 
-## Integrated behavior
+## Installation and later SIM changes
 
-- Mobile uses an EarlySdp=0 runtime IMS copy, previously tested on Q20/Passport. Original system binaries remain intact.
-- r3 handles cached data-centric PPS with modem usage still at 0: re-publish original then data-centric through the four backed-up sources and verify modem readback before proceeding. Native IMS is not restarted in a loop.
-- Telecom attach changes use verified DCA publication and original backups; changing away restores the original policy.
-- Software crypto remains registered until normal reboot. Only one native IMS start is permitted per boot, avoiding repeated-start bearer failures.
-- SIM identities stay in phone-private state. Q20's number display uses the current native REGISTER 200 result. Telecom name correction is scoped to the current home 460-11 SIM with normal LTE.
-- Immutable code and SIM-generated configuration have separate integrity checks. Unknown system hashes, missing backup receipts, independently modified settings and active calls block relevant writes.
+1. Connect and unlock one rooted target phone over USB, select its trusted connection configuration, open Automatic carrier setup, and check the exact model and current SIM.
+2. Choose the backup/install action. The program saves and downloads verified original attach settings and the old boot entry before migrating the previous manager. Original backups and old payloads are retained.
+3. Restart normally from the phone's power menu, unlock it and wait about 3–5 minutes. Click **Restarted — check again**. The app verifies the carrier, IMS registration and LTE from this boot before showing **Registered on this boot; verify calls**. Disconnect USB and verify incoming/outgoing calls and bidirectional audio with the system dialer.
+4. For later SIM changes, power off normally, change SIM and boot normally. The phone selects the new configuration. Hot swapping is outside the accepted procedure.
+5. When Passport first changes its Telecom attach policy, wait about five minutes and restart normally again so the modem adopts the saved policy at startup. Entering and leaving Telecom may both need this step. Airplane mode does not replace that restart.
 
-Registration is not call acceptance. Short calls do not establish long-call or long-term stability. Keep the candidate label until the nine combinations and SIM transitions have been accepted.
+Both desktop entry points on Windows and Mac show **One more normal restart required; setup incomplete**, explain why and provide **Restarted — check again**. Startup waiting is shown separately, without repeatedly requesting a restart. Success requires registration and LTE confirmed from this boot. If USB disconnects during restart, use **Check connection again**. Reopening the app resumes from phone status without reinstalling. If automatic startup remains disabled after an update, the app first directs you to **Enable automatic setup**.
 
-- r5 adds LTE to the saved technology selection only on validated devices and carriers, while idle and before native IMS starts. It retains other technologies and preferences, requires the stock `configure_rats` reply and readback, and restores its recorded original on disable. Independent edits are preserved.
+## Own-number display
 
-The Q10 Mobile change follows the same-boot rejection and technology-loss evidence. [3GPP TS 24.301 §4.3.2.2](https://www.etsi.org/deliver/etsi_ts/124300_124399/124301/11.13.00_60/ts_124301v111300p.pdf) describes how the usage setting relates to disabling or re-enabling LTE. This supports the diagnosis, but does not replace sustained-LTE and call retesting.
+r8 extends Q20's authenticated number-display mechanism to Q10 and Passport. A number must come from a successful IMS REGISTER response belonging to the current boot, native process and SIM. It updates the dialer's number-display cache; this feature does not write SIM records, calling identity or radio settings.
+
+Without one unique authenticated number, the current display is preserved. Independent existing numbers are preserved. A previous SIM's service-owned number is not used as the new SIM's rollback value. Interrupted updates retain the original values for same-boot, same-SIM recovery. Actual numbers remain in private phone state; desktop checks report only presence and matching. Number display, operator labels and 4G icons have separate acceptance from real calls.
+
+## Updates and disabling
+
+Recognized earlier payloads can be updated. Stop the old manager and restore settings, restart normally to clear old runtime components, then install, verify and enable the new version. Restart normally again to start it. Old Python files are backed up and downloaded for verification before the new payload manifest is committed. Native IMS starts only once per normal boot; the software crypto provider is retained until normal restart.
+
+After disabling, use the same window to enable automatic setup once restoration completes, then restart normally. The main window prioritizes the unified service over earlier independent adapters. Active calls, unknown stock files, missing backup receipts or independent configuration changes block affected writes.
+
+r8 retains r7's sustained-LTE correction for Q10 Mobile. Phone-code changes are confined to own-number display, restoration and update support; attach policy and the IMS engine retain r7 content. Short calls and the existing roughly twenty-minute LTE observation do not establish long-term reliability.
