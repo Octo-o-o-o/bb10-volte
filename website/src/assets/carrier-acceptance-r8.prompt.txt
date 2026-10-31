@@ -1,0 +1,30 @@
+Generation method: built-in image_gen (imagegen skill), 2026-11-01.
+Purpose: product illustrations and a visual summary of the recorded acceptance matrix.
+Source of results: website/src/acceptance.json (same as materials/unified-carrier-acceptance.json).
+This is an illustration, not a photograph of the test session.
+
+Use case: infographic-diagram
+Asset type: a polished, shareable landscape infographic for the existing BB10 VoLTE website.
+Primary request: Show the BlackBerry Q10, Q20 (Classic), and Passport together with a complete 3-by-3 China Mobile / China Unicom / China Telecom FUNCTIONAL acceptance matrix. All nine combinations passed. This is a designed summary of genuine phone tests, NOT a documentary photograph, official certification, or a claim of long-term reliability.
+Canvas and style: landscape, approximately 1536 by 1024. Elegant editorial product illustration; warm ivory background #f4f5f0, deep charcoal type #1e2923, muted forest green #2d6653 for checks and accents. Fine hairline rules, generous margins, clean Chinese sans-serif typography, subtle soft shadows. Professional, quiet, exceptionally legible. No neon, gradients behind text, or decorative clutter.
+Composition: compact headline at the top, three precisely recognizable front-facing black BlackBerry product illustrations across the middle, then a clear aligned matrix below. The device columns and matrix columns must align. Q10 is the compact rounded model with a square display and four physical QWERTY rows, NO trackpad/navigation belt. Q20 Classic is taller with a square display, a physical navigation belt including center optical trackpad above four keyboard rows. Passport is much wider with a large square display and only THREE physical keyboard rows, no separate navigation belt. Render the phones as convincing detailed product illustrations, with black screens containing only a restrained green phone icon and small 'LTE', no fabricated screenshots or personal numbers.
+Exact headline, large: "三款黑莓 × 三大运营商"
+Exact secondary line, large green: "9 / 9 项功能验收通过"
+Small English subtitle: "Three phones. Three carriers. All nine combinations passed."
+Under the three phones respectively, exact names and hardware codes:
+"Q10" and "SQN100-3"
+"Q20 · Classic" and "SQC100-2"
+"Passport" and "SQW100-4"
+Matrix row labels at left, with English smaller below Chinese:
+"中国移动" / "China Mobile · 460-00"
+"中国联通" / "China Unicom · 460-01"
+"中国电信" / "China Telecom · 460-11"
+Exactly nine green check marks, each followed by its exact tested payload revision. Columns are Q10, Q20, Passport, in that order.
+Mobile row: "✓ r7", "✓ r7", "✓ r8".
+Unicom row: "✓ r7", "✓ r8", "✓ r7".
+Telecom row: "✓ r8", "✓ r7", "✓ r7".
+Below the matrix, short horizontal feature line exactly: "系统拨号器 · 呼出 / 呼入 · 双向声音 · LTE"
+Footer must be readable and exact, two modest lines:
+"实测版本 r7 / r8；三台当前均为 r8"
+"BB10 OS 10.3.3.3216 · 2026.11.01 · 机型示意 / Device illustrations"
+Keep every Chinese label spelled exactly as supplied. All nine checks must be present and correctly aligned. Do not add 'official', 'certified', unlimited compatibility, 100% stability, 5G, app store badges, or any claims not listed. Do not substitute a Priv, KeyOne, touchscreen slab or Bold for these three models. Do not add carrier logos; their bilingual names identify them clearly.

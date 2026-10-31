@@ -445,3 +445,11 @@ html:lang(en) .risk-banner > a { grid-column: 2; }
 .compatibility-region .guide-table caption { text-align: left; font-weight: 700; margin-bottom: 1rem; }
 .compatibility-region .guide-table th, .compatibility-region .guide-table td { text-align: left; padding: .85rem; border-bottom: 1px solid var(--line, #c8cec6); }
 .proof-number { overflow-wrap: anywhere; }
+
+.carrier-acceptance-visual { margin: 0 0 2rem; border: 1px solid var(--line, #c8cec6); border-radius: 12px; overflow: hidden; }
+.carrier-acceptance-visual > a { display: block; }
+.carrier-acceptance-visual > a:focus-visible { outline: 3px solid #2d6653; outline-offset: -3px; }
+.carrier-acceptance-visual img { display: block; width: 100%; height: auto; }
+.carrier-acceptance-visual figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; padding: 1rem 1.25rem; font-size: .875rem; line-height: 1.6; }
+.carrier-acceptance-visual figcaption p { margin: 0; max-width: 82ch; }
+.carrier-acceptance-visual figcaption > a { flex-shrink: 0; align-self: flex-start; }

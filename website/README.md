@@ -35,3 +35,9 @@ Run `npm run build` and publish `dist` to the existing Cloudflare Pages project 
 Download links are pinned to `v0.5.0-r8` in static HTML and `src/site.js`. Primary downloads use the dedicated R2 bucket `bb10-volte-releases` through https://bb10-downloads.octoooo.com/, with matching GitHub alternatives. Upload and anonymously verify all files and checksums before deploying a version update. The GitHub API must not downgrade the curated version or replace its matching R2 URLs. Update both translations, `RELEASE_TAG`, file names and checksums together.
 
 No Cloudflare credentials or raw phone evidence belong in this directory. Local builds and browser tests do not publish the website or establish real-phone call compatibility.
+
+## Acceptance illustration
+
+The shared [carrier acceptance graphic](src/assets/carrier-acceptance-r8.png) appears above the detailed compatibility cards on both homepages. It is a designed illustration, not a photograph of the test session. Its nine cells reproduce the actual r7/r8 test revisions from `src/acceptance.json`; the accessible HTML matrix and evidence links remain below it. The image opens at full size on small screens.
+
+Generated with the built-in image_gen tool. The [exact generation prompt](src/assets/carrier-acceptance-r8.prompt.txt) is included for reproducibility. Update the visual and text together if the acceptance scope changes.

@@ -16,7 +16,9 @@ TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTIN
        'website/package-lock.json', 'website/playwright.config.mjs',
        'website/src/_headers', 'website/src/robots.txt',
        'website/src/assets/app-icon.png', 'website/src/assets/app-status.png',
-       'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png'}
+       'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png',
+       'website/src/assets/carrier-acceptance-r8.png',
+       'website/src/assets/carrier-acceptance-r8.prompt.txt'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
@@ -104,7 +106,7 @@ def check(check_git=False):
             continue
         if name == HELPER:
             continue
-        if name.startswith('website/src/assets/'):
+        if name.startswith('website/src/assets/') and path.suffix in ('.png', '.jpg'):
             assert ((path.suffix == '.png' and data.startswith(b'\x89PNG\r\n\x1a\n')) or
                     (path.suffix == '.jpg' and data.startswith(b'\xff\xd8\xff'))), 'Invalid website image: ' + name
             continue
