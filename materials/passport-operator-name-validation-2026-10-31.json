@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_utc": "2026-10-31T07:31:58.036674+00:00",
+  "updated_utc": "2026-10-31T07:49:27.213559+00:00",
   "state": "display_fixed_and_owner_confirmed",
   "device": {
     "family": "Passport",
@@ -87,7 +87,20 @@
     "root_ready_wait_seconds": 120,
     "worker_poll_seconds": 10,
     "entry_manual_execution": "passed; existing worker returned without duplicate",
-    "normal_menu_reboot_tested": false
+    "normal_menu_reboot_tested": true,
+    "subsequent_cold_reboot_evidence": {
+      "boot": [
+        2083560049,
+        1793432722.0
+      ],
+      "worker_from_current_boot": true,
+      "display": [
+        "中国电信"
+      ],
+      "name_start_or_apply_requests_from_desktop": 0,
+      "scope": "Reboot after the original Cursor data-centric setup was re-persisted; normal home LTE present"
+    },
+    "owner_confirmed_name_after_cold_reboot": true
   },
   "existing_ims_state": {
     "observed_before_fix": {

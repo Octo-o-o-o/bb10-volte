@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "updated_utc": "2026-10-31T08:00:19.946679+00:00",
+  "state": "waiting_for_corrected_v2_automatic_reboot",
+  "device": {
+    "variant": "SQW100-4",
+    "board": "WINDERMERE4ROW",
+    "os_version": "10.3.3.3216"
+  },
+  "carrier": {
+    "mcc": "460",
+    "mnc": "11",
+    "data_apns": [
+      "ctnet",
+      "ctlte"
+    ],
+    "ims_apn": "ims",
+    "ims_family": "IPv4v6",
+    "domain": "ims.mnc011.mcc460.3gppnetwork.org",
+    "carrier_xml": "446"
+  },
+  "cursor_baseline": {
+    "phone_backup_files": 304,
+    "pinned_payload_files": 15,
+    "all_payload_hashes_verified": true,
+    "wrapper_sha256": "e1206f67ca8a48100de53a68523c65c22448e0728b92bfcb1e12f627cf729eb7",
+    "profile_sha256": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e"
+  },
+  "cause": {
+    "manual_lease_seconds": 1800,
+    "manual_lease_expired_before_name_repair": true,
+    "expiry_restored_ue_usage_to": 0,
+    "expiry_removed_persisted_datacentric_marker": true,
+    "telecom_autostart_profile_member_before_fix": false,
+    "telecom_bootstrap_missing_from_automatic_configure": true,
+    "name_only_addon_writes_radio_settings": false
+  },
+  "restoration": {
+    "original_dca_backups_verified": 4,
+    "ue_usage_reapplied": 1,
+    "owner_menu_reboot_completed": true,
+    "normal_home_lte_restored": true,
+    "name_worker_automatically_restored_China_Telecom": true
+  },
+  "code_change": {
+    "wrapper_sha256": "8a27e13895e01af2050e903a01c0ed2be74fbbdd6ca3bf5577a671fbee008b5b",
+    "manifest_sha256": "dea79c1cc68e762130b18940baae249738ba8fa3b16522a7b05a88802ff00bfd",
+    "unchanged_payload_files": {
+      "addon-start.sh": "1747fe236ba00102fa2447fd6d76a1653ec82bd8775bd17a04dfd4b5413827bb",
+      "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
+      "profile-request.json": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e",
+      "passport_call_recorder_phone.py": "850726c927042461e7d06716845fe7ef3b6a82a2251b4e81f9f4f40914458b2c",
+      "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+      "device/telecom_attach.py": "2f8718583b7cb63fe4c84aa844e1b536f4d084ef09a2b71ffc8b1d5d26176b6b",
+      "device/ims_image.py": "6fb9361f7300de2c8d12e25343940f842598b0e0c35abf993f560b1ebb372c8c",
+      "device/service.py": "348f92305de5fd41d95596350b5d0219ebfad98e3f410a5366c485845dd74655",
+      "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+      "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+      "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+      "device/compatibility.py": "70e6d883477047bb92fb9459be968ae27c2ae7e2cd63266fa02a7e8d6916cff1",
+      "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
+      "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55"
+    },
+    "changed_functions": [
+      "accept_calls",
+      "acceptance_valid",
+      "autostart_configure",
+      "boot",
+      "enable_autostart",
+      "prepare_manual",
+      "telecom_ensure_lte"
+    ],
+    "added_functions": [
+      "telecom_acceptance_sim"
+    ],
+    "original_native_modules_driver_profile_and_shell_unchanged": true
+  },
+  "tests": {
+    "lifecycle_tests_passed": 57,
+    "expiry_regression": true,
+    "same_operator_sim_swap_rejected_before_automatic_configuration": true,
+    "actual_shared_prepare_connection_dispatch_regression": true
+  },
+  "manual_registration": {
+    "phase": "running",
+    "manager_alive": true,
+    "native_alive": true,
+    "native_pid": 18108455,
+    "current": {
+      "ran": "LTE",
+      "ims": "connected",
+      "register_status": "200 OK",
+      "radio": [
+        "lte"
+      ],
+      "power": "ON"
+    },
+    "startup_timing": {
+      "manager_started": 1793432817.64248,
+      "configuring_manual_passport": 1793432820.83048,
+      "running": 1793432842.11248,
+      "waiting_for_ims_apn": 1793432830.59848,
+      "registering": 1793432838.10848
+    }
+  },
+  "manual_calls": {
+    "state": "accepted_short_calls",
+    "owner_audio_and_lte_confirmed": true,
+    "sip": {
+      "schema": 1,
+      "label": "manual",
+      "boot": [
+        2083560049,
+        1793432722.0
+      ],
+      "profile_id": "passport-telecom-manual-research",
+      "profile_sha256": "11151f66a57a3d15427f2d4d9f8899c035dfdb9318598baf08c5e1ae6d67f36e",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "native_pid": 18108455,
+      "samples": 76,
+      "all_samples_lte": true,
+      "raw_log_sha256": "11208e2c4c53e41b4968ab24e8fc536e594ebd43ea94d2d08072ba4d869292c9",
+      "packet_count": 34,
+      "calls": [
+        {
+          "direction": "outgoing",
+          "invite_at": "15:49:32.177",
+          "invite_cseq": 27534,
+          "answer_200_at": "15:49:38.537",
+          "ack_at": "15:49:38.540",
+          "bye_at": "15:49:43.828",
+          "bye_200_at": "15:49:44.096",
+          "established_seconds_to_bye": 5.291,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "15:49:47.325",
+          "invite_cseq": 1,
+          "answer_200_at": "15:49:51.939",
+          "ack_at": "15:49:52.251",
+          "bye_at": "15:49:57.082",
+          "bye_200_at": "15:49:57.219",
+          "established_seconds_to_bye": 5.143,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "attempts": [
+        {
+          "direction": "outgoing",
+          "invite_at": "15:49:32.177",
+          "invite_cseq": 27534,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "15:49:47.325",
+          "invite_cseq": 1,
+          "final_responses": [
+            200
+          ],
+          "answered_200_observed": true,
+          "cancel_observed": false,
+          "termination_reason": null
+        }
+      ],
+      "both_directions_verified": true
+    },
+    "sustained_20_second_call_accepted": false
+  },
+  "automatic_reboot": {
+    "state": "pending_v2",
+    "v2_change": "Bind the shared early telecom_attach.ensure_lte call to the Passport persisted cold-boot fast path before stock handoff."
+  },
+  "calls_after_reboot_without_usb": {
+    "state": "pending"
+  },
+  "autostart_enabled": true,
+  "full_30_minute_hardware_soak_completed": false,
+  "private_data_exported": false,
+  "other_devices_operated": false,
+  "first_automatic_attempt": {
+    "boot": [
+      2022782475,
+      1793433358.0
+    ],
+    "source": "autoroot-v4-addon",
+    "manager_pid": 17203293,
+    "phase_before_abort": "waiting_for_native_ims",
+    "native_owned_pid": null,
+    "crypto_swcr_id": -1,
+    "desktop_service_stop_requests": 1,
+    "registered": false,
+    "accepted": false,
+    "missing_hook": "shared service.prepare_connection called the Q10 telecom_attach.ensure_lte before the Passport configure hook",
+    "result": "Aborted by desktop stop before provider/owned IMS configuration; persisted UE1 and LTE retained. Not accepted as a working reboot."
+  }
+}
