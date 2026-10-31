@@ -10,7 +10,7 @@ The update also prevents a previous SIM's number from becoming the new SIM's rol
 
 The shared Windows/Mac workflow now shows an explicit additional-restart stage, its reason and a **Restarted — check again** button. Both windows derive readiness from the current boot; old registration cache, LTE alone or just enabling startup cannot show registration success. Reconnection triggers a fresh check, and a disabled update first prompts enabling, avoiding repeated restarts or reinstalls.
 
-The full regression run contains 473 tests: 472 passed and one skipped. The owner confirmed Q10's correct Unicom number; its r8 USB-disconnected outgoing call lasted 48.268 seconds, with all samples on LTE. Passport r8 registered automatically on Telecom after its second normal boot. Hardware calls, SIM changes and number-display checks retain their actual payload versions. See the current [acceptance matrix](../materials/unified-carrier-acceptance.json) and [unified workflow](AUTO-CARRIERS.en.md).
+The full regression run contains 474 tests: 473 passed and one skipped. The owner confirmed Q10's correct Unicom number; its r8 USB-disconnected outgoing call lasted 48.268 seconds, with all samples on LTE. Passport r8 registered automatically on Telecom after its second normal boot. Hardware calls, SIM changes and number-display checks retain their actual payload versions. See the current [acceptance matrix](../materials/unified-carrier-acceptance.json) and [unified workflow](AUTO-CARRIERS.en.md).
 
 ## 0.5.0-r7 · Q10 Mobile LTE retention policy · 2026-10-31
 

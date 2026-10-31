@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-01T00:54:21.940668+08:00",
+  "updated_at": "2026-11-01T01:00:38.929350+08:00",
   "scope": {
     "variants": {
       "q10": "SQN100-3",
@@ -217,8 +217,8 @@
       "current_boot_registration_required_for_success": true,
       "explicit_additional_restart_and_recheck": true,
       "usb_reconnection_and_reopen_supported": true,
-      "source_regression_tests": 473,
-      "source_regression_tests_passed": 472,
+      "source_regression_tests": 474,
+      "source_regression_tests_passed": 473,
       "source_regression_tests_skipped": 1,
       "minimum_window_layout_zh_en_passed": true
     },
