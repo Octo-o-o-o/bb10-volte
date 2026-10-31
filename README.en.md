@@ -18,7 +18,7 @@ Mainland China users can use the [ZSpace stock firmware share](https://t3.znas.c
 
 [Windows EXE](docs/WINDOWS-EXE.en.md) · [macOS / DMG](docs/MACOS.en.md) · [Desktop GUI](docs/GUI.en.md) · [Compatibility](docs/COMPATIBILITY.en.md) · [Update log](docs/UPDATELOG.en.md) · [Installation](docs/INSTALL.en.md) · [Validation evidence](docs/VALIDATION.en.md) · [Build from source](docs/BUILD.en.md) · [MIT license](LICENSE)
 
-Local candidate **0.4.0-r6** records accepted Q20 SQC100-2 and Q10 SQN100-3 / Telecom 460-11 short calls, normal restart recovery and calls without USB. Startup management is gated by the phone, SIM, profile and critical runtime hashes. Q10 carrier-name completion reads back as China Telecom. An actual r5 reboot exposed a missing Root-readiness wait; r6 adds the wait, with its next normal restart pending acceptance. Passport lifecycle gates remain. See [Telecom scope and peer comparison](docs/TELECOM-PORT.en.md).
+Local candidate **0.4.0-r6** records accepted Q20 SQC100-2 and Q10 SQN100-3 / Telecom 460-11 short calls, normal restart recovery and calls without USB. Startup management is gated by the phone, SIM, profile and critical runtime hashes. With the Root-readiness wait corrected, a normal r6 restart automatically restored IMS and the China Telecom name; the owner confirmed the top bar. Passport lifecycle gates remain. See [Telecom scope and peer comparison](docs/TELECOM-PORT.en.md).
 
 ## What it does
 

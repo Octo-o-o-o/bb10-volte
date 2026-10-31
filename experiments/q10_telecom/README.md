@@ -31,4 +31,6 @@ python experiments/q10_telecom/q10_telecom_control.py telecom-preflight
 
 Q20 保留自己的成功配置，换出电信卡后保持关机。Passport 属于另一个活动会话，本轮没有向其发送命令。Q30 的提供器生命周期限制继续保留。
 
-`device/operator_name.py` 与独立 `operator-name-start.sh` 管理本机 460-11 的名称补全：保留原厂表，只追加缺失的一行映射；用可撤销的 QNX 路径链接及 ONS 名称通知显示“中国电信”。未改动原有 12 个通话／入网／启动关键文件。当前显示已回读，新增名称 addon 的正常重启仍待验收。
+`device/operator_name.py` 与独立 `operator-name-start.sh` 管理本机 460-11 的名称补全：保留原厂表，只追加缺失的一行映射；用可撤销的 QNX 路径链接及 ONS 名称通知显示“中国电信”。未改动原有 12 个通话／入网／启动关键文件。r5 实测发现入口缺少 Root 完成等待；r6 补齐后，实际正常重启已核验新开机和全部新进程、IMS 200／LTE、名称自动恢复及机主顶部确认，电脑端启动／enable 均为零。
+
+`q10_accept_final_name_boot_phone.py` 是最终核验器：电脑先核对本轮启动审计及机主确认，再构造 `state/final-name-boot-request.json`。核验器检查完整载荷与两个 addon 的散列、新开机和进程身份、同卡验收记录、名称的三处系统回读、UE1／voice3 及提供器归属，只保存验收元数据，不启动服务或修改网络。请求中的机主确认和零启动声明必须来自真实证据。

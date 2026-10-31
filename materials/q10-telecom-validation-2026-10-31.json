@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date_local": "2026-10-31",
-  "status": "short_calls_normal_reboot_and_USB_disconnected_calls_accepted",
+  "status": "Q10_Telecom_short_calls_normal_reboot_unplugged_calls_and_name_auto_restore_accepted",
   "selector": {
     "variant": "SQN100-3",
     "os_version": "10.3.3.3216",
@@ -229,10 +229,10 @@
   "acceptance_limits": [
     "all accepted calls are short; 20-second sustained calls not accepted",
     "post-reboot bounded recorder ended before calls; only partial incoming SIP retained; both IMS call-state cycles verified",
-    "normal reboot of the additional r5 display-name addon pending",
     "own-number display not independently confirmed on Q10",
     "SMS/MMS not tested",
-    "Q30 not accessed; lifecycle gate retained"
+    "Q30 not accessed; lifecycle gate retained",
+    "r6 final boot verifies IMS and name restoration; calls use earlier same-SIM evidence with identical critical runtime bytes"
   ],
   "privacy": {
     "raw_SIP_and_identity_XML": "private_only",
@@ -324,6 +324,36 @@
       "table_overlay_owned": true,
       "worker_alive": true
     },
-    "normal_reboot_display_restore_accepted": false
-  }
+    "normal_reboot_display_restore_accepted": true
+  },
+  "r6_final_actual_reboot": {
+    "accepted_at": 1793422644.982706,
+    "name_auto_restored": true,
+    "manager_to_registered_seconds": 305.564,
+    "name_worker_pid": 17571947,
+    "variant": "SQN100-3",
+    "native_pid": 18350142,
+    "voice_policy": 3,
+    "owner": "q10-operator-name-autostart-accepted-v1",
+    "new_boot_and_processes_verified": true,
+    "name_entry_sha256": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
+    "manager_pid": 17584173,
+    "owner_top_bar_confirmed": true,
+    "displayed_name": "中国电信",
+    "network_or_IMS_writes_during_acceptance": 0,
+    "boot": [
+      1911078281,
+      1793421574.0
+    ],
+    "desktop_core_starts": 0,
+    "desktop_enables": 0,
+    "desktop_name_starts": 0,
+    "full_system_boot_time_measured": false,
+    "IMS_auto_registered": true,
+    "receipt_sha256": "3289a029f171578cc5333ed27bbaeb0dd56e8cc923a140380cb3ef34e2031e22",
+    "profile_sha256": "233775663e32f85c1b58da08711b0b3cda8d187c682d6ec1b1bd948a7c91e446",
+    "UE_usage_setting": 1,
+    "desktop_captured_utc": "2026-10-31T04:57:21.309423+00:00"
+  },
+  "normal_reboot_display_restore_accepted": true
 }
