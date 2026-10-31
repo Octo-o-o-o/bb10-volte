@@ -3,9 +3,9 @@
   "date_local": "2026-10-31",
   "version": "0.4.0-r6",
   "artifact": "bb10-volte-0.4.0-r6-windows-x64.exe",
-  "sha256": "c1f8749a7d32eece065903af17c7696d392e41ced177d4d61375dd758aaf8ee9",
-  "bytes": 18742688,
-  "source_commit": "fb39b59bd5a7bad6441d23682de3e5f4ef2bd440",
+  "sha256": "c06e252141d10e03e969e2fbc9b3dabc431e0a3fd40f8283e823e5d6dcc9bda8",
+  "bytes": 18744299,
+  "source_commit": "95e0314ac11c3799f1dca62a76bd0104c1d027ce",
   "payload_files": 17,
   "critical_runtime_files_unchanged_from_hardware_r3": 12,
   "regressions": {
@@ -36,8 +36,8 @@
   "Q20_managed_adapter": "same pinned adapter; Q20 remains off with SIM borrowed by Q10",
   "Passport": "not accessed; provider lifecycle gate retained",
   "active_private_backup": {
-    "files": 138,
-    "bytes": 12027779,
+    "files": 141,
+    "bytes": 12047323,
     "all_hashes_verified": true,
     "service_interrupted": false
   },
@@ -48,7 +48,7 @@
   ],
   "release_status": "local_candidate_not_published",
   "authenticode_signed": false,
-  "desktop_captured_utc": "2026-10-31T04:22:44.082677+00:00",
+  "desktop_captured_utc": "2026-10-31T05:06:56.151574+00:00",
   "phone_updated_to_r6": true,
   "name_readiness_fix": {
     "file": "device/operator-name-start.sh",
@@ -88,5 +88,10 @@
     "desktop_captured_utc": "2026-10-31T04:57:21.309423+00:00"
   },
   "owner_top_bar_confirmed_after_reboot": true,
-  "phone_and_operator_name_auto_recovery_accepted": true
+  "phone_and_operator_name_auto_recovery_accepted": true,
+  "artifact_subdirectory": "final",
+  "build_variant": "after_final_normal_reboot_acceptance",
+  "final_package_GUI_selftest": true,
+  "final_package_Q10_live_preflight": true,
+  "final_package_contains_accepted_reboot_evidence": true
 }
