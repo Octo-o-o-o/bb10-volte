@@ -1,7 +1,7 @@
 # macOS app and phone connection
 
 <!-- unified-current:start -->
-**Current local candidate: `bb10-volte-0.5.0-r8-macos-universal.dmg`.** It shares the Automatic carrier setup workflow and phone payload with Windows. See [installation and later powered-off SIM changes](AUTO-CARRIERS.en.md). Current Mac physical USB acceptance is deferred by the owner. Signing, notarization, software self-tests and historical USB transport checks are separate evidence; published-version records below retain their original version labels.
+**Current experimental release: `bb10-volte-0.5.0-r8-macos-universal.dmg`.** It shares the Automatic carrier setup workflow and phone payload with Windows. See [installation and later powered-off SIM changes](AUTO-CARRIERS.en.md). Current Mac physical USB acceptance is deferred by the owner. Signing, notarization, software self-tests and historical USB transport checks are separate evidence; published-version records below retain their original version labels.
 <!-- unified-current:end -->
 
 

@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "updated_at": "2026-11-01T01:47:50.423722+08:00",
+  "scope": {
+    "variants": {
+      "q10": "SQN100-3",
+      "q20": "SQC100-2",
+      "passport": "SQW100-4"
+    },
+    "os": "10.3.3.3216",
+    "carriers": {
+      "mobile": "460-00",
+      "unicom": "460-01",
+      "telecom": "460-11"
+    },
+    "sim_route": "USIM without ISIM"
+  },
+  "functional_combinations_passed": 9,
+  "functional_combinations_total": 9,
+  "all_nine_functional_combinations_passed": true,
+  "all_nine_tested_with_same_phone_payload": false,
+  "cases": [
+    {
+      "device": "q10",
+      "variant": "SQN100-3",
+      "carrier": "mobile",
+      "status": "functional_pass",
+      "phone_only_sim_switch": false,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "complete_SIP_dialogs",
+      "complete_bidirectional_signaling_verified": true,
+      "captured_call_seconds": [
+        {
+          "direction": "incoming",
+          "seconds": 48.382
+        },
+        {
+          "direction": "outgoing",
+          "seconds": 58.114
+        }
+      ],
+      "continuous_call_lte_recording": true,
+      "first_outgoing_connected_in_retained_signaling": true,
+      "lte_observation_note": "Two recording windows; no continuous sampling claimed across the gap.",
+      "sustained_lte_sampled_span_seconds": 1306.651
+    },
+    {
+      "device": "q10",
+      "variant": "SQN100-3",
+      "carrier": "unicom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null
+    },
+    {
+      "device": "q10",
+      "variant": "SQN100-3",
+      "carrier": "telecom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true,
+      "call_acceptance_scope": "Owner-designated final bidirectional pair; earlier calls had owner-reported peer-number issues.",
+      "first_outgoing_acceptance": "not_assessed_in_this_multi_call_run"
+    },
+    {
+      "device": "q20",
+      "variant": "SQC100-2",
+      "carrier": "mobile",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null
+    },
+    {
+      "device": "q20",
+      "variant": "SQC100-2",
+      "carrier": "unicom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true
+    },
+    {
+      "device": "q20",
+      "variant": "SQC100-2",
+      "carrier": "telecom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": false,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "complete_SIP_dialogs",
+      "complete_bidirectional_signaling_verified": true,
+      "captured_call_seconds": [
+        {
+          "direction": "outgoing",
+          "seconds": 37.878
+        },
+        {
+          "direction": "incoming",
+          "seconds": 68.1
+        }
+      ],
+      "continuous_call_lte_recording": true,
+      "first_outgoing_connected_in_retained_signaling": true
+    },
+    {
+      "device": "passport",
+      "variant": "SQW100-4",
+      "carrier": "mobile",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true
+    },
+    {
+      "device": "passport",
+      "variant": "SQW100-4",
+      "carrier": "unicom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": false,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "complete_SIP_dialogs",
+      "complete_bidirectional_signaling_verified": true,
+      "captured_call_seconds": [
+        {
+          "direction": "outgoing",
+          "seconds": 39.197
+        },
+        {
+          "direction": "incoming",
+          "seconds": 38.4
+        }
+      ],
+      "continuous_call_lte_recording": true,
+      "first_outgoing_connected_in_retained_signaling": true
+    },
+    {
+      "device": "passport",
+      "variant": "SQW100-4",
+      "carrier": "telecom",
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r7",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null
+    }
+  ],
+  "phone_only_protocol": {
+    "all_phones_usb_disconnected_before_power_off_and_sim_swap": true,
+    "postboot_wait_minutes": 20,
+    "passport_policy_change_first_boot_wait_minutes": 5,
+    "passport_extra_normal_reboot_when_entering_or_leaving_telecom": true,
+    "test_one_device_then_reconnect_and_collect_before_testing_next": true,
+    "per_call_connected_timer_seconds": 35,
+    "no_desktop_start_enable_install_during_window": true,
+    "capture_existing_current_boot_owned_log_only": true,
+    "postcall_radio_snapshot_is_not_continuous_lte_proof": true,
+    "owner_confirms_call_audio_and_lte": true
+  },
+  "evidence_limits": [
+    "Phone-only swap runs use owner call, audio and LTE reports plus current-boot SIM/profile/native-process verification.",
+    "A post-call LTE snapshot is not continuous call-time LTE sampling.",
+    "Rotated SIP logs and in-dialog re-INVITEs are not counted as complete initial call dialogs.",
+    "Results do not establish other variants, PLMNs, SIM routes, locations, roaming or long-term call reliability."
+  ],
+  "own_number_display": {
+    "r7_automatic_filler_models": [
+      "SQC100-2"
+    ],
+    "r7_q10_unicom_issue": "Owner reported blank dialer number; both phone line address fields were empty.",
+    "r8_change": "Apply authenticated current-SIM REGISTER-200 number caching to all three models, with reversible display-only updates.",
+    "r8_source_commit": "c584d3d",
+    "r8_hardware_verification": {
+      "q10": {
+        "automatic_readback_verified": true,
+        "current_SIM_authenticated_number_matches_both_fields": true,
+        "owner_confirmed_correct": true,
+        "owner_check_pending": false,
+        "outgoing_35_second_call_verified": true
+      }
+    },
+    "sim_record_writes": 0,
+    "radio_setting_writes": 0
+  },
+  "desktop_validation": {
+    "r8_extra_reboot_workflow": {
+      "shared_windows_macos_ui": true,
+      "source_commit": "e79eccb",
+      "current_boot_registration_required_for_success": true,
+      "explicit_additional_restart_and_recheck": true,
+      "usb_reconnection_and_reopen_supported": true,
+      "source_regression_tests": 474,
+      "source_regression_tests_passed": 473,
+      "source_regression_tests_skipped": 1,
+      "minimum_window_layout_zh_en_passed": true
+    },
+    "windows_r7_frozen_phone_preflight": [
+      "SQC100-2",
+      "SQW100-4"
+    ],
+    "macos_r7_signed_notarized_stapled_selftest_passed": true,
+    "current_mac_physical_usb_acceptance": "deferred_by_owner",
+    "current_package_evidence": "Self-test, signing and notarization reports accompany built artifacts separately."
+  },
+  "private_phone_identifiers_or_logs_included": false
+}

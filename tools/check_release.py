@@ -11,12 +11,20 @@ ROOT = Path(__file__).resolve().parents[1]
 TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
        'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
        'tools/windows-freeze-requirements.txt', 'tools/macos-freeze-requirements.txt',
-       'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}
+       'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns',
+       'website/.gitignore', 'website/README.md', 'website/package.json',
+       'website/package-lock.json', 'website/playwright.config.mjs',
+       'website/src/_headers', 'website/src/robots.txt',
+       'website/src/assets/app-icon.png', 'website/src/assets/app-status.png',
+       'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
             'experiments/q10_telecom/*.py', 'experiments/q10_telecom/*.md',
-            'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
+            'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json',
+            'website/scripts/*.mjs', 'website/tests/*.mjs', 'website/src/*.html',
+            'website/src/en/*.html', 'website/src/*.css', 'website/src/*.js',
+            'website/src/*.xml', 'website/src/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 RECORDING_MANIFEST = 'materials/recording-files.json'
 SENSITIVE = {
@@ -95,6 +103,10 @@ def check(check_git=False):
             assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
             continue
         if name == HELPER:
+            continue
+        if name.startswith('website/src/assets/'):
+            assert ((path.suffix == '.png' and data.startswith(b'\x89PNG\r\n\x1a\n')) or
+                    (path.suffix == '.jpg' and data.startswith(b'\xff\xd8\xff'))), 'Invalid website image: ' + name
             continue
         text = data.decode('utf-8')
         scan_text = text.replace('\\\\', '\\') if name in recordings else text

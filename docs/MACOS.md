@@ -1,7 +1,7 @@
 # macOS 应用与手机连接
 
 <!-- unified-current:start -->
-**本轮本地候选：`bb10-volte-0.5.0-r8-macos-universal.dmg`。** 与 Windows 共用“三网自动适配”流程和手机载荷。首次安装及以后关机换卡见[统一流程](AUTO-CARRIERS.md)。本轮 Mac 实机 USB 验收按机主安排暂缓；签名、公证、软件自检和历史 USB 连接记录分别保留。下文已发布版本的记录注明其对应版本。
+**本轮实验版：`bb10-volte-0.5.0-r8-macos-universal.dmg`。** 与 Windows 共用“三网自动适配”流程和手机载荷。首次安装及以后关机换卡见[统一流程](AUTO-CARRIERS.md)。本轮 Mac 实机 USB 验收按机主安排暂缓；签名、公证、软件自检和历史 USB 连接记录分别保留。下文已发布版本的记录注明其对应版本。
 <!-- unified-current:end -->
 
 

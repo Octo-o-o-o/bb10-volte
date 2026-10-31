@@ -1,7 +1,7 @@
 # bb10-volte
 
 <!-- unified-current:start -->
-**Current local candidate 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
+**Current experimental release 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
 
 The 0.3/0.4 notes below preserve the history of the legacy single-carrier, connection and initial-Root workflows. Their legacy Passport installer restrictions are separate from the new unified entry.
 <!-- unified-current:end -->

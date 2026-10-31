@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bb10-volte.octoooo.com/sitemap.xml

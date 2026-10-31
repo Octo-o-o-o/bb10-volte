@@ -1,0 +1,21 @@
+{
+  "name": "bb10-volte-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "BB10 VoLTE product website",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "check": "node --check src/appearance.js && node --check src/site.js && node --check scripts/build.mjs && node --check scripts/serve.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

@@ -1,7 +1,7 @@
 # bb10-volte Windows EXE
 
 <!-- unified-current:start -->
-**Current local candidate 0.5.0-r8** uses **Automatic carrier setup**. See the [unified workflow](AUTO-CARRIERS.en.md) for exact models, carriers, number display and acceptance. Initial Root and later SIM changes are separate procedures.
+**Current experimental release 0.5.0-r8** uses **Automatic carrier setup**. See the [unified workflow](AUTO-CARRIERS.en.md) for exact models, carriers, number display and acceptance. Initial Root and later SIM changes are separate procedures.
 <!-- unified-current:end -->
 
 
@@ -13,7 +13,7 @@ The target is Windows 10/11 x64; packaging and launch validation used Windows 11
 
 ## Test distribution
 
-The local candidate is delivered with its matching `.exe.sha256`; public [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) contain published versions. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `bb10-root` is only a customizable SSH alias, not a forced device identity.
+The experimental release is delivered with its matching `.exe.sha256`; public [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) contain published versions. The phone needs the correct root setup, and Windows needs BlackBerry USB networking drivers. Each phone must have its own private key, SSH configuration and verified host-key record. Select that configuration in the GUI; `bb10-root` is only a customizable SSH alias, not a forced device identity.
 
 For the three exact supported variants, open **Automatic carrier setup**, check the current SIM, and choose backup/install. After verification, restart and unlock the phone normally, wait for automatic registration and test real USB-disconnected incoming/outgoing calls. Later powered-off SIM changes are configured on the phone; Passport may need another normal restart when its Telecom attach policy changes. OS **10.3.3.3216**, ARM32, exact stock hashes and SIM checks remain required. See [current scope and acceptance](AUTO-CARRIERS.en.md). Initial Root for Q20 or Passport requires the matching model-specific method. The legacy single-carrier entry retains its experimental gates.
 

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-01T01:00:38.929350+08:00",
+  "updated_at": "2026-11-01T01:47:50.423722+08:00",
   "scope": {
     "variants": {
       "q10": "SQN100-3",
@@ -15,9 +15,9 @@
     },
     "sim_route": "USIM without ISIM"
   },
-  "functional_combinations_passed": 6,
+  "functional_combinations_passed": 9,
   "functional_combinations_total": 9,
-  "all_nine_functional_combinations_passed": false,
+  "all_nine_functional_combinations_passed": true,
   "all_nine_tested_with_same_phone_payload": false,
   "cases": [
     {
@@ -69,8 +69,21 @@
       "device": "q10",
       "variant": "SQN100-3",
       "carrier": "telecom",
-      "status": "pending",
-      "phone_only_sim_switch": false
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true,
+      "call_acceptance_scope": "Owner-designated final bidirectional pair; earlier calls had owner-reported peer-number issues.",
+      "first_outgoing_acceptance": "not_assessed_in_this_multi_call_run"
     },
     {
       "device": "q20",
@@ -93,8 +106,19 @@
       "device": "q20",
       "variant": "SQC100-2",
       "carrier": "unicom",
-      "status": "pending",
-      "phone_only_sim_switch": false
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true
     },
     {
       "device": "q20",
@@ -126,8 +150,19 @@
       "device": "passport",
       "variant": "SQW100-4",
       "carrier": "mobile",
-      "status": "pending",
-      "phone_only_sim_switch": false
+      "status": "functional_pass",
+      "phone_only_sim_switch": true,
+      "candidate": "0.5.0-r8",
+      "normal_boot_automatic_selection_verified": true,
+      "owner_confirmed_audio_and_lte": true,
+      "owner_confirmed_usb_disconnected": true,
+      "minimum_connected_call_seconds": 35,
+      "call_duration_evidence": "owner_screen_timer_report",
+      "complete_bidirectional_signaling_verified": false,
+      "captured_call_seconds": [],
+      "continuous_call_lte_recording": false,
+      "first_outgoing_connected_in_retained_signaling": null,
+      "owner_confirmed_own_number_display": true
     },
     {
       "device": "passport",

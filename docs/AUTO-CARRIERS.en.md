@@ -2,19 +2,19 @@
 
 [简体中文](AUTO-CARRIERS.md) · [Windows](WINDOWS-EXE.en.md) · [macOS](MACOS.en.md)
 
-The current local candidate is **0.5.0-r8**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash.
+The current experimental release is **0.5.0-r8**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash.
 
 ## Scope and acceptance
 
 Scope: **SQN100-3, SQC100-2, SQW100-4, OS 10.3.3.3216**, with **Mobile 460-00, Unicom 460-01 and Telecom 460-11** USIMs without ISIM. Model-appropriate Root, trusted SSH and working carrier service are prerequisites. Automatic carrier setup does not perform the initial Root flash.
 
-Currently **6/9** combinations have functional acceptance:
+Currently **9/9** combinations have functional acceptance:
 
 | Model | Mobile | Unicom | Telecom |
 | --- | --- | --- | --- |
-| Q10 SQN100-3 | Passed (r7) | Passed (r7) | Pending |
-| Q20 SQC100-2 | Passed (r7) | Pending | Passed (r7) |
-| Passport SQW100-4 | Pending | Passed (r7) | Passed (r7) |
+| Q10 SQN100-3 | Passed (r7) | Passed (r7) | Passed (r8) |
+| Q20 SQC100-2 | Passed (r7) | Passed (r8) | Passed (r7) |
+| Passport SQW100-4 | Passed (r8) | Passed (r7) | Passed (r7) |
 
 The [structured acceptance record](../materials/unified-carrier-acceptance.json) identifies the actual payload version and boot, USB, SIM-switch and call evidence for each case. Installed-SIM baseline calls and computer-free SIM changes are separate checks. The owner checks the connected-call timer, bidirectional audio, first outgoing call and LTE throughout; reconnection verifies the current boot's SIM, profile and native process. Rotating phone logs may retain only the end of a call. Complete bidirectional SIP evidence and owner-confirmed calls are labeled separately. A post-call LTE snapshot is not continuous call-time sampling.
 

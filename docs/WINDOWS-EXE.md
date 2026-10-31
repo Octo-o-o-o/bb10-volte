@@ -1,7 +1,7 @@
 # bb10-volte Windows EXE
 
 <!-- unified-current:start -->
-**当前本地候选 0.5.0-r8** 使用统一的“三网自动适配”入口。型号、运营商范围、号码显示与当前验收结果见[统一流程](AUTO-CARRIERS.md)；首次 Root 与日常换卡是独立步骤。
+**当前实验版 0.5.0-r8** 使用统一的“三网自动适配”入口。型号、运营商范围、号码显示与当前验收结果见[统一流程](AUTO-CARRIERS.md)；首次 Root 与日常换卡是独立步骤。
 <!-- unified-current:end -->
 
 
@@ -13,7 +13,7 @@
 
 ## 发给测试者
 
-1. 本轮本地候选与对应 `.exe.sha256` 一起交付；公开 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 保存已发布版本。
+1. 本轮实验版与对应 `.exe.sha256` 一起交付；公开 [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) 保存已发布版本。
 2. 已 Root 手机使用自己的可信连接；首次准备可进入“首次使用”，自动获取工具、驱动和 Q10 Root 材料。Q20 / Q30 首次 Root 必须使用匹配机型的方法。见[首次使用](FIRST-RUN.md)。
 3. 打开 EXE，点击“检查设备”自动查找已有个人配置；也可主动导入。默认 `bb10-root` 与旧 `q10-root` 都支持，别名不限定手机型号。
 4. 对本轮支持的三款准确型号进入“三网自动适配”，核对当前 SIM，并选择“备份并安装自动适配”。旧的单运营商模板入口保留自身的实验限制。
