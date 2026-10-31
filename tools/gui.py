@@ -118,6 +118,7 @@ PHASES = {'package': tr('校验安装包'), 'connection': tr('连接设备'), 't
           'start': tr('启动服务'), 'registration': tr('验证 IMS 注册'), 'restore': tr('停用并恢复'),
           'stage_cleanup': tr('临时检查文件清理')}
 SERVICE_PHASES = {'waiting_for_native_ims': tr('等待系统 IMS 初始化结束'),
+                  'waiting_for_phone_idle': tr('等待手机和通话服务空闲'),
                   'waiting_for_sim': tr('等待 SIM 就绪'),
                   'waiting_for_lte_and_usim': tr('等待 SIM 和正常 LTE 数据服务'),
                   'reboot_required': tr('请使用手机电源菜单正常重启'),

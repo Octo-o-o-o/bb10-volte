@@ -28,6 +28,34 @@ CELLULAR_HASH = '1fb9b34d9e4b401ce2e7add1dff20f1c8c08dc926d6f25b0ae6b586f122470e
 TECH_BITS = ((1, 'gsm'), (2, 'umts'), (4, 'cdma_1x'), (8, 'evdo'), (16, 'lte'))
 
 
+def idle_resources():
+    return {'call_idle': s.phone_idle(), 'ims_process_count': len(n.ims_pids()),
+            'active_vpn_count': len(n.active_vpn_sessions())}
+
+
+def wait_policy_idle(timeout=180):
+    """Observe startup/call transitions without changing or stopping resources."""
+    quiet = 0
+    for elapsed in range(timeout + 1):
+        if s.stopping():
+            raise RuntimeError('stopped')
+        state = idle_resources()
+        ready = state['call_idle'] and not state['ims_process_count'] and not state['active_vpn_count']
+        quiet = quiet + 1 if ready else 0
+        if quiet >= 2:
+            return
+        s.status('waiting_for_phone_idle', details=state)
+        if elapsed == timeout:
+            raise RuntimeError('startup_resources_busy')
+        time.sleep(1)
+
+
+def assert_policy_idle():
+    assert s.phone_idle(), 'call_or_phone_initialization_busy'
+    assert not n.ims_pids(), 'native_ims_active'
+    assert not n.active_vpn_sessions(), 'vpn_active'
+
+
 def mode_snapshot():
     assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
     raw = n.value(n.attrs(n.read(MODE_STATUS)), 'configure_rats_state')
@@ -99,7 +127,7 @@ def request_mode(value):
 
 
 def ensure_lte_mode(selected):
-    assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+    assert_policy_idle()
     current = mode_snapshot()
     previous = s.load(MODE_RECORD) if os.path.isfile(MODE_RECORD) else None
     if previous:
@@ -135,7 +163,7 @@ def restore_lte_mode():
     assert record['owner'] == policy.OWNER
     if record.get('restored'):
         return
-    assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+    assert_policy_idle()
     current = mode_snapshot()
     assert any(same_mode(current, value) for value in (record['before'], record['applied'])), 'network_mode_changed'
     record['phase'] = 'restoring'
@@ -179,7 +207,7 @@ def set_usage(desired, selected):
     assert desired in (0, 1)
     context()
     radio.verify()
-    assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
+    assert_policy_idle()
     files, values = originals()
     previous = s.load(RECORD) if os.path.isfile(RECORD) else None
     if previous is not None:
@@ -271,7 +299,9 @@ def set_usage(desired, selected):
 
 
 def prepare(selected):
+    wait_policy_idle()
     ensure_lte_mode(selected)
+    wait_policy_idle()
     desired = 1 if selected['operator'] == 'telecom' else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))

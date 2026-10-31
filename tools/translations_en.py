@@ -153,6 +153,7 @@ ENGLISH = {
     '停用并恢复': 'Disable and restore',
     '临时检查文件清理': 'Clean up temporary check files',
     '等待系统 IMS 初始化结束': 'Waiting for system IMS initialization',
+    '等待手机和通话服务空闲': 'Waiting for the phone and call services to become idle',
     '准备运营商配置': 'Preparing carrier configuration',
     '等待 IMS 专用网络': 'Waiting for the IMS network',
     '本次开机尚未启动': 'Not started since boot',

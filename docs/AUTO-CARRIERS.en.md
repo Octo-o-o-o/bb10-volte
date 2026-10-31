@@ -2,11 +2,13 @@
 
 [简体中文](AUTO-CARRIERS.md)
 
-Desktop `0.5.0-r5` uses the same installation workflow and phone payload on Windows and macOS. After the initial installation, a normal phone boot reads the current SIM and generates its IMS identity, carrier domain and data configuration. Subsequent SIM changes need no computer connection or flash.
+Desktop `0.5.0-r6` uses the same installation workflow and phone payload on Windows and macOS. After the initial installation, a normal phone boot reads the current SIM and generates its IMS identity, carrier domain and data configuration. Subsequent SIM changes need no computer connection or flash.
 
 The scope is **SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216**, with Mobile **460-00**, Unicom **460-01** and Telecom **460-11** USIMs without ISIM. Other variants, operating systems, MNCs and SIM routes are rejected. Root and a trusted SSH connection must already work; this workflow does not perform the initial Root flash.
 
 This unified payload needs its own hardware acceptance. Earlier model-specific trials are not proof that all nine new combinations work. As of 2026-10-31, the r1/r2 Q20 Mobile payload passed installation, automatic registration after a normal restart and bidirectional calls with USB disconnected. The two established calls lasted about 4.2 and 4.8 seconds; the first outgoing attempt connected, the owner confirmed two-way audio and LTE, and all 151 radio samples were LTE. Calls longer than 30 seconds and cross-carrier SIM changes remain pending. The first Passport migration boot exposed cached data-centric PPS with modem usage still at 0. Re-publishing the original policy and then data-centric produced verified modem usage 1; r3 includes this fix. Q10 is installed but its first unified boot did not reach LTE. Passport reached LTE while r3 still requested another restart. r4 separates modem-policy changes from boot-time source repairs so repairs alone do not require repeated restarts. Passport Telecom r4 subsequently registered automatically after a normal restart. Q10 retained a 3G/2G-only selection; r5 adds the stock radioctrl selection workflow to enable LTE, save the original mode and restore it on disable. r5 restart, call and SIM-switch acceptance remains pending.
+
+r6 acceptance update: Q10 Telecom r5 passed USB-disconnected calls lasting over 35 seconds in both directions. The owner confirmed bidirectional calls after a phone-only power-off SIM switch to Mobile; log collection is pending. Q20 switching to Telecom and Passport switching to Unicom selected the correct carriers but stopped at the idle-resource check before IMS startup. r6 waits for two consecutive idle observations of call services, IMS and VPN, bounded to 180 seconds. Timeout or stop does not proceed to new policy writes. Hardware retesting is pending; the nine combinations have not all passed. A 4G icon or own-number display alone does not prove voice registration.
 
 ## Use
 

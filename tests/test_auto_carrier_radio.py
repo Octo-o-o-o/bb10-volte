@@ -98,6 +98,69 @@ class LteModeTests(unittest.TestCase):
                                     {'enabled_technologies': 3, 'preferred_technologies': 0}))
 
 
+class StartupIdleTests(unittest.TestCase):
+    def setUp(self):
+        self.tick = 0
+        self.states = [(True, [], [])]
+        self.events = []
+        self.stopped = False
+        stack = ExitStack()
+        self.addCleanup(stack.close)
+        def state():
+            return self.states[min(self.tick, len(self.states) - 1)]
+        def sleep(unused):
+            self.tick += 1
+        def changed(name):
+            self.assertEqual(state(), (True, [], []))
+            self.events.append((name, self.tick))
+            return {'policy_changed_boot': None}
+        for item in (
+            patch.object(d.s, 'stopping', side_effect=lambda: self.stopped),
+            patch.object(d.s, 'phone_idle', side_effect=lambda: state()[0]),
+            patch.object(d.n, 'ims_pids', side_effect=lambda: state()[1]),
+            patch.object(d.n, 'active_vpn_sessions', side_effect=lambda: state()[2]),
+            patch.object(d.s, 'status'), patch.object(d.time, 'sleep', side_effect=sleep),
+            patch.object(d.s, 'boot_token', return_value=['boot']),
+            patch.object(d, 'ensure_lte_mode', side_effect=lambda selected: changed('mode')),
+            patch.object(d, 'set_usage', side_effect=lambda desired, selected: changed('usage')),
+        ):
+            stack.enter_context(item)
+
+    def prepare(self):
+        return d.prepare({'operator': 'unicom', 'family': 'passport'})
+
+    def test_startup_call_state_can_settle_without_abandoning_this_boot(self):
+        self.states = [(False, [], []), (False, [], []), (True, [], [])]
+        self.assertTrue(self.prepare())
+        self.assertEqual([name for name, tick in self.events], ['mode', 'usage'])
+        self.assertTrue(all(tick >= 3 for name, tick in self.events))
+
+    def test_stock_or_vpn_transition_is_only_observed_until_it_is_idle(self):
+        self.states = [(True, [123], []), (True, [], [1]), (True, [], [])]
+        with patch.object(d.os, 'kill') as kill:
+            self.assertTrue(self.prepare())
+            kill.assert_not_called()
+        self.assertTrue(all(tick >= 3 for name, tick in self.events))
+
+    def test_one_quiet_sample_does_not_allow_a_busy_transition_through(self):
+        self.states = [(True, [], []), (False, [], []), (True, [], [])]
+        self.assertTrue(self.prepare())
+        self.assertTrue(all(tick >= 3 for name, tick in self.events))
+
+    def test_busy_timeout_and_stop_do_not_change_network_policy(self):
+        self.states = [(False, [], [])]
+        wait = d.wait_policy_idle
+        with patch.object(d, 'wait_policy_idle', side_effect=lambda: wait(timeout=3)), \
+                self.assertRaisesRegex(RuntimeError, 'startup_resources_busy'):
+            self.prepare()
+        self.assertEqual(self.tick, 3)
+        self.assertFalse(self.events)
+        self.stopped = True
+        with self.assertRaisesRegex(RuntimeError, 'stopped'):
+            self.prepare()
+        self.assertFalse(self.events)
+
+
 class RadioReplyTests(unittest.TestCase):
     def run_reply(self, error=False):
         sent = []

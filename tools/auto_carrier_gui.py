@@ -20,6 +20,7 @@ PHASES = {
     'cleanup_required': '恢复尚未完成，请保留现场并导出报告',
     'not_started': '等待开机服务启动',
     'waiting_for_native_ims': '等待系统 IMS 初始化结束',
+    'waiting_for_phone_idle': '等待手机和通话服务空闲',
     'waiting_for_ims_apn': '等待 IMS 专用网络',
     'configuring': '准备运营商配置',
 }

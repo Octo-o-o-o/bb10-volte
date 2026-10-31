@@ -2,6 +2,10 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r6 · Wait for idle startup resources · 2026-10-31
+
+r6 acceptance update: Q10 Telecom r5 passed USB-disconnected calls lasting over 35 seconds in both directions. The owner confirmed bidirectional calls after a phone-only power-off SIM switch to Mobile; log collection is pending. Q20 switching to Telecom and Passport switching to Unicom selected the correct carriers but stopped at the idle-resource check before IMS startup. r6 waits for two consecutive idle observations of call services, IMS and VPN, bounded to 180 seconds. Timeout or stop does not proceed to new policy writes. Hardware retesting is pending; the nine combinations have not all passed. A 4G icon or own-number display alone does not prove voice registration.
+
 ## 0.5.0-r5 · Restore LTE in the saved technology selection · 2026-10-31
 
 - Q10 retained a 2G/3G-only selection despite correct attach policy. Use the pinned stock `configure_rats` interface to add LTE, retain other technologies, and require its reply plus both status readbacks.
