@@ -4,6 +4,13 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    '当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。': 'The current attach configuration is owned by this tool; its original files and desktop backup receipt are verified.',
+    '这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。': 'This Q10, configuration and SIM have accepted bidirectional audio, LTE, normal restart and calls without USB; critical runtime hashes match.',
+    '启用已验收的开机恢复': 'Enable accepted startup recovery',
+    'Q10 电信：本机与当前 SIM 已验收': 'Q10 Telecom: this phone and SIM accepted',
+    '将按当前设备、配置和 SIM 的实机验收记录启用开机恢复。': 'Enable startup recovery using the hardware acceptance for this phone, configuration and SIM.',
+    '开机恢复已启用': 'Startup recovery enabled',
+    '当前设备、配置、SIM 及关键运行文件已与验收记录核对。正常重启后请等待 IMS 注册。': 'The phone, configuration, SIM and critical runtime files match the acceptance record. Allow IMS to register after a normal restart.',
     'Q20 开机入口与已验收版本不同，自动恢复需要复核；请保留当前配置并导出报告。': 'The Q20 boot hook differs from the accepted revision. Recheck automatic recovery, preserve the current configuration and export a report.',
     '保持现有入网策略': 'Keep the existing attach policy',
     '电信 460-11 数据优先（Q10 试用）': 'Telecom 460-11 data-centric (Q10 manual test)',

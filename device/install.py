@@ -45,7 +45,8 @@ def install(stage, update=False):
     if update:
         previous = json.loads(n.read(BASE+'/installation.json').decode('ascii'))
         assert previous['owner'] == manifest['owner']
-        assert set(previous['files']) in (compatibility.LEGACY_FILES, compatibility.V02_FILES, compatibility.V03_FILES, required)
+        assert set(previous['files']) in (compatibility.LEGACY_FILES, compatibility.V02_FILES,
+                                          compatibility.V03_FILES, compatibility.V04_FILES, required)
         for name, expected in previous['files'].items():
             assert n.digest(n.read(BASE+'/'+name)) == expected, 'Installed file changed outside the project: '+name
         assert n.digest(n.read(ADDON+'/init/start.sh')) == previous['files']['device/addon-start.sh']
@@ -94,7 +95,11 @@ def install(stage, update=False):
     telecom_plan = None
     if request['profile'].get('lte_attach'):
         telecom_plan = prepare_telecom_plan(request)
-    if request['profile']['runtime']['autostart']:
+    restore_accepted_start = False
+    if was_enabled and request['profile'].get('lte_attach'):
+        import autostart_evidence
+        restore_accepted_start = autostart_evidence.observe(BASE, request['profile'])['autostart_authorized']
+    if request['profile']['runtime']['autostart'] or restore_accepted_start:
         n.atomic(BASE + '/enabled', b'enabled by owner installation\n')
     os.unlink(BASE + '/install-transaction.json')
     print(json.dumps({'installed': True, 'base': BASE, 'addon': ADDON,

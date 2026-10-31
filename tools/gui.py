@@ -30,6 +30,8 @@ NAMES = {'model': tr('手机型号'), 'os': tr('系统版本'), 'root': tr('Root
 NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'))
 NOTES = {
     'telecom_attach_manual_port': tr('Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。'),
+    'telecom_attach_owned': tr('当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。'),
+    'telecom_recorded_acceptance': tr('这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。'),
     'telecom_attach_needs_adaptation': tr('电信入网前置流程仅开放散列和原始配置一致的 Q10 SQN100-3 手动试用；Q20 使用已验收的独立适配，Q30 仍待适配。'),
     'q20_root_v2_verified': tr('已验证现有 Q20 旧 Root 适配，无需更换 Root 方案。'),
     'q20_adapter_verified': tr('现有 Q20 适配的全部固定文件校验通过；App 可查询、手动启动或停用恢复。'),
@@ -187,7 +189,8 @@ class App:
         self.menu = tk.Menu(self.more_button, tearoff=False, font=(FONT, 11))
         self.more_button.configure(menu=self.menu)
         self.menu_actions = {}
-        for action, title in [('install', tr('安装 / 更新并验证')), ('status', tr('查看服务状态')), ('disable', tr('停用并恢复'))]:
+        for action, title in [('install', tr('安装 / 更新并验证')), ('status', tr('查看服务状态')),
+                              ('enable', tr('启用已验收的开机恢复')), ('disable', tr('停用并恢复'))]:
             self.menu_actions[action] = self.menu.index('end') + 1 if self.menu.index('end') is not None else 0
             self.menu.add_command(label=title, command=lambda k=action: self.run(k))
         self.menu.add_separator()
@@ -330,6 +333,7 @@ class App:
                    'install': current and (r.get('can_install') or r.get('can_update')) and self.ack.get(),
                    'start': current and r.get('can_start') and self.ack.get(),
                    'status': current and owned,
+                   'enable': current and r.get('can_enable') and not r.get('installation', {}).get('enabled') and self.ack.get(),
                    'disable': current and owned and r.get('can_restore', True) and self.ack.get()}
         return {key: bool(value) and not self.busy for key, value in allowed.items()}
 
@@ -358,9 +362,10 @@ class App:
                        self.experiment_check, self.ack_check, self.setup_button):
             widget.configure(state='disabled' if self.busy else 'normal')
         managed = r.get('managed_adapter') == 'q20_root_v2'
+        accepted_telecom = r.get('hardware_validation') == 'q10_telecom_per_sim_accepted'
         self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
         self.edit_button.configure(state='disabled' if self.busy or managed else 'normal')
-        self.experiment_check.configure(state='disabled' if self.busy or managed else 'normal')
+        self.experiment_check.configure(state='disabled' if self.busy or managed or accepted_telecom else 'normal')
         self.menu.entryconfigure(self.export_index, state='normal' if self.last_result and not self.busy else 'disabled')
         self.details_button.configure(state='normal' if self.display_report and not self.busy else 'disabled')
         needs_ack = any(r.get(key) for key in ('can_install', 'can_update', 'can_start')) or r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
@@ -370,7 +375,7 @@ class App:
             self.ack_check.pack_forget()
         experimental = (self.experimental.get() or not profiles.baseline_parameters(self.profile) or
                         bool(self.device_info) and not self.device_info.get('hardware_tested'))
-        if experimental and not managed:
+        if experimental and not managed and not accepted_telecom:
             self.experiment_check.pack(anchor='w', pady=(12, 0))
         else:
             self.experiment_check.pack_forget()
@@ -406,6 +411,8 @@ class App:
             badge = tr('Passport 恢复策略待验证')
         elif report.get('managed_adapter') == 'q20_root_v2':
             badge = tr('Q20 电信短通话与重启已验收')
+        elif report.get('hardware_validation') == 'q10_telecom_per_sim_accepted':
+            badge = tr('Q10 电信：本机与当前 SIM 已验收')
         display_name = device.get('display_name', tr('未知设备'))
         if display_name == 'Unrecognized BB10 device':
             display_name = tr('未识别的 BB10 设备')
@@ -467,7 +474,7 @@ class App:
         if self._startup_job is not None:
             self.root.after_cancel(self._startup_job)
             self._startup_job = None
-        if action in ('install', 'start', 'disable'):
+        if action in ('install', 'start', 'enable', 'disable'):
             if not self.ack.get() or self.report_connection != self.selection():
                 return
             message = (tr('将停止本项目服务、恢复其修改并关闭自动启动。') if action == 'disable' else
@@ -475,6 +482,8 @@ class App:
                        (tr('开启') if self.profile['runtime']['autostart'] else tr('已关闭')) + tr('。首次启动可能短暂重载无线网络。'))
             if action == 'disable' and (self.report or {}).get('managed_adapter') == 'q20_root_v2':
                 message += tr(' Q20 会保留软件提供器至正常重启；请在恢复完成后用电源菜单重启。')
+            if action == 'enable':
+                message = tr('将按当前设备、配置和 SIM 的实机验收记录启用开机恢复。')
             if not messagebox.askokcancel(tr('确认设备操作'), message + tr('\n\n请保持 USB 连接，操作期间不要换卡或拨打电话。'), parent=self.root):
                 return
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
@@ -582,6 +591,9 @@ class App:
                         self.summary.configure(text=tr('已停用并确认恢复'), fg=GREEN)
                         self.detail.configure(text=tr('Q20 配置已恢复，请用电源菜单正常重启，完成提供器收尾。') if result.get('reboot_required') else
                                               tr('恢复检查通过。再次安装或更新前，请重新预检。'))
+                    elif result.get('enabled'):
+                        self.summary.configure(text=tr('开机恢复已启用'), fg=GREEN)
+                        self.detail.configure(text=tr('当前设备、配置、SIM 及关键运行文件已与验收记录核对。正常重启后请等待 IMS 注册。'))
                     elif result.get('registration') == 'verified' or result.get('registered'):
                         self.summary.configure(text=tr('4G 通话服务已启用') if action == 'preflight' else tr('服务注册正常，待通话验收'), fg=GREEN)
                         self.detail.configure(text=tr('已检测到安装的服务，当前 IMS 注册与 LTE 正常。') if action == 'preflight' else

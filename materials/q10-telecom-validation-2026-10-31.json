@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date_local": "2026-10-31",
-  "status": "manual_short_calls_accepted_controlled_reboot_pending",
+  "status": "short_calls_and_automatic_reboot_registration_accepted_post_reboot_calls_pending",
   "selector": {
     "variant": "SQN100-3",
     "os_version": "10.3.3.3216",
@@ -136,12 +136,28 @@
   "controlled_reboot": {
     "enabled_after_manual_call_receipt": true,
     "profile_parameters_changed": false,
-    "normal_reboot_acceptance": "pending",
+    "normal_reboot_acceptance": "registration_verified_calls_pending",
     "before_boot": [
       59460663,
       1793381982.0
     ],
-    "before_native_pid": 26480677
+    "before_native_pid": 26480677,
+    "normal_menu_reboot_owner_confirmed": true,
+    "registration_verified": true,
+    "boot_changed": true,
+    "new_boot": [
+      1057088206,
+      1793408943.0
+    ],
+    "new_manager_pid": 18255909,
+    "new_native_pid": 20115551,
+    "owned_IMS": "connected/200 OK/LTE",
+    "desktop_service_starts": 0,
+    "manager_to_running_seconds": 311.549,
+    "full_system_boot_time_measured": false,
+    "enabled": true,
+    "post_reboot_calls_without_USB": "pending",
+    "owner_opened_auxiliary_app_or_manually_started_VoLTE_this_boot": false
   },
   "root_after_first_SIM_swap": {
     "SSH_initially_refused": true,
@@ -152,14 +168,23 @@
   "app_fixes": {
     "data_OFF_vs_user_mode_ON": "attach preparation allowed with user data setting ON; core still requires live LTE data before IMS",
     "staged_service_import": "service imported from hash-verified PathTrusted installation destination",
-    "interrupted_preparation": "all written bytes, original native/source baseline, exact transaction and independently copied DCA backups verified before finalization; normal fixed installer update then passed"
+    "interrupted_preparation": "all written bytes, original native/source baseline, exact transaction and independently copied DCA backups verified before finalization; normal fixed installer update then passed",
+    "accepted_startup_management_r4": {
+      "status": "source_regressions_passed_not_deployed",
+      "receipt_issued": false,
+      "phone_remains_r3": true,
+      "critical_runtime_files_unchanged": 12,
+      "scope": "same phone, SIM, profile and critical runtime hashes only",
+      "explicit_disable_preserved_on_update": true
+    }
   },
   "acceptance_limits": [
-    "answered calls 5.012s/4.217s; 20-second sustained calls not accepted",
-    "normal reboot and post-reboot USB-disconnected calls pending",
+    "manual answered calls 5.012s/4.217s; 20-second sustained calls not accepted",
+    "post-reboot USB-disconnected calls pending; automatic IMS registration verified",
     "own-number display question pending",
     "SMS/MMS not tested",
-    "Q30 not accessed; lifecycle gate retained"
+    "Q30 not accessed; lifecycle gate retained",
+    "r4 metadata/App candidate not yet installed; acceptance receipt not yet issued"
   ],
   "privacy": {
     "raw_SIP_and_identity_XML": "private_only",

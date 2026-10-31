@@ -93,7 +93,26 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(self.app.experiment_check.winfo_manager())
         self.assertFalse(self.app.ack_check.winfo_manager())
         self.assertEqual(self.app.allowed_actions(), {'preflight': True, 'install': False,
-                                                     'start': False, 'status': False, 'disable': False})
+                                                     'start': False, 'status': False,
+                                                     'enable': False, 'disable': False})
+
+    def test_accepted_telecom_startup_requires_ack_and_current_connection(self):
+        value = report(installed=True)
+        value.update(hardware_validation='q10_telecom_per_sim_accepted', can_enable=True)
+        value['installation'].update(state='busy', enabled=False)
+        self.app.render_report(value)
+        self.assertIn('当前 SIM 已验收', self.app.device_label.cget('text'))
+        self.assertFalse(self.app.experiment_check.winfo_manager())
+        self.assertFalse(self.app.allowed_actions()['enable'])
+        self.app.ack.set(True)
+        self.assertTrue(self.app.allowed_actions()['enable'])
+        value['installation']['enabled'] = True
+        self.app.render_report(value)
+        self.assertFalse(self.app.allowed_actions()['enable'])
+        value['installation']['enabled'] = False
+        self.app.render_report(value)
+        self.app.host.set('another-device')
+        self.assertFalse(self.app.allowed_actions()['enable'])
 
     def test_unknown_device_name_is_localized_without_changing_report(self):
         value = report(ready=False)

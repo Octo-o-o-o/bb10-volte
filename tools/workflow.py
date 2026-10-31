@@ -183,6 +183,8 @@ class Client:
                             ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/' + name) + ')'
                             for name in ('native.py', 'profiles.py', 'device_info.py', 'compatibility.py',
                                          'telecom_attach.py', 'telecom_dca.py', 'telecom_native.py'))
+        trust += (' && (test ! -e ' + shlex.quote(parent + '/autostart_evidence.py') +
+                  ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/autostart_evidence.py') + ')')
         trust += ' && /proc/boot/pathtrust ' + shlex.quote('!' + path)
         output = self.remote(trust + ' && ' + ENV + '/usr/bin/python3.2 ' + shlex.quote(path) + ' ' + args, timeout)
         try:
@@ -203,7 +205,8 @@ class Client:
         names = (['root-probe.py'] if diagnostic == 'root' else
                  FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py',
-                  'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py'])
+                  'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py',
+                  'device/autostart_evidence.py'])
         names += ['profile-request.json', 'stage-cleanup.py']
         local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
         local_request.parent.mkdir(parents=True, exist_ok=True)
@@ -247,6 +250,24 @@ class Client:
         report = self.execute(path + '/device/compatibility.py', '--request ' + shlex.quote(path + '/profile-request.json'))
         if report.get('schema') != 2 or report.get('profile_sha256') != profiles.fingerprint(self.request):
             raise WorkflowError('invalid_device_response')
+        # Keep the historical request flag for an already accepted, identical
+        # installed configuration. This is not consent to a new experiment.
+        accepted = report.get('telecom_attach', {}).get('autostart_authorized') is True
+        saved = profiles.request(self.profile, True)
+        if (accepted and not self.request['allow_experimental'] and
+                report.get('installation', {}).get('carrier_profile_sha256') == profiles.fingerprint(saved)):
+            self.request = saved
+            local = private_root() / ('accepted-request-' + uuid.uuid4().hex + '.json')
+            local.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                local.write_bytes(profiles.canonical(saved))
+                self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options +
+                             [str(local), self.host + ':' + path + '/profile-request.json'], 40)
+            finally:
+                local.unlink(missing_ok=True)
+            result = self.inspect_stage(path)
+            result['use_installed_profile'] = True
+            return result
         report['community_research'] = evidence_for(report)
         self.progress('preflight', 'done')
         return report
@@ -381,6 +402,9 @@ class Client:
             raise WorkflowError('provider_lifecycle_needs_adaptation', report)
         if action == 'enable' and not report.get('can_enable'):
             raise WorkflowError('preflight_blocked', report)
+        if action == 'enable' and report.get('telecom_attach', {}).get('autostart_authorized') is True:
+            self.execute(BASE + '/device/install.py', 'enable')
+            return {'enabled': True, 'preflight': report, 'registration_not_restarted': True}
         if action in ('start', 'enable'):
             if report['installation'].get('carrier_profile_sha256') != profiles.fingerprint(self.request):
                 raise WorkflowError('profile_update_required', report)

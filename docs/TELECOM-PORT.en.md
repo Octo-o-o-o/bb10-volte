@@ -2,13 +2,13 @@
 
 [简体中文](TELECOM-PORT.md)
 
-Local candidate **0.4.0-r3** records Q20 hardware acceptance and ports its LTE attach preparation to a manual Q10 experiment. A new official release and Mac validation have not been performed in this session.
+Local candidate **0.4.0-r4** records Q20 hardware acceptance and ports LTE attach preparation to Q10. Q10 automatic registration after a normal restart is accepted; calls without USB after that restart remain pending. The phone retains r3 during the call test. A new official release and Mac validation have not been performed in this session.
 
 | Combination | Evidence | App behavior |
 | --- | --- | --- |
 | Q20 SQC100-2 / CLASSICATT / 10.3.3.3216 / existing Root v2 / Telecom 460-11 | LTE data, owned IMS, bidirectional audio and short LTE calls, normal-menu restart recovery, calls after restart without USB | Verify and manage the existing accepted adapter; preserve its boot hook |
 | Same Q20 / Unicom 460-01 | Bidirectional short calls, restart recovery and calls without USB accepted | Reproduction tools retained; current app management manifest pins the Telecom revision |
-| Q10 SQN100-3 / 10.3.3.3216 / AutoRoot v4 / Telecom 460-11 | Matching native hashes, LTE/IMS and bidirectional short calls accepted; controlled restart acceptance pending | Explicit manual experimental profile; automatic startup remains disabled |
+| Q10 SQN100-3 / 10.3.3.3216 / AutoRoot v4 / Telecom 460-11 | LTE/IMS and bidirectional short calls accepted; normal restart yields a new boot, new processes and automatic registration with zero desktop starts; post-restart calls without USB pending | Controlled boot entry enabled for this trial; r4 receipt management and phone update await the call result. Other combinations remain manual experiments |
 | Passport / Q30 / Telecom | No device access, SIM swap or hardware acceptance in this session | Provider lifecycle gate retained; read-only checks remain available |
 | Peer Q20 SQC100-4 / Telecom | User-supplied report claims data, calls and received SMS; final loading path and native policy readings missing | External evidence, separate from this project's hardware acceptance |
 
@@ -24,7 +24,9 @@ The accepted legacy Root adapter lives in /var/q20_volte. It uses its own volati
 
 The new [460-11 profile](../profiles/china-telecom-46011.json) explicitly selects telecom_data_centric_v1. Existing profile canonical bytes and the original 03/11 template are preserved. The port requires exact Q10 SQN100-3 identity, OS/ABI/native hashes, current USIM/carrier XML, no other IMS/VPN, original policies and clean overlays. Additional checks pin qct_rrm and DCA and accept only the four empty/header-only source files.
 
-Installation saves originals, file identity/permissions and a plan. The desktop copies and independently hashes every original and plan before acknowledging any attach write. Manual service startup applies UE1 and voice3, tolerates modem/SIM reload, checks the same SIM and waits for normal LTE data. The existing core still requires LTE/data before IMS configuration. Timeout or failure restores the original source bytes, explicitly publishes voice_centric to recover native UE0, then restores the original missing-key state. Conflicting files are preserved for inspection. Q10 answered calls of 5.012/4.217 seconds are accepted. The template keeps automatic startup false while controlled normal-restart acceptance is pending.
+Installation saves originals, file identity/permissions and a plan. The desktop copies and independently hashes every original and plan before acknowledging any attach write. Manual service startup applies UE1 and voice3, tolerates modem/SIM reload, checks the same SIM and waits for normal LTE data. The existing core still requires LTE/data before IMS configuration. Timeout or failure restores the original source bytes, explicitly publishes voice_centric to recover native UE0, then restores the original missing-key state. Conflicting files are preserved for inspection. Q10 answered calls of 5.012/4.217 seconds are accepted. Normal-menu restart produced a new boot, new processes and 200 OK/LTE with zero desktop starts. Manager startup to registration was 311.549 seconds, mainly waiting for system IMS; full boot time was not measured. Post-restart calls without USB remain pending. The generic template keeps automatic startup false.
+
+r4 startup management requires a maintainer-written acceptance receipt matching this phone, SIM, profile, original backups and 12 critical runtime files. Missing acceptance or a changed SIM/profile/runtime keeps the gate closed. Updates preserve accepted startup intent and do not re-enable an explicitly disabled installation. The call, attach, native and boot code is byte-identical to r3 used in the hardware test. Matching hashes alone do not validate Q30 provider lifecycle.
 
 ## Peer report comparison
 
