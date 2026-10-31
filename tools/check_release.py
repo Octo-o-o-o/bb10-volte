@@ -16,6 +16,8 @@ PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
             'experiments/q10_telecom/*.py', 'experiments/q10_telecom/*.md',
+            'experiments/passport_operator_name/*.py', 'experiments/passport_operator_name/*.sh',
+            'experiments/passport_operator_name/*.md',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 RECORDING_MANIFEST = 'materials/recording-files.json'

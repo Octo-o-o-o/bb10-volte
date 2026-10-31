@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "updated_utc": "2026-10-31T07:31:58.036674+00:00",
+  "state": "display_fixed_and_owner_confirmed",
+  "device": {
+    "family": "Passport",
+    "variant": "SQW100-4",
+    "board": "WINDERMERE4ROW",
+    "os_version": "10.3.3.3216"
+  },
+  "carrier": {
+    "mcc": "460",
+    "mnc": "11",
+    "display_name": "中国电信"
+  },
+  "cause": {
+    "original_table_missing_460_11": true,
+    "original_table_sha256": "bddd9ab02035490838c39c2ca33668d920753083153ffcd209a640d28febf810",
+    "original_table_bytes": 9231,
+    "before": {
+      "display": {
+        "name_short": "",
+        "name_long": "460-11"
+      },
+      "rum": "460-11",
+      "navigator": [
+        "460-11"
+      ]
+    }
+  },
+  "fix": {
+    "owner": "passport-operator-name-independent-v1",
+    "base": "/var/rootdata/passport_operator_name",
+    "overlay_sha256": "48cf1cf31f55f5fe5c0632ae70283a2a282724270180a5ae9905f8ec562c9f59",
+    "overlay_bytes": 9264,
+    "source_table_bytes_overwritten": false,
+    "original_table_backed_up_and_hash_verified": true,
+    "fields_updated": [
+      "current_ons.name_long",
+      "current_ons.name_short"
+    ],
+    "code_files_sha256": {
+      "name.py": "412c45b3bbedfd36c2e3494944664cc2896c38bf1a068362a5ee124472d759be",
+      "native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+      "device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+      "start.sh": "87928fe395d8312a6e9abdc9e2da4142e8ac84e8e285220560d819e2854a5c90"
+    },
+    "radio_or_IMS_writes": 0
+  },
+  "verification": {
+    "after": {
+      "display": {
+        "name_short": "中国电信",
+        "name_long": "中国电信"
+      },
+      "rum": "中国电信",
+      "navigator": [
+        "中国电信"
+      ],
+      "network": {
+        "network_technology": "lte",
+        "roaming": {
+          "suppress": false,
+          "state": "NOT_ROAMING",
+          "type": 0
+        },
+        "serving_network": {
+          "is_femto": false,
+          "mnc": "11",
+          "mcc": "460"
+        },
+        "network_service": 52429824
+      },
+      "worker_alive": true,
+      "enabled": true
+    },
+    "owner_confirmed_top_bar": true,
+    "core_manifest_identical_before_and_after": true,
+    "core_manifest_sha256": "eb437731630bca4ea3ca8e544d88158e6b577bc7664b5db1de6ac90b3a9f7f4b",
+    "core_service_start_requests": 0,
+    "unit_tests_passed": 7
+  },
+  "startup": {
+    "addon": "/var/addons/passport-operator-name/init/start.sh",
+    "entry_sha256": "87928fe395d8312a6e9abdc9e2da4142e8ac84e8e285220560d819e2854a5c90",
+    "entry_readback_hash_verified": true,
+    "root_ready_wait_seconds": 120,
+    "worker_poll_seconds": 10,
+    "entry_manual_execution": "passed; existing worker returned without duplicate",
+    "normal_menu_reboot_tested": false
+  },
+  "existing_ims_state": {
+    "observed_before_fix": {
+      "status": null,
+      "native_pids": [],
+      "saved_phase": "configuration_restored_reboot_required",
+      "register_status": "200 OK"
+    },
+    "cause": "Previous 1800-second manual research lease expired before this task; its own cleanup restored configuration.",
+    "name_repair_restored_ims": false,
+    "next_boot_telecom_network_acceptance": "outside this name-only repair"
+  },
+  "other_devices_operated": false,
+  "private_data_exported": false,
+  "references": [
+    "https://www.qnx.com/developers/docs/6.5.0SP1.update/com.qnx.doc.neutrino_lib_ref/p/pathmgr_symlink.html"
+  ]
+}
