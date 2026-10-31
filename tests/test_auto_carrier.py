@@ -206,6 +206,40 @@ class DcaTransactionTests(unittest.TestCase):
         self.token = ['third']
         self.assertTrue(d.prepare(selected))
 
+    def test_q10_mobile_uses_data_centric_and_unicom_restores_exact_originals(self):
+        mobile = p.select(facts('SQN100-3'), card('00'))
+        with patch.object(d.n, 'voice_policy', return_value=3):
+            self.assertTrue(d.prepare(mobile))
+        self.assertEqual(self.usage, 1)
+        self.assertTrue(all(b'::data_centric' in raw for raw in self.sources.values()))
+        self.token = ['next-sim-boot']
+        self.assertTrue(d.prepare(p.select(facts('SQN100-3'), card('01'))))
+        self.assertEqual(self.usage, 0)
+        self.assertEqual(self.sources, self.original)
+        self.assertEqual(json.loads(self.files[d.RECORD])['operator'], 'unicom')
+
+    def test_q10_mobile_repairs_regenerated_sources_without_an_extra_reboot(self):
+        mobile = p.select(facts('SQN100-3'), card('00'))
+        with patch.object(d.n, 'voice_policy', return_value=3):
+            self.assertTrue(d.prepare(mobile))
+            self.token = ['later-boot']
+            self.sources.update(self.original)
+            self.assertTrue(d.prepare(mobile))
+        self.assertEqual(self.usage, 1)
+        record = json.loads(self.files[d.RECORD])
+        self.assertTrue(record['source_repair_only'])
+        self.assertEqual(record['policy_changed_boot'], ['first'])
+
+    def test_q10_mobile_fix_does_not_change_other_non_telecom_usage_settings(self):
+        for variant, mnc in (('SQC100-2', '00'), ('SQW100-4', '00'),
+                             ('SQN100-3', '01'), ('SQC100-2', '01'), ('SQW100-4', '01')):
+            with self.subTest(variant=variant, mnc=mnc):
+                self.assertTrue(d.prepare(p.select(facts(variant), card(mnc))))
+                self.assertEqual(self.usage, 0)
+                self.assertEqual(self.sources, self.original)
+                self.assertFalse(self.writes)
+                self.assertNotIn(d.RECORD, self.files)
+
     def test_calls_block_all_source_writes(self):
         with patch.object(d.s, 'phone_idle', return_value=False), self.assertRaises(AssertionError):
             d.set_usage(1, self.selected)

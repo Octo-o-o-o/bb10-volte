@@ -20,7 +20,8 @@ PREVIOUS_PAYLOADS = ('7352686da4a229135d7685ffc58c2aae8b1c5c588bcb72fe733799b233
                      '4f92bfe1a7182b1b03f0aa875b864c27e15572b5d9a06aa5d8503d3f2cbab99b',
                      '93ed64504ccf1845bce246e35dbbeea9a04912c72ceb005be2f863a3ffa222a5',
                      '5c2d9d893f88d40b6fde943f85722471da8cd3aa3a61ece7e403e03a48c84943',
-                     'e179d971012e0013caf692fc51273c4f62ebaab861af1e36570400515c02382f')
+                     'e179d971012e0013caf692fc51273c4f62ebaab861af1e36570400515c02382f',
+                     'a9a1609e31b8477e01c2c30511b6dfdc5914a4df5bff521f227f3deab77a963b')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
@@ -101,7 +102,7 @@ def probe():
 
 
 def update(stage):
-    """Upgrade only the known inactive r1/r2 Python payload; retain its backup.
+    """Upgrade only a known inactive Python payload; retain its backup.
 
     The boot marker is removed before replacing bytes, and the new manifest is
     written last. A stopped partial update resumes only its recorded old/new

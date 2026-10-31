@@ -302,7 +302,12 @@ def prepare(selected):
     wait_policy_idle()
     ensure_lte_mode(selected)
     wait_policy_idle()
-    desired = 1 if selected['operator'] == 'telecom' else 0
+    # SQN100-3 / 460-00 can initially register IMS in voice-centric mode,
+    # then receive CS-domain rejection 18 and have LTE disabled by the modem.
+    # Use the backed-up DCA transaction before IMS starts, as for Telecom.
+    # Other non-Telecom combinations retain their original usage policy.
+    desired = 1 if (selected['operator'] == 'telecom' or
+                    selected['family'] == 'q10' and selected['operator'] == 'mobile') else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))
     if selected['family'] == 'passport' and policy_boot == s.boot_token():
