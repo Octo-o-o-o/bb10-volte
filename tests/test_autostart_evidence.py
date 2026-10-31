@@ -59,7 +59,8 @@ class EvidenceFixture:
         self.receipt = {'owner': a.OWNER, 'variant': 'SQN100-3', 'profile_sha256': self.fp,
             'sim_fingerprint': self.sim, 'critical_files': self.critical, 'desktop_starts_during_reboot': 0,
             'manual_calls': True, 'normal_reboot': True, 'post_reboot_calls_without_usb': True,
-            'audio_both_directions': True, 'lte': True, 'sip_dialogs_verified': True}
+            'audio_both_directions': True, 'lte': True, 'manual_sip_dialogs_verified': True,
+            'post_reboot_ims_call_events_verified': True}
         self.put(self.base + '/state/telecom-autostart-acceptance.json', self.receipt)
 
     def put(self, path, value):

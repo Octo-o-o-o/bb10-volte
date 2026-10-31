@@ -12,6 +12,8 @@ import socket
 import struct
 import subprocess
 import sys
+import time
+import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -49,9 +51,27 @@ class Client(workflow.Client):
         return result.stdout
 
     def remote(self, command, timeout=40):
-        with (KIT / 'command-audit.jsonl').open('a', encoding='utf-8') as output:
-            output.write(json.dumps({'at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                'command': command, 'model_guard': 'SQN100-3', 'interface': json.loads((KIT / 'session.json').read_text())['interface']}) + '\n')
+        record = {'at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  'command': command, 'model_guard': 'SQN100-3',
+                  'interface': json.loads((KIT / 'session.json').read_text())['interface']}
+        events = KIT / 'command-audit-events'
+        events.mkdir(exist_ok=True)
+        (events / (uuid.uuid4().hex + '.json')).write_text(json.dumps(record), encoding='utf-8')
+        lock = KIT / 'command-audit.lock'
+        deadline = time.monotonic() + 15
+        while True:
+            try:
+                lock.mkdir()
+                break
+            except FileExistsError:
+                if time.monotonic() >= deadline:
+                    raise workflow.WorkflowError('audit_lock_pending')
+                time.sleep(0.02)
+        try:
+            with (KIT / 'command-audit.jsonl').open('a', encoding='utf-8') as output:
+                output.write(json.dumps(record) + '\n')
+        finally:
+            lock.rmdir()
         return super().remote(GUARD + command, timeout)
 
 

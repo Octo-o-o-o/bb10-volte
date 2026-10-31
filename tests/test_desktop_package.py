@@ -118,7 +118,7 @@ class DesktopPackageTests(unittest.TestCase):
                     patch.object(client, 'execute', return_value={'stage_removed': True}):
                 with client.stage():
                     pass
-                self.assertEqual(run.call_count, 10)
+                self.assertEqual(run.call_count, 11)
                 for call in run.call_args_list:
                     self.assertEqual(call.args[0][:5], ['/test path/scp', '-S', '/test path/ssh', '-O', '-q'])
 

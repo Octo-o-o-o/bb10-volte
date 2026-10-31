@@ -57,6 +57,7 @@ def runtime_data():
     names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',
                   'materials/q20-device-validation-2026-10-30.json',
                   'materials/q10-telecom-validation-2026-10-31.json',
+                  'materials/q10-operator-name-validation-2026-10-31.json',
                   'materials/q20-telecom-research-2026-10-30.json',
                   'materials/q20-peer-telecom-comparison-2026-10-31.json'})
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))

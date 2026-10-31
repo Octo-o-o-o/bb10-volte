@@ -96,12 +96,24 @@ class GuiTests(unittest.TestCase):
                                                      'start': False, 'status': False,
                                                      'enable': False, 'disable': False})
 
+    def test_device_shortcut_can_select_the_exact_carrier_without_experimental_consent(self):
+        profile = next(p for p in gui.presets() if p['id'] == 'china-telecom-46011-data-centric')
+        self.app.close()
+        self.root = tk.Tk(); self.root.withdraw()
+        self.app = gui.App(self.root, host='q10-telecom-root', profile=profile)
+        self.assertEqual(self.app.profile, profile)
+        self.assertFalse(self.app.experimental.get())
+        self.assertIsNone(self.app.report)
+        self.assertFalse(self.app.allowed_actions()['enable'])
+
     def test_accepted_telecom_startup_requires_ack_and_current_connection(self):
         value = report(installed=True)
         value.update(hardware_validation='q10_telecom_per_sim_accepted', can_enable=True)
+        value['operator_display'] = {'name': '中国电信'}
         value['installation'].update(state='busy', enabled=False)
         self.app.render_report(value)
         self.assertIn('当前 SIM 已验收', self.app.device_label.cget('text'))
+        self.assertIn('运营商：中国电信', self.app.device_label.cget('text'))
         self.assertFalse(self.app.experiment_check.winfo_manager())
         self.assertFalse(self.app.allowed_actions()['enable'])
         self.app.ack.set(True)

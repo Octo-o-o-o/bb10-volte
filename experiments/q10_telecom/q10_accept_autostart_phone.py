@@ -18,7 +18,8 @@ CRITICAL = ('device/service.py', 'device/native.py', 'device/profiles.py',
     'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py',
     'device/run.sh', 'device/addon-start.sh', 'driver/devnp-volte_swcrypto_probe.so')
 FLAGS = ('manual_calls', 'normal_reboot', 'post_reboot_calls_without_usb',
-         'audio_both_directions', 'lte', 'sip_dialogs_verified')
+         'audio_both_directions', 'lte', 'manual_sip_dialogs_verified',
+         'post_reboot_ims_call_events_verified')
 
 
 def main():

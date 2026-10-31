@@ -75,7 +75,8 @@ def observe(base, profile):
         assert receipt['owner'] == OWNER and receipt['variant'] == 'SQN100-3'
         assert receipt['profile_sha256'] == fingerprint and receipt['sim_fingerprint'] == sim
         assert all(receipt[key] is True for key in ('manual_calls', 'normal_reboot',
-                   'post_reboot_calls_without_usb', 'audio_both_directions', 'lte', 'sip_dialogs_verified'))
+                   'post_reboot_calls_without_usb', 'audio_both_directions', 'lte',
+                   'manual_sip_dialogs_verified', 'post_reboot_ims_call_events_verified'))
         assert type(receipt['desktop_starts_during_reboot']) is int and receipt['desktop_starts_during_reboot'] == 0
         manifest = load(base + '/installation.json')
         assert manifest['owner'] == 'q10-unicom-volte-v1'

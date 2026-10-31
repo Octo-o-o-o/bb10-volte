@@ -24,7 +24,8 @@ LEGACY_FILES = {'device/install.py', 'device/service.py', 'device/native.py',
 V02_FILES = LEGACY_FILES | {'device/compatibility.py'}
 V03_FILES = V02_FILES | {'device/profiles.py', 'device/device_info.py'}
 V04_FILES = V03_FILES | {'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py'}
-FILES = V04_FILES | {'device/autostart_evidence.py'}
+V04_AUTH_FILES = V04_FILES | {'device/autostart_evidence.py'}
+FILES = V04_AUTH_FILES | {'device/operator_name.py', 'device/operator-name-start.sh'}
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
 DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
@@ -306,7 +307,7 @@ def installed_state():
             return result
         manifest = json.loads(n.read(BASE + '/installation.json').decode('ascii'))
         names = set(manifest['files'])
-        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, V03_FILES, V04_FILES, FILES):
+        if manifest['owner'] != OWNER or names not in (LEGACY_FILES, V02_FILES, V03_FILES, V04_FILES, V04_AUTH_FILES, FILES):
             return result
         for name, expected in manifest['files'].items():
             path = BASE + '/' + name
@@ -318,7 +319,7 @@ def installed_state():
         result = {'state': 'stopped', 'version': manifest.get('version'),
                   'enabled': os.path.isfile(BASE + '/enabled'), 'payload_verified': True,
                   'current_profile': names == FILES}
-        if names in (V03_FILES, V04_FILES, FILES):
+        if names in (V03_FILES, V04_FILES, V04_AUTH_FILES, FILES):
             if os.path.islink(BASE + '/carrier-profile.json'):
                 return {'state': 'conflict'}
             request = profiles.installed_request(BASE)
@@ -428,6 +429,11 @@ def observe(profile=None):
                 s['telecom_attach'].update(autostart_evidence.observe(BASE, p))
             except ImportError:
                 pass
+            try:
+                import operator_name
+                s['operator_display'] = operator_name.observe()
+            except ImportError:
+                pass
     return s
 
 
@@ -499,6 +505,8 @@ def evaluate(s, profile=None, allow_experimental=False):
             'device': device, 'native_sha256': s.get('native_sha256', {}),
             'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),
             'network_diagnostics': public_network_diagnostics(s),
+            'operator_display': {key: s.get('operator_display', {}).get(key) for key in
+                                 ('name', 'table_overlay_owned', 'worker_alive')},
             'configuration_diagnostics': public_flags(s.get('configuration_diagnostics'), CONFIGURATION_FLAGS),
             'telecom_attach': {key: attach_facts.get(key) is True for key in
                                ('native_supported', 'source_baseline', 'original_usage', 'backup_verified',

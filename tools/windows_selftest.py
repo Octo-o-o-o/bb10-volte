@@ -162,11 +162,11 @@ def run(output):
     with client.stage():
         pass
     assert bundle / 'tools/stage_cleanup.py' in transferred
-    assert len(transferred) == 10
+    assert len(transferred) == 11
     with client.stage(diagnostic='root'):
         pass
     assert bundle / 'tools/root_probe.py' in transferred
-    assert len(transferred) == 13
+    assert len(transferred) == 14
     if frozen():
         assert (bundle / 'licenses/THIRD-PARTY-NOTICES.txt').stat().st_size > 1000
         assert (bundle / 'assets/app.ico').is_file()

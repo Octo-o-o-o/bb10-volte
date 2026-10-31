@@ -4,6 +4,7 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    '  ·  运营商：中国电信': '  ·  Carrier: China Telecom',
     '当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。': 'The current attach configuration is owned by this tool; its original files and desktop backup receipt are verified.',
     '这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。': 'This Q10, configuration and SIM have accepted bidirectional audio, LTE, normal restart and calls without USB; critical runtime hashes match.',
     '启用已验收的开机恢复': 'Enable accepted startup recovery',

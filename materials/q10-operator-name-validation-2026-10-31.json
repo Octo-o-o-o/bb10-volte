@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "date_local": "2026-10-31",
+  "variant": "SQN100-3",
+  "os_version": "10.3.3.3216",
+  "profile_sha256": "233775663e32f85c1b58da08711b0b3cda8d187c682d6ec1b1bd948a7c91e446",
+  "MCC": "460",
+  "MNC": "11",
+  "original_display": "460-11",
+  "desired_display": "中国电信",
+  "root_cause": "SIM has no usable SPN/PNN/OPL; stock SE13 lookup for 460-11 returns empty names",
+  "stock_override_file": "/base/etc/network/BBSE-se13-network-override-list.txt",
+  "stock_override_sha256": "bddd9ab02035490838c39c2ca33668d920753083153ffcd209a640d28febf810",
+  "overlay_sha256": "48cf1cf31f55f5fe5c0632ae70283a2a282724270180a5ae9905f8ec562c9f59",
+  "patch": "append one UTF-8 中国电信|中国电信|460|11 row to a complete verified copy",
+  "stock_file_rewritten": false,
+  "in_memory_path_alias": true,
+  "native_or_IMS_parameters_changed": false,
+  "MCC_MNC_service_state_SIM_or_caller_identity_changed": false,
+  "system_readback": {
+    "UICC_current_ons": "中国电信",
+    "RUM_network_name": "中国电信",
+    "navigator_operator_name_string": [
+      "中国电信"
+    ]
+  },
+  "owner_top_bar_confirmed": true,
+  "IMS_remained_registered_LTE_during_first_apply": true,
+  "eligibility": "accepted Q10/SIM/profile/runtime, home 460-11, normal LTE service, not roaming",
+  "boot_integration": "independent Root addon; wait for complete SIM authorization before display changes",
+  "normal_reboot_display_restore_accepted": false,
+  "restore": "remove only owned alias; preserve unknown links/tables and all stock bytes",
+  "primary_reference": "https://qnx.com/developers/docs/6.6.0_anm11_wf10/com.qnx.doc.neutrino.lib_ref/topic/p/pathmgr_symlink.html",
+  "raw_firmware_tables_and_logs": "private_only",
+  "r5_deployment": {
+    "revision": "0.4.0-r5",
+    "payload_files": 17,
+    "all_payload_hashes_verified": true,
+    "enabled_preserved_during_update": true,
+    "critical_runtime_files_unchanged": 12,
+    "accepted_SIM_profile_detected": true,
+    "enable_does_not_restart_IMS": true,
+    "operator_display": {
+      "name": "中国电信",
+      "table_overlay_owned": true,
+      "worker_alive": true
+    },
+    "current_IMS": {
+      "phase": "running",
+      "enabled": true,
+      "manager_alive": true,
+      "native_alive": true,
+      "current": {
+        "ims": "connected",
+        "register_status": "200 OK",
+        "ran": "LTE",
+        "radio": [
+          "lte"
+        ],
+        "power": "ON"
+      },
+      "status_from_current_boot": true,
+      "ims_observation_scope": "owned_native",
+      "startup_wait": {}
+    },
+    "normal_reboot_after_r5_update": "pending",
+    "regressions": {
+      "main_ran": 392,
+      "main_passed": 391,
+      "main_skipped": 1,
+      "Q20_adapter_passed": 23
+    }
+  }
+}

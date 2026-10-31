@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date_local": "2026-10-31",
-  "status": "short_calls_and_automatic_reboot_registration_accepted_post_reboot_calls_pending",
+  "status": "short_calls_normal_reboot_and_USB_disconnected_calls_accepted",
   "selector": {
     "variant": "SQN100-3",
     "os_version": "10.3.3.3216",
@@ -136,7 +136,7 @@
   "controlled_reboot": {
     "enabled_after_manual_call_receipt": true,
     "profile_parameters_changed": false,
-    "normal_reboot_acceptance": "registration_verified_calls_pending",
+    "normal_reboot_acceptance": "accepted",
     "before_boot": [
       59460663,
       1793381982.0
@@ -156,8 +156,57 @@
     "manager_to_running_seconds": 311.549,
     "full_system_boot_time_measured": false,
     "enabled": true,
-    "post_reboot_calls_without_USB": "pending",
-    "owner_opened_auxiliary_app_or_manually_started_VoLTE_this_boot": false
+    "post_reboot_calls_without_USB": "accepted",
+    "owner_opened_auxiliary_app_or_manually_started_VoLTE_this_boot": false,
+    "post_reboot_call_evidence": {
+      "schema": 1,
+      "label": "after-reboot",
+      "owner": {
+        "outgoing": true,
+        "incoming": true,
+        "audio_both_directions": true,
+        "lte": true,
+        "USB_disconnected": true,
+        "USB_reconnected": true
+      },
+      "boot": [
+        1057088206,
+        1793408943.0
+      ],
+      "native_pid": 20115551,
+      "manager_pid": 18255909,
+      "phone_service_calls": [
+        {
+          "direction": "outgoing",
+          "connected_at": "11:13:53.805",
+          "disconnected_at": "11:14:01.280",
+          "phone_state_interval_seconds": 7.475,
+          "connected_and_disconnected_verified": true
+        },
+        {
+          "direction": "incoming",
+          "connected_at": "11:14:10.592",
+          "disconnected_at": "11:14:17.302",
+          "phone_state_interval_seconds": 6.71,
+          "connected_and_disconnected_verified": true
+        }
+      ],
+      "connection_path": "ims_cellular",
+      "connection_type": "ir_92",
+      "both_call_state_cycles_verified": true,
+      "IMS_call_handles_count": 2,
+      "raw_hashes": {
+        "cellular_voice_service.log": "d1a4f7100be0403d3861de15961f9aae97370cc9286c22b6a5bfa586b72e603e",
+        "ims_rrm_if.log": "fdf7984efe02838278edb0d7b60feac4e36157cbea26c3d4efbe44480e687954",
+        "phone_service.log": "1a4ffd3eb3b5b3c56afbd4bbe513d1b99fa68afd71af9346e4699915fb8a05d3"
+      },
+      "post_reboot_full_SIP_dialogs_retained": false,
+      "SIP_limit": "bounded recorder finished before the calls; native ring retained partial incoming dialog only",
+      "twenty_second_sustained_acceptance": false,
+      "duration_limit": "phone state intervals include event delivery delays; neither call reached 20 seconds",
+      "desktop_captured_utc": "2026-10-31T03:26:49.417732+00:00"
+    },
+    "final_acceptance_receipt_sha256": "9188b990a5c1012afff17159940df03ab83f7a701b5b0222c34afaca24cdc785"
   },
   "root_after_first_SIM_swap": {
     "SSH_initially_refused": true,
@@ -169,25 +218,69 @@
     "data_OFF_vs_user_mode_ON": "attach preparation allowed with user data setting ON; core still requires live LTE data before IMS",
     "staged_service_import": "service imported from hash-verified PathTrusted installation destination",
     "interrupted_preparation": "all written bytes, original native/source baseline, exact transaction and independently copied DCA backups verified before finalization; normal fixed installer update then passed",
-    "accepted_startup_management_r4": {
-      "status": "source_regressions_passed_not_deployed",
-      "receipt_issued": false,
-      "phone_remains_r3": true,
+    "accepted_startup_management_r5": {
+      "strict_per_SIM_receipt_issued": true,
       "critical_runtime_files_unchanged": 12,
-      "scope": "same phone, SIM, profile and critical runtime hashes only",
-      "explicit_disable_preserved_on_update": true
+      "explicit_disable_preserved_on_update": true,
+      "operator_name_independent_of_IMS": true,
+      "normal_reboot_after_r5_update": "pending"
     }
   },
   "acceptance_limits": [
-    "manual answered calls 5.012s/4.217s; 20-second sustained calls not accepted",
-    "post-reboot USB-disconnected calls pending; automatic IMS registration verified",
-    "own-number display question pending",
+    "all accepted calls are short; 20-second sustained calls not accepted",
+    "post-reboot bounded recorder ended before calls; only partial incoming SIP retained; both IMS call-state cycles verified",
+    "normal reboot of the additional r5 display-name addon pending",
+    "own-number display not independently confirmed on Q10",
     "SMS/MMS not tested",
-    "Q30 not accessed; lifecycle gate retained",
-    "r4 metadata/App candidate not yet installed; acceptance receipt not yet issued"
+    "Q30 not accessed; lifecycle gate retained"
   ],
   "privacy": {
     "raw_SIP_and_identity_XML": "private_only",
     "phone_numbers_IMSI_ICCID_IMEI_or_keys_in_public_record": false
+  },
+  "accepted_before_r5_backup": {
+    "files": 124,
+    "bytes": 11988518,
+    "all_hashes_verified": true,
+    "service_interrupted": false
+  },
+  "r5_deployment": {
+    "revision": "0.4.0-r5",
+    "payload_files": 17,
+    "all_payload_hashes_verified": true,
+    "enabled_preserved_during_update": true,
+    "critical_runtime_files_unchanged": 12,
+    "accepted_SIM_profile_detected": true,
+    "enable_does_not_restart_IMS": true,
+    "operator_display": {
+      "name": "中国电信",
+      "table_overlay_owned": true,
+      "worker_alive": true
+    },
+    "current_IMS": {
+      "phase": "running",
+      "enabled": true,
+      "manager_alive": true,
+      "native_alive": true,
+      "current": {
+        "ims": "connected",
+        "register_status": "200 OK",
+        "ran": "LTE",
+        "radio": [
+          "lte"
+        ],
+        "power": "ON"
+      },
+      "status_from_current_boot": true,
+      "ims_observation_scope": "owned_native",
+      "startup_wait": {}
+    },
+    "normal_reboot_after_r5_update": "pending",
+    "regressions": {
+      "main_ran": 392,
+      "main_passed": 391,
+      "main_skipped": 1,
+      "Q20_adapter_passed": 23
+    }
   }
 }

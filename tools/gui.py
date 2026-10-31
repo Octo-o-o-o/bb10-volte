@@ -121,7 +121,7 @@ SERVICE_PHASES = {'waiting_for_native_ims': tr('等待系统 IMS 初始化结束
 
 
 class App:
-    def __init__(self, root, host='bb10-root', config='', auto_connect=False):
+    def __init__(self, root, host='bb10-root', config='', auto_connect=False, profile=None):
         self.root, self.events = root, queue.Queue()
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
@@ -131,7 +131,7 @@ class App:
         self.connection_dialog = None
         self._startup_job = None
         self.presets = presets()
-        self.profile = profiles.default()
+        self.profile = profiles.validate(profile) if profile is not None else profiles.default()
         self.profile_name = tk.StringVar(value=picker_label(self.profile['label']))
         self.experimental = tk.BooleanVar(value=False)
         saved = saved_connection(require_files=False) if not config and host == 'bb10-root' else None
@@ -416,8 +416,9 @@ class App:
         display_name = device.get('display_name', tr('未知设备'))
         if display_name == 'Unrecognized BB10 device':
             display_name = tr('未识别的 BB10 设备')
-        self.device_label.configure(text='{}  /  {}  /  OS {}  ·  {}'.format(
-            display_name, device.get('variant', '?'), device.get('os_version', '?'), badge))
+        carrier = (tr('  ·  运营商：中国电信') if report.get('operator_display', {}).get('name') == '中国电信' else '')
+        self.device_label.configure(text='{}  /  {}  /  OS {}  ·  {}{}'.format(
+            display_name, device.get('variant', '?'), device.get('os_version', '?'), badge, carrier))
         self.table.delete(*self.table.get_children())
         labels = {'pass': tr('通过'), 'wait': tr('待处理'), 'adapt': tr('需适配'), 'block': tr('不支持')}
         problems = []
@@ -842,6 +843,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--host', default='bb10-root')
     parser.add_argument('--ssh-config', default='')
+    parser.add_argument('--profile-id', choices=[p['id'] for p in presets()],
+                        help='Select an explicit carrier preset for a device-specific shortcut')
     parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
     parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')
     parser.add_argument('--flash-stage', choices=('os', 'radio'), help=argparse.SUPPRESS)
@@ -853,6 +856,7 @@ def main():
     parser.add_argument('--root-offline', action='store_true', help='Require cached Root inputs without any Python download')
     parser.add_argument('--download-proxy', help='Optional proxy for missing preparation inputs')
     args = parser.parse_args()
+    selected_profile = next((p for p in presets() if p['id'] == args.profile_id), None)
     prepare_external_programs()
     if args.flash_stage:
         if not args.root_kit or not args.flash_token:
@@ -875,7 +879,7 @@ def main():
         return run(args.self_test)
     if args.preflight_report:
         try:
-            client, _ = resolve_connection(args.host, args.ssh_config)
+            client, _ = resolve_connection(args.host, args.ssh_config, profile=selected_profile)
             report = client.preflight()
             if report['installation']['state'] in ('busy', 'stopped', 'recovery_required'):
                 status = public_status(client.service('status'))
@@ -896,7 +900,7 @@ def main():
     # The window remains resizable; Tk's default font scaling otherwise clips
     # the fixed-width sidebar and pushes the operation status below the window.
     root.tk.call('tk', 'scaling', min(float(root.tk.call('tk', 'scaling')), 1.6))
-    App(root, args.host, args.ssh_config, auto_connect=True)
+    App(root, args.host, args.ssh_config, auto_connect=True, profile=selected_profile)
     root.mainloop()
     return 0
 

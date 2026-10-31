@@ -185,6 +185,8 @@ class Client:
                                          'telecom_attach.py', 'telecom_dca.py', 'telecom_native.py'))
         trust += (' && (test ! -e ' + shlex.quote(parent + '/autostart_evidence.py') +
                   ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/autostart_evidence.py') + ')')
+        trust += (' && (test ! -e ' + shlex.quote(parent + '/operator_name.py') +
+                  ' || /proc/boot/pathtrust ' + shlex.quote('!' + parent + '/operator_name.py') + ')')
         trust += ' && /proc/boot/pathtrust ' + shlex.quote('!' + path)
         output = self.remote(trust + ' && ' + ENV + '/usr/bin/python3.2 ' + shlex.quote(path) + ' ' + args, timeout)
         try:
@@ -206,7 +208,7 @@ class Client:
                  FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py',
                   'device/telecom_attach.py', 'device/telecom_dca.py', 'device/telecom_native.py',
-                  'device/autostart_evidence.py'])
+                  'device/autostart_evidence.py', 'device/operator_name.py'])
         names += ['profile-request.json', 'stage-cleanup.py']
         local_request = private_root() / ('profile-stage-' + uuid.uuid4().hex + '.json')
         local_request.parent.mkdir(parents=True, exist_ok=True)
