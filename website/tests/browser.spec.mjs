@@ -110,7 +110,7 @@ test('an older API release cannot downgrade curated downloads or mix mirror vers
   await page.goto('/guide.html');
   await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-download="windows"]').first()).toHaveAttribute('href', windowsFallback);
-  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', /github\.com\/.*\/v0\.5\.0-r10\/bb10-volte-0\.5\.0-r10-windows-x64\.exe$/);
+  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', windowsFallback.replace('https://bb10-downloads.octoooo.com', 'https://github.com/Octo-o-o-o/bb10-volte/releases/download'));
 });
 
 test('guide uses a readable single-column article on desktop', async ({ page }) => {
