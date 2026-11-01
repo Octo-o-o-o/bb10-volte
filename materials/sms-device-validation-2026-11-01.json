@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "acceptance_date": "2026-11-01",
+  "target_release": "v0.5.0-r14",
+  "scope": "Q20 SQC100-2 / Unicom 460-01 and Passport SQW100-4 / Mobile 460-00; OS 10.3.3.3216; USIM without ISIM",
+  "cases": [
+    {
+      "device": "q20",
+      "variant": "SQC100-2",
+      "mcc_mnc": "460-01",
+      "runtime_image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
+      "release_constructor_bytes_match_device": true,
+      "normal_menu_reboot_root_and_service_autostart": true,
+      "post_reboot_lte_ims": "200 OK",
+      "short_sms_sent_and_received_once": true,
+      "two_segment_sms_complete_single_hub_message": true,
+      "same_text_independent_messages_sent": 2,
+      "same_text_independent_messages_received": 2,
+      "extra_delivery_observed": false,
+      "minimum_observation_after_last_send_seconds": 180,
+      "final_read_only_counters": {
+        "correlated": 5,
+        "missing": 0,
+        "lock": 0,
+        "epoch": 0,
+        "full": 0,
+        "captured": 5,
+        "malformed": 0,
+        "conflict": 0
+      },
+      "native_ack_in_reply_to_present_redacted": true,
+      "native_ack_gateway_response": 200,
+      "voice_owner_confirmed_audio_both_directions_and_lte": true,
+      "voice_dialogs": [
+        {
+          "direction": "incoming",
+          "invite_at": "23:37:31.384",
+          "answer_200_at": "23:37:38.774",
+          "ack_at": "23:37:39.166",
+          "bye_at": "23:37:48.773",
+          "bye_200_at": "23:37:48.975",
+          "established_seconds_to_bye": 9.999,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "outgoing",
+          "invite_at": "23:37:54.573",
+          "answer_200_at": "23:38:01.061",
+          "ack_at": "23:38:01.065",
+          "bye_at": "23:38:08.062",
+          "bye_200_at": "23:38:08.253",
+          "established_seconds_to_bye": 7.001,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "logging_restored_without_conflict": true,
+      "private_evidence_sha256": {
+        "short_voice/owned-ims.log": "998076fc001d301d450a80cfb2640e1d024541bb40869c076184dff6d92b1304",
+        "short_voice/samples.json": "d9dadde37e2083bcfc8a6d56469adf7f2c10fffe903029457ef3783ed0abab45",
+        "short_voice/finished.json": "38a3961c08bd227f2aad392042e832b40fdec7fc91424c99c9834fbfb108b3f3",
+        "short_voice/redacted.json": "79c28d98e2b7ef7ff554abe4f7cdeb387ce4763b0be2cdeb3e734a262b5c98df",
+        "long_same/owned-ims.log": "ede9c39d9d495945a8d53dce183e1a9819605869425dd1f2b5fb1eb7da5b3acb",
+        "long_same/samples.json": "7db14c3c2aa99a6d045285796c6788b1df443f2c65b55dd303e897c20d118d8f",
+        "long_same/finished.json": "6339658a88faedf4ae12a32cf5ac5e20502ce4a681ab30c4fd67ec9fe34d14dc",
+        "long_same/redacted.json": "1f58f9825da45bbfa90294dd3b5841252afb10e227d27691f154eef8445da8de"
+      }
+    },
+    {
+      "device": "passport",
+      "variant": "SQW100-4",
+      "mcc_mnc": "460-00",
+      "runtime_image_sha256": "e035bd7176e8944a927950d6521fa28e35100ecf8e3a5605a1e1f1c9470e3925",
+      "release_constructor_bytes_match_device": true,
+      "normal_menu_reboot_root_and_service_autostart": true,
+      "post_reboot_lte_ims": "200 OK",
+      "short_sms_sent_and_received_once": true,
+      "two_segment_sms_complete_single_hub_message": true,
+      "same_text_independent_messages_sent": 2,
+      "same_text_independent_messages_received": 2,
+      "extra_delivery_observed": false,
+      "minimum_observation_after_last_send_seconds": 180,
+      "final_read_only_counters": {
+        "correlated": 5,
+        "missing": 0,
+        "lock": 0,
+        "epoch": 0,
+        "full": 0,
+        "captured": 5,
+        "malformed": 0,
+        "conflict": 0
+      },
+      "native_ack_in_reply_to_present_redacted": true,
+      "native_ack_gateway_response": 200,
+      "voice_owner_confirmed_audio_both_directions_and_lte": true,
+      "voice_dialogs": [
+        {
+          "direction": "outgoing",
+          "invite_at": "23:37:30.243",
+          "answer_200_at": "23:37:41.057",
+          "ack_at": "23:37:41.060",
+          "bye_at": "23:37:48.526",
+          "bye_200_at": "23:37:48.721",
+          "established_seconds_to_bye": 7.469,
+          "invite_200_ack_bye_verified": true
+        },
+        {
+          "direction": "incoming",
+          "invite_at": "23:37:55.485",
+          "answer_200_at": "23:38:00.186",
+          "ack_at": "23:38:00.380",
+          "bye_at": "23:38:07.865",
+          "bye_200_at": "23:38:08.055",
+          "established_seconds_to_bye": 7.679,
+          "invite_200_ack_bye_verified": true
+        }
+      ],
+      "logging_restored_without_conflict": true,
+      "private_evidence_sha256": {
+        "short_voice/owned-ims.log": "a8a9a52f32c62508e06e5db8abd3c6170b9a38c4710a0ec102d3cfc59ba36140",
+        "short_voice/samples.json": "9874ae5104d8066f5799ca52d2dd3433c547c55649d856a0a9bac5c26bfc5201",
+        "short_voice/finished.json": "11be03ca084a3215f5062631d6295390fc943e28a3ed59c44909db74dafade66",
+        "short_voice/redacted.json": "bc67cf6ca42b21f62aa1b3115da20635ba9488f4650ad5b487b0def279c2c792",
+        "long_same/owned-ims.log": "5afda6070da5562183582337bff015072eff6a977cd24db6efd11a1a653077d9",
+        "long_same/samples.json": "87aac6c93c89cf84fad32070c26229d3f486182228927a02fd40cb8e238ee653",
+        "long_same/finished.json": "c84f5a55b32deb3e0f7d654194860feb6c19e118a0e27065ae81fe77f1678809",
+        "long_same/redacted.json": "0d378caeddc7dde2792a9857ddac5f098b46f7851f1a1fcb1b176da7811a431d"
+      }
+    }
+  ],
+  "private_identifiers_or_message_content_included": false,
+  "limitations": [
+    "Two device/carrier combinations, not all nine historical voice cases.",
+    "Native slog redacts RP references and correlation values; no full clear-text SIP capture was obtained.",
+    "Delivery verdict combines native Hub screenshots, owner confirmation, ACK 200 responses and read-only shim counters.",
+    "Voice regression comprised short calls of about 7 to 10 seconds; historical 35-second acceptance is separate.",
+    "No long-term, roaming, emergency-call, Q10 first-Root or Intel USB-flashing acceptance."
+  ]
+}

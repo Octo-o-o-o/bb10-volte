@@ -1,5 +1,9 @@
 # 更新日志
 
+## 0.5.0-r14 — 短信实机修复与 Mac／Windows 首次 Root
+
+服务启用原生短信 ACK 关联。Q20／联通与 Passport／移动通过短短信、两段长短信、同内容独立两条消息及无重复观察，短时双向声音与 LTE 正常。完成 Mac／Q20、Windows／Passport 首次 Root 和菜单重启自动启动。修复新系统缺失 addons 目录、USB 发现地址、原生提示缓冲、Windows 完成判定及 Mac loader／末尾重连；保留失败证据与严格停止规则。实机范围及限制见 [验收记录](SMS-ROOT-ACCEPTANCE-2026-11-01.md)。
+
 [English](UPDATELOG.en.md)
 
 ## 0.5.0-r13 · 会话整合、固件流程与短信诊断 · 2026-11-01

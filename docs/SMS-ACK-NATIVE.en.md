@@ -1,12 +1,12 @@
 # Native MT SMS ACK correlation candidate
 
-**r13 release boundary:** SMS send-domain policy and offline diagnostics are integrated. The native MT ACK candidate remains available in source and the verifier, disabled by default. Normal startup retains the previously hash-checked voice IMS bytes. The offline maintainer verifier explicitly selects `sms_ack=True`. QNX loading, gateway acceptance, real SMS delivery and duplicate elimination still require device acceptance.
+**r14 release scope:** The service enables native MT ACK correlation. Q20/Unicom and Passport/Mobile passed native short and two-part SMS, two independent identical-text messages, duplicate observation and short bidirectional voice calls. See the [hardware record](SMS-ROOT-ACCEPTANCE-2026-11-01.md). The offline verifier establishes only instruction and ELF checks; the library constructor retains voice-only defaults for explicit comparisons.
 
 [简体中文](SMS-ACK-NATIVE.md) · [SMS policy and capture](SMS-DIAGNOSTICS.en.md)
 
 The initial offline investigation on 2026-11-01 identified the missing correlation step. The first private Q20 trial subsequently crashed with SIGSEGV in the QNX dynamic linker before IMS entry. A third LOAD header replaced this linker's text relocation bias; generic ELF checks and callsite emulation did not cover that platform restriction.
 
-The revised candidate retains two LOAD headers, extends the original RX mapping and preserves the original RW overlay and zero-fill. Stock and revised images pass dependency enumeration with `LD_TLO=1`; the old candidate reproduces the crash. The revised image subsequently started on the Q20 with Root-v2, with RX code and RW cache verified in its actual mappings. REGISTER timed out without observed SIP responses; the trial was disabled and configuration restored. **Gateway acceptance, delivery counts and voice regression remain pending.** See the [device acceptance record](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
+The revised candidate retains two LOAD headers, extends the original RX mapping and preserves the original RW overlay and zero-fill. Stock and revised images pass dependency enumeration with `LD_TLO=1`; the old candidate reproduces the crash. The revised image subsequently started on the Q20 with Root-v2, with RX code and RW cache verified in its actual mappings. REGISTER timed out without observed SIP responses; the trial was disabled and configuration restored. That failed trial is retained; subsequent fresh AutoRoot v4 trials passed gateway ACKs, delivery counts and voice regression. See the [device acceptance record](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
 
 ## Native finding
 

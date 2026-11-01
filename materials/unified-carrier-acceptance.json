@@ -262,8 +262,15 @@
       "SQW100-4"
     ],
     "macos_r7_signed_notarized_stapled_selftest_passed": true,
-    "current_mac_physical_usb_acceptance": "deferred_by_owner",
+    "current_mac_physical_usb_acceptance": "r14 Apple Silicon Q20 native first Root and normal reboot verified; full GUI first-use and Intel USB flashing unverified",
     "current_package_evidence": "Self-test, signing and notarization reports accompany built artifacts separately."
   },
-  "private_phone_identifiers_or_logs_included": false
+  "private_phone_identifiers_or_logs_included": false,
+  "sms_acceptance_r14": {
+    "combinations_passed": 2,
+    "scope": "Q20 SQC100-2 / Unicom 460-01 and Passport SQW100-4 / Mobile 460-00; OS 10.3.3.3216; USIM without ISIM",
+    "short_long_and_identical_text_messages": true,
+    "normal_reboot_and_short_voice_regression": true,
+    "record": "materials/sms-device-validation-2026-11-01.json"
+  }
 }

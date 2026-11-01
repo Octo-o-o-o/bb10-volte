@@ -8,7 +8,7 @@ import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSI
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guide.html', '404.html', 'en/index.html', 'en/guide.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13';
+const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14';
 
 function idsFor(source) {
   return new Set([...source.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
@@ -210,7 +210,7 @@ test('both translations retain the extra restart and offline SIM-change scope', 
     for (const variant of ['SQN100-3', 'SQC100-2', 'SQW100-4']) assert.ok(source.includes(variant));
     assert.ok(source.includes('acceptance.json'));
     assert.ok(source.includes('data-github-download="windows"'));
-    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r13/'));
+    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r14/'));
     assert.match(source, page.startsWith('en/') ? /extra normal restart|additional normal restart/ : /再正常重启一次|还需一次正常重启/);
   }
 });

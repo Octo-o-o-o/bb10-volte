@@ -37,7 +37,7 @@ OS 仍要求 **10.3.3.3216**，原生文件哈希、ARM32、SIM 类型、APN 和
 
 正常业务使用 SSH/SCP 到所选手机，并可读取直接 USB 地址的匿名机型发现信息。首次准备按固定清单下载 HTTPS 材料。自定义 `ssh_config` 可自行指定网络主机、代理或跳板，这会改变连接路径；准备步骤只运行已核验的固定工具与本项目脚本。操作系统本身的证书、杀毒或信誉查询不属于本程序逻辑，因此不承诺整台 Windows 电脑零网络流量。
 
-首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。`0.3.3-r8` 按准确硬件型号获取 Q10、Classic（Q20）或 Passport（Q30）原版固件，自动下载、浏览器链接与导入校验使用同一映射。公共工具包括 AutoRoot v4、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；当前源码与 `0.5.0-r11` 构建已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过，新的向导首刷尚未在未 Root 手机上验收；Mac 原生流程仍需实机验收。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
+首次准备的固定下载来源和散列见 [sources.json](../materials/sources.json)、[usb-drivers.json](../materials/usb-drivers.json)。`0.3.3-r8` 按准确硬件型号获取 Q10、Classic（Q20）或 Passport（Q30）原版固件，自动下载、浏览器链接与导入校验使用同一映射。公共工具包括 AutoRoot v4、libusb、LZO、7-Zip、固定 Git for Windows / OpenSSL 文件及 USB 驱动；`0.5.0-r14`已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过。r14 已完成 Windows／Passport SQW100-4 与 Apple 芯片 Mac／Q20 SQC100-2 的首次 Root、新密钥 UID 0、首次安装及正常菜单重启自动启动；原生阶段使用验收入口执行，完整 GUI 首次使用、Q10 首刷及 Intel USB 刷写尚未验收。**没有一种材料必须在每次运行时重新在线下载**；可以预先获取、校验后离线传递。
 
 ## 保存位置与升级
 

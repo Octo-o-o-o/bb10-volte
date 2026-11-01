@@ -26,12 +26,12 @@
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r13/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/SHA256SUMS.txt) |
 
-EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。此前 r10 的 Mac＋Q20 连接和 USB 重连已通过；本次 r13 增加包级回归，不代表新增手机通话验收。
+EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 
 ## 支持情况
 
@@ -47,13 +47,13 @@ EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系
 
 实测包括系统拨号器呼出、呼入、双向声音、LTE 通话和不连电脑换卡；本机号码与运营商显示也已验证。图中手机为机型示意。准确 SIM 范围为移动 460-00、联通 460-01、电信 460-11 的 USIM（无 ISIM）。
 
-**短信收发和重复接收尚未实机验收。** 当前源码含短信 PS 配置与 [MT ACK 原生关联修复候选](docs/SMS-ACK-NATIVE.md)，已通过离线指令／ELF 检查，原生 ACK 候选默认关闭；历史证据和日志开关见[短信排查与取证](docs/SMS-DIAGNOSTICS.md)。
+**r14 已启用短信 ACK 关联修复。** Q20 SQC100-2／联通 460-01 与 Passport SQW100-4／移动 460-00 已完成原生短信双向收发、两段长短信、相同内容两条独立消息及至少 3 分钟无重复观察；双向通话声音与 LTE 正常。其他组合的短信尚未实测。见[实机验收](materials/sms-device-validation-2026-11-01.json)与[修复说明](docs/SMS-ACK-NATIVE.md)。
 
 不同组合的测试时间和依据保留在[验收记录](materials/unified-carrier-acceptance.json)，包括初始卡与换卡测试、日志和机主确认的区别。其他硬件变体、系统版本、漫游、长期待机和紧急呼叫尚未完整验证。
 
 ## Windows 界面
 
-`0.5.0-r13` 已增加[低版本 OS 升级与型号匹配](docs/FIRMWARE-UPGRADE.md)、手机授权命令前置检查及配套操作说明。升级会清空手机数据，须单独确认；旧系统真机升级闭环尚待验收。上述下载已包含这些新增流程。
+`0.5.0-r14` 已增加[低版本 OS 升级与型号匹配](docs/FIRMWARE-UPGRADE.md)、手机授权命令前置检查及配套操作说明。升级会清空手机数据，须单独确认；旧系统真机升级闭环尚待验收。上述下载已包含这些新增流程。
 
 ![Windows 版三网自动适配界面](website/src/assets/windows-setup.jpg)
 
@@ -74,7 +74,7 @@ EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系
 
 ### 首次 Root 与连接
 
-已 Root 且有可信 SSH 的手机无需重新刷机。`0.5.0-r13` 已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过，新的向导首刷尚未在未 Root 手机上验收；Mac 原生流程仍需实机验收。准备至少 15 GB 空间。导入后点击“自动准备 Root 镜像”，完成后再确认刷写，见[首次使用](docs/FIRST-RUN.md)。
+已 Root 且有可信 SSH 的手机无需重新刷机。`0.5.0-r14` 已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过。r14 已完成 Windows／Passport SQW100-4 与 Apple 芯片 Mac／Q20 SQC100-2 的首次 Root、新密钥 UID 0、首次安装及正常菜单重启自动启动；原生阶段使用验收入口执行，完整 GUI 首次使用、Q10 首刷及 Intel USB 刷写尚未验收。准备至少 15 GB 空间。导入后点击“自动准备 Root 镜像”，完成后再确认刷写，见[首次使用](docs/FIRST-RUN.md)。
 
 固件浏览器下载支持[极空间](https://t3.znas.cn/9jkbxczhAK4)及应用内百度网盘备用入口；下载后按机型校验导入，分享有效期以网页为准。它们与本页的 EXE/DMG 下载不同。见[首次使用](docs/FIRST-RUN.md)、[Mac 指南](docs/MACOS.md)和[连接说明](docs/GUI.md)。
 

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -79,8 +79,8 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r13';
-  const basename = 'bb10-volte-0.5.0-r13';
+  const tag = 'v0.5.0-r14';
+  const basename = 'bb10-volte-0.5.0-r14';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
     `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,

@@ -15,7 +15,7 @@ except ModuleNotFoundError as error:
 
 
 class SmsAckArtifactTests(unittest.TestCase):
-    def test_normal_startup_does_not_enable_unaccepted_native_sms_hooks(self):
+    def test_library_constructor_requires_explicit_sms_opt_in(self):
         import ims_image
         with patch.object(ims_image, '_voice_binary', return_value=(b'accepted', [])), \
                 patch.object(ims_image, 'sms_ack_binary', return_value=(b'candidate', [])) as shim:

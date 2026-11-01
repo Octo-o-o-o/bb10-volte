@@ -81,7 +81,7 @@
       "fresh_addon_installation": true,
       "menu_reboot_root_and_service_autostart": true,
       "post_menu_reboot_ims": "200 OK on LTE",
-      "voice_and_sms_acceptance": false,
+      "voice_and_sms_acceptance": true,
       "full_gui_first_use_acceptance": false,
       "private_direct_shutdown_attempt": "unresponsive black screen; recovered with owner power-key reset; not accepted as normal reboot"
     },
@@ -117,6 +117,36 @@
         "windows-tests-mac-discovery-v7.log": "a55322f4ed7cf6e23fe7e6ac2908c5c232fe38756fdcddf01dee20815f468a0f",
         "macos-tests-mac-discovery-v7.log": "0a36ad833eda5f406fb7bd35e3e1b84347c74c2d8b79a598cfe3ac03dcd5102e"
       }
-    }
+    },
+    "sms_candidate_normal_menu_reboot": {
+      "q20": {
+        "normal_menu_reboot_confirmed_by_owner": true,
+        "blackberry_world_not_opened_after_reboot": true,
+        "root_euid": 0,
+        "root_done": true,
+        "service_auto_started": true,
+        "lte": true,
+        "ims_register_status": "200 OK",
+        "private_status_sha256": "1be9fff76fb1f8ae7364ad6eccaee4961c544d85135a993c93a54b58d707da07"
+      },
+      "passport": {
+        "normal_menu_reboot_confirmed_by_owner": true,
+        "blackberry_world_not_opened_after_reboot": true,
+        "root_euid": 0,
+        "root_done": true,
+        "service_auto_started": true,
+        "lte": true,
+        "ims_register_status": "200 OK",
+        "private_status_sha256": "0edac96d6b5a4a77e665ae977c7c81fadefdddd2393305e74b67a1a0b97f25a9"
+      }
+    },
+    "native_intel_rosetta_smoke": {
+      "patched_binary_sha256": "82a0d67f66c45062b153ed93dbcf0e544bab5585e4f58ea6bbd0413e3b9e5a54",
+      "production_direct_invocation_exit": 0,
+      "help_header_verified": true,
+      "usb_flash_performed": false,
+      "earlier_arch_wrapper_dyld_failure_preserved": true
+    },
+    "sms_voice_record": "sms-device-validation-2026-11-01.json"
   }
 }

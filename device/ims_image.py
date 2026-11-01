@@ -155,15 +155,15 @@ def sms_ack_binary(image, patches=()):
               'receive_file_offset': 0x2eeff2, 'send_file_offset': 0x2ee3c6,
               'code_sha256': hashlib.sha256(SMS_ACK_CODE).hexdigest(),
               'image_sha256': hashlib.sha256(result).hexdigest(),
-              'validation': 'candidate_pending_device_sms_acceptance'}
+              'validation': 'hash_pinned_sms_correlation_hardware_scope_recorded_separately'}
     return result, list(patches) + [record]
 
 
 def temporary_binary(original, normal_voice=False, sms_ack=False):
-    """Keep the accepted voice image unless a maintainer opts into the shim.
+    """Require callers to select the SMS shim explicitly.
 
-    The native SMS candidate has no QNX loader or carrier acceptance yet.
-    Normal service startup must not silently replace every accepted IMS image.
+    The service opts in after Q20/Unicom and Passport/Mobile acceptance.
+    Keep voice-only construction available for comparisons and legacy callers.
     """
     assert type(sms_ack) is bool, 'SMS candidate opt-in must be explicit'
     changed, patches = _voice_binary(original, normal_voice)

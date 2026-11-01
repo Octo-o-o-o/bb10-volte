@@ -16,7 +16,9 @@ import telecom_dca as dca
 import telecom_native as radio
 
 BASE = policy.BASE
-PREVIOUS_PAYLOADS = ('bab5ee0e0496b8694265b9df3300e140bf44a3433e0fdf65ac56420d3066fddc',
+PREVIOUS_PAYLOADS = ('99ff0c8b1c3118bbb15b0177a9177e2f592b4d0711fb1c59698eddfb3942b4f2',
+                     '69820d4e94e09adbf71078eb8d1b2f6c946303424001e0d3760b530c2cd1f318',
+                     'bab5ee0e0496b8694265b9df3300e140bf44a3433e0fdf65ac56420d3066fddc',
                      '7352686da4a229135d7685ffc58c2aae8b1c5c588bcb72fe733799b2336b3a90',
                      '4f92bfe1a7182b1b03f0aa875b864c27e15572b5d9a06aa5d8503d3f2cbab99b',
                      '93ed64504ccf1845bce246e35dbbeea9a04912c72ceb005be2f863a3ffa222a5',

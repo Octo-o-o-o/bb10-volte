@@ -126,7 +126,7 @@ class SetupWizard(tk.Toplevel):
         ttk.Label(root_tab, text=tr('自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写'), wraplength=740,
                   font=(FONT, 11, 'bold')).pack(anchor='w')
         if sys.platform == 'darwin':
-            ttk.Label(root_tab, text=tr('macOS 14+ 原生实验流程：按 Q10、Q20 或 Q30 的准确型号准备镜像，经双重确认后打开 Terminal 刷写；Mac 首刷尚未实机验收。'),
+            ttk.Label(root_tab, text=tr('macOS 14+ 原生实验流程：按准确型号准备镜像，确认后打开 Terminal 刷写；Apple 芯片 Mac／Q20 已完成原生首刷验收，其他组合仍待验证。'),
                       wraplength=740).pack(anchor='w', pady=(12, 0))
         if sys.platform != 'win32':
             self.tabs.tab(drivers, state='disabled')
@@ -210,7 +210,7 @@ class SetupWizard(tk.Toplevel):
         self.ack.trace_add('write', lambda *_: self.refresh())
         self.mac_flash_check = None
         if sys.platform == 'darwin':
-            self.mac_flash_check = ttk.Checkbutton(root_tab, text=tr('已核对手机尚未 Root，理解 Mac 首刷尚未实机验收'),
+            self.mac_flash_check = ttk.Checkbutton(root_tab, text=tr('已核对手机尚未 Root，理解实验性刷写的验证范围'),
                                                    variable=self.mac_flash_ack)
             self.mac_flash_check.pack(anchor='w', pady=(6, 0))
             self.mac_flash_ack.trace_add('write', lambda *_: self.refresh())
@@ -332,7 +332,7 @@ class SetupWizard(tk.Toplevel):
         if not self.ack.get():
             return tr('{} 的 Root 镜像已准备。请确认已备份并核对机型，再勾选同意清空数据。').format(variant)
         if sys.platform == 'darwin' and not self.mac_flash_ack.get():
-            return tr('请再确认手机尚未 Root，并勾选理解 Mac 首刷尚未实机验收。')
+            return tr('请再确认手机尚未 Root，并勾选理解实验性刷写的验证范围。')
         return None
 
     def firmware_target(self):

@@ -457,7 +457,7 @@ def configure():
              vpn_before_uids=sorted(x.decode('ascii') for x in n.vpn_ids(n.vpn_configs())))
     save_journal()
     original = n.read('/radio/bin/ims_rrm')
-    changed, patches = temporary_binary(original, True)
+    changed, patches = temporary_binary(original, True, sms_ack=True)
     write_owned(BIN, changed, 0o755)
     j['binary_patches'] = patches
     write_owned(APN, carrier_xml, 0o644)

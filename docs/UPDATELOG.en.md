@@ -1,5 +1,9 @@
 # Update log
 
+## 0.5.0-r14 — Hardware SMS fix and Mac/Windows first Root
+
+Enables native SMS ACK correlation. Q20/Unicom and Passport/Mobile passed short, two-part and independent identical-text messages without extra delivery, plus short bidirectional audio/LTE calls. Mac/Q20 and Windows/Passport passed first Root and normal-restart autostart. Repairs fresh addon setup, USB discovery, native prompt buffering, Windows completion classification and pinned Mac loader/final reconnect. Failed receipts and strict stop conditions are retained. See the [scope and evidence](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
+
 [简体中文](UPDATELOG.md)
 
 ## 0.5.0-r13 · Integrated fixes, firmware workflows and SMS diagnostics · 2026-11-01

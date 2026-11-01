@@ -26,12 +26,12 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r13/bb10-volte-0.5.0-r13-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/bb10-volte-0.5.0-r13-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r13/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r13/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/SHA256SUMS.txt) |
 
-EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. The earlier r10 Mac/Q20 connection and USB-reconnect checks passed; r13 adds package regression checks and does not imply new phone-call acceptance.
+EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 
 ## Supported phones and carriers
 
@@ -47,7 +47,7 @@ EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system
 
 Acceptance covers native incoming/outgoing calls, audio in both directions, LTE and SIM changes without a computer. Own-number and carrier display have also been checked. Phones in the image are illustrations. Exact SIM scope: Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM.
 
-**SMS send/receive and duplicate delivery have not passed device acceptance.** Source includes SMS PS policy and a [native MT ACK correlation candidate](docs/SMS-ACK-NATIVE.en.md), with offline instruction/ELF checks passed; the native ACK candidate is disabled by default. See [SMS diagnostics](docs/SMS-DIAGNOSTICS.en.md) for historical evidence and logging.
+**r14 enables native SMS ACK correlation.** Q20 SQC100-2 / Unicom 460-01 and Passport SQW100-4 / Mobile 460-00 passed native SMS in both directions, two-part long messages, two independent messages with identical text, and at least three minutes without duplicate delivery. Short bidirectional calls retained audio and LTE. Other SMS combinations remain untested. See the [hardware record](materials/sms-device-validation-2026-11-01.json) and [fix details](docs/SMS-ACK-NATIVE.en.md).
 
 The [acceptance record](materials/unified-carrier-acceptance.json) retains dates, tested software revisions, initial-card versus SIM-change cases, and the distinction between logs and owner confirmation. Other variants, OS versions, roaming, long standby and emergency calls are not comprehensively validated.
 
@@ -70,9 +70,9 @@ Recognized old payloads are stopped and restored before upgrade. Restart to clea
 
 ## First-time Root and connections
 
-`0.5.0-r13` adds [old-OS upgrades and model matching](docs/FIRMWARE-UPGRADE.en.md), guarded phone-pairing commands, and exported instructions. Upgrading erases phone data and requires separate confirmation. Physical old-OS upgrade acceptance is pending.
+`0.5.0-r14` adds [old-OS upgrades and model matching](docs/FIRMWARE-UPGRADE.en.md), guarded phone-pairing commands, and exported instructions. Upgrading erases phone data and requires separate confirmation. Physical old-OS upgrade acceptance is pending.
 
-An already-rooted phone with trusted SSH does not need reflashing. `0.5.0-r13` builds integrate automatic Root preparation and staged flashing for Q10, Classic (Q20), and Passport (Q30). Select firmware for the exact hardware variant; initial flashing erases data. Offline Windows builds and verification passed for all three firmware families. The new wizard has not been validated by first-flashing an unrooted phone, and native Mac hardware acceptance remains pending. Allow at least 15 GB. After importing firmware, prepare Root images before confirming flashing. See [First use](docs/FIRST-RUN.en.md).
+An already-rooted phone with trusted SSH does not need reflashing. `0.5.0-r14` builds integrate automatic Root preparation and staged flashing for Q10, Classic (Q20), and Passport (Q30). Select firmware for the exact hardware variant; initial flashing erases data. Offline Windows builds and verification passed for all three firmware families. r14 passed first Root on Windows / Passport SQW100-4 and Apple Silicon Mac / Q20 SQC100-2, including new-key UID 0, fresh installation and normal-menu reboot autostart. Native stages ran through acceptance entry points; complete first-use GUI operation, Q10 first Root and Intel USB flashing remain unverified. Allow at least 15 GB. After importing firmware, prepare Root images before confirming flashing. See [First use](docs/FIRST-RUN.en.md).
 
 Stock-firmware browser alternatives include [ZSpace](https://t3.znas.cn/9jkbxczhAK4) and Baidu links inside the app, with model-specific import checks. Those downloads are separate from the desktop EXE/DMG. See [First run](docs/FIRST-RUN.en.md), [Mac](docs/MACOS.en.md) and [GUI](docs/GUI.en.md).
 

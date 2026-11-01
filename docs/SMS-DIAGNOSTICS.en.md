@@ -1,10 +1,10 @@
 # BB10 SMS domain and duplicate delivery investigation
 
-**r13 release boundary:** SMS send-domain policy and offline diagnostics are integrated. The native MT ACK candidate remains available in source and the verifier, disabled by default. Normal startup retains the previously hash-checked voice IMS bytes. The offline maintainer verifier explicitly selects `sms_ack=True`. QNX loading, gateway acceptance, real SMS delivery and duplicate elimination still require device acceptance.
+**r14 release scope:** The service enables native MT ACK correlation. Q20/Unicom and Passport/Mobile passed native short and two-part SMS, two independent identical-text messages, duplicate observation and short bidirectional voice calls. See the [hardware record](SMS-ROOT-ACCEPTANCE-2026-11-01.md). The offline verifier establishes only instruction and ELF checks; the library constructor retains voice-only defaults for explicit comparisons.
 
 [简体中文](SMS-DIAGNOSTICS.md)
 
-2026-11-01: this source candidate adds an explicit SMS policy and an offline diagnostic tool. Follow-up analysis also implements a [native MT ACK correlation candidate](SMS-ACK-NATIVE.en.md). **Device SMS acceptance remains pending; elimination of duplicate delivery is not verified.** No phone was connected or modified, and no SMS was sent. Previous nine-combination acceptance covers voice, SIM changes and display, not SMS.
+2026-11-01: this source candidate adds an explicit SMS policy and an offline diagnostic tool. Follow-up analysis also implements a [native MT ACK correlation candidate](SMS-ACK-NATIVE.en.md). The initial offline investigation did not connect or modify a phone or send SMS. Subsequent two-device acceptance is recorded in the r14 scope above. Previous nine-combination acceptance covers voice, SIM changes and display, not SMS.
 
 The report concerns Q20, OS 10.3.3.3216, AutoRoot v4 and Unicom 460-01. It describes four MT deliveries about 30 seconds apart with different RP references, and MO failure after CS with `no retry default`. Raw logs and the exact hardware variant were not supplied.
 
