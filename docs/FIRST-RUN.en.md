@@ -4,11 +4,11 @@
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
-Desktop version `0.3.3-r3` provides a First use wizard for connection checks, Windows SSH components, USB drivers and initial Q10 Root preparation.
+The First use wizard provides connection checks, Windows SSH components, USB drivers and initial Root preparation. The local `0.5.0-r11` candidate supports matching firmware, image preparation and staged flashing for Q10, Q20 and Q30.
 
 ## First connection on a Mac
 
-Start with the [Mac phone guide](MACOS.en.md). For an unrooted Q10, r6 adds experimental native preparation and separately confirmed staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5. A rooted phone with personal connection materials can import them or use Check device. A rooted phone with no old Windows files can authorize a fresh Mac key in an existing working phone Root terminal. With neither valid materials nor a working Root terminal, direct connection is unavailable. New authorization persistently appends a public key to phone SSH access and requires the owner's explicit `PAIR`; development mode does not grant Root.
+Start with the [Mac phone guide](MACOS.en.md). Source integrates experimental native preparation and separately confirmed staged execution for Q10, Q20 and Q30 on macOS 14+. This change has no new DMG build or hardware first-flash acceptance. A rooted phone with personal connection materials can import them or use Check device. A rooted phone with no old Windows files can authorize a fresh Mac key in an existing working phone Root terminal. With neither valid materials nor a working Root terminal, direct connection is unavailable. New authorization persistently appends a public key to phone SSH access and requires the owner's explicit `PAIR`; development mode does not grant Root.
 
 An existing microSD card, Mac card reader and phone file manager can transfer the public script/result without assuming Finder can mount internal phone storage or requiring old Link. See the [recovery transfer steps](RECOVER-CONNECTION.en.md#mac-transfer-without-old-connection-files) and their untested limits.
 
@@ -30,19 +30,19 @@ On initial use, unlock and connect the phone. Use the wizard's USB/driver checks
 
 On macOS 14+, r6 adds **First use → Initial Root** for private Q10 materials/images. The app obtains pinned architecture-matched bb10mt/7-Zip and private libusb/LZO libraries without a Homebrew installation. Preparation does not touch BootROM or flash; it preserves AppWorld and verifies stock partitions. Staged execution requires rechecking one phone, its variant, USB `169.254.0.2`, backup acknowledgement and the extra Mac acknowledgement that the phone is not rooted and first flashing is not hardware validated. A separate erase confirmation is still required before opening Terminal.
 
-Unrooted Passport (Q30)/Q20 phones currently lack matching integrated initial-flash materials. Their actual `SQW100-*` / `SQC100-*` variant, firmware, loader and method need separate integration. Selecting a Q10 variant, editing configuration or enabling experimental VoLTE cannot make Q10 images valid for them. Already-rooted Q30 VoLTE recognition and initial Root are separate workflows.
+Current source and `0.5.0-r11` builds integrate automatic Root preparation and staged flashing for Q10, Classic (Q20), and Passport (Q30). Select firmware for the exact hardware variant; initial flashing erases data. Offline Windows builds and verification passed for all three firmware families. The new wizard has not been validated by first-flashing an unrooted phone, and native Mac hardware acceptance remains pending. Q20 uses its verified STA100/Z30 EXE, and Passport uses its own archive and partition baseline. Neither uses Q10 images.
 
 Any Mac native error, missing completion evidence, cancellation or unknown outcome pauses with state preserved, without retry or radio continuation. **The Windows exit-73 exception does not apply on Mac.** Hardware Mac first flashing remains untested, and old r5 lacks this integration. See [Mac initial Root](MACOS.en.md#can-a-mac-perform-initial-root).
 
 ## Windows initial preparation
 
-On Windows, choose the matching Q10 `SQN100-1` through `SQN100-5` variant, back up the phone and allow at least 15 GB of disk space. Auto preparation downloads and hashes AutoRoot v4, fixed Q10 firmware, libusb/LZO, portable 7-Zip and fixed OpenSSL DLLs from MinGit. Users do not separately install Git, 7-Zip or another Root project. Source users can obtain SSH components through the same wizard. Preparation generates independent personal keys and checks both OS/radio images; it does not flash the phone.
+On Windows, choose the exact Q10 `SQN100-*`, Q20 `SQC100-*`, or Passport `SQW100-*` variant, back up the phone and allow at least 15 GB of disk space. Auto preparation downloads and hashes AutoRoot v4, fixed firmware for the selected model, libusb/LZO, portable 7-Zip and fixed OpenSSL DLLs from MinGit. Users do not separately install Git, 7-Zip or another Root project. Source users can obtain SSH components through the same wizard. Preparation generates independent personal keys and checks both OS/radio images; it does not flash the phone.
 
 Flashing requires a separate, explicit data-erasure confirmation. The workflow rechecks the single USB phone's model, image hashes and existing Root access, runs OS then radio, and pauses on unknown outcomes. Passwords are entered in the vendor's native console, never GUI command arguments. For the pinned v4 recipe, only OS writing reaching 100%, both recorded security-error messages and exit code 73 allow the documented radio continuation; arbitrary errors are not accepted. See the [author's instructions](https://bb10.root.sx/blog/autoroot-v4). Complete phone setup, open BlackBerry World, verify effective UID 0, then continue with preflight and VoLTE installation.
 
 Windows driver preparation downloads and verifies the BlackBerry bundle, embedded MSI and Microsoft-signed catalog. Actual installation requests standard Windows UAC. Existing working drivers need no replacement.
 
-The Windows and experimental Mac initial-Root recipes are Q10-only. Q20/Passport need their own verified firmware; Q10 images are prohibited. The Mac app supports already-rooted workflows. r6 also adds experimental native initial preparation/staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5; see [scope](MACOS.en.md#can-a-mac-perform-initial-root). Actual Mac-to-phone acceptance remains separate from desktop startup testing.
+Current source and `0.5.0-r11` builds integrate automatic Root preparation and staged flashing for Q10, Classic (Q20), and Passport (Q30). Select firmware for the exact hardware variant; initial flashing erases data. Offline Windows builds and verification passed for all three firmware families. The new wizard has not been validated by first-flashing an unrooted phone, and native Mac hardware acceptance remains pending. The Mac app supports already-rooted workflows. r6 also adds experimental native initial preparation/staged execution on macOS 14+, without hardware first-flash acceptance or inclusion in old r5; see [scope](MACOS.en.md#can-a-mac-perform-initial-root). Actual Mac-to-phone acceptance remains separate from desktop startup testing.
 
 This iteration verified portable inputs, personal-key generation, construction and hash checks of both Root images, driver extraction/signatures, and read-only access to an already-rooted Q10. The flashing branch has simulated regression coverage but **has not been exercised on an unrooted phone**, and the current working phone was not reflashed. The wizard remains experimental. First preparation needs Internet access or correctly cached materials; normal prepared use has no activation, billing or AI dependency.
 
@@ -56,7 +56,7 @@ Desktop `0.3.3-r8` uses the exact hardware model for automatic downloads, browse
 | Classic / Q20 | SQC100-1 through SQC100-5 | `Q20_10.3.03.3216_STA100-1-2-3-4-5-6.exe` | 3.07 GB |
 | Passport / Q30 | SQW100-1 through SQW100-4 | `Passport_10.3.03.3216.7z` | 1.57 GB |
 
-The Q20 STA100/Z30 filename reflects its shared stock package. The complete original EXE is downloaded without executing it. Firmware selection does not enable Root or establish VoLTE compatibility for another model. Automatic Root image building and flashing retain the existing Q10 recipe. The [source manifest](../materials/sources.json) pins each file size and SHA-256; caches use distinct filenames and hashes, and imports for the wrong model are rejected.
+The Q20 STA100/Z30 filename reflects its shared stock package. The complete original EXE is downloaded without executing it. Import verifies stock firmware only. Continue with automatic Root preparation and confirm flashing. Root and VoLTE acceptance remain separate. The [source manifest](../materials/sources.json) pins each file size and SHA-256; caches use distinct filenames and hashes, and imports for the wrong model are rejected.
 
 Source preparation: `python tools/fetch_materials.py --variant SQC100-1 --with-usb-drivers`, replacing the variant with the actual hardware model. Omitting `--variant` downloads shared tools only, with no default Q10 firmware.
 
@@ -79,7 +79,7 @@ Manual browser download and import:
 1. Open **Connect phone / Connection help → Initial Root**, detect or explicitly choose the exact hardware model, then find the matching firmware download/import section.
 2. Select the original host or a backup in **Browser download source**, then use **Download firmware in browser** for the model-specific filename shown in the app, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
 3. Choose the local file or paste its full path, then use **Verify and import firmware**. Quoted Windows “Copy as path” values and browser-added `(1)` filename suffixes are supported. The content is verified and stored under the canonical cache name.
-4. After success, Q10 can use **Auto prepare Root images**; Q20 / Q30 require their own matching Root method. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
+4. After import, Q10, Q20 and Q30 can all click **Prepare Root images automatically** below the import section. Once ready, acknowledge backup/data erasure and click **Flash Root**. The confirmation identifies the exact target variant, and an inline hint explains why flashing is disabled. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
 
 Import shows progress and leaves the selected original file in place. Incomplete, corrupt or wrong-version files are rejected without changing existing cache files or resume progress. The cache disk needs room for a complete copy; selecting that same file already in the cache only verifies it.
 
@@ -94,3 +94,5 @@ Older versions can still reuse a complete archive downloaded from the [Root mani
 Retries apply only to material downloads. Interrupted or uncertain phone flashing still pauses under the existing rules.
 
 Pinned inputs: [first-use tools](../materials/first-run-tools.json), [Root materials](../materials/sources.json), [drivers](../materials/usb-drivers.json). Private kits and proprietary firmware remain outside public application/source bundles. Preserve the owner-specific kit for future connections and recovery.
+
+ZSpace and Baidu both download through the system browser. Open ZSpace, enter `BB10-Stock-Firmware-10.3.3.3216`, and click Download beside the matching firmware. Use Copy ZSpace link if the browser does not open; an access code is also displayed/copied when configured. Save the original file and return to import it. Do not run the original Q20 EXE. Share pages are not raw automatic-download mirrors; validity and quotas follow the provider page.

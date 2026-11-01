@@ -1,29 +1,98 @@
 {
-  "unchanged_partitions": [
-    {
-      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.0.ifs",
-      "bytes": 11010048,
-      "sha256": "f328418288f59ffeb70885d8e86ced9dd4fb0e715f4effcbd4ab02991b1f726c",
-      "unchanged": true
+  "schema": 2,
+  "families": {
+    "q10": {
+      "firmware_id": "stock-q10",
+      "stock_sha256": "18ab9ab0da25ad4dfb0f2a885aad81ddf2119c484d5b9b0b392a3472eedfa207",
+      "unchanged_partitions": [
+        {
+          "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.0.ifs",
+          "bytes": 11010048,
+          "sha256": "f328418288f59ffeb70885d8e86ced9dd4fb0e715f4effcbd4ab02991b1f726c",
+          "unchanged": true
+        },
+        {
+          "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.1.rcfs",
+          "bytes": 402849792,
+          "sha256": "667685f3889f9cb8d6a44bf08a69c3598c62969d29cb9cc53f874d196192ea60",
+          "unchanged": true
+        },
+        {
+          "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.2.sig2",
+          "bytes": 65536,
+          "sha256": "6c03f22ac7237c3043db46e3f24c5a55f126bc45217611604afc4cfe931631e2",
+          "unchanged": true
+        },
+        {
+          "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.3.mbr",
+          "bytes": 65536,
+          "sha256": "429beab37931b853c0e07af712b158e903ec0fc4cfee01d227eb344e751211c9",
+          "unchanged": true
+        }
+      ],
+      "radio_original_sha256": "ad47026501255f0bb503b195ff4fa41db528336803c861744d3949b9c5745b3f"
     },
-    {
-      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.1.rcfs",
-      "bytes": 402849792,
-      "sha256": "667685f3889f9cb8d6a44bf08a69c3598c62969d29cb9cc53f874d196192ea60",
-      "unchanged": true
+    "classic": {
+      "firmware_id": "stock-classic",
+      "stock_sha256": "d83b04dc9bb3e12b9b6a29b05d2aeb6350cabb6fca85866c231609ba575821e2",
+      "unchanged_partitions": [
+        {
+          "file": "Q20_10.3.03.3216_STA100-1-2-3-4-5-6.0.0.ifs",
+          "bytes": 11010048,
+          "sha256": "f328418288f59ffeb70885d8e86ced9dd4fb0e715f4effcbd4ab02991b1f726c",
+          "unchanged": true
+        },
+        {
+          "file": "Q20_10.3.03.3216_STA100-1-2-3-4-5-6.0.1.rcfs",
+          "bytes": 402849792,
+          "sha256": "667685f3889f9cb8d6a44bf08a69c3598c62969d29cb9cc53f874d196192ea60",
+          "unchanged": true
+        },
+        {
+          "file": "Q20_10.3.03.3216_STA100-1-2-3-4-5-6.0.2.sig2",
+          "bytes": 65536,
+          "sha256": "6c03f22ac7237c3043db46e3f24c5a55f126bc45217611604afc4cfe931631e2",
+          "unchanged": true
+        },
+        {
+          "file": "Q20_10.3.03.3216_STA100-1-2-3-4-5-6.0.3.mbr",
+          "bytes": 65536,
+          "sha256": "429beab37931b853c0e07af712b158e903ec0fc4cfee01d227eb344e751211c9",
+          "unchanged": true
+        }
+      ],
+      "radio_original_sha256": "9af6da88fb44d0c454d29ba871af94b9f2459c578743587e462e1eff5050f1cb"
     },
-    {
-      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.2.sig2",
-      "bytes": 65536,
-      "sha256": "6c03f22ac7237c3043db46e3f24c5a55f126bc45217611604afc4cfe931631e2",
-      "unchanged": true
-    },
-    {
-      "file": "Q10_10.3.03.3216_SQN100-1-2-3-4-5.0.3.mbr",
-      "bytes": 65536,
-      "sha256": "429beab37931b853c0e07af712b158e903ec0fc4cfee01d227eb344e751211c9",
-      "unchanged": true
+    "passport": {
+      "firmware_id": "stock-passport",
+      "stock_sha256": "2c5b7759ba83e50cad96217a285fbfb2cc14f60438903757c9067e1571a03ed4",
+      "unchanged_partitions": [
+        {
+          "file": "Passport_10.3.03.3216_SQW100-1-2-3-4.0.0.ifs",
+          "bytes": 10485760,
+          "sha256": "99a4f0116287a510e05298a1f500082fbae70b2535bb9452721ad361e8ec2caa",
+          "unchanged": true
+        },
+        {
+          "file": "Passport_10.3.03.3216_SQW100-1-2-3-4.0.1.rcfs",
+          "bytes": 402849792,
+          "sha256": "bd6cc287868a08b2167a6329d31a3566d465d60b495efbf57ad4ce0f58c483cf",
+          "unchanged": true
+        },
+        {
+          "file": "Passport_10.3.03.3216_SQW100-1-2-3-4.0.2.sig2",
+          "bytes": 65536,
+          "sha256": "2deeba8e3a75fb4c894a0f9be869b3f3e45a159dcbae0d9360f13184c9716004",
+          "unchanged": true
+        },
+        {
+          "file": "Passport_10.3.03.3216_SQW100-1-2-3-4.0.3.mbr",
+          "bytes": 65536,
+          "sha256": "429beab37931b853c0e07af712b158e903ec0fc4cfee01d227eb344e751211c9",
+          "unchanged": true
+        }
+      ],
+      "radio_original_sha256": "78cf3ba0a208a60eb596ec257cfea5b40b9df0f9ef9901b486772ff766da5565"
     }
-  ],
-  "radio_original_sha256": "ad47026501255f0bb503b195ff4fa41db528336803c861744d3949b9c5745b3f"
+  }
 }

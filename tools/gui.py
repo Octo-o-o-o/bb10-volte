@@ -950,7 +950,7 @@ def main():
     parser.add_argument('--root-kit', type=Path, help=argparse.SUPPRESS)
     parser.add_argument('--flash-token', help=argparse.SUPPRESS)
     parser.add_argument('--prepare-root-report', type=Path, help='Prepare and verify Root images only; never contacts or flashes a phone')
-    parser.add_argument('--root-variant', help='Explicit Q10 hardware variant for image preparation')
+    parser.add_argument('--root-variant', help='Exact Q10, Classic/Q20 or Passport/Q30 hardware variant for image preparation')
     parser.add_argument('--root-cache', type=Path, help='Optional directory of pinned, already downloaded Root materials')
     parser.add_argument('--root-offline', action='store_true', help='Require cached Root inputs without any Python download')
     parser.add_argument('--download-proxy', help='Optional proxy for missing preparation inputs')

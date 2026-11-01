@@ -5,7 +5,6 @@ import json
 import os
 from pathlib import Path
 import platform
-import re
 import shutil
 import stat
 import subprocess
@@ -15,6 +14,7 @@ import zipfile
 
 from desktop_paths import resource_root, private_root, download_root
 from fetch_materials import DownloadError, fetch_entries, sha
+from root_images import recipe, extract_stock, verify_build
 
 ROOT = resource_root()
 
@@ -194,7 +194,7 @@ def prepare_identity(kit):
     protect(kit / 'ssh_config')
 
 
-def build_images(kit, original, progress):
+def build_images(kit, original, progress, variant):
     """Run native batch only, then verify every unchanged stock partition."""
     tools = verified_tools(kit / 'autoroot')
     output = kit / 'images'
@@ -206,33 +206,7 @@ def build_images(kit, original, progress):
                                timeout=1800)
     if child.returncode:
         fail('macos_root_build_failed')
-    # Upstream can catch script/patch exceptions without a nonzero exit code.
-    output_log = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '',
-                        (kit / 'root-build.log').read_text(encoding='utf-8', errors='replace'))
-    if re.search(r'(?im)^\s*(?:error|failed|exception)\b|\b(?:script|patch|command)\s+(?:error|failed)\b', output_log):
-        fail('macos_root_build_failed')
-    expected = json.loads((ROOT / 'materials/stock-partitions.json').read_text())
-    unchanged = []
-    for item in expected['unchanged_partitions']:
-        path = output / item['file']
-        if path.is_symlink() or not path.is_file() or path.stat().st_size != item['bytes'] or sha(path) != item['sha256']:
-            fail('image_not_verified')
-        unchanged.append(item['file'])
-    os_files = list(output.glob('*.0.unsigned'))
-    radio_files = list(output.glob('*.1.signed'))
-    if len(os_files) != 1 or len(radio_files) != 1 or sha(radio_files[0]) != expected['radio_original_sha256']:
-        fail('image_not_verified')
-    images = []
-    for source, name in ((os_files[0], 'Q10_os.unsigned'), (radio_files[0], 'Q10_radio.signed')):
-        target = output / name
-        source.rename(target)
-        images.append({'file': name, 'bytes': target.stat().st_size, 'sha256': sha(target)})
-    result = {'offline_build_verified': True, 'phone_connected_or_modified': False, 'platform': 'darwin',
-              'unchanged_partitions': unchanged, 'radio_original_sha256': expected['radio_original_sha256'],
-              'images': images, 'native_first_flash_acceptance': 'not_run',
-              'keys': 'Private and unique to this prepared kit; image hashes vary with keys'}
-    (kit / 'build-verification.json').write_text(json.dumps(result, indent=2) + '\n')
-    return result
+    return verify_build(kit, variant, 'darwin')
 
 
 def prepare_root_kit_macos(variant, progress, proxy=None, cache_dir=None, offline=False):
@@ -257,22 +231,17 @@ def prepare_root_kit_macos(variant, progress, proxy=None, cache_dir=None, offlin
     work.mkdir(mode=0o700)
     tools = prepare_tools(bundle, work, cache, progress, proxy, offline)
     prepare_identity(kit)
-    stock = inputs['stock-q10']
+    stock, _ = recipe(variant)
     archive = fetch(stock, cache, progress, proxy, offline)
-    stock_dir = kit / 'stock'
-    stock_dir.mkdir()
-    progress(tr('解包并校验匹配 Q10 的原厂固件'))
-    result = subprocess.run([str(tools['seven_zip']), 'e', '-y', str(archive), stock['extracted_file'], '-o' + str(stock_dir)],
-                            capture_output=True, timeout=600)
-    original = stock_dir / stock['extracted_file']
-    if result.returncode or original.is_symlink() or not original.is_file() or sha(original) != stock['extracted_sha256']:
-        fail('image_not_verified')
+    progress(tr('解包并校验 {} 对应的原厂固件').format(variant))
+    original = extract_stock(stock, archive, kit / 'stock', tools['seven_zip'])
     preparation = {'offline_preparation_complete': True, 'phone_connected_or_modified': False,
                    'platform': 'darwin', 'architecture': architecture(), 'minimum_macos': '14.0',
+                   'variant': variant, 'firmware_id': stock['id'],
                    'shared_default_ssh_authorization_replaced': True, 'appworld_preserved': True,
                    'stock_sha256': stock['extracted_sha256'], 'root_bundle_sha256': inputs['autoroot-v4']['sha256'],
                    'tool_hashes': tool_hashes(specification(), architecture())}
     (kit / 'preparation.json').write_text(json.dumps(preparation, indent=2) + '\n')
-    build_images(kit, original, progress)
+    build_images(kit, original, progress, variant)
     (kit / 'setup-state.json').write_text(json.dumps({'variant': variant, 'stage': 'prepared', 'platform': 'darwin'}, indent=2) + '\n')
     return str(kit)

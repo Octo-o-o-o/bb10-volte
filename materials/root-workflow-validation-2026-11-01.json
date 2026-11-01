@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "desktop_candidate": "0.5.0-r11",
+  "status": "local_candidate_not_published",
+  "upstream_recipe": "https://bb10.root.sx/blog/autoroot-v4",
+  "windows_offline_builds": [
+    {
+      "variant": "SQC100-2",
+      "firmware_id": "stock-classic",
+      "stock_sha256": "d83b04dc9bb3e12b9b6a29b05d2aeb6350cabb6fca85866c231609ba575821e2",
+      "radio_original_sha256": "9af6da88fb44d0c454d29ba871af94b9f2459c578743587e462e1eff5050f1cb",
+      "offline_build_verified": true,
+      "phone_connected_or_modified": false
+    },
+    {
+      "variant": "SQW100-4",
+      "firmware_id": "stock-passport",
+      "stock_sha256": "2c5b7759ba83e50cad96217a285fbfb2cc14f60438903757c9067e1571a03ed4",
+      "radio_original_sha256": "78cf3ba0a208a60eb596ec257cfea5b40b9df0f9ef9901b486772ff766da5565",
+      "offline_build_verified": true,
+      "phone_connected_or_modified": false
+    },
+    {
+      "variant": "SQN100-3",
+      "firmware_id": "stock-q10",
+      "stock_sha256": "18ab9ab0da25ad4dfb0f2a885aad81ddf2119c484d5b9b0b392a3472eedfa207",
+      "radio_original_sha256": "ad47026501255f0bb503b195ff4fa41db528336803c861744d3949b9c5745b3f",
+      "offline_build_verified": true,
+      "phone_connected_or_modified": false
+    }
+  ],
+  "automated_tests": {
+    "run": 504,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "macos": {
+    "model_routing_and_image_validation": "mocked_regression_passed",
+    "native_build_this_change": "not_run",
+    "hardware_first_flash": "not_run"
+  },
+  "phone_first_flash": "not_run",
+  "keys_or_private_images_distributed": false,
+  "zspace": {
+    "share_url": "https://t3.znas.cn/9jkbxczhAK4",
+    "public_folder_and_three_firmware_files_visible": true,
+    "checksum_file_downloaded_and_matches_manifest": true,
+    "full_passport_download": "started_but_not_completed_during_this_run",
+    "full_download_sha256_verification": "not_completed",
+    "note": "Share-page downloads started; only the small checksum file completed in this run. This does not establish reliable full-firmware transfer."
+  },
+  "windows_frozen_runtime": {
+    "selftest": "passed",
+    "python_on_path": false,
+    "bundled_ssh": true,
+    "actual_offline_preparation_variants": [
+      "SQC100-2",
+      "SQW100-4"
+    ],
+    "images_verified_per_variant": 2,
+    "phone_contacted_or_flashed": false
+  },
+  "ui": {
+    "q30_prepared_plus_erase_ack_enables_flash": true,
+    "download_import_prepare_ack_flow_regression": "passed",
+    "screenshots_exclude_keys_and_device_identifiers": true
+  }
+}

@@ -30,7 +30,8 @@ MESSAGES = {
     'firmware_device_unverified': tr('尚未识别连接手机的准确硬件型号，请解锁手机后重新检测。'),
     'firmware_model_mismatch': tr('所选型号与连接手机不符，请重新检测后获取对应固件。'),
     'openssh_missing': tr('本机缺少 SSH 客户端。Windows 源码用户可点击“准备连接组件”，由本项目自动获取。'),
-    'root_model_unsupported': tr('当前自动 Root 配方仅支持 Q10。Q20 / Q30 必须使用各自的固件，不能套用 Q10 镜像。'),
+    'root_model_unsupported': tr('此硬件型号尚无自动 Root 配方，请先核对准确型号。'),
+    'root_build_failed': tr('Root 镜像构建失败，尚未刷写手机。请保留本机 root-build.log，核对失败原因后再准备。'),
     'windows_root_required': tr('本应用首次 Root 准备仅支持 Windows 和 Mac；其他平台请参考原作者方法。'),
     'root_not_ready': tr('SSH 已连通，但尚未取得有效 Root。请按已有 Root 方法完成启动，再重新检测。'),
     'root_probe_failed': tr('已建立 SSH，但 Root 诊断未完成。请保留现场核对诊断结果，不要因此重新刷写或更改手机安全设置。'),
@@ -73,6 +74,7 @@ class SetupWizard(tk.Toplevel):
         self._last_variant = ''
         self.proxy = tk.StringVar()
         self.firmware_path = tk.StringVar()
+        self.imported_variant = None
         self.ack = tk.BooleanVar()
         self.mac_flash_ack = tk.BooleanVar()
         body = ttk.Frame(self, padding=24)
@@ -124,12 +126,12 @@ class SetupWizard(tk.Toplevel):
         ttk.Label(root_tab, text=tr('自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写'), wraplength=740,
                   font=(FONT, 11, 'bold')).pack(anchor='w')
         if sys.platform == 'darwin':
-            ttk.Label(root_tab, text=tr('macOS 14+ 原生实验流程：Q10 可在本机准备并校验，再经双重确认打开 Terminal 刷写。Q20 / Q30 可下载对应固件，自动首刷仍待验证。'),
+            ttk.Label(root_tab, text=tr('macOS 14+ 原生实验流程：按 Q10、Q20 或 Q30 的准确型号准备镜像，经双重确认后打开 Terminal 刷写；Mac 首刷尚未实机验收。'),
                       wraplength=740).pack(anchor='w', pady=(12, 0))
         if sys.platform != 'win32':
             self.tabs.tab(drivers, state='disabled')
         ttk.Label(root_tab, text=tr('固件按检测到的硬件型号下载，支持 Q10、Classic（Q20）和 Passport（Q30）。\n'
-                  '自动 Root 镜像构建与刷写仍仅支持 Q10；Q20 / Q30 下载后需使用匹配机型的 Root 方法。\n'
+                  '导入原版固件后，点击下方“自动准备 Root 镜像”，生成本机型的个人镜像，再确认刷写。\n'
                   '应用自动测速选择下载节点，中断或持续低速时自动切换并续传。无需另装 Git、7-Zip 或其他 Root 项目。首次准备需要互联网和至少 15 GB 空间。'),
                   wraplength=740, justify='left').pack(anchor='w', pady=(10, 18))
         line = ttk.Frame(root_tab)
@@ -151,8 +153,6 @@ class SetupWizard(tk.Toplevel):
             history_row.pack_forget()
         elif len(self.history) == 1:
             self.history_picker.current(0)
-        self.prepare_button = ttk.Button(root_tab, text=tr('自动准备 Root 镜像'), command=self.prepare_root)
-        self.prepare_button.pack(anchor='w', pady=(16, 12))
         self.download_firmware_button = ttk.Button(root_tab, text=tr('下载对应机型固件'), command=self.download_firmware)
         self.download_firmware_button.pack(anchor='w', pady=(0, 12))
         manual = ttk.LabelFrame(root_tab, text=tr('对应机型固件：浏览器下载或本地导入'), padding=12)
@@ -172,8 +172,14 @@ class SetupWizard(tk.Toplevel):
         self.browser_download_button.pack(side='left')
         self.copy_download_button = ttk.Button(links, text=tr('复制下载链接'), command=self.copy_firmware_link)
         self.copy_download_button.pack(side='left', padx=(8, 0))
-        self.domestic_download_button = ttk.Button(links, text=tr('国内下载（极空间）'), command=self.open_domestic_download)
-        self.domestic_download_button.pack(side='left', padx=(8, 0))
+        domestic_links = ttk.Frame(manual)
+        domestic_links.pack(fill='x', pady=(0, 8))
+        self.domestic_download_button = ttk.Button(domestic_links, text=tr('国内下载（极空间）'), command=self.open_domestic_download)
+        self.domestic_download_button.pack(side='left')
+        self.copy_domestic_download_button = ttk.Button(domestic_links, text=tr('复制极空间链接'), command=self.copy_domestic_link)
+        self.copy_domestic_download_button.pack(side='left', padx=(8, 0))
+        self.domestic_download_hint = ttk.Label(domestic_links, wraplength=250)
+        self.domestic_download_hint.pack(side='left', padx=(8, 0))
         backup_links = ttk.Frame(manual)
         backup_links.pack(fill='x', pady=(0, 8))
         self.backup_download_button = ttk.Button(backup_links, text=tr('备用下载（百度网盘）'), command=self.open_backup_download)
@@ -191,8 +197,14 @@ class SetupWizard(tk.Toplevel):
         self.browse_firmware_button.pack(side='left', padx=(8, 0))
         self.import_firmware_button = ttk.Button(manual, text=tr('校验并导入固件'), command=self.import_firmware)
         self.import_firmware_button.pack(anchor='w')
-        ttk.Label(manual, text=tr('保留下载的原文件，不要运行或解压。导入时按所选机型校验完整文件。Q10 可继续自动准备 Root 镜像。'),
+        ttk.Label(manual, text=tr('保留下载的原文件，不要运行或解压。导入只校验原版固件；Q10、Q20、Q30 均需继续准备 Root 镜像。'),
                   wraplength=680, justify='left').pack(anchor='w', pady=(8, 0))
+        self.prepare_button = ttk.Button(root_tab, text=tr('自动准备 Root 镜像'), command=self.prepare_root)
+        self.prepare_button.pack(anchor='w', pady=(0, 8))
+        self.root_hint = ttk.Label(root_tab, wraplength=730, justify='left')
+        self.root_hint.pack(anchor='w', pady=(0, 12))
+        self.root_firmware_button = ttk.Button(root_tab, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
+        self.root_firmware_button.pack(anchor='w', pady=(0, 12))
         self.ack_check = ttk.Checkbutton(root_tab, text=tr('已备份并核对机型，同意清空手机数据'), variable=self.ack)
         self.ack_check.pack(anchor='w')
         self.ack.trace_add('write', lambda *_: self.refresh())
@@ -254,7 +266,11 @@ class SetupWizard(tk.Toplevel):
         for button in (self.download_firmware_button, self.browser_download_button, self.copy_download_button,
                        self.browse_firmware_button, self.import_firmware_button):
             button.configure(state='normal' if ready else 'disabled')
-        self.domestic_download_button.configure(state='normal' if ready and item.get('manual_download_url') else 'disabled')
+        domestic_url = item.get('manual_download_url') if item else None
+        for button in (self.domestic_download_button, self.copy_domestic_download_button):
+            button.configure(state='normal' if ready and domestic_url else 'disabled')
+        domestic_code = item.get('manual_download_code') if domestic_url else None
+        self.domestic_download_hint.configure(text=tr('极空间提取码：{}').format(domestic_code) if domestic_code else '')
         backup_url = item.get('backup_manual_download_url') if item else None
         for button in (self.backup_download_button, self.copy_backup_download_button):
             button.configure(state='normal' if ready and backup_url else 'disabled')
@@ -263,8 +279,9 @@ class SetupWizard(tk.Toplevel):
         self.prepare_button.configure(state='normal' if ready and variant in catalog()['auto_root_variants'] and
                                       sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
-        mac_confirmed = sys.platform != 'darwin' or self.mac_flash_ack.get()
-        self.flash_button.configure(state='normal' if ready and variant in catalog()['auto_root_variants'] and self.kit and self.ack.get() and mac_confirmed and not self.choice and not root_lock_path().exists() else 'disabled')
+        blocker = self.flash_blocker(variant)
+        self.flash_button.configure(state='disabled' if blocker else 'normal')
+        self.root_hint.configure(text=blocker or tr('{} 的 Root 镜像已准备，可以开始刷写；下一步仍会单独确认清空数据。').format(variant))
         self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         detected = self.usb.get('usb_count') == 1 and (self.usb.get('device') or {}).get('ModelName') in firmware_variants()
         self.model_picker.configure(state='disabled' if self.busy or self.kit or detected else 'readonly')
@@ -281,10 +298,42 @@ class SetupWizard(tk.Toplevel):
         if variant != self._last_variant:
             self._last_variant = variant
             self.kit = None
+            self.imported_variant = None
             self.firmware_path.set('')
             self.ack.set(False)
             self.mac_flash_ack.set(False)
         self.refresh()
+
+    def flash_blocker(self, variant):
+        if self.busy:
+            return tr('正在处理，请等待当前步骤完成。')
+        if not variant:
+            return tr('请先确认准确机型，再获取对应固件和准备 Root 镜像。')
+        if variant not in catalog()['auto_root_variants']:
+            return MESSAGES['root_model_unsupported']
+        if sys.platform not in ('win32', 'darwin'):
+            return MESSAGES['windows_root_required']
+        if self.choice:
+            return MESSAGES['already_rooted']
+        if root_lock_path().exists():
+            return MESSAGES['flash_state_unknown']
+        if self.usb.get('usb_count') == 1:
+            version_error = baseline_error(self.usb.get('device'))
+            if version_error:
+                return MESSAGES[version_error]
+        if not self.kit:
+            return (tr('{} 的原版固件已导入。下一步：点击“自动准备 Root 镜像”；将复用固件，补齐工具并生成个人镜像。').format(variant)
+                    if self.imported_variant == variant else
+                    tr('下一步：点击“自动准备 Root 镜像”。可先在上方导入固件，也可由应用自动下载。'))
+        if self.usb.get('usb_count') != 1 or (self.usb.get('device') or {}).get('ModelName') != variant:
+            return MESSAGES['device_model_not_verified']
+        if sys.platform == 'darwin' and self.usb.get('usb_address_ready') is not True:
+            return MESSAGES['usb_source_address_required']
+        if not self.ack.get():
+            return tr('{} 的 Root 镜像已准备。请确认已备份并核对机型，再勾选同意清空数据。').format(variant)
+        if sys.platform == 'darwin' and not self.mac_flash_ack.get():
+            return tr('请再确认手机尚未 Root，并勾选理解 Mac 首刷尚未实机验收。')
+        return None
 
     def firmware_target(self):
         try:
@@ -385,8 +434,28 @@ class SetupWizard(tk.Toplevel):
             return
         item = stock_firmware(variant)
         url = item.get('manual_download_url')
-        if url and self.open_firmware_download(url):
-            self.status.configure(text=tr('已打开极空间。请下载 {}，然后选择文件并校验导入；分享有效期和次数以网页为准。').format(item['file']))
+        if not url:
+            return
+        if self.open_firmware_download(url):
+            self.status.configure(text=tr('已打开极空间。进入分享文件夹，点击 {} 右侧“下载”；保存原文件后返回此处校验导入。').format(item['file']))
+        else:
+            self.status.configure(text=tr('未能自动打开极空间。请点击“复制极空间链接”，在浏览器中手动打开。'))
+
+    def copy_domestic_link(self):
+        if self.busy:
+            return
+        variant = self.firmware_target()
+        if not variant:
+            return
+        item = stock_firmware(variant)
+        url = item.get('manual_download_url')
+        if not url:
+            return
+        code = item.get('manual_download_code')
+        text = url + ('\n' + tr('极空间提取码：{}').format(code) if code else '')
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.status.configure(text=tr('已复制极空间链接。进入分享文件夹下载 {}，保存后返回应用校验导入。').format(item['file']))
 
     def open_backup_download(self):
         if self.busy:
@@ -484,15 +553,11 @@ class SetupWizard(tk.Toplevel):
         self.start('prepare', work)
 
     def flash(self):
-        if (not self.kit or not self.ack.get() or self.busy or
-                sys.platform == 'darwin' and not self.mac_flash_ack.get()):
+        variant = self.firmware_target()
+        if self.flash_blocker(variant):
             return
-        error = baseline_error((self.usb or {}).get('device'))
-        if error:
-            self.status.configure(text=MESSAGES[error])
-            return
-        if messagebox.askyesno(tr('确认清空并刷写'), tr('此操作会清空手机数据，并写入对应 Q10 的 Root 系统与无线固件。\n\n'
-                              '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？'), parent=self):
+        if messagebox.askyesno(tr('确认清空并刷写'), tr('此操作会清空 {} 的手机数据，并写入该机型的 Root 系统与无线固件。\n\n'
+                              '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？').format(variant), parent=self):
             self.start('flash', lambda progress: flash_root(self.kit, True, progress))
 
     def open_firmware(self):
@@ -553,9 +618,11 @@ class SetupWizard(tk.Toplevel):
                             self.host, self.config = self.choice['host'], self.choice['config']
                     elif action == 'prepare':
                         self.kit = result
-                        self.status.configure(text=tr('Root 镜像与连接配置已准备。确认备份后才能刷写；刷写完成并验证 Root 后会自动选用配置。'))
+                        self.status.configure(text=tr('{} 的 Root 镜像与个人连接配置已准备。确认备份并勾选同意清空数据后，可开始刷写。').format(self.variant.get()))
                     elif action == 'flash':
                         self.host, self.config = result['host'], result['config']
+                        self.kit = None
+                        self.ack.set(False)
                         self.tabs.select(0)
                         self.status.configure(text=tr('刷写已结束。请完成手机首次设置，打开一次 BlackBerry World，再重新检测 Root。'))
                     elif action == 'drivers':
@@ -564,10 +631,12 @@ class SetupWizard(tk.Toplevel):
                     elif action == 'components':
                         self.status.configure(text=tr('连接组件已就绪，请重新检测。'))
                     elif action == 'import_firmware':
-                        self.status.configure(text=tr('固件已导入并通过校验。Q10 可继续自动准备 Root 镜像；Q20 / Q30 请使用匹配机型的 Root 方法。'))
+                        self.imported_variant = self.variant.get()
+                        self.status.configure(text=tr('固件已导入并通过校验。下一步：点击下方“自动准备 Root 镜像”，为 {} 生成个人镜像；准备完成后才能刷写。').format(self.variant.get()))
                     elif action == 'download_firmware':
                         self.firmware_path.set(result)
-                        self.status.configure(text=tr('对应机型固件已下载并通过校验：\n{}').format(result))
+                        self.imported_variant = self.variant.get()
+                        self.status.configure(text=tr('对应机型固件已下载并通过校验。下一步：点击“自动准备 Root 镜像”。\n{}').format(result))
                 self.refresh()
         except queue.Empty:
             pass

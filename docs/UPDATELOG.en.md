@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r11 · Three-model initial Root and ZSpace downloads · Local candidate
+
+Add model-specific Root preparation, partition verification and staged flashing for Q20 and Passport. Preserve model/image/confirmation/uncertain-state gates. Place preparation after import with actionable disabled-state guidance; add ZSpace copy links and download instructions. Real offline Windows builds passed for all three firmware families; no phone was flashed.
+
+See the [three-model Root workflow record](../materials/root-workflow-validation-2026-11-01.json): Windows source offline builds passed for all three families; frozen EXE preparation passed for Q20/Q30 along with the runtime self-test. No hardware first flash was performed. ZSpace folder access and a small checksum download passed; full firmware download/hash verification did not complete in this run.
+
 ## Desktop update · completion, sharing and public documentation · 2026-11-01
 
 Adds localized sharing, OctoLab, GitHub Star, contact and optional coffee support to both packages. Completion requires current-boot registration and respects Passport extra restarts and USB reconnects. Only verified branded QR presentation images are public; original receipt screenshots stay private. README now includes the nine-combination infographic and Windows UI illustration. User-facing support labels say “supported in the latest release”; release records retain exact versions and hashes. The accepted phone payload is unchanged.

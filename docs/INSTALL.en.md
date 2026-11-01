@@ -39,11 +39,11 @@ Install 7-Zip and the pinned Git for Windows/OpenSSL combination listed in [the 
 
 ```powershell
 # Download missing inputs, or place the specified files in downloads/ yourself.
-python tools/fetch_materials.py
-python tools/fetch_materials.py --verify-only
+python tools/fetch_materials.py --variant SQN100-3
+python tools/fetch_materials.py --variant SQN100-3 --verify-only
 
 # Offline only: create fresh keys and prepare the build directory.
-python tools/prepare_root.py --seven-zip "C:\Program Files\7-Zip\7z.exe"
+python tools/prepare_root.py --variant SQN100-3 --seven-zip "C:\Program Files\7-Zip\7z.exe"
 
 # Offline only: build and verify the owner-specific images.
 python tools/build_root.py
@@ -77,7 +77,7 @@ python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 
 Before changing network configuration, the installer checks native hashes, the original voice policy `00`, existing IMS/VPN state and software provider state. Finish any previous experiment before proceeding; do not delete unknown objects to pass preflight.
 
-v0.3.0 adds device recognition, editable profiles and explicit experimental opt-in; see [profiles](PROFILES.en.md). The desktop verifies the fixed manifest, and the phone repeats preflight before writing. Setup installs/reads back/starts/observes; install and update do not start; check aliases preflight. Ineligible preflight exits 2, execution errors 1. Root preparation remains Q10-only; Q20/Q30 need their own matching root SSH. Readiness waits are configurable, and incompatible SIM/carrier combinations fail immediately.
+v0.3.0 adds device recognition, editable profiles and explicit experimental opt-in; see [profiles](PROFILES.en.md). The desktop verifies the fixed manifest, and the phone repeats preflight before writing. Setup installs/reads back/starts/observes; install and update do not start; check aliases preflight. Ineligible preflight exits 2, execution errors 1. Root preparation selects matching Q10, Q20 or Q30 firmware; replace the example `SQN100-3` with the actual hardware variant. Readiness waits are configurable, and incompatible SIM/carrier combinations fail immediately.
 
 Files are installed under `/var/rootdata/q10_volte`; the startup entry is `/var/addons/q10-unicom-volte/init/start.sh` through AutoRoot v4's addon mechanism. The stock IMS binary remains unchanged. The manager runs on the phone after the desktop command returns. First start sets IMS-preferred voice through the native API and may briefly reload the radio; it then waits for LTE/SIM readiness, establishes the IMS APN and starts native IMS.
 

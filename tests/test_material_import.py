@@ -246,7 +246,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
             self.assertEqual(item['family'], family)
             self.assertEqual(self.wizard.firmware_urls, f.source_urls(item))
             self.assertIn(item['file'], self.wizard.firmware_label.cget('text'))
-            self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'disabled')
+            self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'normal')
             with patch.object(w, 'local_usb_state', return_value=usb), \
                     patch.object(w, 'download_stock_firmware', return_value='cache/' + item['file']) as fetch:
                 self.wizard.download_firmware_button.invoke()
@@ -374,6 +374,82 @@ class FirmwareImportGuiTests(unittest.TestCase):
             self.wizard.refresh()
             self.wizard.backup_download_button.invoke()
         self.assertIn('复制备用链接', self.wizard.status.cget('text'))
+
+    def test_all_families_can_continue_from_import_through_prepare_to_confirmed_flash(self):
+        for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
+            with self.subTest(variant=variant):
+                self.wizard.variant.set(variant)
+                self.wizard.firmware_path.set('downloaded firmware')
+                with patch.object(w, 'import_stock_firmware', return_value='verified-cache'):
+                    self.wizard.import_firmware_button.invoke()
+                self.drain()
+                self.wizard.ack.set(True)
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+                self.assertIn('自动准备 Root 镜像', self.wizard.root_hint.cget('text'))
+                self.assertIn(variant, self.wizard.root_hint.cget('text'))
+                with patch.object(w, 'local_usb_state', return_value={'usb_count': 0}), \
+                        patch.object(w, 'prepare_root_kit', return_value='kit-' + variant) as prepare:
+                    self.wizard.prepare_button.invoke()
+                self.drain()
+                prepare.assert_called_once_with(variant, unittest.mock.ANY, None)
+                self.assertFalse(self.wizard.ack.get())
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+                self.assertIn('已备份', self.wizard.root_hint.cget('text'))
+                self.wizard.ack.set(True)
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'normal')
+                with patch.object(w.messagebox, 'askyesno', return_value=False) as confirm, \
+                        patch.object(w, 'flash_root') as flash:
+                    self.wizard.flash_button.invoke()
+                self.assertIn(variant, confirm.call_args.args[1])
+                flash.assert_not_called()
+                with patch.object(w.messagebox, 'askyesno', return_value=True), \
+                        patch.object(w, 'flash_root', return_value={'host': 'bb10-root', 'config': 'kit/ssh_config'}) as flash:
+                    self.wizard.flash_button.invoke()
+                self.drain()
+                flash.assert_called_once_with('kit-' + variant, True, unittest.mock.ANY)
+                self.assertIsNone(self.wizard.kit)
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+
+    def test_domestic_browser_failure_has_its_own_copy_fallback(self):
+        with patch.object(w.webbrowser, 'open', side_effect=OSError('browser unavailable')):
+            self.wizard.domestic_download_button.invoke()
+        self.assertIn('复制极空间链接', self.wizard.status.cget('text'))
+        with patch.object(self.wizard, 'clipboard_clear'), patch.object(self.wizard, 'clipboard_append') as copy:
+            self.wizard.copy_domestic_download_button.invoke()
+        copy.assert_called_once_with(root_setup.stock_firmware('SQN100-3')['manual_download_url'])
+
+    def test_domestic_share_copy_tracks_model_code_and_disabled_states(self):
+        for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
+            self.wizard.variant.set(variant)
+            item = dict(root_setup.stock_firmware(variant), manual_download_code='b10x')
+            with patch.object(w, 'stock_firmware', return_value=item), \
+                    patch.object(self.wizard, 'clipboard_clear'), patch.object(self.wizard, 'clipboard_append') as copy:
+                self.wizard.refresh()
+                self.wizard.copy_domestic_download_button.invoke()
+            copy.assert_called_once_with(item['manual_download_url'] + '\n极空间提取码：b10x')
+            self.assertIn(item['file'], self.wizard.status.cget('text'))
+        for busy, usb, variant in [(True, {}, 'SQW100-4'), (False, {'usb_count': 2}, 'SQW100-4'), (False, {}, '')]:
+            self.wizard.busy, self.wizard.usb = busy, usb
+            self.wizard.variant.set(variant)
+            self.wizard.refresh()
+            self.assertEqual(str(self.wizard.copy_domestic_download_button.cget('state')), 'disabled')
+            with patch.object(self.wizard, 'clipboard_append') as copy:
+                self.wizard.copy_domestic_link()
+            copy.assert_not_called()
+
+    def test_flash_reason_explains_model_change_existing_root_and_uncertain_flash(self):
+        self.wizard.imported_variant = 'SQN100-3'
+        self.wizard.kit = 'q10-kit'
+        self.wizard.variant.set('SQW100-4')
+        self.assertIsNone(self.wizard.imported_variant)
+        self.assertIsNone(self.wizard.kit)
+        self.wizard.choice = {'host': 'bb10-root'}
+        self.wizard.refresh()
+        self.assertIn('已检测到可用 Root', self.wizard.root_hint.cget('text'))
+        self.wizard.choice = None
+        (self.folder / 'flash.lock').write_text('uncertain')
+        self.wizard.refresh()
+        self.assertIn('刷写状态未确认', self.wizard.root_hint.cget('text'))
 
 
 if __name__ == '__main__':

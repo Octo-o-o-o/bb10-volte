@@ -86,9 +86,9 @@ class FirmwareSelectionTests(unittest.TestCase):
         fetch.assert_not_called()
         importer.assert_not_called()
 
-    def test_unvalidated_root_recipes_cannot_fetch_q10_as_a_substitute(self):
+    def test_unlisted_hardware_cannot_fetch_q10_as_a_substitute(self):
         with patch.object(r, 'ensure_tools') as tools, patch.object(r, 'fetch_entries') as fetch:
-            for variant in ('SQC100-2', 'SQW100-4'):
+            for variant in ('SQC100-99', 'SQW100-99', 'Q20', 'Q30', ''):
                 with self.assertRaisesRegex(r.SetupError, 'root_model_unsupported'):
                     r.prepare_root_kit(variant, print)
         tools.assert_not_called()

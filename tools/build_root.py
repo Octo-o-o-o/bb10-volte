@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 from fetch_materials import sha
 from desktop_paths import resource_root, private_root
+from root_images import recipe, verify_build
 
 ROOT=resource_root()
 
@@ -16,8 +17,9 @@ def main(argv=None):
     kit=args.kit.resolve()
     preparation=json.loads((kit/'preparation.json').read_text())
     assert preparation['offline_preparation_complete']
-    source=json.loads((ROOT/'materials/sources.json').read_text())
-    stock=next(x for x in source['verified_inputs'] if x['id']=='stock-q10')
+    variant=preparation['variant']
+    stock,_=recipe(variant)
+    assert preparation['firmware_id']==stock['id'] and preparation['stock_sha256']==stock['extracted_sha256']
     original=kit/'stock'/stock['extracted_file']
     assert sha(original)==stock['extracted_sha256']
     output=kit/'images'
@@ -27,22 +29,7 @@ def main(argv=None):
             '-s','patch-owner.txt','-o',str(output)],cwd=kit/'autoroot',stdout=log,stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     assert result.returncode==0,'Image builder failed; inspect the private root-build.log'
-    expected=json.loads((ROOT/'materials/stock-partitions.json').read_text())
-    verified=[]
-    for item in expected['unchanged_partitions']:
-        path=output/item['file']
-        assert path.stat().st_size==item['bytes'] and sha(path)==item['sha256'],'Unexpected original-partition change: '+item['file']
-        verified.append(item['file'])
-    radios=list(output.glob('*.1.signed'))
-    assert len(radios)==1 and sha(radios[0])==expected['radio_original_sha256']
-    images=[]
-    for suffix in ('_os.exe','_radio.exe'):
-        files=list(output.glob('*'+suffix));assert len(files)==1
-        images.append({'file':files[0].name,'bytes':files[0].stat().st_size,'sha256':sha(files[0])})
-    report={'offline_build_verified':True,'phone_connected_or_modified':False,
-            'unchanged_partitions':verified,'radio_original_sha256':expected['radio_original_sha256'],
-            'images':images,'keys':'Private and unique to this prepared kit; image hashes vary with keys'}
-    (kit/'build-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+    report=verify_build(kit,variant)
     print(json.dumps(report))
 
 

@@ -12,12 +12,14 @@ import zipfile
 from pathlib import Path
 from fetch_materials import sha
 from desktop_paths import resource_root, private_root, download_root
+from root_images import recipe, extract_stock
 
 ROOT=resource_root()
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--seven-zip',type=Path,required=True)
+    p.add_argument('--variant',required=True,help='Exact phone hardware variant')
     p.add_argument('--output',type=Path,default=private_root()/'root-kit')
     p.add_argument('--cache',type=Path,default=download_root())
     p.add_argument('--ssh-keygen',default='ssh-keygen')
@@ -26,7 +28,9 @@ def main(argv=None):
     assert os.name=='nt','This preparation recipe is verified on Windows'
     assert args.seven_zip.is_file()
     source=json.loads((ROOT/'materials/sources.json').read_text())
-    items={x['id']:x for x in source['verified_inputs']}
+    stock_item, _ = recipe(args.variant)
+    items={x['id']:x for x in source['verified_inputs'] if not x['id'].startswith('stock-')}
+    items[stock_item['id']] = stock_item
     for item in items.values():
         path=args.cache/item['file']
         assert path.is_file() and sha(path)==item['sha256'],'Missing or mismatched input: '+item['file']
@@ -82,13 +86,11 @@ def main(argv=None):
     license_path=(git_core/'OPENSSL-LICENSE.txt' if args.openssl_dir else git_core.parents[2]/'mingw64/share/licenses/openssl/LICENSE')
     assert license_path.is_file(),'Keep the OpenSSL license with the local DLLs'
     shutil.copyfile(license_path,work/'OPENSSL-LICENSE.txt')
-    stock=kit/'stock';stock.mkdir()
-    item=items['stock-q10']
-    subprocess.run([str(args.seven_zip),'e','-y',str(args.cache/item['file']),item['extracted_file'],'-o'+str(stock)],check=True,capture_output=True,
-                   creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-    assert sha(stock/item['extracted_file'])==item['extracted_sha256']
+    item=stock_item
+    extract_stock(item,args.cache/item['file'],kit/'stock',args.seven_zip)
     (kit/'images').mkdir()
     report={'offline_preparation_complete':True,'phone_connected_or_modified':False,
+            'variant':args.variant,'firmware_id':item['id'],'platform':'win32',
             'shared_default_ssh_authorization_replaced':True,'appworld_preserved':True,
             'stock_sha256':item['extracted_sha256'],'root_bundle_sha256':items['autoroot-v4']['sha256']}
     (kit/'preparation.json').write_text(json.dumps(report,indent=2)+'\n')
