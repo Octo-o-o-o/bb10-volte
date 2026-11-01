@@ -84,11 +84,11 @@
             <p class="hero-lead">首次连接 Windows 或 Mac 安装一次。以后关机换卡、正常开机，手机自动适配移动、联通、电信，不用再连电脑刷机。继续用自己的号码和手机自带的拨号器，在 4G 下接打电话。</p>
             <div class="hero-actions">
               <a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe" target="_blank" rel="noopener noreferrer">
-                <svg class="icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg>下载 Windows 版<svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>
+                <svg class="icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg><span class="button-copy"><span>下载 Windows 版</span><small>Windows 10 / 11 · 64 位（x64）</small></span><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>
               </a>
               <a class="button button-secondary" href="guide.html"><svg class="icon" aria-hidden="true"><use href="#icon-book"/></svg>查看使用说明</a>
             </div>
-            <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg>下载 macOS 通用版<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+            <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span class="button-copy"><span>下载 macOS 通用版</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span><svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
             <p class="hero-note"><span data-release-version>最新版</span> · 实验版。适用于已 Root 的 SQN100-3 / SQC100-2 / SQW100-4，系统 10.3.3.3216。Passport 切入或离开电信时，可能需要再正常重启一次。</p>
           </div>
 
@@ -203,18 +203,20 @@
           <article class="download-card">
             <div class="platform-heading"><svg class="platform-icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg><span>FOR DESKTOP / 01</span></div>
             <h3>Windows</h3>
-            <p class="platform-spec">Windows 10 / 11 · x64 · 双击运行</p>
+            <p class="platform-spec">Windows 10 / 11 · 64 位（x64）</p>
+            <p class="platform-detail">不支持 Windows 7、8 / 8.1 及 32 位系统。</p>
             <p>下载后双击 EXE 即可打开，所需组件已包含在内。不用另装 Python 或 OpenSSH。</p>
             <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 Windows 版</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
-            <small class="package-note">目前 EXE 没有发布者签名，运行前请先核对文件校验码。主要在 Windows 11 x64 上测试启动。</small>
+            <small class="package-note">目前 EXE 没有发布者签名，运行前请先核对文件校验码。Windows 11 x64 已验证启动；Windows 10 尚待实机验证。</small>
           </article>
           <article class="download-card">
             <div class="platform-heading"><svg class="platform-icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span>FOR DESKTOP / 02</span></div>
             <h3>macOS</h3>
-            <p class="platform-spec">Apple 芯片 + Intel · 通用 DMG</p>
+            <p class="platform-spec"><span>Apple 芯片 · macOS 11+</span><span>Intel · macOS 10.15+</span></p>
+            <p class="platform-detail">首次 Root 准备另需 macOS 14 或更新版本。</p>
             <p>打开 DMG，把应用拖进“应用程序”后启动。不用另装 Python 或 Tk，SSH/SCP 使用系统自带版本。</p>
             <div class="download-actions"><a class="button button-primary" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 macOS 通用版</a><a class="checksum-link" data-download="mac-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
-            <small class="package-note">应用和 DMG 已签名、公证并完成包内自检。本轮 Mac 真实 USB 验收暂缓；Intel 仅核对包内架构，未实机运行。</small>
+            <small class="package-note">应用和 DMG 已签名、公证并完成包内自检。系统下限已按发布包核对；旧版 macOS 和 Intel 尚未实机验证，本轮 Mac 真实 USB 验收暂缓。</small>
           </article>
         </div>
         <div class="source-download"><p><strong>想从源码运行？</strong>安装 Python 3.14（含 Tk），然后运行 <code>python tools/gui.py</code>。</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip" target="_blank" rel="noopener noreferrer">源码 ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">源码校验码</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r10/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">全部文件校验码</a></div></div><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r10/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>

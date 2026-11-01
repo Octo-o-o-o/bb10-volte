@@ -12,6 +12,16 @@
 
 ## 下载
 
+| 电脑 | 系统要求 |
+| --- | --- |
+| Windows | **Windows 10 / Windows 11，64 位（x64）** |
+| Mac · Apple 芯片 | **macOS 11 Big Sur 或更新版本** |
+| Mac · Intel | **macOS 10.15 Catalina 或更新版本** |
+
+**不支持 Windows 7、Windows 8 / 8.1 或 32 位 Windows。** Mac 通用 DMG 包含 Apple 芯片与 Intel 两种架构；**首次 Root 准备另需 macOS 14 或更新版本**。
+
+上述 Mac 运行下限已按当前发布包内的原生程序和运行库核对，不代表旧版 macOS 或 Intel 已实机验证。Windows 11 x64 已完成打包与启动验证，Windows 10 x64 尚待实机验证；Mac 当前已在 Apple 芯片上运行，Intel 尚未实机验证。详见 [Windows 版说明](docs/WINDOWS-EXE.md)和 [Mac 版说明](docs/MACOS.md)。
+
 官网默认使用 Cloudflare R2，无法访问 GitHub 也可下载。两处提供同版本、相同字节的文件；运行前核对完整 SHA-256。镜像提供独立线路，不保证所有地区和网络均可访问。
 
 | 文件 | R2 直接下载 | GitHub 备用 |

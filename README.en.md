@@ -12,6 +12,16 @@ Install once from Windows or Mac. Then power off, change the SIM and start the p
 
 ## Downloads
 
+| Computer | System requirements |
+| --- | --- |
+| Windows | **Windows 10 / Windows 11, 64-bit (x64)** |
+| Mac · Apple Silicon | **macOS 11 Big Sur or later** |
+| Mac · Intel | **macOS 10.15 Catalina or later** |
+
+**Windows 7, Windows 8 / 8.1 and 32-bit Windows are not supported.** The Universal DMG includes both Apple Silicon and Intel architectures. **Initial Root preparation separately requires macOS 14 or later.**
+
+The Mac minimum versions were checked against the native binaries and libraries in the current release; they are not hardware validation of older macOS versions or Intel Macs. Packaging and startup have been verified on Windows 11 x64; Windows 10 x64 still awaits hardware testing. The Mac app has run on Apple Silicon, but has not been tested on Intel hardware. See the [Windows guide](docs/WINDOWS-EXE.en.md) and [Mac guide](docs/MACOS.en.md).
+
 The website defaults to Cloudflare R2 and does not require GitHub connectivity. Both locations serve identical, version-matched files. Check the full SHA-256 before running. The alternative route does not guarantee reachability on every network.
 
 | File | R2 direct download | GitHub alternative |

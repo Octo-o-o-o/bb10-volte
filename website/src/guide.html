@@ -60,8 +60,8 @@
         <p class="guide-intro">依次完成准备、连接、预检、安装和通话测试。“注册通过”不代表通话成功：还要用系统拨号器测试呼入、呼出，并确认双方都能听清。</p>
         <p class="guide-intro">几个词先说明白：Root 是手机的系统管理员权限；预检就是安装前检查；IMS 注册，就是手机连上了运营商的通话服务。</p>
         <div class="guide-actions">
-          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe">下载 Windows x64</a>
-          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg">下载 macOS 通用版</a>
+          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe"><span class="button-copy"><span>下载 Windows x64</span><small>Windows 10 / 11 · 64 位（x64）</small></span></a>
+          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg"><span class="button-copy"><span>下载 macOS 通用版</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span></a>
         </div>
         <p class="guide-release">当前公开版本为 <span data-release-version>最新版</span>。下载后请先核对 <a class="guide-release-link" href="#verify">SHA-256</a>，也可以在 <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r10" target="_blank" rel="noopener noreferrer">Release 页面</a>查看同名校验文件。</p>
       </div>
@@ -86,7 +86,7 @@
       </aside>
 
       <div class="guide-content">
-        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">准备与风险</h2><p>先在“设置 → 关于”核对准确硬件变体。三网自动适配适用于已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport（Q30）SQW100-4，系统 10.3.3.3216，原生文件哈希必须匹配。</p><ul class="guide-list"><li>使用移动 460-00、联通 460-01、电信 460-11 的 USIM，无 ISIM；套餐已开通 VoLTE，LTE 数据正常。</li><li>首次安装需要稳定的 USB 数据线、本人 Root SSH 私钥和可信主机密钥。</li><li>Windows 10/11 x64；macOS 通用包。两者无需另装 Python。本轮 Mac 真实 USB 验收暂缓，Intel 未实机运行。</li><li>先备份手机。Q10 首次 Root 准备约需 15 GB；首次 Root 刷写会清空数据，仍属实验功能。Q20、Passport 必须使用各自匹配的 Root 方法，严禁刷入 Q10 镜像。</li><li>长期待机、漫游、其他地区及紧急呼叫尚未完整验证。</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 / 9 项功能验收通过 · 2026 年 11 月 1 日</caption><thead><tr><th scope="col">实测机型</th><th scope="col">中国移动</th><th scope="col">中国联通</th><th scope="col">中国电信</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Passport SQW100-4</th><td>已支持</td><td>已支持</td><td>已支持</td></tr></tbody></table></div><p>最新版已支持以上九项组合。具体测试时间、版本和证据保留在验收记录中。</p></section>
+        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">准备与风险</h2><p>先在“设置 → 关于”核对准确硬件变体。三网自动适配适用于已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport（Q30）SQW100-4，系统 10.3.3.3216，原生文件哈希必须匹配。</p><ul class="guide-list"><li>使用移动 460-00、联通 460-01、电信 460-11 的 USIM，无 ISIM；套餐已开通 VoLTE，LTE 数据正常。</li><li>首次安装需要稳定的 USB 数据线、本人 Root SSH 私钥和可信主机密钥。</li><li>Windows 10/11 x64；Mac：Apple 芯片需 macOS 11+，Intel 需 macOS 10.15+。两者无需另装 Python。本轮 Mac 真实 USB 验收暂缓，Intel 未实机运行。</li><li>先备份手机。Q10 首次 Root 准备约需 15 GB；首次 Root 刷写会清空数据，仍属实验功能。Q20、Passport 必须使用各自匹配的 Root 方法，严禁刷入 Q10 镜像。</li><li>长期待机、漫游、其他地区及紧急呼叫尚未完整验证。</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 / 9 项功能验收通过 · 2026 年 11 月 1 日</caption><thead><tr><th scope="col">实测机型</th><th scope="col">中国移动</th><th scope="col">中国联通</th><th scope="col">中国电信</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Passport SQW100-4</th><td>已支持</td><td>已支持</td><td>已支持</td></tr></tbody></table></div><p>最新版已支持以上九项组合。具体测试时间、版本和证据保留在验收记录中。</p></section>
 
         <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r10/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
           <p class="eyebrow">02 · 获取与启动</p>
@@ -94,6 +94,7 @@
           <div class="platform-grid">
             <article class="platform-card" aria-labelledby="windows-title">
               <h3 id="windows-title">Windows</h3>
+              <p><strong>Windows 10 / 11 · 64 位（x64）</strong>。不支持 Windows 7、8 / 8.1 及 32 位系统。</p>
               <ol class="step-list">
                 <li>下载当前版本的 <code data-package-file="windows">bb10-volte-0.5.0-r10-windows-x64.exe</code> 及 Release 中同名 <code>.exe.sha256</code>。</li>
                 <li>先按本页 <a href="#verify">SHA-256 校验</a>核对文件，再双击 EXE。Python、Tcl/Tk、SSH/SCP、运营商模板和手机端载荷均已内置。</li>
@@ -104,12 +105,13 @@
 
             <article class="platform-card" aria-labelledby="macos-title">
               <h3 id="macos-title">macOS</h3>
+              <p><strong>Apple 芯片 macOS 11+ · Intel macOS 10.15+</strong>。首次 Root 准备另需 macOS 14 或更新版本。</p>
               <ol class="step-list">
                 <li>下载当前版本的 <code data-package-file="mac">bb10-volte-0.5.0-r10-macos-universal.dmg</code> 及同名 <code>.dmg.sha256</code>，先核对 SHA-256。</li>
                 <li>打开 DMG，将 <code>bb10-volte.app</code> 拖入“应用程序”，再从“应用程序”启动。无需另装 Python、Tk 或 OpenSSH；应用使用 macOS 自带的 SSH/SCP。</li>
                 <li>用 USB 数据线连接并解锁手机，允许 Mac 提示的附件连接。没有 USB 网络时，在手机“设置 → 存储和访问 → USB 连接”中核对“连接至 Mac”。</li>
               </ol>
-              <p class="guide-note"><strong>签名与验证范围：</strong>当前 Mac 安装包为通用包，并已签名、公证。“通用”表示包含 Apple Silicon 与 Intel 架构，不表示所有 Mac 或 Intel 机型都已实机验证；Intel 目前只有包内架构核验，没有 Intel 实机结论。</p>
+              <p class="guide-note"><strong>签名与验证范围：</strong>当前 Mac 安装包为通用包，并已签名、公证。“通用”表示包含 Apple Silicon 与 Intel 架构，不表示所有 Mac 或 Intel 机型都已实机验证；运行下限已按发布包核对；旧版 macOS 和 Intel 尚未实机验证。</p>
             </article>
           </div>
           <div class="callout" role="note">
