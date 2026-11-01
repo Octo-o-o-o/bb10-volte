@@ -40,6 +40,10 @@ class GuiTests(unittest.TestCase):
         self.assertIn('仅紧急服务', self.app.summary.cget('text'))
         self.assertIn('设置为 ON，实际状态为 OFF', self.app.detail.cget('text'))
         self.assertIn('SQC100-4 尚未纳入', self.app.detail.cget('text'))
+        # macOS only dispatches native Tk selection events for mapped widgets.
+        self.root.attributes('-alpha', 0.0)
+        self.root.deiconify()
+        self.root.update()
         self.app.table.selection_set('apn')
         self.app.table.event_generate('<<TreeviewSelect>>')
         self.root.update()
