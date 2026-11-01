@@ -10,6 +10,8 @@ Scope: **SQN100-3, SQC100-2, SQW100-4, OS 10.3.3.3216**, with **Mobile 460-00, U
 
 Currently **9/9** combinations have functional acceptance:
 
+These records do not cover SMS send/receive or duplicate delivery. The source SMS PS policy change remains a [candidate pending device testing](SMS-DIAGNOSTICS.en.md).
+
 | Model | Mobile | Unicom | Telecom |
 | --- | --- | --- | --- |
 | Q10 SQN100-3 | Passed (r7) | Passed (r7) | Passed (r8) |

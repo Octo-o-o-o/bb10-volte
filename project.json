@@ -2,7 +2,7 @@
   "name": "bb10-volte",
   "version": "0.5.0",
   "desktop_revision": 10,
-  "state": "experimental_release_nine_combinations_functionally_accepted",
+  "state": "candidate_sms_policy_pending_device_acceptance",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
   "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine functional cases accepted on recorded r7/r8 versions; all three phones installed r8. Current macOS physical USB acceptance pending."

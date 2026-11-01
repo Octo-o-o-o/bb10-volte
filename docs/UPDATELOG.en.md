@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## Source candidate · SMS policy and diagnostics · 2026-11-01
+
+Explicitly applies native `SMS_Over_IP_Network_Indication` alongside SMS service advertisement, preserving original values for restoration and backing up known payloads during upgrade. Native retry counts are unchanged. Adds offline SIP/RP correlation analysis without exporting numbers, Call-IDs or message content.
+
+Review of 19 historical captures found a Q20 Mobile ACK receiving SIP 400 and a Passport Telecom ACK receiving `400 Cannot find In-Reply-To`. Other combinations lack SMS transactions and cannot pass SMS acceptance. This candidate is neither deployed nor released; successful MO and single MT delivery still require device testing. Prior acceptance remains scoped to recorded voice, SIM-change and display checks. See [SMS diagnostics](SMS-DIAGNOSTICS.en.md).
+
 ## Desktop update · completion, sharing and public documentation · 2026-11-01
 
 Adds localized sharing, OctoLab, GitHub Star, contact and optional coffee support to both packages. Completion requires current-boot registration and respects Passport extra restarts and USB reconnects. Only verified branded QR presentation images are public; original receipt screenshots stay private. README now includes the nine-combination infographic and Windows UI illustration. User-facing support labels say “supported in the latest release”; release records retain exact versions and hashes. The accepted phone payload is unchanged.

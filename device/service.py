@@ -183,6 +183,10 @@ def profile_updates(profile, mcc, mnc):
     return {VOICE: {'voice_domain_preference_EUTRAN': 'n:3'},
             IMS: {'IMS_profilesV2': 'json:["IR92"]', 'supported_networks': 'json:["LTE"]',
                   'IMS_services': 'json:' + json.dumps(services, separators=(',', ':')),
+                  # Advertising SMS does not initialize DomainSelection.smsIP.
+                  # The pinned IMS carrier parser applies this boolean through
+                  # 0x105692 -> 0x93cda -> 0x9091c; registration is still required.
+                  'SMS_Over_IP_Network_Indication': 'b:' + ('true' if profile['ims']['sms'] else 'false'),
                   'Home_network_domain_name': ':' + profiles.home_domain(profile, mcc, mnc)},
             CDSC: {'cdsc_xml': ':' + APN}}
 
@@ -241,11 +245,29 @@ def init_journal():
     before = {path: {key: n.attrs(n.read(path)).get(key) for key in updates} for path, updates in UPDATES.items()}
     assert before[CDSC]['cdsc_xml'] == ':'
     assert before[VOICE]['voice_domain_preference_EUTRAN'] is None
-    assert all(v is None for k, v in before[IMS].items() if k != 'Home_network_domain_name')
+    assert all(v is None for k, v in before[IMS].items()
+               if k not in ('Home_network_domain_name', 'SMS_Over_IP_Network_Indication'))
+    assert before[IMS].get('SMS_Over_IP_Network_Indication') in (None, 'b:true', 'b:false')
     assert before[IMS]['Home_network_domain_name'] in (None, ':')
     j = {'owner': 'q10-unicom-volte-v1', 'created_unix': time.time(), 'original_voice_policy': 0,
          'pps_before': before, 'known_vpn_uids': [], 'vpn_before_uids': [], 'native_pid': None,
          'managed_files': {}, 'restore_completed': True}
+    save_journal()
+
+
+def journal_sms_policy():
+    """Add the new field to a restored legacy journal before any PPS mutation.
+
+    UPDATES remains the pre-SMS fallback for old journals without pps_applied.
+    An active old installation must be restored before its ownership expands.
+    """
+    key = 'SMS_Over_IP_Network_Indication'
+    if key in j['pps_before'][IMS]:
+        return
+    assert j.get('restore_completed') is True, 'Restore legacy configuration before adding SMS policy'
+    original = n.attrs(n.read(IMS)).get(key)
+    assert original in (None, 'b:true', 'b:false'), 'Unexpected SMS policy type'
+    j['pps_before'][IMS][key] = original
     save_journal()
 
 
@@ -423,6 +445,7 @@ def configure():
     template, carrier_xml = profiles.carrier_template(ACTIVE_PROFILE, network.get('mcc'), network.get('mnc'))
     updates = profile_updates(ACTIVE_PROFILE, network.get('mcc'), network.get('mnc'))
     init_journal()
+    journal_sms_policy()
     request_sha = profiles.fingerprint(ACTIVE_REQUEST)
     if not j.get('restore_completed') and j.get('profile_sha256') not in (None, request_sha):
         raise RuntimeError('Restore the previous profile before applying another configuration')

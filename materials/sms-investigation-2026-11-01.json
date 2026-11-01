@@ -1,0 +1,467 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "status": "candidate_pending_device_sms_acceptance",
+  "source_base": "0091630 (locally cached origin/main; live fetch unavailable)",
+  "user_report": {
+    "device": "Q20, hardware variant not supplied",
+    "os": "10.3.3.3216",
+    "root": "AutoRoot v4",
+    "carrier": "460-01",
+    "source": "feedback only; raw logs unavailable",
+    "symptoms": [
+      "Four MT deliveries about 30 seconds apart, different RP references, ACK reportedly sent.",
+      "MO fails after CS; feedback reports zero IMS attempts and no retry default."
+    ],
+    "independently_reproduced": false
+  },
+  "candidate_change": {
+    "path": "/pps/services/carrier_config/ims/ims",
+    "key": "SMS_Over_IP_Network_Indication",
+    "value_when_sms_enabled": "b:true",
+    "rollback": "Save and restore original absence or boolean; preserve conflicting external edits.",
+    "native_retry_logic_changed": false,
+    "mt_correlation_fix_applied": false,
+    "device_deployed": false
+  },
+  "native_evidence": {
+    "binary": "stock ims_rrm",
+    "sha256": "043d38b0f08cf6a9696ef405f3976679e32ff9ad943ec35294c3d3da69a12b67",
+    "sms_domain_selector": "0x63378",
+    "carrier_config_apply_call": "0x105692 -> 0x93cda",
+    "sms_config_propagation": "0x9091c -> DomainSelection byte +9 at 0x9097e",
+    "sms_constructor": "0x7cfa8",
+    "sms_process": "0x7c0de",
+    "sip_logger": "0x132e50",
+    "unredacted_file_header_append": "0x133024..0x13304e",
+    "in_reply_to_redaction": "0x133060 -> 0x1330a8"
+  },
+  "corpus": {
+    "source_files": 19,
+    "unique_sha256_captures": 19,
+    "device_carrier_combinations": 9,
+    "sms_bearing_captures": 2,
+    "scope": "Existing bounded voice-acceptance captures; not a controlled SMS campaign."
+  },
+  "captures": [
+    {
+      "id": "capture-01",
+      "sha256": "d3caf45eceaa166c3da6f28c608295f0edad89780eff8b4b30f7bc7cff711069",
+      "variant": "SQW100-4",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 2,
+      "sms_delivery_verified": false,
+      "analysis": {
+        "schema": 1,
+        "scope": "offline_log_analysis",
+        "sms_delivery_verified": false,
+        "events": {
+          "cs_domain": 1,
+          "ps_domain": 0,
+          "no_retry_default": 0,
+          "ims_disabled_after_network_failure": 0,
+          "ack_despite_cs_domain": 1
+        },
+        "sms_config_observations": [
+          {
+            "priority": 0,
+            "value": true
+          }
+        ],
+        "gateway_correlation_rejections": 1,
+        "messages": [
+          {
+            "index": 1,
+            "line": 797,
+            "direction": "in",
+            "rp_type": null,
+            "rp_reference": null,
+            "in_reply_to": "not_visible",
+            "related_incoming_index": null,
+            "ack_target_matches_p_asserted_identity": null,
+            "ack_to_matches_p_asserted_identity": null,
+            "rp_reference_matches": null,
+            "sip_response_codes": [
+              200
+            ],
+            "gateway_correlation_rejected": false
+          },
+          {
+            "index": 2,
+            "line": 844,
+            "direction": "out",
+            "rp_type": 2,
+            "rp_reference": null,
+            "in_reply_to": "not_visible",
+            "related_incoming_index": null,
+            "ack_target_matches_p_asserted_identity": null,
+            "ack_to_matches_p_asserted_identity": null,
+            "rp_reference_matches": null,
+            "sip_response_codes": [
+              400
+            ],
+            "gateway_correlation_rejected": true
+          }
+        ],
+        "limitations": [
+          "Missing/redacted headers are not proof of wire-level omission.",
+          "SIP 2xx does not establish RP acceptance or single delivery to Hub.",
+          "URI comparisons are textual; aliases or equivalent forms need manual review.",
+          "No identities, SIP addresses, Call-IDs, filenames or SMS bodies are exported."
+        ]
+      }
+    },
+    {
+      "id": "capture-02",
+      "sha256": "9e6fd8b0596f8d47ccf4f2d8b5deebe2d02978d3d9ffff5e98cbbe0c617a8028",
+      "variant": "SQW100-4",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-03",
+      "sha256": "96458b8c16d24393ef10c9caa2336013210af40ea144332c292b5a3e750a380b",
+      "variant": "SQW100-4",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-04",
+      "sha256": "897d09d20648444e66108aea6a299668db8c8c8ab5ebc7c044c3f3f40b655cdd",
+      "variant": "SQW100-4",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-05",
+      "sha256": "ef7ea51d92cf933f6369a722ba255dd78ea889b1c6447ceee904c0e95f8f96d4",
+      "variant": "SQW100-4",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-06",
+      "sha256": "b05784daaed632e9025a24f5f91359686e94296f9542820bbe0c0dca805efc18",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-07",
+      "sha256": "93e252f487fe00fe58ef5babf1f2fffe4ed57dc432d1f353dd543fa00f42baab",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-08",
+      "sha256": "6fd8e5c4a37a83c3d9a23ecb4b3612d730666be2007490719091403ce48db0d1",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-09",
+      "sha256": "9c9c1428c1c7a153eea55458f8d3fbbfe1c38952174b1555390a178390f84e97",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-10",
+      "sha256": "6394518e48e051c206092feecb3080d50e122ce3deccbb73e01d7e0ce18b2bfd",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-11",
+      "sha256": "4a789e9e4edcf09e03bddf51a0ab85814bb7c1cd4396620f5d798f2090b1d275",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-12",
+      "sha256": "157fbe0ce113886e444d3a4652d47f23544c24938d1204e955f2c3844bb645e2",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-13",
+      "sha256": "9ea6e4f3c0c10eea2f2c5bda8fad1cb490493e80bd6bef33bc50a3efae56ba17",
+      "variant": "SQN100-3",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-14",
+      "sha256": "4cad4f78182e9f724d097cb65fe7da11976051f29c71171ee17fa613878dafa8",
+      "variant": "SQC100-2",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-15",
+      "sha256": "1402d9c5d8c7fba30d7edc31d0034d756db3c51dbef59bfc63944be7f1d79d9a",
+      "variant": "SQC100-2",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "11"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-16",
+      "sha256": "19ff9a01bdfe47cf68a8b35ef812c1c4d0195ff11250858475f1c85d95fa2a8b",
+      "variant": "SQC100-2",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-17",
+      "sha256": "6182476fd7c672c65871423daebe04b2acacacc48fbbf868dcaa840ba7244039",
+      "variant": "SQC100-2",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "01"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-18",
+      "sha256": "9f4c728aea0c79b30c4283e831228ee8623922389e2fcec45b54301dda7a80d1",
+      "variant": "SQC100-2",
+      "variant_evidence": "capture_metadata",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 0,
+      "sms_delivery_verified": false,
+      "finding": "No SMS transaction in this bounded capture; not a pass."
+    },
+    {
+      "id": "capture-19",
+      "sha256": "ec124190492dd29c852c2ef6afd1c7bd9be927476f636264a7efb85cbba5727a",
+      "variant": "SQC100-2",
+      "variant_evidence": "existing_q20_device_session",
+      "carrier": {
+        "mcc": "460",
+        "mncs": [
+          "00"
+        ]
+      },
+      "sms_requests": 2,
+      "sms_delivery_verified": false,
+      "analysis": {
+        "schema": 1,
+        "scope": "offline_log_analysis",
+        "sms_delivery_verified": false,
+        "events": {
+          "cs_domain": 1,
+          "ps_domain": 0,
+          "no_retry_default": 0,
+          "ims_disabled_after_network_failure": 0,
+          "ack_despite_cs_domain": 1
+        },
+        "sms_config_observations": [
+          {
+            "priority": 0,
+            "value": true
+          }
+        ],
+        "gateway_correlation_rejections": 0,
+        "messages": [
+          {
+            "index": 1,
+            "line": 4300,
+            "direction": "in",
+            "rp_type": null,
+            "rp_reference": null,
+            "in_reply_to": "not_visible",
+            "related_incoming_index": null,
+            "ack_target_matches_p_asserted_identity": null,
+            "ack_to_matches_p_asserted_identity": null,
+            "rp_reference_matches": null,
+            "sip_response_codes": [
+              200
+            ],
+            "gateway_correlation_rejected": false
+          },
+          {
+            "index": 2,
+            "line": 4347,
+            "direction": "out",
+            "rp_type": 2,
+            "rp_reference": null,
+            "in_reply_to": "not_visible",
+            "related_incoming_index": null,
+            "ack_target_matches_p_asserted_identity": null,
+            "ack_to_matches_p_asserted_identity": null,
+            "rp_reference_matches": null,
+            "sip_response_codes": [
+              400
+            ],
+            "gateway_correlation_rejected": false
+          }
+        ],
+        "limitations": [
+          "Missing/redacted headers are not proof of wire-level omission.",
+          "SIP 2xx does not establish RP acceptance or single delivery to Hub.",
+          "URI comparisons are textual; aliases or equivalent forms need manual review.",
+          "No identities, SIP addresses, Call-IDs, filenames or SMS bodies are exported."
+        ]
+      }
+    }
+  ],
+  "sources": [
+    {
+      "title": "ETSI TS 124 341 V12.6.0, section 5.3.2.4",
+      "url": "https://www.etsi.org/deliver/etsi_ts/124300_124399/124341/12.06.00_60/ts_124341v120600p.pdf"
+    },
+    {
+      "title": "Possible PR #1 referenced in feedback (repository not confirmed by reporter)",
+      "url": "https://github.com/bb10root/bb10-volte/pull/1",
+      "base": "8ac271b5b1170ae98c60dd248dc5c4485edf95f3",
+      "head": "5e2ecaf5ad6c6e56e05d206e8939dbcad336d1ed"
+    }
+  ],
+  "limitations": [
+    "No device changes or SMS/voice sends in this investigation.",
+    "No raw SIP trace for the reported Q20/Unicom failure.",
+    "No evidence that a specific carrier gateway is at fault.",
+    "The configuration candidate does not establish successful SMS delivery or fix MT duplicates."
+  ]
+}
