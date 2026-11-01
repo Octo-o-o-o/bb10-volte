@@ -24,6 +24,11 @@ def run(output):
             raise RuntimeError('Packaging self-test must not use the network')
     sys.addaudithook(no_python_network)
     from gui import App
+    import ssl
+    from fetch_materials import download_ssl_context
+    tls = download_ssl_context()
+    assert tls.verify_mode == ssl.CERT_REQUIRED and tls.check_hostname
+    assert tls.cert_store_stats()['x509_ca'] > 0
     import i18n
     assert i18n.language_from_tag('zh-Hant') == 'zh'
     assert i18n.language_from_tag('ja-JP') == 'en'
@@ -296,6 +301,7 @@ def run(output):
         assert (bundle / 'assets/app.ico').is_file()
         assert not private_root().is_relative_to(bundle)
     result = {'passed': True, 'version': manifest['version'], 'frozen': frozen(),
+              'download_tls_verification_and_ca_store_verified': True,
               'firmware_upgrade_ui_and_stock_catalog_verified': True,
               'pairing_shell_guards_bundled': True,
               'desktop_revision': json.loads((bundle / 'project.json').read_text(encoding='utf-8')).get('desktop_revision'),

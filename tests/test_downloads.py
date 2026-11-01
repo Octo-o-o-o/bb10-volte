@@ -2,6 +2,7 @@
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import queue
 import ssl
@@ -20,6 +21,62 @@ i18n.LANGUAGE = 'zh'  # Progress-message assertions below use Chinese.
 import fetch_materials as f
 import macos_root
 import setup_wizard
+
+
+class DownloadTrustTests(unittest.TestCase):
+    def setUp(self):
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        paths = ssl.get_default_verify_paths()._replace(cafile=None, capath=None)
+        for mocker in (patch.object(f.sys, 'platform', 'darwin'),
+                       patch.object(f.ssl, 'create_default_context', return_value=self.context),
+                       patch.object(f.ssl, 'get_default_verify_paths', return_value=paths),
+                       patch.object(self.context, 'cert_store_stats', return_value={'x509_ca': 0}),
+                       patch.dict(os.environ, {}, clear=True)):
+            mocker.start()
+            self.addCleanup(mocker.stop)
+
+    def test_empty_mac_bundle_uses_os_roots_without_disabling_tls(self):
+        with patch.object(self.context, 'load_verify_locations') as load:
+            self.assertIs(f.download_ssl_context(), self.context)
+        load.assert_called_once_with(cafile='/etc/ssl/cert.pem')
+        self.assertEqual(self.context.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(self.context.check_hostname)
+
+    def test_existing_roots_and_lazy_directory_are_preserved(self):
+        for stats, directory in (({'x509_ca': 1}, None), ({'x509_ca': 0}, '/configured/roots')):
+            with self.subTest(directory=directory), \
+                    patch.object(self.context, 'cert_store_stats', return_value=stats), \
+                    patch.object(self.context, 'load_verify_locations') as load:
+                f.ssl.get_default_verify_paths.return_value = f.ssl.get_default_verify_paths()._replace(capath=directory)
+                f.download_ssl_context()
+                load.assert_not_called()
+
+    def test_explicit_trust_configuration_is_not_replaced(self):
+        for name in ('SSL_CERT_FILE', 'SSL_CERT_DIR'):
+            with self.subTest(name=name), patch.dict(os.environ, {name: '/configured'}), \
+                    patch.object(self.context, 'load_verify_locations') as load:
+                f.download_ssl_context()
+                load.assert_not_called()
+
+    def test_other_platforms_keep_default_trust(self):
+        for platform in ('win32', 'linux'):
+            with self.subTest(platform=platform), patch.object(f.sys, 'platform', platform), \
+                    patch.object(self.context, 'load_verify_locations') as load:
+                f.download_ssl_context()
+                load.assert_not_called()
+
+    def test_native_trust_adapter_is_preserved(self):
+        with patch.object(self.context, 'cert_store_stats', side_effect=NotImplementedError), \
+                patch.object(self.context, 'load_verify_locations') as load:
+            self.assertIs(f.download_ssl_context(), self.context)
+            load.assert_not_called()
+
+    def test_unavailable_system_roots_fail_closed_with_tls_error(self):
+        with patch.object(self.context, 'load_verify_locations', side_effect=FileNotFoundError):
+            with self.assertRaisesRegex(f.DownloadError, 'download_tls_error'):
+                f.download_ssl_context()
+        self.assertEqual(self.context.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(self.context.check_hostname)
 
 
 class DownloadTests(unittest.TestCase):

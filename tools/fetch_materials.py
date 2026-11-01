@@ -12,6 +12,7 @@ import queue
 import re
 import shutil
 import ssl
+import sys
 import threading
 import time
 import urllib.error
@@ -169,7 +170,7 @@ def _rank_sources(item, urls, make_opener, headers, progress):
         except urllib.error.HTTPError as error:
             error.close()
             speed = None
-        except (OSError, urllib.error.URLError, http.client.HTTPException, ValueError):
+        except (OSError, urllib.error.URLError, http.client.HTTPException, ValueError, DownloadError):
             speed = None
         results.put((url, speed))
 
@@ -575,12 +576,39 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
         raise last_error
 
 
+def download_ssl_context():
+    """Use verified TLS, including in a self-contained macOS Python bundle."""
+    try:
+        context = ssl.create_default_context()
+        if sys.platform != 'darwin':
+            return context
+        try:
+            ca_count = context.cert_store_stats()['x509_ca']
+        except NotImplementedError:
+            # Native system-trust adapters may not expose an OpenSSL CA store.
+            return context
+        if not ca_count:
+            paths = ssl.get_default_verify_paths()
+            configured = any(name in os.environ for name in
+                             (paths.openssl_cafile_env, paths.openssl_capath_env))
+            # python.org's extracted runtime has no Install Certificates step.
+            # Use the OS-managed PEM roots only when no trust store is configured;
+            # an explicit environment setting or lazy CA directory takes priority.
+            if not configured and paths.capath is None:
+                context.load_verify_locations(cafile='/etc/ssl/cert.pem')
+        return context
+    except OSError:
+        raise DownloadError('download_tls_error') from None
+
+
 def fetch_entries(entries, folder=None, progress=None, proxy=None, verify_only=False, *, headers=None):
     folder = Path(folder) if folder else download_root()
     progress = progress or (lambda text: print(text, flush=True))
     def make_opener():
-        return urllib.request.build_opener(urllib.request.ProxyHandler({'https': proxy, 'http': proxy})
-                                          if proxy else urllib.request.ProxyHandler())
+        return urllib.request.build_opener(
+            urllib.request.ProxyHandler({'https': proxy, 'http': proxy})
+            if proxy else urllib.request.ProxyHandler(),
+            urllib.request.HTTPSHandler(context=download_ssl_context()))
     try:
         folder.mkdir(parents=True, exist_ok=True)
         for item in entries:

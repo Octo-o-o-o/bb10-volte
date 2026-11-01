@@ -40,4 +40,6 @@ Stock upgrades require complete success. They **never accept the Windows exit-73
 
 Original EXEs are pinned by source SHA-256. Mac signed OS/radio components additionally require fixed sizes and independent SHA-256 values from [stock-upgrade.json](../materials/stock-upgrade.json). This establishes consistency with pinned inputs, not a separate manufacturer-signature certification. Personal Root outputs are bound to their model, platform, build receipt, and hashes.
 
+Downloads always verify HTTPS certificates and hostnames. If the bundled Mac Python has no default CA store, it uses the OS-managed system certificates. Existing roots and explicit trust settings take priority; users do not need to install Python certificates separately.
+
 All three original firmware inputs have been freshly split and compared offline. Fault-injection tests cover versions, models, corrupt materials, cancellation, interruptions, replay, and boot readback. The physical old-OS → stock → boot → Root → verified connection sequence still requires separate acceptance; existing nine-case VoLTE results do not replace it.
