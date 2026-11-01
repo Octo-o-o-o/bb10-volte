@@ -2,6 +2,6 @@
   "schema": 1,
   "files": {
     "tools/root_probe.py": "5502ef6e9579d5accfecb4444ee04a59a5d2a9a981066b75e53bce4fdeb74a0e",
-    "tools/stage_cleanup.py": "e4f41849d253356de6d62418190cf20dd8c7ce899deadc2a9f92ea0fd60df02f"
+    "tools/stage_cleanup.py": "13e24269961d3abbfb39b44f1b506167a3f929957c59f6954e4fa0a967ce3e5c"
   }
 }

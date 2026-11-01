@@ -11,6 +11,7 @@ import subprocess
 import tarfile
 import uuid
 import zipfile
+import zlib
 
 from desktop_paths import resource_root, private_root, download_root
 from fetch_materials import DownloadError, fetch_entries, sha
@@ -64,6 +65,23 @@ def write_verified(path, data, expected, executable=False):
     path.chmod(0o700 if executable else 0o600)
 
 
+def patched_native_tool(data, specification):
+    """Apply only pinned edits to the pinned upstream executable."""
+    if hashlib.sha256(data).hexdigest() != specification['input_sha256']:
+        fail('tool_hash_mismatch')
+    result = bytearray(data)
+    for edit in specification['patches']:
+        offset = edit['offset']
+        before, after = bytes.fromhex(edit['before']), bytes.fromhex(edit['after'])
+        if (offset < 0 or len(before) != len(after) or not before or
+                result[offset:offset + len(before)] != before):
+            fail('tool_hash_mismatch')
+        result[offset:offset + len(before)] = after
+    if hashlib.sha256(result).hexdigest() != specification['sha256']:
+        fail('tool_hash_mismatch')
+    return bytes(result)
+
+
 def tar_member(archive, name):
     member = archive.getmember(name)
     if not member.isfile() or member.size > 32 * 1024 * 1024:
@@ -73,6 +91,7 @@ def tar_member(archive, name):
 
 def tool_hashes(spec, arch):
     hashes = dict(spec['shared_files'])
+    hashes.update({'loaders/' + name: item['sha256'] for name, item in spec['ram_loaders'].items()})
     hashes.update({'bb10mt': spec['architectures'][arch]['bb10mt']['sha256'],
                    '7zz': spec['seven_zip']['binary_sha256'],
                    '7zip-License.txt': spec['seven_zip']['license_sha256']})
@@ -93,11 +112,37 @@ def verified_tools(folder):
         if path.is_symlink() or not path.is_file() or sha(path) != expected:
             fail('tool_hash_mismatch')
     loaders = work / 'loaders'
-    # The verified loaders.dat/map supply the loader; never scan arbitrary loaders.
-    if loaders.is_symlink() or not loaders.is_dir() or any(loaders.iterdir()):
+    # Only exact pinned replacements may precede the upstream archive lookup.
+    if (loaders.is_symlink() or not loaders.is_dir() or
+            {path.name for path in loaders.iterdir()} != set(specification()['ram_loaders'])):
         fail('tool_hash_mismatch')
     return {'bb10mt': work / 'bb10mt', 'seven_zip': work / '7zz',
             'loaders': loaders, 'lib': work / 'lib', 'work': work}
+
+
+def prepare_ram_loaders(work, spec):
+    """Recover the intact Q20 loader without accepting the corrupt archive CRC."""
+    folder = work / 'loaders'
+    folder.mkdir()
+    for name, item in spec['ram_loaders'].items():
+        source = work / item['source']
+        if source.is_symlink() or sha(source) != spec['shared_files'][item['source']]:
+            fail('tool_hash_mismatch')
+        with source.open('rb') as stream:
+            stream.seek(item['offset'])
+            packed = stream.read(item['compressed_bytes'])
+        if (len(packed) != item['compressed_bytes'] or
+                hashlib.sha256(packed).hexdigest() != item['compressed_sha256']):
+            fail('tool_hash_mismatch')
+        try:
+            decoder = zlib.decompressobj(31)  # Includes the gzip CRC/trailer check.
+            data = decoder.decompress(packed, item['bytes'] + 1)
+        except zlib.error:
+            fail('tool_hash_mismatch')
+        if (not decoder.eof or decoder.unused_data or decoder.unconsumed_tail or
+                len(data) != item['bytes']):
+            fail('tool_hash_mismatch')
+        write_verified(folder / name, data, item['sha256'])
 
 
 def native_environment(tools):
@@ -131,7 +176,7 @@ def prepare_tools(bundle, work, cache, progress, proxy=None, offline=False):
         for name, expected in spec['shared_files'].items():
             write_verified(work / name, archive.read(name), expected)
         tool = spec['architectures'][arch]['bb10mt']
-        write_verified(work / 'bb10mt', archive.read(tool['entry']), tool['sha256'], True)
+        write_verified(work / 'bb10mt', patched_native_tool(archive.read(tool['entry']), tool), tool['sha256'], True)
     for library in spec['architectures'][arch]['libraries']:
         path = fetch(library, cache, progress, proxy, offline)
         with tarfile.open(path, 'r:gz') as archive:
@@ -141,7 +186,7 @@ def prepare_tools(bundle, work, cache, progress, proxy=None, offline=False):
     with tarfile.open(fetch(seven, cache, progress, proxy, offline), 'r:xz') as archive:
         write_verified(work / '7zz', tar_member(archive, seven['member']), seven['binary_sha256'], True)
         write_verified(work / '7zip-License.txt', tar_member(archive, seven['license_member']), seven['license_sha256'])
-    (work / 'loaders').mkdir()
+    prepare_ram_loaders(work, spec)
     tools = verified_tools(work)
     result = subprocess.run([str(tools['bb10mt']), '--help'], cwd=work, env=native_environment(tools),
                             capture_output=True, timeout=30)

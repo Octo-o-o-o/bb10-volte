@@ -16,6 +16,21 @@ from workflow import WorkflowError
 from root_flash import classify_output
 
 
+class GlobalRootLockTests(unittest.TestCase):
+    def test_macos_source_checkouts_and_app_share_existing_flash_lock(self):
+        with tempfile.TemporaryDirectory() as folder, \
+                patch.object(r.sys, 'platform', 'darwin'), patch.object(r.Path, 'home', return_value=Path(folder)):
+            with patch.object(r, 'private_root', return_value=Path(folder) / 'checkout-a/private'):
+                first = r.root_lock_path()
+                first.parent.mkdir(parents=True)
+                first.write_text('active stage')
+            for alternate in ('checkout-b/private', 'bundled-app/private'):
+                with patch.object(r, 'private_root', return_value=Path(folder) / alternate):
+                    self.assertEqual(r.root_lock_path(), first)
+                    with self.assertRaises(FileExistsError):
+                        r.root_lock_path().open('x')
+
+
 class RootSetupTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

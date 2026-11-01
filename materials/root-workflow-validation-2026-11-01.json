@@ -66,5 +66,57 @@
     "q30_prepared_plus_erase_ack_enables_flash": true,
     "download_import_prepare_ack_flow_regression": "passed",
     "screenshots_exclude_keys_and_device_identifiers": true
+  },
+  "follow_up_acceptance": {
+    "date": "2026-11-01",
+    "release_baseline": "v0.5.0-r13",
+    "released": false,
+    "windows_passport": {
+      "variant": "SQW100-4",
+      "os": "10.3.3.3216",
+      "verified_stock_recovery": true,
+      "first_root_os_result": "complete write with exact known v4 security result, exit73",
+      "first_root_radio_result": "complete write and Done, exit0",
+      "new_kit_key_effective_uid": 0,
+      "fresh_addon_installation": true,
+      "menu_reboot_root_and_service_autostart": true,
+      "post_menu_reboot_ims": "200 OK on LTE",
+      "voice_and_sms_acceptance": false,
+      "full_gui_first_use_acceptance": false,
+      "private_direct_shutdown_attempt": "unresponsive black screen; recovered with owner power-key reset; not accepted as normal reboot"
+    },
+    "macos_q20": {
+      "variant": "SQC100-2",
+      "offline_root_and_stock_images_verified": true,
+      "first_stock_attempt": "stopped before image writes on corrupted upstream LDR_00 CRC",
+      "loader_repair": "intact signed loader extracted from pinned cap.exe with gzip CRC and three SHA-256 checks; hardware load succeeded",
+      "stock_recovery": "OS complete write followed by redundant USB init error; native info and anonymous discovery read back 10.3.3.3216; signed radio completed with exit0. Original failed OS receipt preserved.",
+      "first_root": "OS and radio each passed strict native classifier: input,100%,signature,Done,success,exit0,no errors. After first BlackBerry World launch, new-key effective UID0 and root.done verified.",
+      "native_reboot_repair": "Pinned branch and ARM64 ad-hoc code-page hash;16 function emulation cases passed;actual ARM64 readback and three flash stages passed.",
+      "usb_discovery": "Python EHOSTUNREACH while system HTTP client returns200;bounded USB-only system-client transport passed actual first-boot discovery.",
+      "new_kit_key_effective_uid": 0,
+      "fresh_addon_installation": true
+    },
+    "checks": {
+      "windows_full": {
+        "run": 624,
+        "passed": 622,
+        "skipped": 2
+      },
+      "macos_full": {
+        "run": 624,
+        "passed": 624
+      },
+      "subsequent_shared_lock_targeted": {
+        "windows": 19,
+        "macos": 19,
+        "passed": true
+      },
+      "source_archive_sha256": "2a74d3f473a5d8f3b60ebdb7b6af73af625f9ded54a19248a3dd1e25716667e2",
+      "log_sha256": {
+        "windows-tests-mac-discovery-v7.log": "a55322f4ed7cf6e23fe7e6ac2908c5c232fe38756fdcddf01dee20815f468a0f",
+        "macos-tests-mac-discovery-v7.log": "0a36ad833eda5f406fb7bd35e3e1b84347c74c2d8b79a598cfe3ac03dcd5102e"
+      }
+    }
   }
 }

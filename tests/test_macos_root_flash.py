@@ -127,10 +127,43 @@ class NativeFlashTests(unittest.TestCase):
                     patch('root_setup.prepared_images', return_value=(state, [image, root / 'images/Q10_radio.signed'])), \
                     patch('macos_root.verified_tools', return_value=tools), patch('macos_root.native_environment', return_value={}), \
                     patch.object(m, 'hidden_terminal_input', return_value=contextlib.nullcontext()), \
+                    patch.object(m, 'native_output', return_value=contextlib.nullcontext((child.stdout, io.BytesIO()))), \
                     patch.object(m.subprocess, 'Popen', return_value=child) as spawn:
                 self.assertEqual(m.run_stage(root, 'os', 'token'), 0)
                 self.assertIs(spawn.call_args.kwargs['stdin'], console_in)
             self.assertTrue(json.loads((root / 'flash-os.json').read_text())['completed'])
+
+    @unittest.skipUnless(os.name == 'posix', 'Requires a native POSIX terminal')
+    def test_real_terminal_flushes_prompt_before_input_and_keeps_input_out_of_log(self):
+        import pty
+        master, slave = pty.openpty()
+        self.addCleanup(os.close, master)
+        class PromptReply(io.BytesIO):
+            replied = False
+            def write(stream, data):
+                result = super(PromptReply, stream).write(data)
+                if not stream.replied and b'Enter password (10/10):' in stream.getvalue():
+                    stream.replied = True
+                    os.write(master, b'harmless\n')
+                return result
+        visible = PromptReply()
+        console = io.TextIOWrapper(visible, encoding='utf-8')
+        script = ('import sys,signal; signal.alarm(4); '
+                  'sys.stdout.reconfigure(line_buffering=sys.stdout.isatty()); '
+                  'print("Enter password (10/10):"); value=sys.stdin.readline(); '
+                  'print("input received"); sys.exit(0 if value.strip()=="harmless" else 3)')
+        log = io.StringIO()
+        with os.fdopen(slave, 'r') as input_stream, \
+                patch.object(m.sys, 'stdin', input_stream), patch.object(m.sys, 'stdout', console), \
+                m.hidden_terminal_input():
+            code = m.run_native_command([sys.executable, '-c', script], None, None,
+                                        m.NativeFlashEvidence('unused'), log)
+        self.assertEqual(code, 0)
+        self.assertTrue(visible.replied)
+        self.assertIn('input received', log.getvalue())
+        self.assertIn('omitted', log.getvalue())
+        self.assertNotIn('harmless', log.getvalue())
+        self.assertNotIn('harmless', visible.getvalue().decode())
 
 
 if __name__ == '__main__':

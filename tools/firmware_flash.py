@@ -91,7 +91,7 @@ def launch_stage(folder, phase, token, timeout=3600):
 
 def run_stage(folder, phase, token):
     from firmware_upgrade import verify_kit
-    from macos_root_flash import NativeFlashEvidence, hidden_terminal_input, public_line
+    from macos_root_flash import NativeFlashEvidence, hidden_terminal_input, public_line, run_native_command
     import contextlib
     folder = Path(folder).resolve()
     state, images = verify_kit(folder, allowed=(phase + '_started',))
@@ -130,28 +130,12 @@ def run_stage(folder, phase, token):
         raise SetupError('root_platform_mismatch')
     sys.stderr = sys.stdout
     print(tr('正在写入对应机型的原版系统；请保持连接，仅在工具提示时输入手机密码。'), flush=True)
-    pending = bytearray()
     with input_context, (folder / ('upgrade-' + phase + '.log')).open('x', encoding='utf-8') as log:
-        child = subprocess.Popen(command, cwd=image.parent, env=environment, stdin=sys.stdin,
-                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
-        while True:
-            char = child.stdout.read(1)
-            if not char:
-                break
-            sys.stdout.buffer.write(char)
-            sys.stdout.buffer.flush()
-            pending.extend(char)
-            if char in (b'\r', b'\n'):
-                line = pending.decode('utf-8', 'replace')
-                evidence.line(line)
-                log.write(public_line(line))
-                log.flush()
-                pending.clear()
-        if pending:
-            line = pending.decode('utf-8', 'replace')
-            evidence.line(line)
-            log.write(public_line(line))
-        result = evidence.result(phase, child.wait())
+        if sys.platform == 'darwin':
+            code = run_native_command(command, image.parent, environment, evidence, log)
+            result = evidence.result(phase, code)
+        else:
+            result = run_windows_command(command, image.parent, evidence, log, public_line, phase)
     output = folder / ('upgrade-' + phase + '.json')
     temporary = output.with_suffix('.json.partial')
     with temporary.open('x', encoding='utf-8') as stream:
@@ -159,6 +143,30 @@ def run_stage(folder, phase, token):
     temporary.replace(output)
     print(tr('请返回应用。必须重新检测开机后的系统版本，才能继续 Root。'), flush=True)
     return 0 if result['completed'] else 1
+
+
+def run_windows_command(command, cwd, evidence, log, public_line, phase):
+    pending = bytearray()
+    child = subprocess.Popen(command, cwd=cwd, env=None, stdin=sys.stdin,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
+    while True:
+        char = child.stdout.read(1)
+        if not char:
+            break
+        sys.stdout.buffer.write(char)
+        sys.stdout.buffer.flush()
+        pending.extend(char)
+        if char in (b'\r', b'\n'):
+            line = pending.decode('utf-8', 'replace')
+            evidence.line(line)
+            log.write(public_line(line))
+            log.flush()
+            pending.clear()
+    if pending:
+        line = pending.decode('utf-8', 'replace')
+        evidence.line(line)
+        log.write(public_line(line))
+    return evidence.result(phase, child.wait())
 
 
 def main():

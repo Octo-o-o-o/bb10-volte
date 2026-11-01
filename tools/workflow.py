@@ -208,7 +208,9 @@ class Client:
         if diagnostic:
             verify_diagnostics()
         self.progress('package', 'done')
-        path = '/var/rootdata/q10_volte_stage_' + uuid.uuid4().hex[:12]
+        # Root-v2 has no /var/rootdata. The generic privilege diagnostic must
+        # work before choosing a Root-specific installation layout.
+        path = ('/var/' if diagnostic else '/var/rootdata/') + 'q10_volte_stage_' + uuid.uuid4().hex[:12]
         names = (['root-probe.py'] if diagnostic == 'root' else
                  FILES + ['payload-manifest.json'] if payload else
                  ['device/native.py', 'device/profiles.py', 'device/device_info.py', 'device/compatibility.py',

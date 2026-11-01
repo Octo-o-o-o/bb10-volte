@@ -86,31 +86,39 @@ def powershell():
 def discovery(peer='169.254.0.1', source=None, interface_index=None):
     # Anonymous metadata on the directly attached USB link only. Never send
     # credentials, follow a redirect or use an Internet proxy for this request.
-    connection = http.client.HTTPConnection(peer, timeout=4)
+    connection = None
     try:
-        if source:
-            connection.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            connection.sock.settimeout(4)
-            if sys.platform == 'win32' and interface_index is not None:
-                connection.sock.setsockopt(socket.IPPROTO_IP, 31, struct.pack('!I', interface_index))
-            connection.sock.bind((source, 0))
-            connection.sock.connect((peer, 80))
-        connection.request('GET', '/cgi-bin/discovery.cgi', headers={
-            'User-Agent': 'QNXWebClient/1.0', 'Connection': 'close'})
-        response = connection.getresponse()
-        if response.status != 200:
-            return {}
-        body = response.read(131073)
+        if sys.platform == 'darwin' and source:
+            # The system client can reach the USB link in Mac execution
+            # contexts where a relocated Python runtime returns EHOSTUNREACH.
+            from macos_discovery import read
+            body = read(peer, source)
+        else:
+            connection = http.client.HTTPConnection(peer, timeout=4)
+            if source:
+                connection.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                connection.sock.settimeout(4)
+                if sys.platform == 'win32' and interface_index is not None:
+                    connection.sock.setsockopt(socket.IPPROTO_IP, 31, struct.pack('!I', interface_index))
+                connection.sock.bind((source, 0))
+                connection.sock.connect((peer, 80))
+            connection.request('GET', '/cgi-bin/discovery.cgi', headers={
+                'User-Agent': 'QNXWebClient/1.0', 'Connection': 'close'})
+            response = connection.getresponse()
+            if response.status != 200:
+                return {}
+            body = response.read(131073)
         if len(body) > 131072:
             return {}
         document = ET.fromstring(body)
         allowed = {'OsType', 'ModelName', 'PlatformVersion', 'DeveloperModeEnabled', 'OobeCompleted'}
         return {node.tag.rsplit('}', 1)[-1]: node.text for node in document.iter()
                 if node.tag.rsplit('}', 1)[-1] in allowed}
-    except (OSError, ValueError, ET.ParseError, http.client.HTTPException):
+    except (OSError, ValueError, ET.ParseError, http.client.HTTPException, subprocess.TimeoutExpired):
         return {}
     finally:
-        connection.close()
+        if connection is not None:
+            connection.close()
 
 
 def usb_discovery_targets(state):
@@ -359,6 +367,8 @@ def run_flash_stage(folder, stage, token):
 
 
 def root_lock_path():
+    if sys.platform == 'darwin':
+        return Path.home() / 'Library/Application Support/bb10-volte/private/root-flash.lock'
     local = os.environ.get('LOCALAPPDATA')
     return (Path(local) / 'bb10-volte/private' if local else private_root()) / 'root-flash.lock'
 

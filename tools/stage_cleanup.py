@@ -5,10 +5,14 @@ import re
 import sys
 
 ROOT_PARENT = '/var/rootdata'
+DIAGNOSTIC_PARENT = '/var'
 
 
 def cleanup(base, names):
-    assert os.path.dirname(base) == ROOT_PARENT
+    parent = os.path.dirname(base)
+    assert parent in (ROOT_PARENT, DIAGNOSTIC_PARENT)
+    if parent == DIAGNOSTIC_PARENT:
+        assert isinstance(names, list) and set(names) == {'root-probe.py', 'profile-request.json', 'stage-cleanup.py'}
     assert re.match(r'^q10_volte_stage_[a-f0-9]{12}$', os.path.basename(base))
     assert os.path.realpath(base) == base and not os.path.islink(base)
     assert isinstance(names, list) and len(names) == len(set(names))

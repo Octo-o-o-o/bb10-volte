@@ -412,7 +412,7 @@ class WorkflowTests(unittest.TestCase):
                 patch.object(client, 'process', return_value='') as transfer, \
                 patch.object(client, 'execute', return_value={'stage_removed': True}) as cleanup:
             with client.stage(diagnostic='root') as stage:
-                pass
+                self.assertTrue(stage.startswith('/var/q10_volte_stage_'))
             names = [call.args[0][-1].split(stage + '/')[1] for call in transfer.call_args_list]
             self.assertEqual(names, ['root-probe.py', 'profile-request.json', 'stage-cleanup.py'])
             self.assertIn(stage + '/device', remote.call_args.args[0])

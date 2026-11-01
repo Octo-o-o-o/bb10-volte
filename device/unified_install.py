@@ -49,9 +49,21 @@ def identity():
     return facts, family
 
 
+def addon_parent(create=False):
+    parent = os.path.dirname(ADDON)
+    # Fresh AutoRoot v4 has no addon directory until the first addon is installed.
+    # Probe stays read-only; activation may create only this missing directory.
+    assert os.path.realpath(parent) == parent and not os.path.islink(parent), 'root_addon_directory_changed'
+    if os.path.lexists(parent):
+        assert os.path.isdir(parent), 'root_addon_directory_changed'
+    elif create:
+        os.mkdir(parent, 0o755)
+    return parent
+
+
 def root_kind(facts):
     if os.path.isfile('/tmp/root.done'):
-        assert os.path.isdir('/var/addons') and not os.path.islink('/var/addons')
+        addon_parent()
         return 'autoroot-v4'
     assert facts['variant'] == 'SQC100-2' and not os.path.islink(BTOOL), 'root_scheme_not_supported'
     assert n.digest(n.read(BTOOL)) in ROOT_V2_HASHES, 'root_boot_script_changed'
@@ -275,6 +287,7 @@ def activate():
         assert before.count(anchor) == 1 and HOOK not in before
         after = before.replace(anchor, HOOK + anchor, 1)
     else:
+        assert root_kind(facts) == 'autoroot-v4', 'root_scheme_changed'
         assert not os.path.lexists(ADDON), 'boot_addon_exists'
     entry = migration.quiesce(backup.get('legacy'))
     record = {'owner': policy.OWNER, 'installed_boot': u.boot_token(), 'legacy': entry, 'completed': False}
@@ -301,6 +314,7 @@ def activate():
         n.atomic(BASE + '/boot-install.json', profiles.canonical({'owner': policy.OWNER,
             'before_sha256': n.digest(before), 'after_sha256': n.digest(after)}))
     else:
+        addon_parent(create=True)
         for path in (ADDON, ADDON + '/data', ADDON + '/init'):
             os.mkdir(path, 0o755)
         n.atomic(ADDON + '/init/start.sh', n.read(script), 0o700)

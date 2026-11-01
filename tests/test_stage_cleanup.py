@@ -35,9 +35,17 @@ class CleanupTests(unittest.TestCase):
         names = ['root-probe.py', 'profile-request.json', 'stage-cleanup.py']
         for name in names:
             (base / name).write_text('generated diagnostic input')
-        self.assertTrue(c.cleanup(str(base), names)['stage_removed'])
+        with patch.object(c, 'ROOT_PARENT', str(base.parent / 'rootdata')), \
+                patch.object(c, 'DIAGNOSTIC_PARENT', str(base.parent)):
+            self.assertTrue(c.cleanup(str(base), names)['stage_removed'])
         self.assertFalse(base.exists())
         self.assertTrue(self.base.exists())
+
+    def test_common_parent_rejects_payload_stage_without_removing_any_files(self):
+        with patch.object(c, 'DIAGNOSTIC_PARENT', str(self.base.parent)):
+            with self.assertRaises(AssertionError):
+                c.cleanup(str(self.base), self.names)
+        self.assertTrue(all((self.base / name).exists() for name in self.names))
 
     def test_unknown_file_preserves_every_file(self):
         (self.base / 'device/owner.txt').write_text('keep')

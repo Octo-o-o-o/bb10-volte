@@ -2,12 +2,25 @@
   "schema": 1,
   "minimum_macos": "14.0",
   "upstream_source_commit": "d45b66ba9594a2912dd005e3607da1d4825fb06e",
-  "scope": "Experimental native preparation and guarded staged execution; real first flash not accepted",
+  "scope": "Pinned native preparation and guarded staged execution; Q20 SQC100-2 ARM64 first flash and new-key Root verified. Full GUI first use, other variants and native Intel flashing remain unverified.",
   "architectures": {
     "arm64": {
       "bb10mt": {
         "entry": "bb10mt_aarch64_darwin",
-        "sha256": "e8f91adbda9cfd373f7c7334a1e436b6991e978b23eb4344bb746db746f18515"
+        "sha256": "b76304c2601a31e21950ef83e60851af30785881d70eeb0c4d2bd8ea4cca3bf8",
+        "input_sha256": "e8f91adbda9cfd373f7c7334a1e436b6991e978b23eb4344bb746db746f18515",
+        "patches": [
+          {
+            "offset": 624644,
+            "before": "210080d2",
+            "after": "22000014"
+          },
+          {
+            "offset": 4135314,
+            "before": "379219b1508768cfbf6fea4709d5d411760a2fd5798432b4ed8b98a6bb4e6b69",
+            "after": "ef5578a554fab15b5bf2a305b39526f666558a4095f688e9ff774d0b0da35946"
+          }
+        ]
       },
       "libraries": [
         {
@@ -41,7 +54,15 @@
     "x86_64": {
       "bb10mt": {
         "entry": "bb10mt_x64_darwin",
-        "sha256": "5bbe2e72c9b36971fa8abc986a08b19a35bf1a6e3289007e486c0e766b23371f"
+        "sha256": "82a0d67f66c45062b153ed93dbcf0e544bab5585e4f58ea6bbd0413e3b9e5a54",
+        "input_sha256": "5bbe2e72c9b36971fa8abc986a08b19a35bf1a6e3289007e486c0e766b23371f",
+        "patches": [
+          {
+            "offset": 528832,
+            "before": "be01000000",
+            "after": "e98b000000"
+          }
+        ]
       },
       "libraries": [
         {
@@ -79,6 +100,18 @@
     "loaders.ini": "8b25da3f32148e9df3be886bbf0d5ef082cac81fd0b067f2089ee139fc0b3956",
     "cap.exe": "3a50b7703155e7edafc5bd51abcadc764b94b95eb0d8b2ee0d444ae3710fb70d"
   },
+  "ram_loaders": {
+    "loader_9400270A-00.bin": {
+      "source": "cap.exe",
+      "offset": 7096536,
+      "compressed_bytes": 132625,
+      "compressed_sha256": "bb372c76dd55505c39fce97614a7cfb07ecacc8c818e9320f5d103118393d669",
+      "bytes": 245468,
+      "sha256": "108ab6743c488b5558d29a8e3bc422dddeaa0466a36ed45e13a3082317e575ef",
+      "hardware_id": "9400270a",
+      "reason": "The pinned loaders.dat LDR_00 overlaps its archive header and fails CRC. Extract the intact signed loader from the same pinned cap.exe; retain gzip CRC and both SHA-256 checks."
+    }
+  },
   "seven_zip": {
     "file": "7z2605-mac.tar.xz",
     "url": "https://github.com/ip7z/7zip/releases/download/26.05/7z2605-mac.tar.xz",
@@ -87,5 +120,12 @@
     "binary_sha256": "8e495531e1b2b8cb169ca583493922d4ab386007756418c15b95f07f642c35fb",
     "license_member": "License.txt",
     "license_sha256": "1790374e5352329cedb46ee3808930a88e9ca2f08b82b10fcf5cf605d2c301b1"
+  },
+  "native_reboot_patch": {
+    "source": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/ramloader.pas#L896-L923",
+    "license": "GPL-3.0",
+    "source_equivalent_patch": "docs/MACOS-NATIVE-TOOL-REPAIR.md",
+    "scope": "Return after existing reboot and SafeCloseAndFree calls; omit the redundant TBBUSB.Create/Open/SafeCloseAndFree tail. No flash, signature, password or existing reboot call is changed.",
+    "arm64_signature": "Retain the existing ad-hoc CodeDirectory and update only the SHA-256 slot of the edited code page; verified with codesign --verify --strict."
   }
 }

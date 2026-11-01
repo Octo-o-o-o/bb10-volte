@@ -1,5 +1,6 @@
 """Explicit macOS Terminal flashing stages; never used by offline preparation."""
 import contextlib
+import errno
 import json
 import os
 from pathlib import Path
@@ -64,6 +65,49 @@ def hidden_terminal_input():
         yield
     finally:
         termios.tcsetattr(descriptor, termios.TCSADRAIN, previous)
+
+
+@contextlib.contextmanager
+def native_output():
+    """Keep Pascal stdout a terminal so its password prompt is flushed."""
+    import pty
+    master, slave = pty.openpty()
+    with os.fdopen(master, 'rb', buffering=0) as reader, os.fdopen(slave, 'wb', buffering=0) as writer:
+        yield reader, writer
+
+
+def run_native_command(command, cwd, environment, evidence, log):
+    # Input remains the real, echo-disabled terminal. Only output uses the PTY;
+    # passwords never pass through this relay or the stage log.
+    pending = bytearray()
+    with native_output() as (reader, writer):
+        child = subprocess.Popen(command, cwd=cwd, env=environment, stdin=sys.stdin,
+                                 stdout=writer, stderr=subprocess.STDOUT, bufsize=0)
+        writer.close()
+        while True:
+            try:
+                char = reader.read(1)
+            except OSError as error:
+                if error.errno != errno.EIO:
+                    raise
+                break  # PTY EOF on platforms which report it as EIO.
+            if not char:
+                break
+            sys.stdout.buffer.write(char)
+            sys.stdout.buffer.flush()
+            pending.extend(char)
+            if char in (b'\r', b'\n'):
+                line = pending.decode('utf-8', 'replace')
+                evidence.line(line)
+                log.write(public_line(line))
+                log.flush()
+                pending.clear()
+        if pending:
+            line = pending.decode('utf-8', 'replace')
+            evidence.line(line)
+            log.write(public_line(line))
+            log.flush()
+        return child.wait()
 
 
 def launch_stage(folder, phase, token, timeout=3600):
@@ -145,29 +189,10 @@ def run_stage(folder, phase, token):
         raise SetupError('native_console_unavailable') from None
     print(tr('bb10-volte：正在通过 Mac 原生工具刷写 {} Root').format(phase.upper()), flush=True)
     print(tr('请保持 USB 连接；仅在原生工具提示时输入设备密码，输入内容不会显示。'), flush=True)
-    pending = bytearray()
     with hidden_terminal_input(), (folder / ('flash-' + phase + '.log')).open('x', encoding='utf-8') as log:
-        child = subprocess.Popen([str(tools['bb10mt']), 'flash', '-l', str(listing), '-r', str(tools['loaders'])],
-                                 cwd=tools['bb10mt'].parent, env=native_environment(tools), stdin=sys.stdin,
-                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
-        while True:
-            char = child.stdout.read(1)
-            if not char:
-                break
-            sys.stdout.buffer.write(char)
-            sys.stdout.buffer.flush()
-            pending.extend(char)
-            if char in (b'\r', b'\n'):
-                line = pending.decode('utf-8', 'replace')
-                evidence.line(line)
-                log.write(public_line(line))
-                log.flush()
-                pending.clear()
-        if pending:
-            line = pending.decode('utf-8', 'replace')
-            evidence.line(line)
-            log.write(public_line(line))
-        result = evidence.result(phase, child.wait())
+        code = run_native_command([str(tools['bb10mt']), 'flash', '-l', str(listing), '-r', str(tools['loaders'])],
+                                  tools['bb10mt'].parent, native_environment(tools), evidence, log)
+        result = evidence.result(phase, code)
     output = folder / ('flash-' + phase + '.json')
     temporary = folder / ('flash-' + phase + '.json.partial')
     with temporary.open('x', encoding='utf-8') as stream:

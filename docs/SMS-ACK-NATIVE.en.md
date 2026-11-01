@@ -6,7 +6,7 @@
 
 The initial offline investigation on 2026-11-01 identified the missing correlation step. The first private Q20 trial subsequently crashed with SIGSEGV in the QNX dynamic linker before IMS entry. A third LOAD header replaced this linker's text relocation bias; generic ELF checks and callsite emulation did not cover that platform restriction.
 
-The revised candidate retains two LOAD headers, extends the original RX mapping and preserves the original RW overlay and zero-fill. Stock and revised images pass dependency enumeration with `LD_TLO=1` on the same phone; the old candidate reproduces the crash in that check. Trace-only behavior was first verified with `ls` without executing its normal directory access. **Revised IMS startup, gateway acceptance, delivery counts and voice regression remain pending.** See the [device acceptance record](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
+The revised candidate retains two LOAD headers, extends the original RX mapping and preserves the original RW overlay and zero-fill. Stock and revised images pass dependency enumeration with `LD_TLO=1`; the old candidate reproduces the crash. The revised image subsequently started on the Q20 with Root-v2, with RX code and RW cache verified in its actual mappings. REGISTER timed out without observed SIP responses; the trial was disabled and configuration restored. **Gateway acceptance, delivery counts and voice regression remain pending.** See the [device acceptance record](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
 
 ## Native finding
 
