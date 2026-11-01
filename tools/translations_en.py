@@ -877,6 +877,8 @@ ENGLISH = {
 
 # Unified carrier installation
 ENGLISH.update({
+    '候选试测版，尚未实机验收': 'Candidate preview; no hardware acceptance',
+    '仅安装并回读候选文件，不启动服务，不启用自启动。完成后可单独手动启动。': 'Install and verify candidate files only. The service and autostart remain off. Start manually in a separate step after installation.',
     '原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。': 'Stock firmware upgrades still need physical-device acceptance. Back up first and use this candidate workflow only on a test phone that may be erased.',
     '准备原版系统与 Root 镜像至少需要 24 GB 可用空间。请释放空间后重试。': 'Preparing stock firmware and Root images needs at least 24 GB of free space. Free some space and try again.',
     '存在未结束的刷写记录。请保留现场与日志，不要重复刷写。': 'An unfinished flash record exists. Keep the logs and do not flash again.',
@@ -1029,4 +1031,25 @@ ENGLISH.update({
     '当前仅紧急服务，尚未正常入网': 'Emergency service only',
     '移动网络尚未就绪': 'Mobile network is not ready',
     '网络仍含紧急服务标志': 'Network still reports emergency service',
+})
+
+ENGLISH.update({
+    "候选机型本地试测": "Local candidate variant trials",
+    "先检查本机条件，再决定能否试用": "Check this phone before starting a trial",
+    "手机需已有有效 Root。这里只读检查，不会刷机或自动安装。": "The phone needs working Root. This check does not flash or automatically install anything.",
+    "请选择手机“关于”中的完整后缀和实际使用的运营商。": "Select the full variant shown in About and the carrier actually in use.",
+    "此组合已有自动适配入口，请使用主界面的“三网自动适配”。": "This combination has an automatic setup route. Use Automatic carrier setup in the main window.",
+    "这是未实测的手动候选。检查通过并明确选择实验试用后，可先安装，再单独手动启动；不开启自启动。必须先有可用 LTE 数据，试测不会修复基带入网。完成后使用“停用并恢复”并导出报告。": "This manual candidate has not passed hardware testing. After checks and explicit experimental opt-in, install first and start separately; autostart stays off. Working LTE data is required; the trial does not repair network attachment. Finish with Disable and restore, then export the report.",
+    "此 Passport 后缀先提供检查与报告。原生组件停止及恢复尚未验证，当前不会开放安装；请导出型号、原生文件与网络检查结果，供后续适配。": "This Passport variant currently offers checks and reporting. Native component shutdown and restoration are unverified, so installation stays blocked. Export the model, native-file and network results for further adaptation.",
+    "导出试测配置与结果表": "Export trial profiles and result form",
+    "检查本机条件": "Check this phone",
+    "试测材料已保存：{}。没有连接或修改手机。": "Trial materials saved to {}. No phone was contacted or modified.",
+    "候选试测：{} / {}。先检查、再明确选择实验试用；安装与启动分开，始终关闭自启动。": "Candidate trial: {} / {}. Check first, then explicitly opt in. Installation and startup are separate; autostart stays off.",
+    "候选服务已安装，尚未启动": "Candidate installed; not started",
+    "确认检查结果后，单独点击“启动并验证”。重启不会自动启动；试测结束后请停用并恢复。": "Review the checks, then select Start and verify separately. Rebooting will not start the service automatically. Disable and restore after the trial.",
+    "当前是绑定完整后缀的手动候选，尚未实机验收，不会自动启动。技术检查通过只表示可进入试测，实际通话、短信和停用恢复仍须逐项记录。": "This manual candidate is bound to an exact variant, has no hardware acceptance and does not autostart. Passing checks only permits a trial; calls, SMS and restoration still require recorded tests.",
+    "试测目标型号": "Trial target variant",
+    "试测原生文件": "Trial native files",
+    "本试测配置只适用于选定的完整后缀。实际手机不匹配时停止，不会自动套用同系列配置。": "This trial profile is bound to the selected exact variant. A different phone blocks the trial; family similarity does not override this check.",
+    "试测要求六个系统原生文件全部匹配；缺失或未知版本时只保留报告，不进行安装。": "All six native system files must match. Missing or unknown versions allow reporting only, not installation.",
 })

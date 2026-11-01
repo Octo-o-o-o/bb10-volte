@@ -58,6 +58,16 @@ def run(output):
     root = tk.Tk()
     root.withdraw()
     app = App(root)
+    import variant_trials
+    from variant_trial_gui import VariantTrialDialog
+    assert variant_trials.plan('SQC100-3', 'unicom')['route'] == 'manual_candidate'
+    assert variant_trials.plan('SQC100-4', 'mobile')['route'] == 'blocked'
+    trial = VariantTrialDialog(root, lambda _: (_ for _ in ()).throw(AssertionError('No phone action allowed')))
+    trial.attributes('-alpha', 0.0)
+    trial.variant.set('SQW100-1')
+    trial.operator.set(tr('中国联通'))
+    assert trial.decision()['route'] == 'read_only_lifecycle_pending'
+    trial.destroy()
     assert ttk.Style(root).theme_use() == 'bb10'
     from auto_carrier import verify_package as verify_auto_package
     from auto_carrier_gui import AutoCarrierWindow

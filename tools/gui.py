@@ -31,7 +31,10 @@ NAMES = {'model': tr('手机型号'), 'os': tr('系统版本'), 'root': tr('Root
          'installation': tr('已装服务'), 'baseline': tr('安装前状态'), 'saved_profile': tr('已装配置'),
          'provider_lifecycle': tr('机型恢复验证'), 'autostart_policy': tr('开机启动验证')}
 NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'))
+NAMES.update(trial_target=tr('试测目标型号'), trial_native=tr('试测原生文件'))
 NOTES = {
+    'trial_exact_variant_required': tr('本试测配置只适用于选定的完整后缀。实际手机不匹配时停止，不会自动套用同系列配置。'),
+    'trial_six_native_hashes_required': tr('试测要求六个系统原生文件全部匹配；缺失或未知版本时只保留报告，不进行安装。'),
     'unified_payload_verified': tr('三网自动适配文件及原始备份回执已核验。'),
     'unified_running': tr('本次开机自动选择的运营商已注册；双向通话仍需实机确认。'),
     'unified_waiting': tr('自动适配尚未完成注册。请按当前阶段的提示处理，再检查状态。'),
@@ -163,6 +166,9 @@ class App:
         self.config = tk.StringVar(value=selected_config)
         self.ack = tk.BooleanVar()
         root.title('bb10-volte')
+        project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+        if project.get('preview_id'):
+            root.title('bb10-volte · ' + tr('候选试测版，尚未实机验收') + ' · ' + project['preview_id'])
         if os.name == 'nt' and (ROOT / 'assets/app.ico').is_file():
             root.iconbitmap(str(ROOT / 'assets/app.ico'))
         self.icon = None
@@ -219,6 +225,7 @@ class App:
         self.export_index = self.menu.index('end') + 1
         self.menu.add_command(label=tr('导出检查报告'), command=self.export)
         self.menu.add_command(label=tr('高级连接设置'), command=self.toggle_connection_options)
+        self.menu.add_command(label=tr('候选机型本地试测'), command=self.variant_trials)
         self.menu.add_separator()
         self.menu.add_command(label=tr('使用与恢复指南'), command=self.guide)
         self.menu.add_command(label=tr('社区研究与适配进展'), command=lambda: self.show_document(
@@ -228,6 +235,7 @@ class App:
         self.menu.add_command(label=tr('关于与开源许可'), command=self.licenses)
         self.device_label = self.label(main, tr('BlackBerry 10 设备 · 等待连接'), 11, MUTED, anchor='w')
         self.device_label.pack(fill='x', pady=(5, 22))
+        self.trial_notice = self.label(main, '', 11, AMBER, wraplength=950, justify='left')
 
         self.connection_card = tk.Frame(main, bg='white', padx=20, pady=16)
         self.connection_card.pack(fill='x', pady=(0, 18))
@@ -356,6 +364,18 @@ class App:
         if not self.busy:
             ProfileEditor(self.root, self.profile, self.set_profile)
 
+    def variant_trials(self):
+        if not self.busy:
+            from variant_trial_gui import VariantTrialDialog
+            VariantTrialDialog(self.root, self.check_variant_trial, self.device_info.get('variant', ''))
+
+    def check_variant_trial(self, profile):
+        if self.busy:
+            return
+        self.set_profile(profile)
+        self.experimental.set(False)
+        self.run('preflight')
+
     def allowed_actions(self):
         r = self.report or {}
         owned = r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
@@ -373,6 +393,12 @@ class App:
             return
         r = self.report or {}
         allowed = self.allowed_actions()
+        trial = profiles.trial_target(self.profile)
+        if trial:
+            self.trial_notice.configure(text=tr('候选试测：{} / {}。先检查、再明确选择实验试用；安装与启动分开，始终关闭自启动。').format(trial['variant'], trial['operator']))
+            self.trial_notice.pack(fill='x', before=self.connection_card, pady=(0, 12))
+        else:
+            self.trial_notice.pack_forget()
         owned = r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
         self.primary_action = ('start' if r.get('can_start') else 'install' if r.get('can_install') or r.get('can_update')
                                else 'status' if owned else None)
@@ -398,7 +424,7 @@ class App:
         self.auto_carrier_button.configure(state='disabled' if self.busy else 'normal')
         accepted_telecom = r.get('hardware_validation') == 'q10_telecom_per_sim_accepted'
         self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
-        self.edit_button.configure(state='disabled' if self.busy or managed else 'normal')
+        self.edit_button.configure(state='disabled' if self.busy or managed or trial else 'normal')
         self.experiment_check.configure(state='disabled' if self.busy or managed or accepted_telecom else 'normal')
         self.menu.entryconfigure(self.export_index, state='normal' if self.last_result and not self.busy else 'disabled')
         self.details_button.configure(state='normal' if self.display_report and not self.busy else 'disabled')
@@ -407,7 +433,7 @@ class App:
             self.ack_check.pack(anchor='w', pady=(0, 12))
         else:
             self.ack_check.pack_forget()
-        experimental = (self.experimental.get() or not profiles.baseline_parameters(self.profile) or
+        experimental = (trial or self.experimental.get() or not profiles.baseline_parameters(self.profile) or
                         bool(self.device_info) and not self.device_info.get('hardware_tested'))
         if experimental and not managed and not accepted_telecom:
             self.experiment_check.pack(anchor='w', pady=(12, 0))
@@ -486,6 +512,7 @@ class App:
         state = report['installation']['state']
         baseline_blocked = any(c['id'] == 'baseline' and c['status'] != 'pass' for c in problems)
         network_blocker = next((c for key in ('lte', 'apn') for c in problems if c['id'] == key), None)
+        trial_blocker = next((c for c in problems if c['id'] in ('trial_target', 'trial_native')), None)
         prerequisites_blocked = any(c['id'] in ('model', 'os', 'root', 'native', 'sim', 'carrier', 'sim_route', 'identity')
                                     for c in problems)
         if baseline_blocked and outcome in ('compatible', 'experimental'):
@@ -494,6 +521,8 @@ class App:
             view = unified_status_view(service_status or report.get('status', {}))
             title, color = view['title'], GREEN if view['ready'] else AMBER
             detail = view['guidance']
+        elif trial_blocker:
+            detail = self.check_note(trial_blocker, report)
         elif report.get('can_restore') is False:
             detail = tr('此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。')
         elif state == 'busy':
@@ -550,6 +579,8 @@ class App:
                 message += tr(' Q20 会保留软件提供器至正常重启；请在恢复完成后用电源菜单重启。')
             if action == 'enable':
                 message = tr('将按当前设备、配置和 SIM 的实机验收记录启用开机恢复。')
+            if action == 'install' and profiles.trial_target(self.profile):
+                message = tr('仅安装并回读候选文件，不启动服务，不启用自启动。完成后可单独手动启动。')
             if (self.report or {}).get('managed_adapter') == 'unified_carriers':
                 message = (tr('将停用自动适配并恢复其配置，恢复后请正常重启。') if action == 'disable' else
                            tr('将启用自动适配；请正常重启，由手机识别当前 SIM。'))
@@ -587,7 +618,7 @@ class App:
                         except WorkflowError as error:
                             result['status_error'] = error.code
                 else:
-                    result = client.install(mode, start=True) if action == 'install' else client.action(action)
+                    result = client.install(mode, start=profiles.trial_target(profile) is None) if action == 'install' else client.action(action)
                 self.events.put(('result', (action, result)))
             except WorkflowError as error:
                 self.events.put(('error', (error.code, error.report)))
@@ -697,6 +728,9 @@ class App:
                         else:
                             self.summary.configure(text=tr('已检测到安装，服务状态需核对'), fg=AMBER)
                             self.detail.configure(text=tr('请查看检查详情或导出报告，再按实际状态处理。'))
+                    elif action == 'install' and result.get('installed') and (report or {}).get('variant_trial'):
+                        self.summary.configure(text=tr('候选服务已安装，尚未启动'), fg=AMBER)
+                        self.detail.configure(text=tr('确认检查结果后，单独点击“启动并验证”。重启不会自动启动；试测结束后请停用并恢复。'))
                     elif action in ('install', 'start'):
                         self.summary.configure(text=tr('服务已启动，注册仍待确认'), fg=AMBER)
                         self.detail.configure(text=tr('等待窗口已结束。稍后重新预检并查看状态；尚不能判断为安装通话成功。'))
@@ -976,6 +1010,9 @@ def main():
     parser.add_argument('--ssh-config', default='')
     parser.add_argument('--profile-id', choices=[p['id'] for p in presets()],
                         help='Select an explicit carrier preset for a device-specific shortcut')
+    parser.add_argument('--variant-trials', action='store_true', help='Open the candidate variant test selector; no automatic phone action')
+    parser.add_argument('--trial-variant', help='Exact candidate suffix; requires --trial-operator')
+    parser.add_argument('--trial-operator', choices=('mobile', 'unicom', 'telecom'))
     parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
     parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')
     parser.add_argument('--flash-stage', choices=('os', 'radio'), help=argparse.SUPPRESS)
@@ -989,6 +1026,14 @@ def main():
     parser.add_argument('--download-proxy', help='Optional proxy for missing preparation inputs')
     args = parser.parse_args()
     selected_profile = next((p for p in presets() if p['id'] == args.profile_id), None)
+    if args.trial_variant or args.trial_operator:
+        if not args.trial_variant or not args.trial_operator or args.profile_id:
+            parser.error('A trial needs both exact variant and operator, without --profile-id')
+        import variant_trials
+        try:
+            selected_profile = variant_trials.profile(args.trial_variant, args.trial_operator)
+        except ValueError as error:
+            parser.error(str(error))
     prepare_external_programs()
     if args.firmware_stage:
         if args.flash_stage or not args.root_kit or not args.flash_token:
@@ -1039,7 +1084,10 @@ def main():
     # The window remains resizable; Tk's default font scaling otherwise clips
     # the fixed-width sidebar and pushes the operation status below the window.
     root.tk.call('tk', 'scaling', min(float(root.tk.call('tk', 'scaling')), 1.6))
-    App(root, args.host, args.ssh_config, auto_connect=True, profile=selected_profile)
+    preview = json.loads((ROOT / 'project.json').read_text(encoding='utf-8')).get('preview_id')
+    app = App(root, args.host, args.ssh_config, auto_connect=not bool(preview or args.variant_trials or args.trial_variant), profile=selected_profile)
+    if args.variant_trials or preview:
+        root.after_idle(app.variant_trials)
     root.mainloop()
     return 0
 

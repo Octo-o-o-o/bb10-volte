@@ -677,6 +677,23 @@
         "Windows symlink creation unavailable",
         "Native POSIX terminal unavailable on Windows"
       ]
+    },
+    "local_trials": {
+      "manual_candidate_combinations": 13,
+      "read_only_passport_combinations": 6,
+      "configuration_files": 19,
+      "coverage_matrix_cases": 42,
+      "actual_hardware_tests": 0,
+      "automatic_support_expanded": false,
+      "profile_id_prefix": "variant-trial-",
+      "device_side_model_binding": true,
+      "native_files_required": 6,
+      "autostart": false,
+      "radio_attach_changes": false,
+      "install_and_start_separate": true,
+      "guide": "docs/VARIANT-LOCAL-TRIALS.md",
+      "mobile_entry_integration": "reuse shared profiles and compatibility checks; include variant_trial in sanitized report allowlist",
+      "preview_packages": "separately labeled; final hashes and build verification accompany local distribution"
     }
   }
 }

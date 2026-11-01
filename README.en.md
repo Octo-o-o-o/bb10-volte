@@ -12,6 +12,8 @@ Install once from Windows or Mac. Then power off, change the SIM and start the p
 
 This branch adds [coverage research and early checks for 14 hardware variants](docs/ALL-VARIANTS-COVERAGE-PLAN.md) (Chinese): unsupported models receive an explanation before firmware downloads, Root or installation, with a separate system recovery / Root option. These changes are not in the r14 downloads below and do not expand the validated automatic VoLTE scope.
 
+The new [local trial entry](docs/VARIANT-LOCAL-TRIALS.en.md) prepares gated manual workflows for 13 Q10/Classic combinations and checks/reporting for six Passport combinations. These have no new hardware acceptance. Trial packages explicitly labeled `preview` are separate from the official r14 release.
+
 ## Downloads
 
 | Computer | System requirements |
