@@ -132,6 +132,12 @@ class MaterialImportTests(unittest.TestCase):
 
 class FirmwareImportGuiTests(unittest.TestCase):
     def setUp(self):
+        # Exercise the supported desktop workflow on headless Linux CI as well.
+        # Keep real Windows/macOS behavior when running on either target host.
+        if sys.platform not in ('win32', 'darwin'):
+            desktop = patch.object(w, 'sys', SimpleNamespace(platform='win32'))
+            desktop.start()
+            self.addCleanup(desktop.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.folder = Path(self.temp.name)
@@ -455,6 +461,15 @@ class FirmwareImportGuiTests(unittest.TestCase):
         (self.folder / 'flash.lock').write_text('uncertain')
         self.wizard.refresh()
         self.assertIn('刷写状态未确认', self.wizard.root_hint.cget('text'))
+
+    def test_unsupported_desktop_keeps_root_preparation_and_flashing_disabled(self):
+        with patch.object(w, 'sys', SimpleNamespace(platform='linux')):
+            self.wizard.kit = 'prepared-kit'
+            self.wizard.ack.set(True)
+            self.wizard.refresh()
+            self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'disabled')
+            self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+            self.assertIn('仅支持 Windows 和 Mac', self.wizard.root_hint.cget('text'))
 
 
 if __name__ == '__main__':
