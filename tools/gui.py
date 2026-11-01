@@ -14,7 +14,8 @@ from tkinter import filedialog, messagebox, ttk
 from workflow import Client, ROOT, WorkflowError, public_status, registered
 from desktop_paths import private_root, prepare_external_programs
 from profile_editor import ProfileEditor, presets, profiles, picker_label, FONT
-from diagnostic_details import baseline_rows, baseline_summary, has_read_failure, incoming_rows, network_rows, support_summary
+from diagnostic_details import (adaptation_note, baseline_rows, baseline_summary, data_service_note,
+                                has_read_failure, incoming_rows, network_rows, support_summary)
 from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
@@ -302,17 +303,23 @@ class App:
         self.check_count = self.label(summary, tr('系统、SIM 和安装条件将在连接后自动检查'), 11, MUTED, anchor='w')
         self.check_count.pack(fill='x', pady=(0, 10))
         self.table_frame = tk.Frame(summary, bg='white')
-        self.table = ttk.Treeview(self.table_frame, columns=('item', 'state', 'detail'), show='headings', selectmode='browse', height=1)
+        self.issue_detail = self.label(self.table_frame, '', 11, MUTED, wraplength=850, justify='left', anchor='w')
+        self.issue_detail.pack(side='bottom', fill='x', pady=(10, 0))
+        self.issue_detail.bind('<Configure>', lambda event: self.issue_detail.configure(wraplength=max(1, event.width - 4)))
+        table_body = tk.Frame(self.table_frame, bg='white')
+        table_body.pack(fill='both', expand=True)
+        self.table = ttk.Treeview(table_body, columns=('item', 'state', 'detail'), show='headings', selectmode='browse', height=1)
         for col, label, width in [('item', tr('待处理项目'), 135), ('state', tr('结果'), 95), ('detail', tr('处理方法'), 480)]:
             self.table.heading(col, text=label, anchor='w')
             self.table.column(col, width=width, minwidth=width if col != 'detail' else 300, stretch=col == 'detail')
-        scroll = AutoScrollbar(self.table_frame, orient='vertical', command=self.table.yview)
+        scroll = AutoScrollbar(table_body, orient='vertical', command=self.table.yview)
         self.table.configure(yscrollcommand=scroll.set)
         scroll.pack(side='right', fill='y')
         self.table.pack(fill='both', expand=True)
         for tag, color in [('pass', GREEN), ('wait', AMBER), ('adapt', AMBER), ('block', RED), ('idle', MUTED)]:
             self.table.tag_configure(tag, foreground=color)
         self.table.bind('<Double-1>', self.explain_row)
+        self.table.bind('<<TreeviewSelect>>', self.show_issue_detail)
         self.refresh_buttons()
 
     def connection_changed(self, *_, preserve_device=False):
@@ -467,14 +474,20 @@ class App:
             tr(' · {} 项待处理').format(len(problems)) if problems else ''))
         if problems:
             self.table_frame.pack(fill='both', expand=True)
+            self.table.selection_set(problems[0]['id'])
+            self.show_issue_detail()
         else:
             self.table_frame.pack_forget()
+            self.issue_detail.configure(text='')
         outcome = report['outcome']
         title, color = {'compatible': (tr('符合当前适配条件'), GREEN), 'not_ready': (tr('有条件尚未就绪'), AMBER),
                         'experimental': (tr('未实测适配 · 可实验试用'), AMBER),
                         'needs_adaptation': (tr('设备或运营商配置需要适配'), AMBER), 'unsupported': (tr('关键技术条件未通过'), RED)}[outcome]
         state = report['installation']['state']
         baseline_blocked = any(c['id'] == 'baseline' and c['status'] != 'pass' for c in problems)
+        network_blocker = next((c for key in ('lte', 'apn') for c in problems if c['id'] == key), None)
+        prerequisites_blocked = any(c['id'] in ('model', 'os', 'root', 'native', 'sim', 'carrier', 'sim_route', 'identity')
+                                    for c in problems)
         if baseline_blocked and outcome in ('compatible', 'experimental'):
             title, color = tr('安装前状态需处理'), AMBER
         if report.get('managed_adapter') == 'unified_carriers':
@@ -491,10 +504,23 @@ class App:
                 detail = tr('电信当前尚未正常入网。手动试用会先保存并核验原始备份，再尝试入网；LTE 数据未就绪时不会配置 IMS。')
         elif state in ('conflict', 'interrupted', 'recovery_required'):
             detail = tr('安装或恢复状态需要处理。请保留现场，按检查表处理后重新预检。')
+        elif network_blocker and outcome == 'not_ready' and not prerequisites_blocked:
+            if network_blocker['code'] == 'lte_emergency_only':
+                mask = (report.get('network_diagnostics') or {}).get('network_service')
+                title = (tr('当前仅紧急服务，尚未正常入网') if type(mask) is int and mask == 1 else
+                         tr('网络仍含紧急服务标志'))
+            else:
+                title = tr('移动网络尚未就绪')
+            detail = self.check_note(network_blocker, report)
+            if network_blocker['id'] != 'apn' and any(c['code'] == 'data_services_off' for c in problems):
+                detail += '\n' + data_service_note(report)
         elif baseline_blocked:
             detail = baseline_summary(report)
         else:
             detail = tr('请按下方提示处理后重新检查。')
+        scope_note = adaptation_note(report)
+        if scope_note:
+            detail += '\n' + scope_note
         research = report.get('community_research', {})
         if research.get('records'):
             detail += tr(' 有相同硬件与运营商的社区研究记录，尚不代表本工具已验收；可在“更多”查看。')
@@ -739,12 +765,19 @@ class App:
             item, state, detail = self.table.item(rows[0], 'values')
             messagebox.showinfo(item + ' · ' + state, detail, parent=self.root)
 
+    def show_issue_detail(self, _event=None):
+        rows = self.table.selection()
+        values = self.table.item(rows[0], 'values') if rows else ()
+        self.issue_detail.configure(text=values[2] if values else '')
+
     def check_note(self, check, report=None, running=None):
         report = self.display_report if report is None else report
         running = self.running_baseline_expected if running is None else running
         if check['id'] == 'baseline' and check['status'] != 'pass':
             return (tr('已确认本工具管理器运行；当前读数及停用后的要求见检查详情。') if running else
                     baseline_summary(report))
+        if check['code'] == 'data_services_off' and check['status'] != 'pass':
+            return data_service_note(report)
         passed = {'os': tr('系统版本符合要求。'), 'root': tr('Root 与 QNX ARM32 环境核验通过。'),
                   'native': tr('4 个原生文件的 SHA-256 均与本工具基线一致。'),
                   'autostart_policy': tr('实验组合已关闭自动启动，可在条件通过后手动启动。'),

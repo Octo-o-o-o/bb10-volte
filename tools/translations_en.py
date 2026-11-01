@@ -991,4 +991,15 @@ ENGLISH.update({
     '手机系统低于 10.3.3.3216。请先使用“系统升级”完成升级，再确认 Root 刷写。': 'The phone OS is older than 10.3.3.3216. Complete the OS upgrade before confirming Root flashing.',
     '手机系统高于已适配版本，不能自动降级或直接刷写当前 Root 镜像。': 'The phone OS is newer than the supported version. Automatic downgrade and flashing the current Root image are blocked.',
     '系统升级 / 继续升级记录': 'OS upgrade / resume preparation',
+
+    '手机记录的数据服务设置为 OFF。请在手机网络设置中开启数据服务，再重新检查。': 'The recorded data service setting is OFF. Enable data services in the phone network settings, then check again.',
+    '数据服务设置为 ON，实际状态为 OFF：开关已开，但服务尚未就绪。请先核实正常入网和实际移动数据；这不代表用户关闭了数据。': 'The data service setting is ON, but the actual status is OFF: data is enabled, but the service is not ready. Check network registration and actual mobile data access; this does not mean the user turned data off.',
+    '数据服务实际状态为 OFF，设置状态未知。请核对手机的数据服务设置与入网状态，不能据此认定用户关闭了数据。': 'The actual data service status is OFF and the setting is unknown. Check the phone data setting and network registration; this does not establish that the user turned data off.',
+    'Q20 三网自动适配目前仅支持 {}；本机 {} 尚未纳入。': 'Automatic carrier adaptation for Q20 currently supports only {}; this {} is not included.',
+    '通用电信试用模板不包含此型号的入网修复，需单独适配；勾选实验试用不能解决当前入网阻断。': 'The generic Telecom trial template does not include a network registration fix for this model. Separate adaptation is needed; enabling experimental use does not resolve the current network blocker.',
+    '未检测到本工具安装；进程数量不能证明安装残留。仍存在时请提供新报告，由维护者核对进程来源。': 'No installation of this tool was detected; the process count does not prove a leftover installation. If it persists, provide a new report so the maintainer can check its origin.',
+    '适配范围：': 'Adaptation scope: ',
+    '当前仅紧急服务，尚未正常入网': 'Emergency service only',
+    '移动网络尚未就绪': 'Mobile network is not ready',
+    '网络仍含紧急服务标志': 'Network still reports emergency service',
 })

@@ -5,6 +5,7 @@ import datetime
 import re
 
 import compatibility
+import carrier_policy
 
 
 def _append(left, right):
@@ -12,6 +13,39 @@ def _append(left, right):
     separator = (' ' if i18n.LANGUAGE == 'en' and left and right and
                  not left.endswith((' ', '\n')) and not right.startswith((' ', '\n', '.', ',', ';')) else '')
     return left + separator + right
+
+
+def data_service_note(report):
+    """Explain OFF using validated setting and status, without changing gates."""
+    values = compatibility.public_network_diagnostics(report.get('network_diagnostics'))
+    mode, status = values['data_service_mode'], values['data_services_status']
+    if mode == 'OFF':
+        return tr('手机记录的数据服务设置为 OFF。请在手机网络设置中开启数据服务，再重新检查。')
+    if status == 'OFF' and mode == 'ON':
+        return tr('数据服务设置为 ON，实际状态为 OFF：开关已开，但服务尚未就绪。请先核实正常入网和实际移动数据；这不代表用户关闭了数据。')
+    if status == 'OFF':
+        return tr('数据服务实际状态为 OFF，设置状态未知。请核对手机的数据服务设置与入网状态，不能据此认定用户关闭了数据。')
+    return tr('手机报告数据服务状态或设置为 OFF；检查详情可区分两者，不能仅凭状态认定手动关闭，也不能据此判断频段不支持。')
+
+
+def adaptation_note(report):
+    """Describe the exact model boundary, separately from legacy trial gates."""
+    device = report.get('device') or {}
+    variant = device.get('variant')
+    if (device.get('recognized') is not True or device.get('identity_conflict') or
+            device.get('family') != 'classic' or not isinstance(variant, str) or
+            not re.fullmatch(r'SQC100-[0-9]{1,2}', variant) or variant in carrier_policy.MODELS):
+        return ''
+    supported = ', '.join(sorted(key for key, value in carrier_policy.MODELS.items() if value[0] == 'classic'))
+    note = tr('Q20 三网自动适配目前仅支持 {}；本机 {} 尚未纳入。').format(supported, variant)
+    profile = report.get('profile_parameters') or {}
+    carrier = profile.get('carrier') or {}
+    facts = report.get('facts') or {}
+    if (profile.get('id') == 'china-telecom' and carrier.get('mcc') == '460' and facts.get('mcc') == '460' and
+            facts.get('mnc') in ('03', '11') and not profile.get('lte_attach') and
+            any(row.get('id') in ('lte', 'apn') and row.get('status') != 'pass' for row in report.get('checks', []))):
+        note = _append(note, tr('通用电信试用模板不包含此型号的入网修复，需单独适配；勾选实验试用不能解决当前入网阻断。'))
+    return note
 
 
 BASELINE_ITEMS = {
@@ -143,7 +177,10 @@ def baseline_rows(report, running=False):
                 detail = _append(detail, tr('该项不符合本工具基线；来源可能是原厂差异、手动设置或其他工具。'))
             else:
                 detail = _append(detail, hint)
-            detail = _append(detail, next_step)
+            if key == 'ims_count' and installation == 'absent':
+                detail = _append(detail, tr('未检测到本工具安装；进程数量不能证明安装残留。仍存在时请提供新报告，由维护者核对进程来源。'))
+            else:
+                detail = _append(detail, next_step)
         else:
             detail = _append(detail, tr('此项符合安装前要求。'))
         if key in compatibility.CONFIGURATION_FLAGS:
@@ -196,6 +233,9 @@ def support_summary(report, names, note_for, version, running=False):
     lines.append(tr('安装状态：') + states.get(report.get('installation', {}).get('state'), tr('未知')))
     lines.append(tr('操作许可：安装={}，更新={}，启动={}').format(
         *(tr('是') if report.get(key) is True else tr('否') for key in ('can_install', 'can_update', 'can_start'))))
+    scope_note = adaptation_note(report)
+    if scope_note:
+        lines.append(tr('适配范围：') + scope_note)
     lines.append(tr('待处理检查：'))
     issues = [check for check in report.get('checks', []) if check['status'] != 'pass']
     for check in issues:

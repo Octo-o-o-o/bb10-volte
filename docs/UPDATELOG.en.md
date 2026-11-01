@@ -26,6 +26,12 @@ Explicitly applies native `SMS_Over_IP_Network_Indication` alongside SMS service
 
 Review of 19 historical captures found a Q20 Mobile ACK receiving SIP 400 and a Passport Telecom ACK receiving `400 Cannot find In-Reply-To`. Other combinations lack SMS transactions and cannot pass SMS acceptance. This candidate is neither deployed nor released; successful MO and single MT delivery still require device testing. Prior acceptance remains scoped to recorded voice, SIM-change and display checks. See [SMS diagnostics](SMS-DIAGNOSTICS.en.md).
 
+## Unreleased · SQC100-4 Telecom feedback diagnostics · 2026-11-01
+
+Prioritizes network blockers over the IMS process count and distinguishes an ON data setting from an OFF service status. A process count on an uninstalled phone no longer implies a leftover installation. Selecting a pending row displays its full, wrapped guidance below the table; copied summaries also explain the exact hardware boundary for automatic carrier adaptation.
+
+This changes desktop diagnostics only. SQC100-4 remains outside automatic carrier adaptation; phone payloads and admission conditions are unchanged. The reported phone was unavailable, so actual network registration and calls have not been repaired or verified. See the [network investigation record (Chinese)](NETWORK-DIAGNOSTICS.md).
+
 ## Desktop update · completion, sharing and public documentation · 2026-11-01
 
 Adds localized sharing, OctoLab, GitHub Star, contact and optional coffee support to both packages. Completion requires current-boot registration and respects Passport extra restarts and USB reconnects. Only verified branded QR presentation images are public; original receipt screenshots stay private. README now includes the nine-combination infographic and Windows UI illustration. User-facing support labels say “supported in the latest release”; release records retain exact versions and hashes. The accepted phone payload is unchanged.
