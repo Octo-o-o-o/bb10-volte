@@ -1,0 +1,275 @@
+{
+  "scenario": "first-use",
+  "title": "BB10 VoLTE：完整首次使用",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 219339,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "先备份，确认手机和电脑",
+      "body": "从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。",
+      "narration": "这份教程带你从首次打开工具，一直到通话验收。先备份手机，在设置、关于里面核对准确型号和系统版本。只连接一台手机，保持电量充足。已有有效 Root 的手机，可以跳过首次刷写。",
+      "startMs": 2600,
+      "endMs": 21300,
+      "segment": "segment-1"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "连接手机，按已有材料选路",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 21900,
+      "endMs": 24300,
+      "segment": "segment-2"
+    },
+    {
+      "title": "连接手机，按已有材料选路",
+      "body": "有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。",
+      "narration": "连接并解锁手机后，点击连接手机。有旧刷机文件夹，就选择整个文件夹。没有旧文件，但手机已经有有效 Root，可以从手机重新授权。连接失败，不等于手机没有 Root，不要直接重新刷机。",
+      "startMs": 24900,
+      "endMs": 44450,
+      "segment": "segment-2"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "首次 Root：获取并导入对应固件",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 45067,
+      "endMs": 47467,
+      "segment": "segment-3"
+    },
+    {
+      "title": "首次 Root：获取并导入对应固件",
+      "body": "可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。",
+      "narration": "首次 Root 时，进入首次 Root 页面，核对准确型号。可以让应用下载，也可以通过页面里的网盘入口下载完整固件。保留原文件，不要运行或解压。选择文件后，点击校验并导入固件。",
+      "startMs": 48067,
+      "endMs": 67187,
+      "segment": "segment-3"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "继续准备个人镜像，再确认刷写",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 67800,
+      "endMs": 70200,
+      "segment": "segment-4"
+    },
+    {
+      "title": "继续准备个人镜像，再确认刷写",
+      "body": "看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。",
+      "narration": "导入成功后，还要向下滚动，点击自动准备 Root 镜像。等程序明确提示镜像已准备，再核对机型和备份，勾选同意清空手机数据。刷写会再次要求确认。请保持 USB 稳定，按提示完成，不要把导入成功当成刷写完成。",
+      "startMs": 70800,
+      "endMs": 92916,
+      "segment": "segment-4"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "完成手机设置，重新验证 Root",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 93500,
+      "endMs": 95900,
+      "segment": "segment-5"
+    },
+    {
+      "title": "完成手机设置，重新验证 Root",
+      "body": "点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。",
+      "narration": "刷写结束后，先在手机上完成首次设置，并按 Root 方案打开一次 BlackBerry World。回到连接检查，点击重新检测。看到 Root 连接已验证，再继续。手机刚重启时，要先解锁并等服务启动。",
+      "startMs": 96500,
+      "endMs": 118180,
+      "segment": "segment-5"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "检查设备，备份并安装三网适配",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 118767,
+      "endMs": 121167,
+      "segment": "segment-6"
+    },
+    {
+      "title": "检查设备，备份并安装三网适配",
+      "body": "检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。",
+      "narration": "打开三网自动适配，先检查设备，核对当前手机和运营商。检查通过后，点击备份并安装自动适配。等待原始配置备份、安装和回读完成，并保留电脑上的备份。如果状态未知，先重新检查设备，不要连续重复安装。",
+      "startMs": 121767,
+      "endMs": 143715,
+      "segment": "segment-6"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "用手机菜单正常重启，再检查本次开机",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 143715,
+      "endMs": 146115,
+      "segment": "segment-7"
+    },
+    {
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "body": "点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。",
+      "narration": "安装后，用手机电源菜单正常重启。开机解锁，等待大约三到五分钟，再点击已重启、重新检查。Passport 切入或离开电信策略时，可能还要再重启一次，请按提示操作。四 G 图标不能代替本次开机的注册检查。",
+      "startMs": 146715,
+      "endMs": 168395,
+      "segment": "segment-7"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "拔掉 USB，验收真实双向通话",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 168982,
+      "endMs": 171382,
+      "segment": "segment-8"
+    },
+    {
+      "title": "拔掉 USB，验收真实双向通话",
+      "body": "拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。",
+      "narration": "本次开机注册成功后，拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通都从接通后开始计时，到三十五秒再挂断。确认双方听得见、全程保持 LTE，号码和运营商显示正确，才算完成这次通话验收。",
+      "startMs": 171982,
+      "endMs": 193282,
+      "segment": "segment-8"
+    },
+    {
+      "kind": "transition",
+      "title": "接下来",
+      "body": "卡住时，保存一个能排查的反馈包",
+      "narration": false,
+      "durationMs": 2400,
+      "startMs": 193415,
+      "endMs": 195815,
+      "segment": "segment-9"
+    },
+    {
+      "title": "卡住时，保存一个能排查的反馈包",
+      "body": "点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。",
+      "narration": "任何一步卡住，都可以点遇到问题、反馈。补充你做到了哪里，刷新预览，确认没有个人信息，再保存反馈包。把整个 ZIP 通过原联系渠道发给开发者。程序不会自动上传，之前失败的记录也不会因为一次重试成功就立即消失。",
+      "startMs": 196415,
+      "endMs": 218867,
+      "segment": "segment-9"
+    }
+  ],
+  "steps": [
+    {
+      "label": "prepare",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-1"
+    },
+    {
+      "label": "connect",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-2"
+    },
+    {
+      "label": "root",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-3"
+    },
+    {
+      "label": "root-prepare",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-4"
+    },
+    {
+      "label": "root-verified",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-5"
+    },
+    {
+      "label": "install",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-6"
+    },
+    {
+      "label": "restart",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-7"
+    },
+    {
+      "label": "acceptance",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-8"
+    },
+    {
+      "label": "feedback",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation",
+      "segment": "segment-9"
+    }
+  ],
+  "createdAt": "2026-11-01T16:56:52.433Z",
+  "video": "docs/recordings/first-use-narrated.mp4",
+  "mp4": "docs/recordings/first-use-narrated.mp4",
+  "assembly": {
+    "schema": "repo-demo-recorder/segmented-assembly.v1",
+    "sourceReports": [
+      "docs/recordings/first-use-build/01-prepare-report.json",
+      "docs/recordings/first-use-build/02-connect-report.json",
+      "docs/recordings/first-use-build/03-root-report.json",
+      "docs/recordings/first-use-build/04-root-prepare-report.json",
+      "docs/recordings/first-use-build/05-root-verified-report.json",
+      "docs/recordings/first-use-build/06-install-report.json",
+      "docs/recordings/first-use-build/07-restart-report.json",
+      "docs/recordings/first-use-build/08-acceptance-report.json",
+      "docs/recordings/first-use-build/09-feedback-report.json"
+    ],
+    "transitionCount": 8,
+    "transitionDurationMs": 2400,
+    "transitionFadeInMs": 180,
+    "transitionFadeOutMs": 380
+  },
+  "apiAssertions": [],
+  "dbAssertions": [],
+  "sourceCommit": "6ca9147",
+  "narrative": {
+    "avoidVisibleTerms": [
+      "fixture",
+      "renderer-only",
+      "dev warning"
+    ]
+  },
+  "qualityGates": {
+    "maxOverflow": 0
+  },
+  "caveats": [
+    "Windows mock-backed native UI; not hardware acceptance.",
+    "Feedback is an unreleased desktop change; current r14 uses Export check report.",
+    "Native Tk has no browser HTTP/page console. Empty browser error arrays are not browser QA.",
+    "FFmpeg gdigrab startup rate-estimation warning; capture exit codes were zero.",
+    "Edge client emitted a nonfatal local sitecustomize/pip warning; audio was generated and measured."
+  ],
+  "coverIntroMs": 2000
+}

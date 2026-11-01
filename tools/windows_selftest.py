@@ -58,6 +58,39 @@ def run(output):
     root = tk.Tk()
     root.withdraw()
     app = App(root)
+    import variant_trials
+    from variant_trial_gui import VariantTrialDialog
+    assert variant_trials.plan('SQC100-3', 'unicom')['route'] == 'manual_candidate'
+    assert variant_trials.plan('SQC100-4', 'mobile')['route'] == 'blocked'
+    trial = VariantTrialDialog(root, lambda _: (_ for _ in ()).throw(AssertionError('No phone action allowed')))
+    trial.attributes('-alpha', 0.0)
+    trial.variant.set('SQW100-1')
+    trial.operator.set(tr('中国联通'))
+    assert trial.decision()['route'] == 'read_only_lifecycle_pending'
+    trial.destroy()
+    from feedback import Journal, write_bundle
+    from feedback_gui import FeedbackDialog
+    import zipfile
+    previous_journal = root._feedback_journal
+    with tempfile.TemporaryDirectory() as feedback_folder:
+        root._feedback_journal = Journal(feedback_folder)
+        root._feedback_journal.record('trials', 'preflight', 'needs_attention', details={
+            'variant_trial': {'variant': 'SQC100-3', 'operator': 'unicom', 'automatic_start': False,
+                              'hardware_acceptance': 'not_established'},
+            'checks': [{'id': 'trial_native', 'status': 'block', 'code': 'trial_six_native_hashes_required'}]})
+        feedback = FeedbackDialog(root, 'trials')
+        feedback.withdraw()
+        feedback.note.insert('1.0', 'offline packaged feedback check')
+        feedback.preview()
+        feedback_path = Path(feedback_folder) / 'feedback.zip'
+        write_bundle(feedback_path, feedback.payload)
+        with zipfile.ZipFile(feedback_path) as archive:
+            assert set(archive.namelist()) == {'feedback.json', 'timeline.txt', 'README.txt'}
+            exported = json.loads(archive.read('feedback.json'))
+            assert exported['limits']['automatic_upload'] is False
+            assert exported['sessions'][-1]['events'][0]['details']['variant_trial']['variant'] == 'SQC100-3'
+        feedback.close()
+    root._feedback_journal = previous_journal
     assert ttk.Style(root).theme_use() == 'bb10'
     from auto_carrier import verify_package as verify_auto_package
     from auto_carrier_gui import AutoCarrierWindow
@@ -301,6 +334,7 @@ def run(output):
         assert (bundle / 'assets/app.ico').is_file()
         assert not private_root().is_relative_to(bundle)
     result = {'passed': True, 'version': manifest['version'], 'frozen': frozen(),
+              'candidate_trial_selection_verified': True, 'local_feedback_ui_and_zip_verified': True,
               'download_tls_verification_and_ca_store_verified': True,
               'firmware_upgrade_ui_and_stock_catalog_verified': True,
               'pairing_shell_guards_bundled': True,

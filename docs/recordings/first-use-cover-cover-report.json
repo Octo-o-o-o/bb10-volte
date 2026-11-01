@@ -1,0 +1,66 @@
+{
+  "createdAt": "2026-11-01T17:00:41.128Z",
+  "sourceVideo": "docs/recordings/first-use-assembled.mp4",
+  "sourceReport": "docs/recordings/first-use-report.json",
+  "output": "docs/recordings/first-use-cover.png",
+  "width": 1440,
+  "height": 960,
+  "orientation": "landscape",
+  "theme": "training",
+  "timestampSeconds": 174,
+  "renderer": "chromium",
+  "text": {
+    "title": "BB10 VoLTE 首次使用",
+    "subtitle": "从连接手机到通话验收",
+    "line": "连接 · Root · 安装 · 重启 · 通话验收",
+    "badge": "9 个步骤 · 中文讲解"
+  },
+  "candidates": {
+    "dir": "docs/recordings/first-use-cover-candidates",
+    "contactSheet": "docs/recordings/first-use-cover-candidates/contact-sheet.png",
+    "items": [
+      {
+        "index": 1,
+        "ratio": 0.12,
+        "seconds": 26.080672,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-01-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-01-cover.png"
+      },
+      {
+        "index": 2,
+        "ratio": 0.22,
+        "seconds": 47.814565,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-02-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-02-cover.png"
+      },
+      {
+        "index": 3,
+        "ratio": 0.36,
+        "seconds": 78.242016,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-03-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-03-cover.png"
+      },
+      {
+        "index": 4,
+        "ratio": 0.5,
+        "seconds": 108.669466,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-04-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-04-cover.png"
+      },
+      {
+        "index": 5,
+        "ratio": 0.66,
+        "seconds": 143.443695,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-05-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-05-cover.png"
+      },
+      {
+        "index": 6,
+        "ratio": 0.82,
+        "seconds": 178.217924,
+        "frame": "docs/recordings/first-use-cover-candidates/candidate-06-frame.png",
+        "cover": "docs/recordings/first-use-cover-candidates/candidate-06-cover.png"
+      }
+    ]
+  }
+}

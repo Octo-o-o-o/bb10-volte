@@ -1,0 +1,9 @@
+build/
+src/generated/
+assets/runtime/
+assets/payload/
+assets/profiles/
+assets/materials/
+assets/manifest.json
+assets/manifest.sig.json
+bar-descriptor.build.xml

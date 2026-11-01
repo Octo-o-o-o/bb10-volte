@@ -1,4 +1,6 @@
 """One installation workflow for the Windows and Mac front ends."""
+from feedback import FeedbackQueue
+from feedback_gui import help_row
 import queue
 import threading
 import tkinter as tk
@@ -8,6 +10,7 @@ from connection import resolve_connection
 from completion_dialog import CompletionDialog
 from i18n import tr
 from auto_carrier_view import status_view, restart_guidance
+import device_support
 
 
 def status_text(result):
@@ -24,13 +27,15 @@ class AutoCarrierWindow:
         self.window.minsize(700, 540)
         self.window.transient(parent)
         self.window.grab_set()
-        self.events, self.busy = queue.Queue(), False
+        self.events, self.busy = FeedbackQueue(self.window, 'install'), False
         self.client, self.report = None, None
         self.completion_pending = False
         self.completion_dialog = None
         self.reconnect_pending, self.status_button_override = False, None
         box = ttk.Frame(self.window, padding=24)
         box.pack(fill='both', expand=True)
+        help_row(box, self.window, lambda: 'acceptance' if status_view((self.report or {}).get('status', {}))['ready']
+                 else 'restart' if (self.report or {}).get('installed') else 'install')
         ttk.Label(box, text=tr('Q10 · Q20 · Passport'), font=('', 19, 'bold')).pack(anchor='w')
         ttk.Label(box, text=tr('首次安装后，换卡并正常重启即可在手机上选择运营商。\n'
             '支持当前验证范围：SQN100-3、SQC100-2、SQW100-4 / OS 10.3.3.3216。\n'
@@ -40,6 +45,7 @@ class AutoCarrierWindow:
         self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机。三款机型的三网组合均已通过功能验收。'),
                                 wraplength=680, justify='left')
         self.status.pack(anchor='w', pady=12)
+        self.window._feedback_status_labels = [self.status]
         row = ttk.Frame(box)
         row.pack(fill='x', pady=8)
         self.buttons = {}
@@ -70,9 +76,11 @@ class AutoCarrierWindow:
         self.completion_button.configure(state='normal' if ready and not self.busy else 'disabled')
         for action, button in self.buttons.items():
             allowed = (not self.busy and (action == 'probe' or
-                action == 'install' and (report.get('can_install') or report.get('can_update')) or
+                action == 'install' and (report.get('can_install') and report.get('sim_supported') is True or report.get('can_update')) or
                 action in ('status', 'enable', 'disable') and report.get('installed') and
                     not report.get('installation_pending') and not report.get('update_pending')))
+            if report.get('scope_error') and action != 'probe':
+                allowed = False
             enabled = report.get('status', {}).get('enabled')
             if action == 'enable' and enabled is not False or action == 'disable' and enabled is False:
                 allowed = False
@@ -86,6 +94,7 @@ class AutoCarrierWindow:
     def run(self, action):
         if self.busy:
             return
+        self.events.begin(action)
         self.busy = True
         self.refresh()
         self.status.configure(text=tr('正在处理，请保持 USB 连接，暂勿换卡或拨打电话。'))
@@ -105,6 +114,7 @@ class AutoCarrierWindow:
                         result['status'] = {}
                 self.events.put((action, result, None))
             except Exception as error:
+                self.events.failure(error)
                 self.events.put((action, None, getattr(error, 'code', type(error).__name__)))
         threading.Thread(target=work, daemon=True).start()
 
@@ -142,10 +152,14 @@ class AutoCarrierWindow:
                 self.busy = False
                 if error:
                     self.client, self.report = None, None
-                    self.reconnect_pending, self.status_button_override = True, None
+                    scope_error = device_support.error_message(error)
+                    self.reconnect_pending, self.status_button_override = not bool(scope_error), None
                     self.status.configure(text=tr('本次检查或操作未完成，请重新检查连接。') + '\n' + error)
                     details = tr('若刚重启手机，请解锁并等待约 3–5 分钟，保持 USB 连接，再点击“重新检查连接”。\n'
                                  '连接恢复后将重新读取手机状态。若安装或更新中断，先检查设备，不要重复覆盖安装。')
+                    if scope_error:
+                        self.status.configure(text=scope_error)
+                        details = scope_error
                 else:
                     self.reconnect_pending, self.status_button_override = False, None
                     if action == 'probe':
@@ -158,6 +172,10 @@ class AutoCarrierWindow:
                         if result.get('update_available'):
                             details += '\n\n' + (tr('可更新自动适配，更新前版本会保留备份。') if result.get('can_update') else
                                                 tr('有适配更新。请先停用，待恢复后正常重启，再检查并更新。'))
+                        scope_note = device_support.report_note(result)
+                        if scope_note:
+                            self.status.configure(text=scope_note)
+                            details = device_support.describe(device_support.assess(result.get('variant'))) + '\n\n' + scope_note
                     elif action == 'install':
                         self.report = dict(self.report or {}, installed=True, can_install=False, can_update=False,
                                            installation_pending=False, update_pending=False, update_available=False,

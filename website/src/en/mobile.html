@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Native mobile installation — BB10 VoLTE</title>
-  <meta name="description" content="Installation requirements, four first-install routes, backups, normal restarts and call checks for the BB10 VoLTE native mobile candidate. Not publicly released; desktop r14 remains available.">
+  <meta name="description" content="Installation requirements, four first-install routes, backups, normal restarts and call checks for the BB10 VoLTE native mobile candidate. Not publicly released; desktop r15 remains available.">
   <meta name="theme-color" content="#f4f5f0">
   <link rel="icon" type="image/png" href="../assets/icon.png">
   <link rel="canonical" href="https://bb10-volte.octoooo.com/en/mobile.html">
@@ -37,8 +37,8 @@
         <p class="mobile-lead">The native mobile approach brings checks, backups, activation and restoration into one app. A first installation without a computer depends on having a working installer and local Root entry point already on the phone.</p>
         <div class="release-status" id="release-status" role="note">
           <strong>The candidate is still being tested and is not publicly released.</strong>
-          <p>This page describes its requirements and workflow. It does not establish complete hardware acceptance for first installation, app upgrades or restoration. The current public desktop release remains <strong>v0.5.0-r14</strong>.</p>
-          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Open official Releases</a><a class="mobile-button mobile-button-plain" href="index.html#download">Get desktop r14</a></p>
+          <p>This page describes its requirements and workflow. It does not establish complete hardware acceptance for first installation, app upgrades or restoration. The current public desktop release remains <strong>v0.5.0-r15</strong>.</p>
+          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Open official Releases</a><a class="mobile-button mobile-button-plain" href="index.html#download">Get desktop r15</a></p>
           <p class="small-copy">Proceed only when an official Release lists mobile files, verification information and supported conditions. This page does not link to nonexistent mobile downloads.</p>
         </div>
         <nav class="mobile-contents" aria-label="On this page"><a href="#entry">Choose an entry point</a><a href="#steps">From backup to calls</a><a href="#backup">Where backups go</a><a href="#updates">Updates &amp; restoration</a><a href="#scope">What is verified</a></nav>
@@ -119,7 +119,7 @@
         <h3>Finish restoration before removing the app</h3>
         <p>Use disable and restore, rollback or full uninstall from management. Restart normally and continue the same task when prompted. Uninstall can require staged restarts; removed files do not prove restoration has been verified. Deleting the home-screen icon alone does not restore service configuration or remove Root.</p>
         <p>If a task is interrupted, files are unknown or backups conflict, keep the original task and files. Recheck or export a report first. Restoration requires ownership and verification evidence; repeated installation is not a way to overwrite unknown state.</p>
-        <p class="mobile-callout">Mobile and the new desktop manager use management protocol 2. Public desktop r14 and earlier cannot fully manage the new payload. Use the corresponding new manager; if an older client is rejected, upgrade it and follow the release's takeover instructions.</p>
+        <p class="mobile-callout">Mobile and the new desktop manager use management protocol 2. Old r14 / r15 desktop clients cannot fully manage the new payload; use the corresponding r16 manager. If an older client is rejected, upgrade it and follow the release's disable, restore and normal-restart adoption steps.</p>
       </section>
 
       <section class="mobile-section" id="scope" aria-labelledby="scope-title">

@@ -1,5 +1,7 @@
 # First use and connection setup
 
+The current branch shows exact-variant support before downloads and flashing. Automatic VoLTE currently covers SQN100-3, SQC100-2 and SQW100-4. A Root recipe does not establish VoLTE support. Unsupported activation preparation pauses early; users who only need stock recovery or standalone Root can select that purpose explicitly. See the [complete variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md). These early checks are not included in the published r14.
+
 `0.3.3-r3` starts with **Connect phone / Connection help**, with SSH paths under advanced settings. Released r6 and earlier applications may still use the older labels below; this flow is included in the new Windows EXE and Mac DMG. Reopening rechecks the last successful connection once. Pairing requests and completed image preparation can be resumed. Connection failure never establishes that a phone is unrooted.
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
@@ -82,6 +84,8 @@ Manual browser download and import:
 2. Select the original host or a backup in **Browser download source**, then use **Download firmware in browser** for the model-specific filename shown in the app, or **Copy download link** for a resumable download manager. Finish downloading the archive and **do not extract it**.
 3. Choose the local file or paste its full path, then use **Verify and import firmware**. Quoted Windows “Copy as path” values and browser-added `(1)` filename suffixes are supported. The content is verified and stored under the canonical cache name.
 4. After import, Q10, Q20 and Q30 can all click **Prepare Root images automatically** below the import section. Once ready, acknowledge backup/data erasure and click **Flash Root**. The confirmation identifies the exact target variant, and an inline hint explains why flashing is disabled. The firmware is reused; other missing tools still need downloading. Import itself is fully offline and only copies/verifies the file; it neither builds images nor flashes a phone.
+
+If images are ready but flashing remains disabled because the connection is unverified, click **Recheck connection and model** on the **Initial Root** page. Disconnection, multiple devices or temporarily missing model information retain the prepared image selection and clear the erase acknowledgement. After verifying the only connected phone, confirm again. Detecting a different exact model clears the old image selection. Rechecking does not flash the phone.
 
 Import shows progress and leaves the selected original file in place. Incomplete, corrupt or wrong-version files are rejected without changing existing cache files or resume progress. The cache disk needs room for a complete copy; selecting that same file already in the cache only verifies it.
 

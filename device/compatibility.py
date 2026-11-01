@@ -400,6 +400,24 @@ def observe(profile=None):
             s['native_sha256'][path] = digest
         except OSError:
             s['native_hashes'][path] = False
+    if profiles.trial_target(p):
+        import telecom_native
+        s['trial_native_hashes'] = dict(s['native_hashes'])
+        s['trial_native_sha256'] = dict(s['native_sha256'])
+        for path, expected in (('/radio/bin/qct_rrm', telecom_native.QCT_HASH),
+                               ('/usr/sbin/dca', telecom_native.DCA_HASH)):
+            try:
+                digest = n.digest(n.read(path))
+                s['trial_native_hashes'][path] = digest == expected
+                s['trial_native_sha256'][path] = digest
+            except (OSError, ValueError):
+                s['trial_native_hashes'][path] = False
+        try:
+            board = n.value(n.attrs(n.read('/pps/services/hw_info/inventory')), 'Board_Type')
+            if isinstance(board, str) and re.match(r'\A[A-Z0-9_]{3,32}\Z', board):
+                s['trial_observed_board'] = board
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
     s['installation'] = installed_state()
     try:
         s['carrier_template'], _ = profiles.carrier_template(p, s.get('mcc'), s.get('mnc'))
@@ -408,7 +426,10 @@ def observe(profile=None):
         s['carrier_template_ready'] = False
     # Never call native ARM functions on a different build, host or privilege level.
     s['native_read_status'] = dict((key, 'not_checked') for key in NATIVE_BASELINE_FIELDS)
-    if s['root_ready'] and device_info.engine_matches(s):
+    trial_images_ready = (not profiles.trial_target(p) or
+                          all(value is True for value in s.get('trial_native_hashes', {}).values()) and
+                          set(s.get('trial_native_hashes', {})) == set(n.STOCK_HASHES) | {'/radio/bin/qct_rrm', '/usr/sbin/dca'})
+    if s['root_ready'] and device_info.engine_matches(s) and trial_images_ready:
         s['configuration_diagnostics'] = configuration_diagnostics()
         s['clean_configuration'] = all(value is True for value in s['configuration_diagnostics'].values())
         s['native_read_error'] = False
@@ -452,6 +473,13 @@ def evaluate(s, profile=None, allow_experimental=False):
     check('root', s.get('root_ready') and s.get('arm32_qnx'), 'root_qnx_arm32_required', 'wait')
     hashes = s.get('native_hashes', {})
     check('native', set(hashes) == set(n.STOCK_HASHES) and all(hashes.values()), 'native_hashes_required')
+    trial = profiles.trial_target(p)
+    if trial is not None:
+        check('trial_target', s.get('variant') == trial['variant'], 'trial_exact_variant_required')
+        trial_hashes = s.get('trial_native_hashes', {})
+        expected_files = set(n.STOCK_HASHES) | {'/radio/bin/qct_rrm', '/usr/sbin/dca'}
+        check('trial_native', set(trial_hashes) == expected_files and all(value is True for value in trial_hashes.values()),
+              'trial_six_native_hashes_required')
     checks.extend(network_checks(s, p))
     attach = p.get('lte_attach') == 'telecom_data_centric_v1'
     attach_facts = s.get('telecom_attach', {})
@@ -471,7 +499,7 @@ def evaluate(s, profile=None, allow_experimental=False):
               else 'telecom_attach_needs_adaptation', 'adapt')
     check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
     telecom_authorized = attach and attach_facts.get('autostart_authorized') is True and device['variant'] == 'SQN100-3'
-    experimental = not (autostart_supported(device, p) or telecom_authorized)
+    experimental = trial is not None or not (autostart_supported(device, p) or telecom_authorized)
     recorded_code = 'telecom_recorded_acceptance' if telecom_authorized else 'recorded_baseline'
     check('experiment', not experimental or allow_experimental, 'experimental_opt_in' if experimental else recorded_code, 'wait')
     if experimental:
@@ -500,7 +528,15 @@ def evaluate(s, profile=None, allow_experimental=False):
     matching_profile = installation.get('carrier_profile_sha256') == request_sha
     check('saved_profile', state == 'absent' or not installation.get('current_profile') or matching_profile,
           'saved_profile_matches' if matching_profile else 'profile_update_required', 'wait')
+    trial_public = None
+    if trial is not None:
+        expected_files = set(n.STOCK_HASHES) | {'/radio/bin/qct_rrm', '/usr/sbin/dca'}
+        trial_public = dict(trial, automatic_start=False, hardware_acceptance='not_established',
+            observed_board=s.get('trial_observed_board') if profiles.match(r'[A-Z0-9_]{3,32}', s.get('trial_observed_board')) else None,
+            native_sha256={path: digest for path, digest in s.get('trial_native_sha256', {}).items()
+                           if path in expected_files and profiles.match(r'[a-f0-9]{64}', digest)})
     return {'schema': 2, 'profile': p['id'], 'profile_sha256': request_sha,
+            'variant_trial': trial_public,
             'profile_parameters': p, 'experimental': experimental, 'experimental_allowed': allow_experimental,
             'device': device, 'native_sha256': s.get('native_sha256', {}),
             'incoming_diagnostics': public_incoming_diagnostics(s.get('incoming_diagnostics')),

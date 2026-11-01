@@ -1,0 +1,158 @@
+{
+  "name": "first-use",
+  "title": "BB10 VoLTE：完整首次使用",
+  "baseUrl": "native:BB10-VoLTE",
+  "language": "zh-CN",
+  "subtitles": "both",
+  "surface": "native-desktop",
+  "surfaces": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "videoSize": {
+        "width": 1440,
+        "height": 960
+      },
+      "isMobile": false,
+      "hasTouch": false,
+      "deviceScaleFactor": 1
+    }
+  },
+  "primarySurface": "desktop",
+  "audience": "customer",
+  "polish": "customer-ready",
+  "narrative": {
+    "angle": "first-use-training",
+    "avoidVisibleTerms": [
+      "mock",
+      "fixture",
+      "renderer-only",
+      "内部边界",
+      "临时脚本",
+      "dev warning"
+    ],
+    "defaultCaptionPattern": "操作 → 成功标志 → 卡住时的处理"
+  },
+  "narration": {
+    "enabled": true,
+    "provider": "edge-tts",
+    "engine": "edge-tts",
+    "language": "zh-CN",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "rate": 180,
+    "mix": "replace",
+    "timing": "report",
+    "padMode": "freeze",
+    "padBufferMs": 300,
+    "maxPaddingMs": 12000,
+    "edgeRate": "+0%",
+    "edgePitch": "+0Hz",
+    "edgeVolume": "+0%"
+  },
+  "style": "training",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "recording": {
+    "videoSize": {
+      "width": 1440,
+      "height": 960
+    },
+    "orientation": "landscape"
+  },
+  "overlay": {
+    "animation": "none",
+    "captionPosition": "reserved-bottom-footer",
+    "instructionPanel": "outside-native-window"
+  },
+  "cover": {
+    "enabled": true,
+    "mode": "with-candidates",
+    "width": 1440,
+    "height": 960,
+    "title": "BB10 VoLTE 首次使用",
+    "subtitle": "从连接手机到通话验收",
+    "line": "连接 · Root · 安装 · 重启 · 通话验收",
+    "badge": "9 步骤中文讲解",
+    "timestamp": 174
+  },
+  "segmentation": {
+    "enabled": true,
+    "reviewEachSegment": true,
+    "mergeAfterPass": true,
+    "rerecordOnFailure": true,
+    "transitionCover": {
+      "enabled": "auto",
+      "durationMs": 2400,
+      "fadeInMs": 180,
+      "fadeOutMs": 380,
+      "style": "subtle-subcover",
+      "label": "接下来"
+    }
+  },
+  "data": {
+    "mode": "mock",
+    "strategy": "readonly",
+    "cleanup": false,
+    "backupCommand": null,
+    "seedCommand": null,
+    "demoPrefix": "演示",
+    "productionWarning": null
+  },
+  "outputs": {
+    "dir": "docs/recordings",
+    "mp4": true,
+    "webm": false,
+    "report": true,
+    "finalScreenshot": true,
+    "sidecarSubtitles": true,
+    "narratedMp4": true,
+    "narrationTranscript": true,
+    "mediaReport": true,
+    "reviewPage": true,
+    "polishedMp4": false,
+    "screenStudioHandoff": false,
+    "coverImage": true,
+    "coverCandidates": true,
+    "coverIntro": true,
+    "coverEmbedReport": true,
+    "gapTrimReport": false,
+    "assembledMp4": true,
+    "assemblyReport": true,
+    "segmentTransitionCovers": true
+  },
+  "review": {
+    "writeFrameReview": true,
+    "frameReviewDir": "docs/recordings/first-use-frame-review-final",
+    "sampleCueKinds": [
+      "chapter",
+      "caption"
+    ],
+    "sampleOffsetsMs": [
+      -220,
+      -80,
+      80,
+      220
+    ]
+  },
+  "qualityGates": {
+    "allowPageErrors": false,
+    "requireApiSuccess": false,
+    "requireDbAssertions": false,
+    "maxOverflow": 0
+  },
+  "dataMode": "mock",
+  "readonly": true,
+  "sourceCommit": "6ca9147",
+  "method": "external-native-window-capture",
+  "nativeWorkflow": {
+    "launcher": "scripts/recordings/launch-first-use.py",
+    "capture": "scripts/recordings/capture-first-use.py",
+    "steps": "docs/recordings/first-use.steps.json",
+    "deviceMutation": false,
+    "purpose": "Customer first-use training; demonstration states are not hardware acceptance"
+  }
+}

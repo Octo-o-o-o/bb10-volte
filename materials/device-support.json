@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "description": "Hardware research shared by frontends; desktop guidance currently consumes it. Automatic authorization remains in device/carrier_policy.py.",
+  "models": {
+    "SQN100-1": {
+      "family": "q10",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        5
+      ],
+      "radio_candidate_operators": [
+        "telecom"
+      ]
+    },
+    "SQN100-2": {
+      "family": "q10",
+      "identity_documented": true,
+      "china_fdd_bands": [],
+      "radio_candidate_operators": []
+    },
+    "SQN100-3": {
+      "family": "q10",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        3,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQN100-4": {
+      "family": "q10",
+      "identity_documented": true,
+      "china_fdd_bands": [],
+      "radio_candidate_operators": []
+    },
+    "SQN100-5": {
+      "family": "q10",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        5
+      ],
+      "radio_candidate_operators": [
+        "telecom"
+      ]
+    },
+    "SQC100-1": {
+      "family": "classic",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQC100-2": {
+      "family": "classic",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        3,
+        5
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQC100-3": {
+      "family": "classic",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        3
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQC100-4": {
+      "family": "classic",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        5
+      ],
+      "radio_candidate_operators": [
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQC100-5": {
+      "family": "classic",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        3
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQW100-1": {
+      "family": "passport",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQW100-2": {
+      "family": "passport",
+      "identity_documented": false,
+      "china_fdd_bands": null,
+      "radio_candidate_operators": null
+    },
+    "SQW100-3": {
+      "family": "passport",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    },
+    "SQW100-4": {
+      "family": "passport",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ]
+    }
+  },
+  "sources": {
+    "models": "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-391%20ST%20v1.10.pdf",
+    "spectrum": "https://wap.miit.gov.cn/jgsj/wgj/kpzs/art/2021/art_9105abf8095d49bd9065c1b6ebb06d2a.html",
+    "bands": "https://www.etsi.org/deliver/etsi_ts/136100_136199/136101/13.20.00_60/ts_136101v132000p.pdf"
+  }
+}

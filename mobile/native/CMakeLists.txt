@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(bb10_volte_mobile LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/arm/o.le-v7-g")
-set(BB10_MOBILE_VERSION "0.1.0.5" CACHE STRING "Mobile release version")
+set(BB10_MOBILE_VERSION "0.1.0.6" CACHE STRING "Mobile release version")
 set(BB10_PUBLIC_KEY_ID "unconfigured" CACHE STRING "Product signing key identifier")
 option(BB10_ALLOW_INCOMPLETE_BUNDLE "Compile UI only; runtime remains disabled" OFF)
 set(BB10_ENTRY_SHA256 "")

@@ -1,35 +1,74 @@
 BB10 VoLTE — on-phone bootstrap / 手机端首次安装
+Target application version / 目标应用版本：VERSION
 
-This archive is for an already rooted, compatible AutoRoot v4 phone with an
-existing working Root terminal. It does not root a stock phone. Obtain it only
-from the project's HTTPS download page or verified release. Verify the published
-SHA-256 before running an installer; the public key inside a download cannot
-authenticate that download by itself.
+For an already rooted, compatible AutoRoot v4 phone with a working local Root
+terminal and its existing installer. This does not root a stock phone. Stock
+phones still need the desktop first-Root workflow. Other Root methods require
+their own validation.
 
-已安装 BAR Installer：直接下载同版 .bar，用现有安装器安装。
-只有 Root 终端：手机浏览器下载本 ZIP 到 Downloads。在原 Root 终端中，
-使用已验证的本机 AutoRoot installer。确认下载文件名与下面命令完全相同：
+从可信的同次候选交付或项目正式 HTTPS Release 获取文件，核对公布的完整 SHA-256。
+包内公钥不能自行证明首次下载的来源。尚未公开发布时不要猜测下载地址。
+已有 BARinstaller：使用同版 BAR。只有 Root 终端：把本 ZIP 保存到 Downloads，
+确认实际文件名与下方命令完全相同，然后在原有 Root 终端执行：
 
 /var/rootdata/installer /accounts/1000/shared/downloads/bb10-volte-VERSION-bootstrap.zip
 
-构建时会把 VERSION 替换为实际版本。若仍看到 VERSION，说明这不是发行包中的说明；
-请使用下载页针对实际版本给出的完整命令。
-安装器返回成功后确认桌面出现 BB10 VoLTE 图标，打开并点击“检查手机”。
-仅看到任务已提交、进度开始或文件解压不代表安装成功。超时保留文件，
-检查同一任务结果，不反复重装。应用会再次验证内置载荷和手机兼容性，
-备份成功后才激活服务；需要重启时使用手机电源菜单正常重启。
+构建会替换命令与标题中的版本占位符；若文件名或目标版本不匹配，先停止核对。
+不要将其他版本的脚本、BAR 与引导 ZIP 混用。
 
-With a working Root terminal, download this bootstrap ZIP to Downloads and run
-the version-specific command above. Wait for the installer's final result, then
-open BB10 VoLTE and let it verify its signed payload. A submitted task, extracted
-files or an icon alone is not proof that activation succeeded. On timeout keep
-the input and inspect that same transaction before trying again.
+安装通过必须同时具备：
+1. 对应同一安装任务的 SUD 最终 success。
+2. 实际应用注册版本与本页目标版本一致；打开后也核对界面应用版本。
 
-No installer and no effective Root terminal: restore the existing Root access
-or use the desktop setup once. A normal download page cannot grant Root.
-AutoRoot v2/v3 bootstrap support requires separate validation; do not assume
-that the v4 command applies. The desktop and phone applications share the
-device engine. Upgrade the desktop manager before managing a protocol-2 phone.
+实测 AutoRoot installer 在 120 秒超时后仍可能打印 completed。曾经 v2 安装无
+SUD success，实际仍是 v1 注册版本，因此 completed、旧图标或旧版能打开都不是
+升级成功证据。超时保留输入并查询同一任务，不反复提交安装。
+
+正常解锁并自行确认首次系统安装/应用权限。到达权限对话框不代表界面已经加载。
+应用会再核验签名载荷和手机条件。若已有 waiting_reboot 任务，先继续原任务；
+旧服务停用、恢复并重启后，用应用的内置更新入口接管，不另选同版本更新 ZIP。
+真正未安装服务的手机才从备份开始激活。按提示正常重启后，自己验证呼出、呼入、
+双方声音和 LTE。安装应用与激活服务、验证通话是不同步骤。
+
+上述原件备份和完整恢复指自动协议 2。高级页的旧实验路线范围不同：普通试测
+以启动时 PPS journal 恢复，不冒充自动原件导出回执；实验卸载只移除启动入口、
+保留私有载荷和备份，没有新增实验回滚。只读 Passport 试测不提供写操作。
+
+Obtain the archive from a trusted candidate handoff or official HTTPS Release.
+Verify its complete published SHA-256 before running it; the bundled public key
+does not authenticate a first download by itself. Use the version-specific
+command above only when its filename matches the actual download.
+
+Installation passes only when the SAME job has final SUD success AND the actual
+registered application version matches the target at the top. Check the native
+app version after opening it too. An observed installer printed completed after
+a 120-second timeout while the registered app remained the previous version.
+A completion message, old icon or working old app is insufficient. Keep the
+input and query that same job rather than resubmitting an unknown result.
+
+Unlock normally and personally accept the system's installation and first-use
+permission prompts. A permission dialog does not establish a loaded app UI.
+Resume any existing waiting_reboot task before starting another change. After
+an old service is stopped, restored and normally restarted, use the app's
+bundled-update action; the same-version ZIP is not that adoption path.
+Installation, activation and real call acceptance are separate steps.
+
+Original-file export and full restoration above refer to automatic protocol 2.
+Ordinary legacy trials restore from their startup PPS journal, not a protocol-2
+original export receipt. Experimental uninstall removes startup entries only,
+retaining private payloads/backups; no legacy rollback is added. Read-only
+Passport trials never authorize writes.
+
+No installer and no effective Root terminal: restore the original local entry,
+or use the desktop setup once. A browser cannot grant missing privileges.
+AutoRoot v2/v3 require separate validation; do not assume the v4 command applies.
+Use desktop r16 for protocol-2 management. Old r14 and r15 adoption requires
+stop/restore and a normal restart first; never run old and new writers together.
+
+Runtime ZIP updates do not replace the C++/QML app BAR. Internal backup copies
+remain on this phone; keep an SD-card or other independent copy when available.
+Keep original backups private. Removing the app icon alone does not restore or
+remove the service; finish the app's restoration workflow and restart checks.
 
 Project: https://bb10-volte.octoooo.com/
-Source: https://github.com/Octo-o-o-o/bb10-volte
+Release: https://github.com/Octo-o-o-o/bb10-volte/releases

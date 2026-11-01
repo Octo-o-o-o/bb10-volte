@@ -2,7 +2,7 @@
 
 [简体中文](AUTO-CARRIERS.md) · [Windows](WINDOWS-EXE.en.md) · [macOS](MACOS.en.md)
 
-The current experimental release is **0.5.0-r8**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash.
+The current release baseline is **0.5.0-r14**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash. This branch's early variant checks remain unpublished; see the [variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md). Read historical acceptance statements below together with r14 SMS and first-Root records.
 
 ## Scope and acceptance
 
@@ -10,7 +10,7 @@ Scope: **SQN100-3, SQC100-2, SQW100-4, OS 10.3.3.3216**, with **Mobile 460-00, U
 
 Currently **9/9** combinations have functional acceptance:
 
-These records do not cover SMS send/receive or duplicate delivery. SMS PS policy and [native MT ACK correlation](SMS-ACK-NATIVE.en.md) remain candidates pending device tests. Shared call sites across nine combinations do not establish SMS acceptance.
+The table records r7/r8 voice, SIM-switch and display checks, not SMS acceptance. r14 SMS PS policy and [native MT ACK correlation](SMS-ACK-NATIVE.en.md) were tested on SQC100-2/Unicom and SQW100-4/Mobile with short, long and separately sent identical-content messages plus an observation period; see the [two-case SMS record](../materials/sms-device-validation-2026-11-01.json). SMS behavior on the other seven combinations remains unverified; shared call sites do not establish acceptance.
 
 | Model | Mobile | Unicom | Telecom |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ These records do not cover SMS send/receive or duplicate delivery. SMS PS policy
 
 The [structured acceptance record](../materials/unified-carrier-acceptance.json) identifies the actual payload version and boot, USB, SIM-switch and call evidence for each case. Installed-SIM baseline calls and computer-free SIM changes are separate checks. The owner checks the connected-call timer, bidirectional audio, first outgoing call and LTE throughout; reconnection verifies the current boot's SIM, profile and native process. Rotating phone logs may retain only the end of a call. Complete bidirectional SIP evidence and owner-confirmed calls are labeled separately. A post-call LTE snapshot is not continuous call-time sampling.
 
-Current Mac physical USB acceptance is deferred by the owner. Historical Mac transport checks, software self-tests, signatures and notarization are separate evidence. Other variants, systems, PLMNs, SIM routes, locations, roaming and long-term reliability remain unverified.
+r14 adds Apple Silicon Mac/SQC100-2 first Root and subsequent connection evidence in the [Root validation record](../materials/root-workflow-validation-2026-11-01.json). Full GUI first-use, Intel hardware, other variants, systems, PLMNs, SIM routes, locations, roaming and long-term reliability remain unverified. Software self-tests, signatures and notarization do not replace those device checks.
 
 ## Installation and later SIM changes
 

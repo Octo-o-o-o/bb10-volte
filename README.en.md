@@ -12,6 +12,19 @@ Install once from Windows or Mac. Then power off, change the SIM and start the p
 
 [Guide](https://bb10-volte.octoooo.com/en/guide.html) · [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) · [Changelog](docs/UPDATELOG.en.md)
 
+**New in r15:** exact-variant checks before preparation, a Root-page retry that preserves prepared images, a [nine-step illustrated tutorial with Chinese narration](https://bb10-volte.octoooo.com/en/guide.html#walkthrough), and [redacted feedback ZIPs](docs/FEEDBACK.en.md) at the main steps. Feedback is saved locally for the user to review and send; there is no automatic upload.
+
+**More → Local candidate variant trials** offers 13 gated manual combinations and six read-only Passport combinations. **The new variants have no hardware acceptance and are outside the automatic support scope above.** Model, OS, SIM, native-file and restoration blockers are explained before proceeding. See the [local trial guide](docs/VARIANT-LOCAL-TRIALS.en.md) and [14-variant material audit](docs/ALL-VARIANTS-COVERAGE-PLAN.md) (Chinese).
+
+| Candidate variants | Carriers | r15 route |
+| --- | --- | --- |
+| SQN100-1, SQN100-5 | Telecom 460-11 | Manual candidate; working local LTE B5 data required |
+| SQC100-1, SQC100-3, SQC100-5 | Mobile 460-00, Unicom 460-01, Telecom 460-11 | Manual candidate; install and start are separate |
+| SQC100-4 | Unicom 460-01, Telecom 460-11 | Manual candidate; install and start are separate |
+| SQW100-1, SQW100-3 | Those three carriers | Read-only; installation blocked pending stop/restore validation |
+
+Candidates need working AutoRoot v4 / Root SSH, OS 10.3.3.3216 and LTE data; autostart remains off. The reviewed domestic combinations for SQN100-2/-4, SQC100-4/Mobile, unconfirmed SQW100-2, other MNCs and ISIM have no trial installation route. A Root recipe does not establish loader or first-flash validation.
+
 ## Downloads
 
 | Computer | System requirements |
@@ -28,10 +41,10 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r15/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

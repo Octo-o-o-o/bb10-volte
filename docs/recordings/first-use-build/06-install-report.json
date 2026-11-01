@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "检查设备，备份并安装三网适配",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 22548,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "检查设备，备份并安装三网适配",
+      "body": "检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。",
+      "narration": "打开三网自动适配，先检查设备，核对当前手机和运营商。检查通过后，点击备份并安装自动适配。等待原始配置备份、安装和回读完成，并保留电脑上的备份。如果状态未知，先重新检查设备，不要连续重复安装。",
+      "startMs": 600,
+      "endMs": 22548
+    }
+  ],
+  "steps": [
+    {
+      "label": "install",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

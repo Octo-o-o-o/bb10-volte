@@ -135,6 +135,29 @@ class RebootWindowTests(unittest.TestCase):
         self.ui.events.put((action, result, error))
         self.ui.poll()
 
+    def test_unsupported_sim_stops_install_and_supported_recheck_restores_it(self):
+        report = {'installed': False, 'variant': 'SQC100-2', 'can_install': True,
+                  'sim_supported': False, 'sim_reason': 'carrier_not_validated'}
+        self.deliver('probe', report)
+        self.assertIn('disabled', self.ui.buttons['install'].state())
+        self.assertIn('归属网络尚未适配', self.ui.status.cget('text'))
+        self.assertNotIn('重新检查连接', self.ui.status.cget('text'))
+        self.deliver('probe', dict(report, sim_supported=True, sim_reason=None))
+        self.assertNotIn('disabled', self.ui.buttons['install'].state())
+        self.assertNotIn('归属网络尚未适配', self.ui.status.cget('text'))
+
+    def test_scope_rejection_keeps_recheck_and_explains_the_actual_limit(self):
+        self.deliver('probe', {'installed': False, 'variant': 'SQC100-3',
+                              'scope_error': 'unsupported_model_or_os'})
+        self.assertIn('SQC100-3', self.ui.details.get('1.0', 'end'))
+        self.assertIn('尚待适配', self.ui.details.get('1.0', 'end'))
+        for name in ('install', 'enable', 'disable', 'status'):
+            self.assertIn('disabled', self.ui.buttons[name].state())
+        self.assertNotIn('disabled', self.ui.buttons['probe'].state())
+        self.deliver('install', error='sim_route_unsupported')
+        self.assertFalse(self.ui.reconnect_pending)
+        self.assertIn('SIM 类型尚未适配', self.ui.status.cget('text'))
+
     def test_reopen_probe_resumes_extra_reboot_then_status_rechecks_readiness(self):
         self.deliver('probe', {'installed': True, 'variant': 'SQW100-4', 'status': state()})
         self.assertIn('还需一次', self.ui.status.cget('text'))

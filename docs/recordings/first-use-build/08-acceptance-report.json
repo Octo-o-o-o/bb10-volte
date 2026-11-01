@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "拔掉 USB，验收真实双向通话",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 22033,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "拔掉 USB，验收真实双向通话",
+      "body": "拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。",
+      "narration": "本次开机注册成功后，拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通都从接通后开始计时，到三十五秒再挂断。确认双方听得见、全程保持 LTE，号码和运营商显示正确，才算完成这次通话验收。",
+      "startMs": 600,
+      "endMs": 21900
+    }
+  ],
+  "steps": [
+    {
+      "label": "acceptance",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "首次 Root：获取并导入对应固件",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 20333,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "首次 Root：获取并导入对应固件",
+      "body": "可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。",
+      "narration": "首次 Root 时，进入首次 Root 页面，核对准确型号。可以让应用下载，也可以通过页面里的网盘入口下载完整固件。保留原文件，不要运行或解压。选择文件后，点击校验并导入固件。",
+      "startMs": 600,
+      "endMs": 19720
+    }
+  ],
+  "steps": [
+    {
+      "label": "root",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

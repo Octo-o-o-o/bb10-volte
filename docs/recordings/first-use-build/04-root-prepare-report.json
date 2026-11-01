@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "继续准备个人镜像，再确认刷写",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 23300,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "继续准备个人镜像，再确认刷写",
+      "body": "看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。",
+      "narration": "导入成功后，还要向下滚动，点击自动准备 Root 镜像。等程序明确提示镜像已准备，再核对机型和备份，勾选同意清空手机数据。刷写会再次要求确认。请保持 USB 稳定，按提示完成，不要把导入成功当成刷写完成。",
+      "startMs": 600,
+      "endMs": 22716
+    }
+  ],
+  "steps": [
+    {
+      "label": "root-prepare",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

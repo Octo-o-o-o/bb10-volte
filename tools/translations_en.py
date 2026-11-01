@@ -4,6 +4,33 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    "中国移动": "China Mobile",
+    "中国联通": "China Unicom",
+    "中国电信": "China Telecom",
+    "计划使用的运营商": "Intended carrier",
+    "连接后核对 SIM": "Check SIM after connecting",
+    "仅准备或恢复系统 / Root，不开通 VoLTE": "Prepare or recover OS / Root only, without enabling VoLTE",
+    "请先检测或选择准确硬件型号。下载、Root 与 VoLTE 的支持范围将分别显示。": "Detect or select the exact hardware variant first. Download, Root and VoLTE support are assessed separately.",
+    "{} 的硬件身份或对应资料尚未核实，暂不提供自动准备和刷写。请核对手机“关于”中的完整型号；不要按固件文件名猜测后缀。": "The hardware identity or documentation for {} has not been verified. Automatic preparation and flashing are unavailable. Check the full model in About on the phone; do not infer the suffix from a firmware filename.",
+    "{} 已纳入自动 VoLTE 适配。要求 OS 10.3.3.3216、移动 460-00／联通 460-01／电信 460-11，且为无 ISIM 的 USIM；连接后仍会核对系统、原生文件和 SIM。": "{} is included in automatic VoLTE support: OS 10.3.3.3216, Mobile 460-00 / Unicom 460-01 / Telecom 460-11, and USIM without ISIM. The system, native files and SIM will still be checked after connecting.",
+    "{} 与所选运营商的已核对 LTE 频段没有交集，不能通过 Root 或更换配置解决；当前开通流程已暂停。": "The reviewed LTE bands for {} do not overlap the intended carrier. Root or a different profile cannot resolve this; activation preparation is paused.",
+    "{} 有 Root 配方，但自动 VoLTE 尚待适配，当前开通流程已暂停。刷写 Root 不会自动补齐此型号的通话支持。": "{} has a Root recipe, but automatic VoLTE adaptation is pending. Activation preparation is paused. Flashing Root will not add calling support for this variant.",
+    "从频段看可继续研究：{}。这只是适配候选，尚未通过实机验收。": "Radio overlap permits further research for: {}. These are adaptation candidates without device acceptance.",
+    "首次 Root：Apple 芯片 Mac／SQC100-2 已有实机记录；Intel 与完整 GUI 首次流程仍待验收。": "First Root: Apple Silicon Mac / SQC100-2 has device evidence. Intel and the complete first-use GUI workflow remain unverified.",
+    "首次 Root：Windows／SQW100-4 已有实机记录；完整 GUI 首次流程仍待验收。": "First Root: Windows / SQW100-4 has device evidence. The complete first-use GUI workflow remains unverified.",
+    "首次 Root：此电脑平台与硬件后缀尚无完整首刷验收，配方可生成不代表刷机加载器已验证。": "First Root: this host platform and hardware variant lack complete first-flash acceptance. A buildable recipe does not verify the flash loader.",
+    "当前 OS 尚未适配。自动 VoLTE 要求 10.3.3.3216；请先查看系统升级说明，不能直接安装或自动降级。": "The current OS is not supported. Automatic VoLTE requires 10.3.3.3216. Review the system upgrade guidance; direct installation or automatic downgrade is unavailable.",
+    "当前硬件后缀或 OS 尚未纳入自动 VoLTE，无法安装。请查看机型支持范围；重新连接或重复刷机不会增加适配。": "This hardware variant or OS is not included in automatic VoLTE. Review model support; reconnecting or reflashing will not add adaptation.",
+    "手机型号与主板身份不一致，已停止自动适配。请核对准确硬件版本。": "The model and board identity conflict. Automatic adaptation is stopped. Verify the exact hardware version.",
+    "系统原生文件与已适配版本不一致，已停止安装。需要核对固件与补丁，不能靠更换运营商模板继续。": "Native system files do not match the supported version. Installation is stopped. Verify firmware and patches; changing the carrier template will not resolve this.",
+    "这张卡的归属网络尚未适配。当前自动流程仅支持 460-00、460-01、460-11；同一家运营商的其他 MNC 不能直接套用。": "This SIM home network is not supported. The automatic workflow currently supports 460-00, 460-01 and 460-11. Other MNCs from the same carrier require separate adaptation.",
+    "当前 SIM 类型尚未适配。自动流程只支持无 ISIM 的 USIM；请保留现有系统，补充脱敏检查报告。": "This SIM type is not supported. Automatic adaptation requires USIM without ISIM. Keep the existing system and provide a redacted diagnostic report.",
+    "SIM 尚未就绪。请解锁 SIM 并等待入网，再检查；暂不安装自动适配。": "The SIM is not ready. Unlock it and wait for network service, then check again. Automatic adaptation will not be installed yet.",
+    "尚未核对 SIM 归属网络，暂不安装。请等待手机读卡完成后重新检查。": "The SIM home network is not verified. Wait for the phone to finish reading the SIM, then check again before installing.",
+    "安装条件未通过。请先重新检查设备并处理显示的阻断原因。": "Installation prerequisites failed. Recheck the device and address the displayed reason.",
+    "当前 SIM 或原厂运营商模板未通过检查，暂不安装自动适配。": "The current SIM or stock carrier template failed verification. Automatic adaptation will not be installed yet.",
+    '重新检测连接与机型': 'Recheck connection and model',
+    '已保留 {} 的 Root 镜像。请先重新检测连接与机型，核对目标手机后再确认刷写。': 'Prepared Root images for {} are retained. Recheck the connection and model, verify the target phone, then confirm flashing again.',
     '此硬件型号尚无自动 Root 配方，请先核对准确型号。': 'No automatic Root recipe is available for this hardware variant. Check the exact model first.',
     'Root 镜像构建失败，尚未刷写手机。请保留本机 root-build.log，核对失败原因后再准备。': 'Root image preparation failed before flashing. Keep the local root-build.log and check the cause before preparing again.',
     'macOS 14+ 原生实验流程：按准确型号准备镜像，确认后打开 Terminal 刷写；Apple 芯片 Mac／Q20 已完成原生首刷验收，其他组合仍待验证。': 'Experimental native workflow on macOS 14+: prepare model-matched images and confirm before flashing in Terminal. Apple Silicon Mac/Q20 passed native first flashing; other combinations remain unverified.',
@@ -850,6 +877,8 @@ ENGLISH = {
 
 # Unified carrier installation
 ENGLISH.update({
+    '候选试测版，尚未实机验收': 'Candidate preview; no hardware acceptance',
+    '仅安装并回读候选文件，不启动服务，不启用自启动。完成后可单独手动启动。': 'Install and verify candidate files only. The service and autostart remain off. Start manually in a separate step after installation.',
     '原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。': 'Stock firmware upgrades still need physical-device acceptance. Back up first and use this candidate workflow only on a test phone that may be erased.',
     '准备原版系统与 Root 镜像至少需要 24 GB 可用空间。请释放空间后重试。': 'Preparing stock firmware and Root images needs at least 24 GB of free space. Free some space and try again.',
     '存在未结束的刷写记录。请保留现场与日志，不要重复刷写。': 'An unfinished flash record exists. Keep the logs and do not flash again.',
@@ -1003,3 +1032,26 @@ ENGLISH.update({
     '移动网络尚未就绪': 'Mobile network is not ready',
     '网络仍含紧急服务标志': 'Network still reports emergency service',
 })
+
+ENGLISH.update({
+    "候选机型本地试测": "Local candidate variant trials",
+    "先检查本机条件，再决定能否试用": "Check this phone before starting a trial",
+    "手机需已有有效 Root。这里只读检查，不会刷机或自动安装。": "The phone needs working Root. This check does not flash or automatically install anything.",
+    "请选择手机“关于”中的完整后缀和实际使用的运营商。": "Select the full variant shown in About and the carrier actually in use.",
+    "此组合已有自动适配入口，请使用主界面的“三网自动适配”。": "This combination has an automatic setup route. Use Automatic carrier setup in the main window.",
+    "这是未实测的手动候选。检查通过并明确选择实验试用后，可先安装，再单独手动启动；不开启自启动。必须先有可用 LTE 数据，试测不会修复基带入网。完成后使用“停用并恢复”并导出报告。": "This manual candidate has not passed hardware testing. After checks and explicit experimental opt-in, install first and start separately; autostart stays off. Working LTE data is required; the trial does not repair network attachment. Finish with Disable and restore, then export the report.",
+    "此 Passport 后缀先提供检查与报告。原生组件停止及恢复尚未验证，当前不会开放安装；请导出型号、原生文件与网络检查结果，供后续适配。": "This Passport variant currently offers checks and reporting. Native component shutdown and restoration are unverified, so installation stays blocked. Export the model, native-file and network results for further adaptation.",
+    "导出试测配置与结果表": "Export trial profiles and result form",
+    "检查本机条件": "Check this phone",
+    "试测材料已保存：{}。没有连接或修改手机。": "Trial materials saved to {}. No phone was contacted or modified.",
+    "候选试测：{} / {}。先检查、再明确选择实验试用；安装与启动分开，始终关闭自启动。": "Candidate trial: {} / {}. Check first, then explicitly opt in. Installation and startup are separate; autostart stays off.",
+    "候选服务已安装，尚未启动": "Candidate installed; not started",
+    "确认检查结果后，单独点击“启动并验证”。重启不会自动启动；试测结束后请停用并恢复。": "Review the checks, then select Start and verify separately. Rebooting will not start the service automatically. Disable and restore after the trial.",
+    "当前是绑定完整后缀的手动候选，尚未实机验收，不会自动启动。技术检查通过只表示可进入试测，实际通话、短信和停用恢复仍须逐项记录。": "This manual candidate is bound to an exact variant, has no hardware acceptance and does not autostart. Passing checks only permits a trial; calls, SMS and restoration still require recorded tests.",
+    "试测目标型号": "Trial target variant",
+    "试测原生文件": "Trial native files",
+    "本试测配置只适用于选定的完整后缀。实际手机不匹配时停止，不会自动套用同系列配置。": "This trial profile is bound to the selected exact variant. A different phone blocks the trial; family similarity does not override this check.",
+    "试测要求六个系统原生文件全部匹配；缺失或未知版本时只保留报告，不进行安装。": "All six native system files must match. Missing or unknown versions allow reporting only, not installation.",
+})
+
+ENGLISH.update({'遇到问题 / 反馈': 'Need help / Feedback', '查看本步图文教程': 'Illustrated guide for this step', '保存问题反馈': 'Save feedback', '把卡住的步骤和此前记录一起保存': 'Save this step and the preceding history', '只保存在你的电脑，不会自动上传。保存后检查 ZIP 内容，再通过原联系渠道发给开发者。': 'Saved only on your computer. Review the ZIP, then send it to the developer through your usual contact channel.', '包含：当前步骤、版本、近期操作、失败代码和允许的检查结果。\n不包含：私钥、密码、手机号、手机备份或原始通信日志。': 'Includes the current step, version, recent operations, error codes and permitted check results.\nExcludes private keys, passwords, phone numbers, phone backups and raw communications logs.', '保存反馈包…': 'Save feedback ZIP...', '复制反馈摘要': 'Copy feedback summary', '补充说明（可选）：做到了哪一步，原本希望看到什么？请勿填写密码或号码。': 'Optional: what did you do, and what did you expect? Do not enter passwords or phone numbers.', '将要保存的内容（已脱敏）': 'Contents to save (redacted)', '刷新预览': 'Refresh preview', '已包含 {} 条近期记录。只覆盖启用此功能后的最近 5 次启动，每次最多 400 条。': '{} recent entries included. Covers the last 5 sessions with this feature, up to 400 entries each.', '本机历史写入失败；仍可保存本次运行的内存记录。': 'History could not be written to disk. You can still save the in-memory records from this session.', '保存脱敏反馈包': 'Save redacted feedback ZIP', '反馈包已保存，尚未发送。请检查内容后，将 ZIP 发给开发者：octoooo@octoooo.com。': 'Saved, not sent. Review the ZIP, then send it to the developer: octoooo@octoooo.com.', '摘要已复制。完整过程请另存反馈包，一并发送。': 'Summary copied. Save and send the feedback ZIP for the complete history.', '剪贴板暂不可用，请使用“保存反馈包”。': 'Clipboard unavailable. Use Save feedback ZIP.'})

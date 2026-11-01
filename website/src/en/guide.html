@@ -61,11 +61,11 @@
         <p class="guide-intro">Complete preparation, connection, preflight checks, installation, and call tests in order. “Registration passed” does not mean calls work: use the system dialer to test incoming and outgoing calls, and confirm clear audio in both directions.</p>
         <p class="guide-intro">A few terms: root means administrator access to the phone; preflight means checks before installation; IMS registration means connecting to your carrier’s calling service. The English interface shown on this website previews the current source; older release packages may still display Chinese.</p>
         <div class="guide-actions">
-          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe"><span class="button-copy"><span>Download for Windows x64</span><small>Windows 10 / 11 · 64-bit (x64)</small></span></a>
-          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg"><span class="button-copy"><span>Download for macOS (Universal)</span><small>Apple Silicon macOS 11+ · Intel macOS 10.15+</small></span></a>
+          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe"><span class="button-copy"><span>Download for Windows x64</span><small>Windows 10 / 11 · 64-bit (x64)</small></span></a>
+          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg"><span class="button-copy"><span>Download for macOS (Universal)</span><small>Apple Silicon macOS 11+ · Intel macOS 10.15+</small></span></a>
         </div>
-        <p class="guide-release">The current public release is <span data-release-version>Latest release</span>. Verify its <a class="guide-release-link" href="#verify">SHA-256</a> after downloading. The matching checksum file is also on the <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r14" target="_blank" rel="noopener noreferrer">release page</a>.</p>
-        <p class="guide-release">For installation and management on the phone, read the <a class="guide-release-link" href="mobile.html">native mobile candidate and its four first-install routes</a>. The mobile candidate is not publicly released. This guide continues to cover desktop r14 and its recorded acceptance scope.</p>
+        <p class="guide-release">The current public release is <span data-release-version>Latest release</span>. Verify its <a class="guide-release-link" href="#verify">SHA-256</a> after downloading. The matching checksum file is also on the <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r15" target="_blank" rel="noopener noreferrer">release page</a>.</p>
+        <p class="guide-release">For installation and management on the phone, read the <a class="guide-release-link" href="mobile.html">native mobile candidate and its four first-install routes</a>. The mobile candidate is not publicly released. This guide continues to cover desktop r15 and its recorded acceptance scope.</p>
       </div>
     </section>
 
@@ -73,7 +73,8 @@
       <aside class="guide-toc" aria-labelledby="toc-title">
         <p class="guide-toc-title" id="toc-title">On this page</p>
         <nav aria-label="Guide chapters">
-          <ol>
+          <ol><li><a href="#walkthrough">Illustrated tutorial & video</a></li>
+            <li><a href="#walkthrough-trials">Candidate variants</a></li>
             <li><a href="#prepare">Preparation and risks</a></li>
             <li><a href="#start">Launch the app</a></li>
             <li><a href="#connect">Connect your phone</a></li>
@@ -88,9 +89,117 @@
       </aside>
 
       <div class="guide-content">
-        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">Preparation and risks</h2><p>Check the exact hardware variant under Settings → About. Automatic carrier support covers rooted Q10 SQN100-3, Q20 SQC100-2 and Passport (Q30) SQW100-4 on OS 10.3.3.3216, with matching native file hashes.</p><ul class="guide-list"><li>China Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM, without ISIM; the plan must provide VoLTE and working LTE data.</li><li>A reliable USB data cable, personal Root SSH key and verified host key are required for the initial installation.</li><li>Windows 10/11 x64; Mac: macOS 11+ on Apple Silicon or macOS 10.15+ on Intel. No separate Python installation is needed. Current Mac physical USB testing remains pending; Intel hardware has not been tested.</li><li>Back up the phone. Initial Root preparation for Q10, Q20 and Passport needs about 15 GB; a stock OS upgrade needs about 24 GB. The app selects firmware for the exact model. Flashing erases data; first flashing and old-OS upgrades still need device acceptance. Never flash firmware for another model.</li><li>Long-term standby, roaming, other regions and emergency calls have not been comprehensively validated.</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 of 9 combinations functionally accepted · 1 November 2026</caption><thead><tr><th scope="col">Device</th><th scope="col">China Mobile</th><th scope="col">China Unicom</th><th scope="col">China Telecom</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>Supported</td><td>Supported</td><td>Supported</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>Supported</td><td>Supported</td><td>Supported</td></tr><tr><th scope="row">Passport SQW100-4</th><td>Supported</td><td>Supported</td><td>Supported</td></tr></tbody></table></div><p>The latest release supports these nine combinations. Test dates, software revisions and evidence remain available in the acceptance record.</p></section>
+<!-- first-use:start -->
+<section class="chapter guide-section" id="walkthrough" aria-labelledby="walkthrough-title">
+<p class="eyebrow">STEP BY STEP · 01—09</p><h2 id="walkthrough-title">Follow the illustrated walkthrough</h2>
+<p class="guide-note">Windows interface with demonstration data, recorded from r14 plus feedback. r15 includes feedback and adds early variant checks; follow the current app when wording differs. This explains operation and is not hardware acceptance evidence. Automatic setup covers only the accepted variants; other variants should use the candidate guide below. Mac follows the same overall steps; first Root preparation requires macOS 14+.</p>
+<nav class="tutorial-jump" aria-label="Tutorial steps">
+<a href="#walkthrough-prepare">01 · Back up and check the requirements</a>
+<a href="#walkthrough-connect">02 · Connect the phone and choose your route</a>
+<a href="#walkthrough-root">03 · First Root: obtain the matching firmware</a>
+<a href="#walkthrough-root-prepare">04 · Prepare personal images, then confirm flashing</a>
+<a href="#walkthrough-root-verified">05 · Finish phone setup and verify Root again</a>
+<a href="#walkthrough-install">06 · Check, back up and install carrier adaptation</a>
+<a href="#walkthrough-restart">07 · Reboot normally and check the current boot</a>
+<a href="#walkthrough-acceptance">08 · Disconnect USB and test real calls</a>
+<a href="#walkthrough-feedback">09 · When stuck, save useful feedback</a>
+</nav>
+<div class="tutorial-video">
+<video controls playsinline preload="metadata" poster="../assets/tutorial/first-use-cover.png" aria-label="Chinese narrated first-use tutorial">
+<source src="../assets/tutorial/first-use.mp4" type="video/mp4">
+Your browser cannot play this video.</video>
+<p><a href="../assets/tutorial/first-use.mp4" download>Download tutorial video</a> · Chinese narration and captions. Pause at any step.</p></div></section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-prepare" aria-labelledby="tutorial-title-1">
+<p class="eyebrow">01 / 09</p>
+<h2 id="tutorial-title-1">Back up and check the requirements</h2>
+<p>Check the exact hardware variant and OS in Settings → About. The validated scope is SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216. Connect one charged phone.</p>
+<p><strong>Do this:</strong> Download the correct desktop package and verify SHA-256. Windows needs 10/11 x64; first Root preparation on Mac needs macOS 14+. Back up the phone before any wipe and allow at least 15 GB on the computer.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/home.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/home.png" loading="lazy" width="1000" height="820" alt="Back up and check the requirements"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The app shows Connect phone and Automatic carrier selection. A phone with working Root can skip first flashing.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>An older OS needs the System upgrade route and about 24 GB. Never use firmware for a different model. Check the USB cable and drivers if Windows does not detect the phone.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-connect" aria-labelledby="tutorial-title-2">
+<p class="eyebrow">02 / 09</p>
+<h2 id="tutorial-title-2">Connect the phone and choose your route</h2>
+<p>Connect and unlock the phone using a data-capable USB cable, then select Connect phone. Enable development mode when the first development connection requires it.</p>
+<p><strong>Do this:</strong> Choose the whole old flashing folder if you have it. If Root works but files are missing, choose Authorize again from the phone. Use the first Root route only after checking the phone status.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/connect.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/connect.png" loading="lazy" width="1000" height="820" alt="Connect the phone and choose your route"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The app identifies the model, USB network and verified Root status. A failed connection does not prove that Root is absent.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>Recover the original material or authorize again for an authentication failure. With existing AutoRoot, open BlackBerry World once if the connection service has not started.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root" aria-labelledby="tutorial-title-3">
+<p class="eyebrow">03 / 09</p>
+<h2 id="tutorial-title-3">First Root: obtain the matching firmware</h2>
+<p>Open First use and connection help → First Root and check the detected model. The example uses SQC100-2; other models must use their own firmware.</p>
+<p><strong>Do this:</strong> Use Download matching firmware or the browser download links. Keep the complete original file without running or extracting it, select it, then choose Verify and import firmware.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/root-import.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/root-import.png" loading="lazy" width="1000" height="820" alt="First Root: obtain the matching firmware"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The app confirms that stock firmware was imported and verified. Personal Root images have not yet been prepared.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>Try the alternate source after a download interruption. For an import failure, check the exact model and complete file. Never bypass verification.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root-prepare" aria-labelledby="tutorial-title-4">
+<p class="eyebrow">04 / 09</p>
+<h2 id="tutorial-title-4">Prepare personal images, then confirm flashing</h2>
+<p>After firmware import, scroll down and choose Prepare Root images automatically. The app still needs tools, personal connection material, image construction and verification.</p>
+<p><strong>Do this:</strong> Only after the images are ready, verify the model and backup, acknowledge the data wipe, select Start Root flashing, and read the second confirmation. Keep USB stable and follow the window prompts.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/root-prepared.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/root-prepared.png" loading="lazy" width="1000" height="820" alt="Prepare personal images, then confirm flashing"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> Flashing becomes available only when image preparation, model matching and the wipe acknowledgement are complete.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>Read the reason above a disabled button. Export feedback after a build failure and retain the prepared materials for investigation.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root-verified" aria-labelledby="tutorial-title-5">
+<p class="eyebrow">05 / 09</p>
+<h2 id="tutorial-title-5">Finish phone setup and verify Root again</h2>
+<p>After flashing, complete setup on the phone and open BlackBerry World once as required by the Root method. Return to Connection check. A store network error does not itself mean Root failed.</p>
+<p><strong>Do this:</strong> Select Detect again. Continue only when USB, SSH and effective Root verification have completed.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/root-verified.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/root-verified.png" loading="lazy" width="1000" height="820" alt="Finish phone setup and verify Root again"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The exact model, target OS and effective Root are verified. Returning Root users join the same flow here.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>Unlock a newly rebooted phone and wait for its services. For an identity mismatch, check trusted materials for this phone instead of bypassing verification.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-install" aria-labelledby="tutorial-title-6">
+<span id="walkthrough-preflight"></span>
+<p class="eyebrow">06 / 09</p>
+<h2 id="tutorial-title-6">Check, back up and install carrier adaptation</h2>
+<p>Open Automatic carrier selection and select Check device. Verify the phone, SIM and carrier. Use an active VoLTE-enabled USIM with working LTE data.</p>
+<p><strong>Do this:</strong> When checks allow installation, select Back up and install automatic adaptation. Wait for backup verification, installation and read-back, and retain the computer backup.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/install.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/install.png" loading="lazy" width="1000" height="820" alt="Check, back up and install carrier adaptation"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The app confirms the backup and installation and explains the reboot. If it asks you to enable adaptation first, do so.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>After interruption or an unknown state, check the device before retrying installation. Follow the explicit stop, restore and reboot sequence for an older payload.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-restart" aria-labelledby="tutorial-title-7">
+<p class="eyebrow">07 / 09</p>
+<h2 id="tutorial-title-7">Reboot normally and check the current boot</h2>
+<p>Use the normal reboot option in the phone power menu. Unlock it after startup and wait about 3–5 minutes with USB connected.</p>
+<p><strong>Do this:</strong> Select I have rebooted, check again. Recheck the connection first if USB has not recovered.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/restart.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/restart.png" loading="lazy" width="1000" height="820" alt="Reboot normally and check the current boot"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The app verifies this boot’s SIM selection, IMS registration and LTE. Passport may need another normal reboot when entering or leaving the Telecom attachment policy.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>A 4G icon is not registration verification. Airplane mode is not a normal reboot. Follow the current stage guidance rather than reflashing or reinstalling.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-acceptance" aria-labelledby="tutorial-title-8">
+<p class="eyebrow">08 / 09</p>
+<h2 id="tutorial-title-8">Disconnect USB and test real calls</h2>
+<p>After current-boot registration succeeds, verify real calls on the phone. Registration and successful calls are separate checks.</p>
+<p><strong>Do this:</strong> Disconnect USB. Make an outgoing native-dialer call, then have another phone call back. Wait until the connected-call timer reaches 00:35 before hanging up. Check audio both ways, LTE and number/carrier display.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/ready.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/ready.png" loading="lazy" width="1000" height="820" alt="Disconnect USB and test real calls"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> Incoming and outgoing calls work with two-way audio and LTE. For later SIM changes, shut down normally first.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>Preserve the state after network search, emergency-only service or a failed first call. Record the step and export feedback rather than repeatedly calling, installing or rebooting.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-feedback" aria-labelledby="tutorial-title-9">
+<p class="eyebrow">09 / 09</p>
+<h2 id="tutorial-title-9">When stuck, save useful feedback</h2>
+<p>Select Need help / Feedback on the current page. Add a short description of the step and expected result. The entry remains available during an operation.</p>
+<p><strong>Do this:</strong> Refresh and review the preview, then save the ZIP. Check its contents and send the whole file through your usual contact channel or to octoooo@octoooo.com. The app sends nothing automatically.</p>
+<figure class="guide-shot tutorial-shot"><a href="../assets/tutorial/feedback.png" target="_blank" rel="noopener noreferrer"><img src="../assets/tutorial/feedback.png" loading="lazy" width="1000" height="820" alt="When stuck, save useful feedback"></a><figcaption>Actual Windows interface with demonstration data. Click to view the complete screenshot.</figcaption></figure>
+<div class="tutorial-result"><strong>You should see:</strong> The ZIP includes the step, version, recent timeline, failure codes, permitted check results and available redacted build-failure excerpts. A successful retry does not immediately erase the earlier failure.</div>
+<details class="tutorial-help"><summary>Stuck at this step?</summary><p>History covers the last 5 sessions with this feature, up to 400 entries each. It cannot recover earlier-version logs and excludes private directories, keys, phone backups and raw SIP logs.</p><p><a href="#walkthrough-feedback">How to save feedback</a></p></details>
+</section>
+<section class="chapter guide-section" id="walkthrough-drivers"><h2>Windows USB drivers</h2><p>Use First use and connection help → Windows drivers only if the computer does not detect the phone or USB network. Normal application use does not need administrator rights.</p><a href="#walkthrough-feedback">Save feedback from this step</a></section>
+<section class="chapter guide-section" id="walkthrough-firmware"><h2>Older OS: upgrade first</h2><p>Select System upgrade and follow the model-bound stages, backup requirements and separate wipe confirmations. Never apply another model’s firmware. Return to Root verification after the target OS is confirmed.</p><a href="#walkthrough-feedback">Save feedback from this step</a></section>
+<section class="chapter guide-section" id="walkthrough-pair"><h2>Already rooted, but connection files are missing</h2><p>Choose Authorize again from the phone. It requires an already working Root terminal. Follow each transfer and phone-command prompt, then verify phone identity and actual Root access. It does not root an unrooted phone.</p><a href="#walkthrough-feedback">Save feedback from this step</a></section>
+<!-- first-use:end -->
+<section class="chapter guide-section" id="walkthrough-trials" aria-labelledby="trials-title"><h2 id="trials-title">Other hardware variants: check the route first</h2><p>r15 adds 13 manual candidate combinations and six read-only Passport combinations. None of the new variants has hardware acceptance. Automatic setup still covers only SQN100-3, SQC100-2 and SQW100-4. Root recipes do not establish loader or flashing support.</p><div class="guide-table-wrap"><table class="guide-table"><caption>13 manual and 6 read-only combinations; no new hardware acceptance</caption><thead><tr><th scope="col">Full hardware suffix</th><th scope="col">Carrier</th><th scope="col">Route</th></tr></thead><tbody><tr><th scope="row">SQN100-1 / SQN100-5</th><td>Telecom 460-11</td><td>Manual; working local LTE B5 data required</td></tr><tr><th scope="row">SQC100-1 / SQC100-3 / SQC100-5</th><td>Mobile 460-00 / Unicom 460-01 / Telecom 460-11</td><td>Manual candidate</td></tr><tr><th scope="row">SQC100-4</th><td>Unicom 460-01 / Telecom 460-11</td><td>Manual candidate</td></tr><tr><th scope="row">SQW100-1 / SQW100-3</th><td>Those three carriers</td><td>Read-only; installation blocked pending stop/restore validation</td></tr></tbody></table></div><ol class="guide-list"><li>Use More → Local candidate variant trials. Select the exact suffix and actual carrier. A working AutoRoot v4 / Root SSH, OS 10.3.3.3216, six matching native files, a supported USIM without ISIM, LTE data and a clean recoverable state are required.</li><li>The first check is read-only. For a manual candidate, explicitly opt in to experimental use and check again. Install first; start separately after verification. Autostart remains off. Passing a check is not a successful call test.</li><li>Use the system dialer and SMS app to test both directions, audio, LTE and duplicate delivery. Disable and restore, restart normally, then export the report, feedback ZIP and result form. Do not run desktop and mobile writes at the same time.</li></ol><p class="guide-note">No trial installation for the reviewed domestic combinations of SQN100-2/-4, SQC100-4/Mobile, unconfirmed SQW100-2, other MNCs or ISIM. Missing Root materials, unknown native files or failed restoration checks cannot be bypassed with consent or another variant’s image.</p><p><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/v0.5.0-r15/docs/VARIANT-LOCAL-TRIALS.en.md" target="_blank" rel="noopener noreferrer">Full trial guide and result form</a></p></section>
 
-        <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>Direct downloads via Cloudflare R2.</strong> No GitHub connection is needed. Use the same-version GitHub copy below if this route is unavailable; file bytes and SHA-256 checksums match.</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub Source ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">Preparation and risks</h2><p>Check the exact hardware variant under Settings → About. Automatic carrier support covers rooted Q10 SQN100-3, Q20 SQC100-2 and Passport (Q30) SQW100-4 on OS 10.3.3.3216, with matching native file hashes.</p><ul class="guide-list"><li>China Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM, without ISIM; the plan must provide VoLTE and working LTE data.</li><li>A reliable USB data cable, personal Root SSH key and verified host key are required for the initial installation.</li><li>Windows 10/11 x64; Mac: macOS 11+ on Apple Silicon or macOS 10.15+ on Intel. No separate Python installation is needed. r14 passed native first Root and restart autostart on Apple Silicon Mac/Q20; Intel hardware has not been tested.</li><li>Back up the phone. Initial Root preparation for Q10, Q20 and Passport needs about 15 GB; a stock OS upgrade needs about 24 GB. The app selects firmware for the exact model. Flashing erases data. r14 passed native first Root on Windows/Passport and Apple Silicon Mac/Q20. Full first-use GUI operation, Q10 first Root, Intel flashing and old-OS upgrades remain unverified. Never flash firmware for another model.</li><li>Long-term standby, roaming, other regions and emergency calls have not been comprehensively validated.</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 of 9 combinations functionally accepted · 1 November 2026</caption><thead><tr><th scope="col">Device</th><th scope="col">China Mobile</th><th scope="col">China Unicom</th><th scope="col">China Telecom</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>Supported</td><td>Supported</td><td>Supported</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>Supported</td><td>Supported</td><td>Supported</td></tr><tr><th scope="row">Passport SQW100-4</th><td>Supported</td><td>Supported</td><td>Supported</td></tr></tbody></table></div><p>The latest release supports these nine combinations. Test dates, software revisions and evidence remain available in the acceptance record.</p></section>
+
+        <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>Direct downloads via Cloudflare R2.</strong> No GitHub connection is needed. Use the same-version GitHub copy below if this route is unavailable; file bytes and SHA-256 checksums match.</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub Source ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r15/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
           <p class="eyebrow">02 · Download and launch</p>
           <h2 id="start-title">Launch on Windows / macOS</h2>
           <div class="platform-grid">
@@ -98,7 +207,7 @@
               <h3 id="windows-title">Windows</h3>
               <p><strong>Windows 10 / 11 · 64-bit (x64)</strong>. Windows 7, 8 / 8.1 and 32-bit systems are not supported.</p>
               <ol class="step-list">
-                <li>Download the current <code data-package-file="windows">bb10-volte-0.5.0-r14-windows-x64.exe</code> and its matching <code>.exe.sha256</code> file from the release.</li>
+                <li>Download the current <code data-package-file="windows">bb10-volte-0.5.0-r15-windows-x64.exe</code> and its matching <code>.exe.sha256</code> file from the release.</li>
                 <li>Follow the <a href="#verify">SHA-256 verification</a> steps below before opening the EXE. Python, Tcl/Tk, SSH/SCP, carrier templates, and phone-side payloads are included.</li>
                 <li>This is a single-file portable app. It extracts into the system temporary directory at launch and cleans up after a normal exit. Launching and everyday use do not require administrator rights; first-time USB driver installation shows a separate Windows UAC prompt.</li>
               </ol>
@@ -109,7 +218,7 @@
               <h3 id="macos-title">macOS</h3>
               <p><strong>Apple Silicon macOS 11+ · Intel macOS 10.15+</strong>. Initial Root preparation requires macOS 14 or later.</p>
               <ol class="step-list">
-                <li>Download the current <code data-package-file="mac">bb10-volte-0.5.0-r14-macos-universal.dmg</code> and matching <code>.dmg.sha256</code> file, then verify SHA-256 first.</li>
+                <li>Download the current <code data-package-file="mac">bb10-volte-0.5.0-r15-macos-universal.dmg</code> and matching <code>.dmg.sha256</code> file, then verify SHA-256 first.</li>
                 <li>Open the DMG, drag <code>bb10-volte.app</code> into Applications, and launch it from Applications. No separate Python, Tk, or OpenSSH installation is needed; the app uses the SSH/SCP included with macOS.</li>
                 <li>Connect and unlock the phone using a USB data cable, and allow the accessory connection when prompted by your Mac. If USB networking is unavailable, check “Connect to Mac” under Settings → Storage and Access → USB Connections on the phone.</li>
               </ol>
@@ -166,18 +275,18 @@
 
           <figure class="code-block">
             <figcaption>Windows PowerShell</figcaption>
-            <pre><code data-checksum-command="windows">Get-FileHash "$HOME\Downloads\bb10-volte-0.5.0-r14-windows-x64.exe" -Algorithm SHA256</code></pre>
+            <pre><code data-checksum-command="windows">Get-FileHash "$HOME\Downloads\bb10-volte-0.5.0-r15-windows-x64.exe" -Algorithm SHA256</code></pre>
           </figure>
 
           <figure class="code-block">
             <figcaption>macOS Terminal</figcaption>
-            <pre><code data-checksum-command="mac">shasum -a 256 "$HOME/Downloads/bb10-volte-0.5.0-r14-macos-universal.dmg"</code></pre>
+            <pre><code data-checksum-command="mac">shasum -a 256 "$HOME/Downloads/bb10-volte-0.5.0-r15-macos-universal.dmg"</code></pre>
           </figure>
 
           <p>The command outputs a 64-character hexadecimal digest. It must <strong>match every character</strong> of the SHA-256 in the release's matching checksum file (hexadecimal letter case does not matter). Do not compare only the first few characters. If it differs, the files came from different sources, or you cannot confirm the match, do not run the package. Delete it and download it again from the release.</p>
           <div class="guide-actions guide-download-links">
-            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe">Windows download</a>
-            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg">macOS download</a>
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe">Windows download</a>
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg">macOS download</a>
           </div>
         </section>
 

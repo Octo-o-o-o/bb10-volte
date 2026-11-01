@@ -1,0 +1,48 @@
+{
+  "dir": "docs/recordings/first-use-cover-candidates",
+  "contactSheet": "docs/recordings/first-use-cover-candidates/contact-sheet.png",
+  "items": [
+    {
+      "index": 1,
+      "ratio": 0.12,
+      "seconds": 26.080672,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-01-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-01-cover.png"
+    },
+    {
+      "index": 2,
+      "ratio": 0.22,
+      "seconds": 47.814565,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-02-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-02-cover.png"
+    },
+    {
+      "index": 3,
+      "ratio": 0.36,
+      "seconds": 78.242016,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-03-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-03-cover.png"
+    },
+    {
+      "index": 4,
+      "ratio": 0.5,
+      "seconds": 108.669466,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-04-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-04-cover.png"
+    },
+    {
+      "index": 5,
+      "ratio": 0.66,
+      "seconds": 143.443695,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-05-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-05-cover.png"
+    },
+    {
+      "index": 6,
+      "ratio": 0.82,
+      "seconds": 178.217924,
+      "frame": "docs/recordings/first-use-cover-candidates/candidate-06-frame.png",
+      "cover": "docs/recordings/first-use-cover-candidates/candidate-06-cover.png"
+    }
+  ]
+}

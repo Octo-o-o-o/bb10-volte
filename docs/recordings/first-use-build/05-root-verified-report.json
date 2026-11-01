@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "完成手机设置，重新验证 Root",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 22867,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "完成手机设置，重新验证 Root",
+      "body": "点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。",
+      "narration": "刷写结束后，先在手机上完成首次设置，并按 Root 方案打开一次 BlackBerry World。回到连接检查，点击重新检测。看到 Root 连接已验证，再继续。手机刚重启时，要先解锁并等服务启动。",
+      "startMs": 600,
+      "endMs": 22280
+    }
+  ],
+  "steps": [
+    {
+      "label": "root-verified",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

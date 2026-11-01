@@ -25,7 +25,9 @@ MANAGEMENT = '/var/bb10_volte-management'
 MANAGEMENT_SCHEMA = 2
 _lock_depth = 0
 _lock_pid = None
-PREVIOUS_PAYLOADS = ('ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c438e3da',
+PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa9404270580f',
+                    'b7ee1d25881b3334fbeb5179a4dfd2d24cb0394de9901311543c1dc713242294',
+                    'ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c438e3da',
                     '99ff0c8b1c3118bbb15b0177a9177e2f592b4d0711fb1c59698eddfb3942b4f2',
                      '69820d4e94e09adbf71078eb8d1b2f6c946303424001e0d3760b530c2cd1f318',
                      'bab5ee0e0496b8694265b9df3300e140bf44a3433e0fdf65ac56420d3066fddc',
@@ -40,7 +42,7 @@ PREVIOUS_PAYLOADS = ('ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c4
                      '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
-                'device/service.py', 'device/ims_image.py')
+                'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
 ADDON = '/var/addons/bb10-unified-volte'
 BTOOL = '/apps/sys.android.gYABgKAOw1czN6neiAT72SGO.ns/native/system/xbin/btool'
@@ -246,19 +248,44 @@ def root_kind(facts):
     return 'autoroot-v2'
 
 
+def blocked_probe(observed, code):
+    variant = observed.get('variant')
+    if not isinstance(variant, str) or not re.match(r'\ASQ[NCW]100-[0-9]{1,2}\Z', variant):
+        variant = 'unknown'
+    return {'schema': 1, 'variant': variant, 'scope_error': code,
+            'installed': False, 'can_install': False, 'can_update': False,
+            'sim_supported': False}
+
+
 def probe():
-    facts, family = identity()
+    # Report model/OS limits before native probing, legacy migration or backups.
+    # This path is read-only and never grants an unknown model permission.
+    assert os.geteuid() == 0 and os.uname()[0] == 'QNX' and ctypes.sizeof(ctypes.c_void_p) == 4
+    observed = device_info.read_identity()
+    try:
+        policy.model(observed)
+    except ValueError as error:
+        code = ('os_not_supported' if observed.get('variant') in policy.MODELS and
+                observed.get('os_version') != policy.OS_VERSION else str(error))
+        return blocked_probe(observed, code)
+    try:
+        facts, family = identity()
+    except AssertionError as error:
+        if str(error) != 'unknown_native_image':
+            raise
+        return blocked_probe(observed, 'unknown_native_image')
     for filename in ('uninstall-pending.json', 'uninstalled.json'):
         if os.path.isfile(BASE + '/' + filename):
             pending = s.load(BASE + '/' + filename)
             assert pending['owner'] == policy.OWNER
             finished = filename == 'uninstalled.json' and pending['uninstalled'] is True
             phase = 'uninstalled' if finished else pending.get('phase', 'awaiting_final_reboot')
-            return {'schema': 1, 'management_schema': 2, 'variant': facts['variant'], 'family': family,
+            result = {'schema': 1, 'management_schema': 2, 'variant': facts['variant'], 'family': family,
                 'os_version': facts['os_version'], 'installed': os.path.isfile(BASE + '/payload.json'),
                 'installed_stage': 'uninstalled' if finished else 'pending', 'installed_management_schema': 2,
                 'phase': phase, 'pending_phase': phase, 'uninstalled': finished, 'can_install': finished,
                 'can_update': False, 'reboot_required': not finished and phase in ('awaiting_reboot', 'awaiting_final_reboot')}
+            return with_sim_status(result, facts) if finished else result
     result = {'schema': 1, 'management_schema': 2,
               'installed_management_schema': installed_management_schema(),
               'variant': facts['variant'], 'family': family, 'os_version': facts['os_version'],
@@ -301,6 +328,10 @@ def probe():
         entry = migration.inspect(facts)
         result['legacy_detected'] = entry is not None
         result['can_install'] = result['call_idle']
+    return with_sim_status(result, facts)
+
+
+def with_sim_status(result, facts):
     try:
         selection = policy.select(facts, u.card())
         result['operator'] = selection['operator']
@@ -311,6 +342,7 @@ def probe():
         result['sim_supported'] = True
     except ValueError as error:
         result['sim_supported'], result['sim_reason'] = False, str(error)
+        result['can_install'] = False
     return result
 
 

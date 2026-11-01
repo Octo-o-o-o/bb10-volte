@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "卡住时，保存一个能排查的反馈包",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 23500,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "卡住时，保存一个能排查的反馈包",
+      "body": "点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。",
+      "narration": "任何一步卡住，都可以点遇到问题、反馈。补充你做到了哪里，刷新预览，确认没有个人信息，再保存反馈包。把整个 ZIP 通过原联系渠道发给开发者。程序不会自动上传，之前失败的记录也不会因为一次重试成功就立即消失。",
+      "startMs": 600,
+      "endMs": 23052
+    }
+  ],
+  "steps": [
+    {
+      "label": "feedback",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

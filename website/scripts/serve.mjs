@@ -12,9 +12,11 @@ const types = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.json': 'application/json; charset=utf-8',
+  '.mp4': 'video/mp4',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
   '.txt': 'text/plain; charset=utf-8',
+  '.vtt': 'text/vtt; charset=utf-8',
   '.webp': 'image/webp',
   '.xml': 'application/xml; charset=utf-8',
 };
@@ -28,11 +30,34 @@ createServer(async (request, response) => {
     if (!file.startsWith(root)) throw new Error('Invalid path');
     if (!path.extname(file)) file += '.html';
     const body = await readFile(file);
-    response.writeHead(200, {
+    const headers = {
       'Content-Type': types[path.extname(file)] || 'application/octet-stream',
       'Cache-Control': 'no-store',
-    });
-    response.end(body);
+      'Accept-Ranges': 'bytes',
+    };
+    // Browsers request byte ranges when seeking within the tutorial video.
+    if (request.headers.range) {
+      const match = /^bytes=(\d*)-(\d*)$/.exec(request.headers.range);
+      let start = 0;
+      let end = body.length - 1;
+      if (match?.[1]) {
+        start = Number(match[1]);
+        if (match[2]) end = Math.min(Number(match[2]), end);
+      } else if (match?.[2]) {
+        start = Math.max(0, body.length - Number(match[2]));
+      }
+      if (!match || (!match[1] && !match[2]) || !Number.isSafeInteger(start) ||
+          !Number.isSafeInteger(end) || start > end || start >= body.length) {
+        response.writeHead(416, { ...headers, 'Content-Range': `bytes */${body.length}`, 'Content-Length': 0 });
+        response.end();
+        return;
+      }
+      response.writeHead(206, { ...headers, 'Content-Range': `bytes ${start}-${end}/${body.length}`, 'Content-Length': end - start + 1 });
+      response.end(request.method === 'HEAD' ? undefined : body.subarray(start, end + 1));
+    } else {
+      response.writeHead(200, { ...headers, 'Content-Length': body.length });
+      response.end(request.method === 'HEAD' ? undefined : body);
+    }
   } catch {
     response.writeHead(404, { 'Content-Type': types['.html'] });
     response.end(await readFile(path.join(root, pathname.startsWith('/en/') ? 'en/404.html' : '404.html')));

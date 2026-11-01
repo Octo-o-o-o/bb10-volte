@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "用手机菜单正常重启，再检查本次开机",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 22867,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "body": "点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。",
+      "narration": "安装后，用手机电源菜单正常重启。开机解锁，等待大约三到五分钟，再点击已重启、重新检查。Passport 切入或离开电信策略时，可能还要再重启一次，请按提示操作。四 G 图标不能代替本次开机的注册检查。",
+      "startMs": 600,
+      "endMs": 22280
+    }
+  ],
+  "steps": [
+    {
+      "label": "restart",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

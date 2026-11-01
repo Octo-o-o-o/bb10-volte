@@ -1,5 +1,7 @@
 # Compatibility preflight and customer information
 
+**Scope note (2026-11-02):** The historical text below primarily describes the legacy manual workflow. Current unified automatic support is defined by `device/carrier_policy.py` and `project.json`: SQN100-3, SQC100-2 and SQW100-4. See the [variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md) for r14 evidence and this branch's unpublished early checks. The old Passport hold does not describe the accepted SQW100-4 unified service.
+
 [简体中文](COMPATIBILITY.md)
 
 Version 0.3.3 attaches community evidence only for exact hardware/OS/actual MCC/MNC matches, alongside finite read-only incoming diagnostics. Evidence does not confer project acceptance. Passport automatic operations are paused; see [community research](COMMUNITY-RESEARCH.en.md).

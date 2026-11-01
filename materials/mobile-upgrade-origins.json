@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "origins": [
+    {
+      "label": "desktop-r14",
+      "commit": "6ca9147732575617dfeb2019ae4fdd680f014734",
+      "files": {
+        "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+        "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
+        "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+        "device/compatibility.py": "70e6d883477047bb92fb9459be968ae27c2ae7e2cd63266fa02a7e8d6916cff1",
+        "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
+        "device/ims_image.py": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
+        "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+        "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+        "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+        "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
+        "device/unified_service.py": "b85af72805abf614ec63cc0935db2da2b5ecfb876abef3dcf03c0429b7b1901a",
+        "device/unified_dca.py": "a49ad390115cd6dfd89cd01121d80d24dcde46f7294f69051175bbe149055cef",
+        "device/unified_install.py": "f21e26596896866fdcee5b78e15ed97d84cf5844e1cfe217c9ed603d9bd847ab",
+        "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
+        "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
+        "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
+        "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
+        "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+      },
+      "fingerprint": "ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c438e3da"
+    },
+    {
+      "label": "desktop-r15",
+      "commit": "5ccc17360bd2f3419ee24ccc8080f469e4dd3ef7",
+      "files": {
+        "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+        "device/profiles.py": "c0d67448b46649166bb9434d3c22ffce1636ea2c791318e5751864d4c89b9bba",
+        "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+        "device/compatibility.py": "d9f1bb16af978d7318d65ffa393a6d5f4b237ea98bcda0c0554be05edb2532eb",
+        "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
+        "device/ims_image.py": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
+        "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+        "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+        "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+        "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
+        "device/unified_service.py": "b85af72805abf614ec63cc0935db2da2b5ecfb876abef3dcf03c0429b7b1901a",
+        "device/unified_dca.py": "a49ad390115cd6dfd89cd01121d80d24dcde46f7294f69051175bbe149055cef",
+        "device/unified_install.py": "ef4fa30861fb7149ec24e095b1727d201c610229c0fbd3fb4669bb7b011b51fb",
+        "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
+        "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
+        "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
+        "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
+        "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+      },
+      "fingerprint": "b7ee1d25881b3334fbeb5179a4dfd2d24cb0394de9901311543c1dc713242294"
+    },
+    {
+      "label": "mobile-v5",
+      "commit": "b3f4a26602fc2a5b8d7e7cefd7f0e3535b2e5ff6",
+      "files": {
+        "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+        "device/profiles.py": "272ee159d6fc91e446d143ae138f05e43ac0c9fea8b50420a9321f170b6569ba",
+        "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+        "device/compatibility.py": "70e6d883477047bb92fb9459be968ae27c2ae7e2cd63266fa02a7e8d6916cff1",
+        "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
+        "device/ims_image.py": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
+        "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+        "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+        "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+        "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
+        "device/unified_service.py": "60b7937f95a9fe4ef7d58a8cba3d4161e4048e15f6472eb0387ab7ab84701d5c",
+        "device/unified_dca.py": "fe3222c7c6e6676a63dd214d0cc9b65bc5a56bd8143bd959ebafb69329f88915",
+        "device/unified_install.py": "4f5239a81df00c6b118327817b8772c3f96d649d89ac87545cad14137a01ab82",
+        "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
+        "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
+        "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
+        "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
+        "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+      },
+      "fingerprint": "f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa9404270580f"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 """Keep immutable bundle resources separate from persistent per-user files."""
 import os
 from pathlib import Path
+import re
 import sys
 
 
@@ -8,7 +9,13 @@ def desktop_release_version(project):
     revision = project.get('desktop_revision')
     if revision is not None and (type(revision) is not int or revision < 1):
         raise ValueError('Invalid desktop revision')
-    return project['version'] + ('-r' + str(revision) if revision else '')
+    result = project['version'] + ('-r' + str(revision) if revision else '')
+    preview = project.get('preview_id')
+    if preview is not None:
+        if not isinstance(preview, str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,47}', preview):
+            raise ValueError('Invalid preview identifier')
+        result += '-preview-' + preview
+    return result
 
 
 def frozen():

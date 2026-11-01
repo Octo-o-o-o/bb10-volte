@@ -8,7 +8,25 @@ import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSI
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guide.html', 'mobile.html', '404.html', 'en/index.html', 'en/guide.html', 'en/mobile.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14';
+const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15';
+
+test('candidate guide is available in both languages without expanding accepted support', () => {
+  for (const prefix of ['', 'en/']) {
+    const home = html[prefix + 'index.html'];
+    const guide = html[prefix + 'guide.html'];
+    assert.ok(home.includes('guide.html#walkthrough-trials'));
+    assert.ok(guide.includes('id="walkthrough-trials"'));
+    for (const variant of ['SQN100-1', 'SQN100-5', 'SQC100-1', 'SQC100-3', 'SQC100-4', 'SQC100-5', 'SQW100-1', 'SQW100-3']) {
+      assert.ok(guide.includes(variant), variant);
+    }
+    const trial = guide.split('id="walkthrough-trials"')[1].split('</section>')[0];
+    assert.match(trial, /13/);
+    assert.match(trial, /6/);
+    assert.match(trial, /只读|Read-only/);
+    assert.match(trial, /自启动始终关闭|Autostart remains off/);
+    assert.match(trial, /未实机验收|no (?:new )?hardware acceptance/);
+  }
+});
 
 function idsFor(source) {
   return new Set([...source.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
@@ -210,7 +228,7 @@ test('both translations retain the extra restart and offline SIM-change scope', 
     for (const variant of ['SQN100-3', 'SQC100-2', 'SQW100-4']) assert.ok(source.includes(variant));
     assert.ok(source.includes('acceptance.json'));
     assert.ok(source.includes('data-github-download="windows"'));
-    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r14/'));
+    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r15/'));
     assert.match(source, page.startsWith('en/') ? /extra normal restart|additional normal restart/ : /再正常重启一次|还需一次正常重启/);
   }
 });
@@ -240,7 +258,7 @@ test('mobile installation routes are static and do not invent candidate download
       assert.ok(idsFor(source).has(id), `${page}: missing ${id}`);
     }
     assert.match(source, /https:\/\/github\.com\/Octo-o-o-o\/bb10-volte\/releases"/);
-    assert.match(source, /v0\.5\.0-r14/);
+    assert.match(source, /v0\.5\.0-r15/);
     assert.match(source, /120/);
     assert.match(source, /SUD success/);
     assert.match(source, page.startsWith('en/') ? /not publicly released/ : /尚未公开发布/);

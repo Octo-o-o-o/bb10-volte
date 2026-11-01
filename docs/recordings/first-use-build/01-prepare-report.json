@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "先备份，确认手机和电脑",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 19900,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "先备份，确认手机和电脑",
+      "body": "从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。",
+      "narration": "这份教程带你从首次打开工具，一直到通话验收。先备份手机，在设置、关于里面核对准确型号和系统版本。只连接一台手机，保持电量充足。已有有效 Root 的手机，可以跳过首次刷写。",
+      "startMs": 600,
+      "endMs": 19300
+    }
+  ],
+  "steps": [
+    {
+      "label": "prepare",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

@@ -96,13 +96,15 @@ class AutoClient:
     def probe(self):
         with self.stage() as stage:
             report = self.execute(stage, 'unified_install.py', ('probe',))
-        self.variant = report['variant']
+        self.variant = report['variant'] if report['variant'] in policy.MODELS else None
         return report
 
     def install(self):
         with self.stage() as stage:
             before = self.execute(stage, 'unified_install.py', ('probe',))
-            self.variant = before['variant']
+            self.variant = before['variant'] if before['variant'] in policy.MODELS else None
+            if before.get('scope_error'):
+                raise WorkflowError(before['scope_error'], before)
             if before.get('installed') and not before.get('installation_pending'):
                 if not before.get('can_update'):
                     raise WorkflowError('unified_update_needs_stop_and_reboot' if before.get('update_available')
@@ -123,6 +125,8 @@ class AutoClient:
                         raise WorkflowError('unified_backup_not_verified')
                 result['desktop_backup'] = str(folder)
                 return result
+            if not before.get('can_install') or before.get('sim_supported') is not True:
+                raise WorkflowError(before.get('sim_reason') or 'unified_preflight_blocked', before)
             prepared = self.execute(stage, 'unified_install.py', ('prepare', stage), 180)
             folder = private_root() / 'automatic-carrier-backups' / uuid.uuid4().hex
             folder.mkdir(parents=True, exist_ok=False)

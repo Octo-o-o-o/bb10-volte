@@ -287,6 +287,11 @@ def prepare_root_kit_macos(variant, progress, proxy=None, cache_dir=None, offlin
                    'stock_sha256': stock['extracted_sha256'], 'root_bundle_sha256': inputs['autoroot-v4']['sha256'],
                    'tool_hashes': tool_hashes(specification(), architecture())}
     (kit / 'preparation.json').write_text(json.dumps(preparation, indent=2) + '\n')
-    build_images(kit, original, progress, variant)
+    try:
+        build_images(kit, original, progress, variant)
+    except Exception as error:
+        from feedback import build_failure_excerpt
+        error.feedback_log = build_failure_excerpt(kit)
+        raise
     (kit / 'setup-state.json').write_text(json.dumps({'variant': variant, 'stage': 'prepared', 'platform': 'darwin'}, indent=2) + '\n')
     return str(kit)

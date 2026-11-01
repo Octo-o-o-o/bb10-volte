@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -36,7 +36,7 @@ test('mobile installation guide works without JavaScript on small square screens
   for (const pathname of ['/mobile.html', '/en/mobile.html']) {
     await page.goto(pathname);
     await expect(page.locator('.mobile-nav')).toBeVisible();
-    await expect(page.locator('#release-status')).toContainText('r14');
+    await expect(page.locator('#release-status')).toContainText('r15');
     await page.locator('.mobile-contents a[href="#entry"]').click();
     await expect(page).toHaveURL(/#entry$/);
     await expect(page.locator('#entry-title')).toBeInViewport();
@@ -120,8 +120,8 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r14';
-  const basename = 'bb10-volte-0.5.0-r14';
+  const tag = 'v0.5.0-r15';
+  const basename = 'bb10-volte-0.5.0-r15';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
     `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,
@@ -321,3 +321,42 @@ test('missing routes return the designed 404 and a working recovery link', async
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#hero-title')).toBeVisible();
 });
+
+for (const language of ['', 'en/']) {
+  test(`first-use tutorial plays and exposes working step help: ${language || 'zh'}`, async ({ page }) => {
+    await page.goto(`/${language}guide.html#walkthrough`);
+    const video = page.locator('.tutorial-video video');
+    await expect.poll(() => video.evaluate((item) => item.readyState)).toBeGreaterThanOrEqual(1);
+    const duration = await video.evaluate((item) => item.duration);
+    expect(duration).toBeGreaterThan(219);
+    expect(duration).toBeLessThan(220);
+    await video.evaluate(async (item) => { item.currentTime = 210; await item.play(); });
+    await expect.poll(() => video.evaluate((item) => item.currentTime)).toBeGreaterThan(210);
+    await video.evaluate((item) => item.pause());
+    await expect(page.locator('.tutorial-step')).toHaveCount(9);
+    for (const image of await page.locator('.tutorial-shot img').all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => image.evaluate((item) => item.naturalWidth)).toBeGreaterThan(0);
+    }
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.locator('#walkthrough-root').scrollIntoViewIfNeeded();
+    const help = page.locator('#walkthrough-root .tutorial-help');
+    await help.locator('summary').click();
+    await expect(help).toHaveAttribute('open', '');
+    await expect(help.locator('a')).toHaveAttribute('href', '#walkthrough-feedback');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `.playwright/tutorial-${language ? 'en' : 'zh'}-390.png` });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator('#walkthrough').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `.playwright/tutorial-${language ? 'en' : 'zh'}-1440.png` });
+    await page.locator('#walkthrough-trials').scrollIntoViewIfNeeded();
+    await expect(page.locator('#walkthrough-trials')).toContainText('SQW100-3');
+    expect(await page.locator('#walkthrough-trials > p').first().evaluate(
+      (item) => parseFloat(getComputedStyle(item).fontSize))).toBeGreaterThanOrEqual(16);
+    await page.screenshot({ path: `.playwright/trials-${language ? 'en' : 'zh'}-1440.png` });
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.locator('#walkthrough-trials').scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `.playwright/trials-${language ? 'en' : 'zh'}-390.png` });
+  });
+}

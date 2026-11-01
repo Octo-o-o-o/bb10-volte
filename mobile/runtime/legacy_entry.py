@@ -4,6 +4,24 @@ import sys
 import entry as e
 
 
+def require_start(profile):
+    import compatibility
+    import profiles
+    e.require(profiles.installed_request(compatibility.BASE) == profiles.request(profile, True),
+              'legacy_profile_changed')
+    # A prior inspection is not permission to start later. Recheck the exact
+    # trial identity, all six native images, SIM and restoration requirements.
+    compatibility.require('start', profile, True)
+
+
+def management_actions(report):
+    installed = report.get('installation', {})
+    owned = report.get('can_restore') is True and installed.get('payload_verified') is True
+    state = installed.get('state')
+    return {'can_stop': owned and state in ('busy', 'stopped', 'recovery_required'),
+            'can_uninstall': owned and state in ('busy', 'stopped')}
+
+
 def backup_plan(plan, request):
     import worker
     import telecom_attach
@@ -46,31 +64,41 @@ def main():
     request = e.json_bytes(e.decode64(sys.argv[1]))
     e.require(set(request) == {'action', 'profile_id', 'stage', 'backup_location', 'operation_id'}, 'invalid_request')
     action = request['action']
-    e.require(action in ('legacy-inspect', 'legacy-install', 'legacy-start', 'legacy-stop'), 'invalid_action')
+    e.require(action in ('legacy-inspect', 'legacy-install', 'legacy-start', 'legacy-stop',
+                        'legacy-update', 'legacy-uninstall'), 'invalid_action')
     sys.path.insert(0, folder + '/payload/device')
     sys.path.insert(0, folder + '/runtime')
     import worker
     import compatibility
     import profiles
+    import device_info
     import native as n
     profile = worker.profile_for(dict(request, experimental=True), folder)
+    worker.validate_legacy_target(profile, device_info.read_identity(), action, folder)
     e.require(not os.path.lexists('/var/bb10_volte/payload.json'), 'unified_installation_present')
     if action == 'legacy-inspect':
         report = compatibility.probe(profile, True)
         # compatibility's public report is already allowlisted. Do not include
         # native internal plan data or private install/service JSON.
-        fields = ('outcome', 'checks', 'device', 'can_install', 'can_start', 'can_restore',
-                  'network_diagnostics', 'native_sha256', 'hardware_validation', 'baseline_diagnostics')
+        fields = ('outcome', 'checks', 'device', 'can_install', 'can_start', 'can_restore', 'can_update',
+                  'network_diagnostics', 'native_sha256', 'hardware_validation', 'baseline_diagnostics', 'variant_trial')
         result = dict((key, report.get(key)) for key in fields)
-        result.update(ok=True, can_stop=report.get('can_restore') is True and
-                      report.get('installation', {}).get('state') in ('busy', 'stopped'))
+        result.update(management_actions(report))
+        result['ok'] = True
+        result['can_update'] = report.get('can_update') is True and not os.path.lexists(compatibility.BASE + '/enabled')
         return result
     previous = sys.stdout
     captured = io.StringIO()
     try:
         sys.stdout = captured
-        if action == 'legacy-install':
-            if os.path.isfile(compatibility.BASE + '/installation.json'):
+        if action in ('legacy-install', 'legacy-update'):
+            if action == 'legacy-update':
+                e.require(not os.path.lexists(compatibility.BASE + '/enabled'), 'legacy_disable_before_update')
+                e.require(not os.path.lexists(compatibility.BASE + '/install-transaction.json'),
+                          'legacy_install_recovery_required')
+                import install
+                install.install(request['stage'], update=True)
+            elif os.path.isfile(compatibility.BASE + '/installation.json'):
                 # Installation may have committed before removable backup
                 # storage failed. Revalidate exact payload/profile and resume
                 # only the missing backup, never blindly reinstall over it.
@@ -95,21 +123,31 @@ def main():
             # Installed integrity is checked before service's lifecycle gates.
             installed = compatibility.installed_state()
             e.require(installed.get('payload_verified') is True, 'legacy_payload_changed')
-            sys.path.insert(0, compatibility.BASE + '/device')
-            import service
-            sys.argv = [service.__file__, 'start' if action == 'legacy-start' else 'stop']
-            service.main()
+            if action == 'legacy-start':
+                require_start(profile)
+            if action == 'legacy-start':
+                sys.path.insert(0, compatibility.BASE + '/device')
+                import service
+                sys.argv = [service.__file__, 'start']
+                service.main()
+            else:
+                import install
+                sys.argv = [install.__file__, 'uninstall' if action == 'legacy-uninstall' else 'disable']
+                install.main()
     finally:
         sys.stdout = previous
     result = json.loads(captured.getvalue())
-    if action == 'legacy-install' and result.get('telecom_plan'):
+    if action in ('legacy-install', 'legacy-update') and result.get('telecom_plan'):
         path = backup_plan(result['telecom_plan'], request)
     else:
         path = None
     # Starting is explicit; successful installation is never reported as VoLTE.
     return {'ok': True, 'installed': result.get('installed') is True,
+            'updated': result.get('updated') is True,
+            'uninstalled': action == 'legacy-uninstall' and result.get('completed') is True,
+            'private_backup_and_payload_retained': action == 'legacy-uninstall',
             'started': bool(result.get('started_manager_pid') or result.get('already_running')),
-            'stop_requested': result.get('stop_requested') is True,
+            'stop_requested': result.get('stop_requested') is True or action == 'legacy-stop' and result.get('completed') is True,
             'path': path, 'experimental': True, 'hardware_acceptance': 'not_established'}
 
 

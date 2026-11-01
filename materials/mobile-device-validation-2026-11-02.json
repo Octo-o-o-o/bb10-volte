@@ -1,0 +1,232 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "status": "local_candidate_pending_manual_acceptance",
+  "target": {
+    "mobile_version": "0.1.0.6",
+    "desktop_version": "0.5.0-r16",
+    "management_protocol": 2
+  },
+  "post_merge_validation": {
+    "scope": "mobile_0.1.0.6_desktop_r16_includes_desktop_r15",
+    "review": {
+      "reviewers": 2,
+      "scope": "v6_integration_source_and_artifact_review",
+      "remaining_p0": 0,
+      "remaining_p1": 0,
+      "remaining_p2": 0,
+      "mobile_tests": 80,
+      "lifecycle_related_tests": 226,
+      "result": "passed"
+    },
+    "windows_tests": {
+      "run": 745,
+      "seconds": 52.164,
+      "skipped_platform_specific": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    "mac_full_tests": {
+      "run": 745,
+      "seconds": 52.804,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "native_sdk_arm_bar_and_signed_bundle_build": "passed",
+    "website": {
+      "static_tests": 18,
+      "browser_tests": 25,
+      "syntax_checks": "passed",
+      "result": "passed"
+    },
+    "final_repack_and_readback_after_document_changes": "mobile_passed_desktop_artifact_receipts_separate",
+    "mac_source_checks": {
+      "gui_selftest": "passed",
+      "compile": "passed",
+      "source_check": "passed"
+    },
+    "mobile_readback": {
+      "version": "0.1.0.6",
+      "protocol": 2,
+      "signed_files": 59,
+      "manifest_sha256": "457de6dddd577d19b30038a4910737b1d97bb41a159cd3a45c8e33299051815b",
+      "signature_verified": true,
+      "update_and_bar_match_current_inputs": true,
+      "bootstrap_embeds_exact_bar": true,
+      "bootstrap_instructions_verified": true,
+      "hardware_acceptance": false,
+      "reviewed_code_sha256": {
+        "mobile/runtime/worker.py": "b863691861bf2c4f34f5aed03b5623cda137a47ac09ed75170ceb1d2b58a6a8d",
+        "mobile/runtime/legacy_entry.py": "2581bfdfbf10e33a2acfff7766cc07edea7c40db75e698cd3b4323425771d365",
+        "device/unified_install.py": "be3ebfd36996015233827506f2b5b57120191f2dded7215031fa499aaebdb216"
+      },
+      "artifacts": {
+        "bb10-volte-0.1.0.6.bar": "ea44313401e25bb590b951f89a581f6aeee2dec408dc585cce0a014da1f558c3",
+        "bb10-volte-0.1.0.6-update.zip": "900d8f3e89e95e28de9351bf08e8580a9baa2cff0219cccefaaa3bcb7b721326",
+        "bb10-volte-0.1.0.6-bootstrap.zip": "77a6f42a3a503cbf03419450d33dfb9b173706ddf4dbd7de6a8ff2944a784644"
+      }
+    }
+  },
+  "pre_merge_evidence": {
+    "mobile_version": "0.1.0.5",
+    "independent_review": {
+      "reviewers": 2,
+      "scope": "v5_narrow_rereview",
+      "remaining_p0": 0,
+      "remaining_p1": 0,
+      "remaining_p2": 0,
+      "mobile_tests": 73,
+      "test_result": "passed"
+    },
+    "windows_tests": {
+      "run": 697,
+      "seconds": 47.341,
+      "skipped_platform_specific": 2,
+      "failures": 0,
+      "errors": 0
+    },
+    "mac_mini_tests": {
+      "run": 697,
+      "seconds": 51.703,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "mac_source_checks": {
+      "gui": "passed",
+      "compile": "passed",
+      "source_check": "passed"
+    },
+    "native_build": {
+      "arm32_qnx_bar": "passed",
+      "signed_bundle": "passed",
+      "bar_assets_readback": "passed",
+      "builder_image": "ghcr.io/xiazy/blackberry10-toolchain@sha256:60ce49510a37ed92368cca010bbaabf97b12d209b9fab179e8491b266bb2578f"
+    }
+  },
+  "device": {
+    "variant": "SQW100-4",
+    "os_version": "10.3.3.3216",
+    "root_method": "AutoRoot v4",
+    "python_version": "3.2.2"
+  },
+  "controlled_device_probes": {
+    "python_files_compiled": 25,
+    "invalid_signature_rejected": true,
+    "forged_zip_actual_expansion_limit_enforced": true,
+    "qnx_two_layer_cross_process_lock_contention": "passed",
+    "qnx_lock_released_after_sigkill": true,
+    "uid1000_to_root_helper": "passed",
+    "verified_private_entry_execution_and_cleanup": "passed",
+    "export": {
+      "uid": 1000,
+      "gid": 1001,
+      "supplementary_groups_empty": true,
+      "file_mode": "0600",
+      "readback": "passed"
+    },
+    "compatibility_native_file_report_count": 6,
+    "background_job": {
+      "method": "SPAWN_NEWAPP",
+      "appid_equals_sid_equals_pid": true,
+      "completed_after_parent_exit": true
+    },
+    "original_backup": {
+      "file_count": 4,
+      "phone_export": "passed",
+      "computer_hash_verification": "passed",
+      "contents_public": false
+    }
+  },
+  "bar_installation": {
+    "v1": {
+      "target_version": "0.1.0.1",
+      "sud_final_success": true,
+      "registered_version": "0.1.0.1",
+      "result": "installed"
+    },
+    "v2": {
+      "target_version": "0.1.0.2",
+      "installer_printed_completed": true,
+      "sud_final_success_observed": false,
+      "registered_version": "0.1.0.1",
+      "result": "upgrade_not_verified"
+    },
+    "v5": {
+      "target_version": "0.1.0.5",
+      "copied_to_shared_downloads": true,
+      "installed": false
+    },
+    "v6": {
+      "target_version": "0.1.0.6",
+      "result": "pending_installation_acceptance"
+    },
+    "first_launch": {
+      "system_permission_prompt_reached": true,
+      "manual_unlock_or_permission_acceptance_completed": false,
+      "cascades_ui_loaded_verified": false
+    }
+  },
+  "migration_checkpoint": {
+    "controller_version": "0.1.0.5",
+    "installed_engine_baseline": "desktop_r14",
+    "disable_and_configuration_restore": "passed",
+    "recorded_job_state": "waiting_reboot",
+    "normal_shutdown_reboot_performed": true,
+    "root_ssh_return_observed": false,
+    "root_ssh_unavailable_cause": "not_determined",
+    "post_reboot_task_completion": "not_verified",
+    "new_engine_migration_completed": false,
+    "new_candidate_ims_acceptance": "not_run",
+    "new_candidate_voice_acceptance": "not_run",
+    "next_action": "normal_unlock_restore_original_root_entry_then_query_and_resume_existing_task_with_verified_final_app"
+  },
+  "manual_acceptance_pending": [
+    "final_bar_version_and_sud_result",
+    "normal_system_permission_confirmation",
+    "real_cascades_ui",
+    "small_and_large_square_screens",
+    "existing_reboot_task_resume",
+    "bundled_engine_update",
+    "r14_to_r16_migration",
+    "r15_to_r16_migration",
+    "ui_exit_and_reopen_job",
+    "normal_restart_and_current_sim_registration",
+    "outgoing_incoming_audio_lte",
+    "sms",
+    "sim_change_and_number_display",
+    "offline_update_and_bar_upgrade",
+    "restore_rollback_uninstall_reinstall",
+    "desktop_mobile_interoperation"
+  ],
+  "v6_experimental_scope": {
+    "native_options": 23,
+    "generic_legacy_profiles": 4,
+    "signed_exact_variant_profiles": 19,
+    "controlled_manual_combinations": 13,
+    "read_only_passport_combinations": 6,
+    "generic_profiles_restricted_to": [
+      "SQN100-3",
+      "SQC100-2",
+      "SQW100-4"
+    ],
+    "other_variants_require_exact_trial": true,
+    "start_rechecks_eligibility_and_installed_profile": true,
+    "ordinary_trial_restore_source": "startup_pps_journal_not_protocol2_original_export_receipt",
+    "legacy_update_requires": "disabled_restored_and_no_pending_install_transaction",
+    "interrupted_legacy_update": "retain_install_transaction_reject_blind_retry",
+    "legacy_uninstall_scope": "startup_entries_only_private_payload_and_backup_retained",
+    "legacy_rollback_added": false,
+    "exported_observation_scope": "last_checked_not_live",
+    "hardware_acceptance": "not_established"
+  },
+  "historical_evidence_is_not_current_acceptance": [
+    "r7_r8_nine_voice_combinations",
+    "r14_q20_unicom_and_passport_mobile_sms"
+  ],
+  "stock_phone_root_requires_desktop": true,
+  "new_hardware_acceptance_claims": [],
+  "artifact_hashes": "use_final_package_validation_and_SHA256SUMS_after_document_repack",
+  "private_operation_ids_paths_keys_sim_identifiers_included": false
+}

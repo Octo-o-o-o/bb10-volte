@@ -53,7 +53,7 @@ def runtime_data():
                          'materials/macos-development-2026-10-29.json',
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
                          'materials/sources.json', 'materials/stock-partitions.json', 'materials/stock-upgrade.json',
-                         'materials/usb-drivers.json', 'materials/first-run-tools.json',
+                         'materials/usb-drivers.json', 'materials/first-run-tools.json', 'materials/device-support.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
     from auto_carrier import PAYLOAD_FILES
     names.update(set(PAYLOAD_FILES) | {'materials/unified-payload.json', 'materials/unified-carrier-acceptance.json'})
@@ -75,6 +75,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--offline', action='store_true', help='Require cached, hash-verified build inputs; no downloads')
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'dist', help='Destination for this build and its records')
+    parser.add_argument('--preview-id', help='Label a separate unpublished preview without changing the source release version')
     args = parser.parse_args()
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -90,6 +91,9 @@ def main():
     source_report = check()
     verify_package()
     project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+    if args.preview_id is not None:
+        project.update(preview_id=args.preview_id, state='unpublished_local_trial_preview')
+        desktop_release_version(project)  # Validate before constructing any output paths.
     archive = fetch(spec['openssh'], args.offline)
     vendor = ROOT / 'build/windows-vendor/openssh'
     vendor.mkdir(parents=True, exist_ok=True)
@@ -141,6 +145,11 @@ def main():
                '--icon', str(ROOT / 'assets/app.ico'), '--version-file', str(version_file),
                '--exclude-module', 'PIL', '--exclude-module', 'pip', '--exclude-module', 'setuptools']
     bundled = {name: ROOT / name for name in runtime_data()}
+    if args.preview_id is not None:
+        preview_project = work / 'preview' / 'project.json'
+        preview_project.parent.mkdir(parents=True, exist_ok=True)
+        preview_project.write_text(json.dumps(project, indent=2) + '\n', encoding='utf-8')
+        bundled['project.json'] = preview_project
     bundled.update({'vendor/openssh/' + name: vendor / name for name in spec['openssh']['files']})
     bundled['licenses/THIRD-PARTY-NOTICES.txt'] = notices
     for name, source in sorted(bundled.items()):
@@ -160,12 +169,14 @@ def main():
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
             'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
-            'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy',
+            'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy', 'device_support',
+            'variant_trials', 'variant_trial_gui', 'feedback', 'feedback_gui',
             'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')
     report = {'project': project['name'], 'version': project['version'], 'artifact': output.name,
+              'preview_id': project.get('preview_id'),
               'desktop_revision': project.get('desktop_revision'),
               'sha256': sha, 'bytes': output.stat().st_size, 'python': spec['python'],
               'pyinstaller': spec['pyinstaller'], 'openssh': spec['openssh']['version'],

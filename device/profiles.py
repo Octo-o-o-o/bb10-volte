@@ -22,6 +22,23 @@ RANGES = {'sim_wait_seconds': (30, 900), 'ims_apn_wait_seconds': (10, 180),
           'poll_seconds': (1, 10)}
 APN_RE = r'[a-z0-9](?:[a-z0-9.-]{0,98}[a-z0-9])?'
 CONFIG_RE = r'/etc/carrier/config/([0-9]{1,6})\.xml'
+TRIAL_PREFIX = 'variant-trial-'
+TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
+                   'telecom': ('11', ['ctnet', 'ctlte'])}
+
+
+def trial_target(profile):
+    """A reserved profile ID binds a manual trial to one exact model/carrier.
+
+    This never overrides compatibility, native image or lifecycle checks.
+    """
+    value = profile.get('id', '')
+    if not value.startswith(TRIAL_PREFIX):
+        return None
+    found = re.match(r'\Avariant-trial-(sq[ncw]100-[1-5])-(mobile|unicom|telecom)\Z', value)
+    if found is None:
+        raise ValueError('Invalid trial profile identity')
+    return {'variant': found.group(1).upper(), 'operator': found.group(2)}
 
 
 def default():
@@ -68,6 +85,13 @@ def validate(value):
     need(type(ims['sms']) is bool and type(runtime['autostart']) is bool, 'boolean options')
     for key, limits in RANGES.items():
         need(type(runtime[key]) is int and limits[0] <= runtime[key] <= limits[1], 'runtime.' + key)
+    trial = trial_target(p)
+    if trial is not None:
+        mnc, apns = TRIAL_OPERATORS[trial['operator']]
+        need(c == {'mcc': '460', 'mncs': [mnc], 'data_apns': sorted(apns),
+                   'stock_config': 'auto', 'stock_sha256': ''}, 'trial carrier binding')
+        need(ims == DEFAULT['ims'] and not runtime['autostart'] and 'lte_attach' not in p,
+             'trial manual policy')
     return p
 
 

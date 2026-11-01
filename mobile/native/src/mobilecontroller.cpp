@@ -243,7 +243,7 @@ bool MobileController::jobRunning() const
 
 bool MobileController::knownAction(const QString &action)
 {
-    const QStringList actions = QString("inspect,status,poll,install,enable,disable,update,rollback,uninstall,export,compatibility,confirm-calls,resume,legacy-inspect,legacy-install,legacy-start,legacy-stop").split(',');
+    const QStringList actions = QString("inspect,status,poll,install,enable,disable,update,rollback,uninstall,export,compatibility,confirm-calls,resume,legacy-inspect,legacy-install,legacy-start,legacy-stop,legacy-update,legacy-uninstall").split(',');
     return actions.contains(action);
 }
 
@@ -259,7 +259,15 @@ bool MobileController::safeId(const QString &value)
 
 bool MobileController::knownProfile(const QString &value)
 {
-    return QString("china-mobile,china-unicom,china-telecom,china-telecom-46011").split(',').contains(value);
+    if (QString("china-mobile,china-unicom,china-telecom,china-telecom-46011").split(',').contains(value)) return true;
+    // This catalog only selects a UI option. The root worker independently
+    // verifies the signed catalog, exact profile and every hardware gate.
+    QFile input(QDir::current().absoluteFilePath("app/native/assets/materials/variant-trials.json"));
+    if (!input.open(QIODevice::ReadOnly) || input.size() > 65536) return false;
+    const QVariantList cases = parseObject(input.readAll()).value("cases").toList();
+    for (int i = 0; i < cases.size() && i < 32; ++i)
+        if (cases.at(i).toMap().value("profile_id").toString() == value) return true;
+    return false;
 }
 
 bool MobileController::allowed(const QString &action) const

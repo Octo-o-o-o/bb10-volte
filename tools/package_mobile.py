@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 import zipfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MOBILE_VERSION = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))['mobile_version']
@@ -84,6 +85,31 @@ def entry_module():
     return module
 
 
+def trial_inputs():
+    blobs = {}
+    # Generate the exact desktop trial catalog at build time. Device code never
+    # imports desktop tools or accepts an arbitrary profile from shared storage.
+    if str(ROOT / 'device') not in sys.path:
+        sys.path.insert(0, str(ROOT / 'device'))
+    if str(ROOT / 'tools') not in sys.path:
+        sys.path.insert(0, str(ROOT / 'tools'))
+    import variant_trials
+    import device_support
+    import profiles
+    trials = []
+    for variant in sorted(device_support.catalog()):
+        for operator in sorted(profiles.TRIAL_OPERATORS):
+            plan = variant_trials.plan(variant, operator)
+            if plan['route'] not in ('manual_candidate', 'read_only_lifecycle_pending'):
+                continue
+            profile = variant_trials.profile(variant, operator)
+            blobs['profiles/' + profile['id'] + '.json'] = profiles.canonical(profile)
+            trials.append(dict(profile_id=profile['id'], variant=variant, operator=operator,
+                               route=plan['route']))
+    blobs['materials/variant-trials.json'] = canonical({'schema': 1, 'cases': trials})
+    return blobs
+
+
 def bundle_inputs(key):
     blobs = {}
     launcher = ROOT / 'mobile/native/build/job-launcher'
@@ -112,6 +138,7 @@ def bundle_inputs(key):
     blobs['payload/payload-manifest.json'] = (ROOT / 'materials/payload-manifest.json').read_bytes()
     for source in sorted((ROOT / 'profiles').glob('*.json')):
         blobs['profiles/' + source.name] = source.read_bytes()
+    blobs.update(trial_inputs())
     for name in ('unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json'):
         blobs['materials/' + name] = (ROOT / 'materials' / name).read_bytes()
     return blobs

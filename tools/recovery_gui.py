@@ -1,6 +1,8 @@
 """Shared Windows/macOS recovery UI for devices that already have Root."""
 from i18n import tr
 from pathlib import Path
+from feedback import FeedbackQueue
+from feedback_gui import help_row
 import queue
 import sys
 import threading
@@ -44,12 +46,13 @@ class RecoveryDialog(tk.Toplevel):
         self.minsize(820, 690)
         self.transient(parent)
         self.on_ready = on_ready
-        self.events = queue.Queue()
+        self.events = FeedbackQueue(self, 'pair')
         self.busy, self.choice, self.verified = False, None, False
         self.pair_script, self.pair_step = None, 1
         self.identity, self.host_key = tk.StringVar(), tk.StringVar()
         body = ttk.Frame(self, padding=22)
         body.pack(fill='both', expand=True)
+        help_row(body, self, 'pair')
         ttk.Label(body, text=tr('让这台电脑连接手机'), font=(FONT, 16, 'bold')).pack(anchor='w')
         ttk.Label(body, text=tr('手机授权需要已有有效 Root 终端。完成后验证手机身份和实际 Root 权限。'),
                   wraplength=800).pack(anchor='w', pady=(8, 14))
@@ -263,6 +266,7 @@ class RecoveryDialog(tk.Toplevel):
     def start(self, action, work):
         if self.busy:
             return
+        self.events.begin(action)
         self.busy, self.verified = True, False
         self.refresh()
         self.status.configure(text=tr('正在准备本机文件…') if action != 'verify' else tr('正在验证手机身份与 Root 权限…'))
@@ -270,6 +274,7 @@ class RecoveryDialog(tk.Toplevel):
             try:
                 self.events.put((action, work()))
             except Exception as error:
+                self.events.failure(error)
                 self.events.put(('error', str(error) if isinstance(error, (RecoveryError, WorkflowError, SetupError)) else 'recovery_failed'))
         threading.Thread(target=worker, daemon=True).start()
 

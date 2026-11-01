@@ -1,0 +1,2008 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BB10 VoLTE：完整首次使用 Review</title>
+  <style>
+    :root{color-scheme:light;--bg:#f6f7f4;--ink:#17211b;--muted:#66746b;--line:#d9dfd8;--card:#fff;--accent:#1d6f42;--bad:#b42318}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{padding:28px 32px 20px;border-bottom:1px solid var(--line);background:#fff}
+    h1{margin:0 0 8px;font-size:28px;letter-spacing:0}
+    h2{margin:0 0 14px;font-size:18px}
+    a{color:var(--accent)}
+    main{display:grid;grid-template-columns:minmax(360px,1.1fr) minmax(320px,.9fr);gap:18px;padding:20px 24px 32px}
+    section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:0 10px 28px rgba(23,33,27,.05)}
+    video,img{width:100%;max-height:72vh;object-fit:contain;border-radius:6px;background:#111}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .badge{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700}
+    .badge.ok{background:#e5f4ea;color:#146232}
+    .badge.fail{background:#fde8e6;color:var(--bad)}
+    .muted{color:var(--muted)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+    th{color:#526057;background:#f8faf7}
+    details{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+    summary{cursor:pointer;font-weight:700}
+    pre{overflow:auto;background:#111a14;color:#e9f5eb;border-radius:6px;padding:12px}
+    @media (max-width: 960px){main{grid-template-columns:1fr;padding:14px}.grid{grid-template-columns:1fr}header{padding:22px 18px}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BB10 VoLTE：完整首次使用 Review</h1>
+    <div class="muted">first-use · native-desktop · </div>
+    <div class="badges">
+      <span class="badge ok">page errors</span>
+      <span class="badge ok">response errors</span>
+      <span class="badge ok">media gates</span>
+      <span class="badge ok">captions</span>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>Final Video</h2>
+      <video src="first-use-narrated.mp4" controls playsinline poster="first-use-cover.png"></video><p><a href="first-use-narrated.mp4">Final video</a></p>
+
+    </section>
+    <section>
+      <h2>Quality Summary</h2>
+      <p class="muted">No blocking issues recorded in the supplied reports.</p>
+      <details><summary>Media report</summary><pre>{
+  &quot;report&quot;: &quot;docs/recordings/first-use-report.json&quot;,
+  &quot;scenario&quot;: &quot;first-use&quot;,
+  &quot;steps&quot;: 9,
+  &quot;captions&quot;: 17,
+  &quot;pageErrors&quot;: 0,
+  &quot;responseErrors&quot;: 0,
+  &quot;failures&quot;: 0,
+  &quot;media&quot;: {
+    &quot;output&quot;: {
+      &quot;path&quot;: &quot;docs/recordings/first-use-narrated.mp4&quot;,
+      &quot;durationSeconds&quot;: 219.338912,
+      &quot;sizeBytes&quot;: 7330470,
+      &quot;video&quot;: {
+        &quot;codec&quot;: &quot;h264&quot;,
+        &quot;width&quot;: 1440,
+        &quot;height&quot;: 960,
+        &quot;frameRate&quot;: &quot;30/1&quot;
+      },
+      &quot;audioStreams&quot;: 1,
+      &quot;coverArtStreams&quot;: [
+        {
+          &quot;index&quot;: 2,
+          &quot;codec&quot;: &quot;png&quot;,
+          &quot;width&quot;: 1440,
+          &quot;height&quot;: 960,
+          &quot;attachedPic&quot;: true,
+          &quot;tags&quot;: {}
+        }
+      ],
+      &quot;audioVolume&quot;: {
+        &quot;meanVolumeDb&quot;: -23.5,
+        &quot;maxVolumeDb&quot;: -5.9
+      }
+    },
+    &quot;source&quot;: {
+      &quot;path&quot;: &quot;docs/recordings/first-use-assembled.mp4&quot;,
+      &quot;durationSeconds&quot;: 217.338932,
+      &quot;sizeBytes&quot;: 6672048,
+      &quot;video&quot;: {
+        &quot;index&quot;: 0,
+        &quot;codec_name&quot;: &quot;h264&quot;,
+        &quot;codec_long_name&quot;: &quot;H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10&quot;,
+        &quot;profile&quot;: &quot;High&quot;,
+        &quot;codec_type&quot;: &quot;video&quot;,
+        &quot;codec_tag_string&quot;: &quot;avc1&quot;,
+        &quot;codec_tag&quot;: &quot;0x31637661&quot;,
+        &quot;mime_codec_string&quot;: &quot;avc1.640028&quot;,
+        &quot;width&quot;: 1440,
+        &quot;height&quot;: 960,
+        &quot;coded_width&quot;: 1440,
+        &quot;coded_height&quot;: 960,
+        &quot;has_b_frames&quot;: 2,
+        &quot;sample_aspect_ratio&quot;: &quot;1:1&quot;,
+        &quot;display_aspect_ratio&quot;: &quot;3:2&quot;,
+        &quot;pix_fmt&quot;: &quot;yuv420p&quot;,
+        &quot;level&quot;: 40,
+        &quot;chroma_location&quot;: &quot;left&quot;,
+        &quot;field_order&quot;: &quot;progressive&quot;,
+        &quot;is_avc&quot;: &quot;true&quot;,
+        &quot;nal_length_size&quot;: &quot;4&quot;,
+        &quot;id&quot;: &quot;0x1&quot;,
+        &quot;r_frame_rate&quot;: &quot;30/1&quot;,
+        &quot;avg_frame_rate&quot;: &quot;100131840/3337969&quot;,
+        &quot;time_base&quot;: &quot;1/15360&quot;,
+        &quot;start_pts&quot;: 357,
+        &quot;start_time&quot;: &quot;0.023242&quot;,
+        &quot;duration_ts&quot;: 3337969,
+        &quot;duration&quot;: &quot;217.315690&quot;,
+        &quot;bit_rate&quot;: &quot;111139&quot;,
+        &quot;bits_per_raw_sample&quot;: &quot;8&quot;,
+        &quot;nb_frames&quot;: &quot;6519&quot;,
+        &quot;extradata_size&quot;: 46,
+        &quot;disposition&quot;: {
+          &quot;default&quot;: 1,
+          &quot;dub&quot;: 0,
+          &quot;original&quot;: 0,
+          &quot;comment&quot;: 0,
+          &quot;lyrics&quot;: 0,
+          &quot;karaoke&quot;: 0,
+          &quot;forced&quot;: 0,
+          &quot;hearing_impaired&quot;: 0,
+          &quot;visual_impaired&quot;: 0,
+          &quot;clean_effects&quot;: 0,
+          &quot;attached_pic&quot;: 0,
+          &quot;timed_thumbnails&quot;: 0,
+          &quot;non_diegetic&quot;: 0,
+          &quot;captions&quot;: 0,
+          &quot;descriptions&quot;: 0,
+          &quot;metadata&quot;: 0,
+          &quot;dependent&quot;: 0,
+          &quot;still_image&quot;: 0,
+          &quot;multilayer&quot;: 0
+        },
+        &quot;tags&quot;: {
+          &quot;language&quot;: &quot;und&quot;,
+          &quot;handler_name&quot;: &quot;VideoHandler&quot;,
+          &quot;encoder&quot;: &quot;Lavc63.1.102 libx264&quot;
+        }
+      }
+    },
+    &quot;durationRatio&quot;: 1.009202,
+    &quot;narration&quot;: {
+      &quot;path&quot;: &quot;docs/recordings/first-use-narrated-narration-report.json&quot;,
+      &quot;padMode&quot;: &quot;freeze&quot;,
+      &quot;padBufferMs&quot;: null,
+      &quot;usePaddedFilter&quot;: false,
+      &quot;sourceDurationMs&quot;: 217339,
+      &quot;expectedDurationMs&quot;: 219339,
+      &quot;totalPaddingMs&quot;: 748,
+      &quot;paddedCues&quot;: 0,
+      &quot;outputDurationMs&quot;: 219339,
+      &quot;driftMs&quot;: 0,
+      &quot;toleranceMs&quot;: 4387
+    },
+    &quot;frameReview&quot;: {
+      &quot;video&quot;: &quot;docs/recordings/first-use-narrated.mp4&quot;,
+      &quot;outputDir&quot;: &quot;docs/recordings/first-use-frame-review-final&quot;,
+      &quot;contactSheet&quot;: &quot;docs/recordings/first-use-frame-review-final/contact-sheet.png&quot;,
+      &quot;cueSource&quot;: &quot;narration-report&quot;,
+      &quot;timeScale&quot;: 1,
+      &quot;sampleCount&quot;: 72,
+      &quot;totalCandidateFrames&quot;: 72,
+      &quot;offsetsMs&quot;: [
+        -220,
+        -80,
+        80,
+        220
+      ],
+      &quot;samples&quot;: [
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 2380,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/001-01-先备份-确认手机和电脑-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 2520,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/002-01-先备份-确认手机和电脑-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 2680,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/003-01-先备份-确认手机和电脑-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 2820,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/004-01-先备份-确认手机和电脑-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 21080,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/005-01-先备份-确认手机和电脑-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 21220,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/006-01-先备份-确认手机和电脑-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 21380,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/007-01-先备份-确认手机和电脑-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 1,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 21520,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/008-01-先备份-确认手机和电脑-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 24680,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/009-02-连接手机-按已有材料选路-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 24820,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/010-02-连接手机-按已有材料选路-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 24980,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/011-02-连接手机-按已有材料选路-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 25120,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/012-02-连接手机-按已有材料选路-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 44230,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/013-02-连接手机-按已有材料选路-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 44370,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/014-02-连接手机-按已有材料选路-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 44530,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/015-02-连接手机-按已有材料选路-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 2,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 44670,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/016-02-连接手机-按已有材料选路-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 47847,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/017-03-首次-Root-获取并导入对应固件-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 47987,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/018-03-首次-Root-获取并导入对应固件-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 48147,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/019-03-首次-Root-获取并导入对应固件-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 48287,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/020-03-首次-Root-获取并导入对应固件-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 66967,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/021-03-首次-Root-获取并导入对应固件-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 67107,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/022-03-首次-Root-获取并导入对应固件-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 67267,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/023-03-首次-Root-获取并导入对应固件-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 3,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 67407,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/024-03-首次-Root-获取并导入对应固件-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 70580,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/025-04-继续准备个人镜像-再确认刷写-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 70720,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/026-04-继续准备个人镜像-再确认刷写-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 70880,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/027-04-继续准备个人镜像-再确认刷写-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 71020,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/028-04-继续准备个人镜像-再确认刷写-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 92696,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/029-04-继续准备个人镜像-再确认刷写-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 92836,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/030-04-继续准备个人镜像-再确认刷写-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 92996,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/031-04-继续准备个人镜像-再确认刷写-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 4,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 93136,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/032-04-继续准备个人镜像-再确认刷写-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 96280,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/033-05-完成手机设置-重新验证-Root-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 96420,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/034-05-完成手机设置-重新验证-Root-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 96580,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/035-05-完成手机设置-重新验证-Root-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 96720,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/036-05-完成手机设置-重新验证-Root-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 117960,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/037-05-完成手机设置-重新验证-Root-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 118100,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/038-05-完成手机设置-重新验证-Root-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 118260,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/039-05-完成手机设置-重新验证-Root-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 5,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 118400,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/040-05-完成手机设置-重新验证-Root-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 121547,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/041-06-检查设备-备份并安装三网适配-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 121687,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/042-06-检查设备-备份并安装三网适配-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 121847,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/043-06-检查设备-备份并安装三网适配-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 121987,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/044-06-检查设备-备份并安装三网适配-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 143495,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/045-06-检查设备-备份并安装三网适配-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 143635,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/046-06-检查设备-备份并安装三网适配-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 143795,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/047-06-检查设备-备份并安装三网适配-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 6,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 143935,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/048-06-检查设备-备份并安装三网适配-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 146495,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/049-07-用手机菜单正常重启-再检查本次开机-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 146635,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/050-07-用手机菜单正常重启-再检查本次开机-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 146795,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/051-07-用手机菜单正常重启-再检查本次开机-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 146935,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/052-07-用手机菜单正常重启-再检查本次开机-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 168175,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/053-07-用手机菜单正常重启-再检查本次开机-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 168315,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/054-07-用手机菜单正常重启-再检查本次开机-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 168475,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/055-07-用手机菜单正常重启-再检查本次开机-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 7,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 168615,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/056-07-用手机菜单正常重启-再检查本次开机-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 171762,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/057-08-拔掉-USB-验收真实双向通话-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 171902,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/058-08-拔掉-USB-验收真实双向通话-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 172062,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/059-08-拔掉-USB-验收真实双向通话-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 172202,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/060-08-拔掉-USB-验收真实双向通话-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 193062,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/061-08-拔掉-USB-验收真实双向通话-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 193202,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/062-08-拔掉-USB-验收真实双向通话-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 193362,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/063-08-拔掉-USB-验收真实双向通话-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 8,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 193502,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/064-08-拔掉-USB-验收真实双向通话-end-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 196195,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/065-09-卡住时-保存一个能排查的反馈包-start-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 196335,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/066-09-卡住时-保存一个能排查的反馈包-start-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 196495,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/067-09-卡住时-保存一个能排查的反馈包-start-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;start&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 196635,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/068-09-卡住时-保存一个能排查的反馈包-start-plus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -220,
+          &quot;atMs&quot;: 218647,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/069-09-卡住时-保存一个能排查的反馈包-end-minus220.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: -80,
+          &quot;atMs&quot;: 218787,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/070-09-卡住时-保存一个能排查的反馈包-end-minus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 80,
+          &quot;atMs&quot;: 218947,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/071-09-卡住时-保存一个能排查的反馈包-end-plus80.png&quot;
+        },
+        {
+          &quot;cueIndex&quot;: 9,
+          &quot;kind&quot;: &quot;caption&quot;,
+          &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+          &quot;boundary&quot;: &quot;end&quot;,
+          &quot;offsetMs&quot;: 220,
+          &quot;atMs&quot;: 219087,
+          &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/072-09-卡住时-保存一个能排查的反馈包-end-plus220.png&quot;
+        }
+      ]
+    }
+  }
+}</pre></details>
+      <details><summary>Narration report</summary><pre>{
+  &quot;engine&quot;: &quot;edge-tts&quot;,
+  &quot;language&quot;: &quot;zh-CN&quot;,
+  &quot;voice&quot;: &quot;zh-CN-XiaoxiaoNeural&quot;,
+  &quot;padMode&quot;: &quot;freeze&quot;,
+  &quot;timeline&quot;: {
+    &quot;sourceDurationMs&quot;: 217339,
+    &quot;outputDurationMs&quot;: 219339,
+    &quot;expectedDurationMs&quot;: 219339,
+    &quot;totalPaddingMs&quot;: 748
+  },
+  &quot;cues&quot;: [
+    {
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;body&quot;: &quot;从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。&quot;,
+      &quot;text&quot;: &quot;这份教程带你从首次打开工具，一直到通话验收。先备份手机，在设置、关于里面核对准确型号和系统版本。只连接一台手机，保持电量充足。已有有效 Root 的手机，可以跳过首次刷写。&quot;,
+      &quot;sourceStartMs&quot;: 600,
+      &quot;sourceEndMs&quot;: 19300,
+      &quot;index&quot;: 1,
+      &quot;startMs&quot;: 2600,
+      &quot;endMs&quot;: 21300,
+      &quot;sourceWindowStartMs&quot;: 600,
+      &quot;sourceWindowEndMs&quot;: 19900,
+      &quot;windowEndMs&quot;: 21900,
+      &quot;audioDurationMs&quot;: 18384,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 18700
+    },
+    {
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;body&quot;: &quot;有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。&quot;,
+      &quot;text&quot;: &quot;连接并解锁手机后，点击连接手机。有旧刷机文件夹，就选择整个文件夹。没有旧文件，但手机已经有有效 Root，可以从手机重新授权。连接失败，不等于手机没有 Root，不要直接重新刷机。&quot;,
+      &quot;sourceStartMs&quot;: 22900,
+      &quot;sourceEndMs&quot;: 42450,
+      &quot;index&quot;: 2,
+      &quot;startMs&quot;: 24900,
+      &quot;endMs&quot;: 44450,
+      &quot;sourceWindowStartMs&quot;: 22900,
+      &quot;sourceWindowEndMs&quot;: 43067,
+      &quot;windowEndMs&quot;: 45067,
+      &quot;audioDurationMs&quot;: 18504,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 19550
+    },
+    {
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;body&quot;: &quot;可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。&quot;,
+      &quot;text&quot;: &quot;首次 Root 时，进入首次 Root 页面，核对准确型号。可以让应用下载，也可以通过页面里的网盘入口下载完整固件。保留原文件，不要运行或解压。选择文件后，点击校验并导入固件。&quot;,
+      &quot;sourceStartMs&quot;: 46067,
+      &quot;sourceEndMs&quot;: 65187,
+      &quot;index&quot;: 3,
+      &quot;startMs&quot;: 48067,
+      &quot;endMs&quot;: 67187,
+      &quot;sourceWindowStartMs&quot;: 46067,
+      &quot;sourceWindowEndMs&quot;: 65800,
+      &quot;windowEndMs&quot;: 67800,
+      &quot;audioDurationMs&quot;: 17904,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 19120
+    },
+    {
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;body&quot;: &quot;看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。&quot;,
+      &quot;text&quot;: &quot;导入成功后，还要向下滚动，点击自动准备 Root 镜像。等程序明确提示镜像已准备，再核对机型和备份，勾选同意清空手机数据。刷写会再次要求确认。请保持 USB 稳定，按提示完成，不要把导入成功当成刷写完成。&quot;,
+      &quot;sourceStartMs&quot;: 68800,
+      &quot;sourceEndMs&quot;: 90900,
+      &quot;index&quot;: 4,
+      &quot;startMs&quot;: 70800,
+      &quot;endMs&quot;: 92916,
+      &quot;sourceWindowStartMs&quot;: 68800,
+      &quot;sourceWindowEndMs&quot;: 91500,
+      &quot;windowEndMs&quot;: 93500,
+      &quot;audioDurationMs&quot;: 21816,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 22116
+    },
+    {
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;body&quot;: &quot;点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。&quot;,
+      &quot;text&quot;: &quot;刷写结束后，先在手机上完成首次设置，并按 Root 方案打开一次 BlackBerry World。回到连接检查，点击重新检测。看到 Root 连接已验证，再继续。手机刚重启时，要先解锁并等服务启动。&quot;,
+      &quot;sourceStartMs&quot;: 94500,
+      &quot;sourceEndMs&quot;: 116180,
+      &quot;index&quot;: 5,
+      &quot;startMs&quot;: 96500,
+      &quot;endMs&quot;: 118180,
+      &quot;sourceWindowStartMs&quot;: 94500,
+      &quot;sourceWindowEndMs&quot;: 116767,
+      &quot;windowEndMs&quot;: 118767,
+      &quot;audioDurationMs&quot;: 18528,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 21680
+    },
+    {
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;body&quot;: &quot;检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。&quot;,
+      &quot;text&quot;: &quot;打开三网自动适配，先检查设备，核对当前手机和运营商。检查通过后，点击备份并安装自动适配。等待原始配置备份、安装和回读完成，并保留电脑上的备份。如果状态未知，先重新检查设备，不要连续重复安装。&quot;,
+      &quot;sourceStartMs&quot;: 119767,
+      &quot;sourceEndMs&quot;: 140377,
+      &quot;index&quot;: 6,
+      &quot;startMs&quot;: 121767,
+      &quot;endMs&quot;: 143715,
+      &quot;sourceWindowStartMs&quot;: 119767,
+      &quot;sourceWindowEndMs&quot;: 140967,
+      &quot;windowEndMs&quot;: 143715,
+      &quot;audioDurationMs&quot;: 21648,
+      &quot;paddingMs&quot;: 748,
+      &quot;durationMs&quot;: 21948
+    },
+    {
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;body&quot;: &quot;点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。&quot;,
+      &quot;text&quot;: &quot;安装后，用手机电源菜单正常重启。开机解锁，等待大约三到五分钟，再点击已重启、重新检查。Passport 切入或离开电信策略时，可能还要再重启一次，请按提示操作。四 G 图标不能代替本次开机的注册检查。&quot;,
+      &quot;sourceStartMs&quot;: 144715,
+      &quot;sourceEndMs&quot;: 166395,
+      &quot;index&quot;: 7,
+      &quot;startMs&quot;: 146715,
+      &quot;endMs&quot;: 168395,
+      &quot;sourceWindowStartMs&quot;: 144715,
+      &quot;sourceWindowEndMs&quot;: 166982,
+      &quot;windowEndMs&quot;: 168982,
+      &quot;audioDurationMs&quot;: 20880,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 21680
+    },
+    {
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;body&quot;: &quot;拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。&quot;,
+      &quot;text&quot;: &quot;本次开机注册成功后，拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通都从接通后开始计时，到三十五秒再挂断。确认双方听得见、全程保持 LTE，号码和运营商显示正确，才算完成这次通话验收。&quot;,
+      &quot;sourceStartMs&quot;: 169982,
+      &quot;sourceEndMs&quot;: 190812,
+      &quot;index&quot;: 8,
+      &quot;startMs&quot;: 171982,
+      &quot;endMs&quot;: 193282,
+      &quot;sourceWindowStartMs&quot;: 169982,
+      &quot;sourceWindowEndMs&quot;: 191415,
+      &quot;windowEndMs&quot;: 193415,
+      &quot;audioDurationMs&quot;: 21000,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 21300
+    },
+    {
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;body&quot;: &quot;点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。&quot;,
+      &quot;text&quot;: &quot;任何一步卡住，都可以点遇到问题、反馈。补充你做到了哪里，刷新预览，确认没有个人信息，再保存反馈包。把整个 ZIP 通过原联系渠道发给开发者。程序不会自动上传，之前失败的记录也不会因为一次重试成功就立即消失。&quot;,
+      &quot;sourceStartMs&quot;: 194415,
+      &quot;sourceEndMs&quot;: 216725,
+      &quot;index&quot;: 9,
+      &quot;startMs&quot;: 196415,
+      &quot;endMs&quot;: 218867,
+      &quot;sourceWindowStartMs&quot;: 194415,
+      &quot;sourceWindowEndMs&quot;: 217315,
+      &quot;windowEndMs&quot;: 219315,
+      &quot;audioDurationMs&quot;: 22152,
+      &quot;paddingMs&quot;: 0,
+      &quot;durationMs&quot;: 22452
+    }
+  ],
+  &quot;coverIntro&quot;: {
+    &quot;introDurationMs&quot;: 2000,
+    &quot;shiftedByMs&quot;: 2000,
+    &quot;updatedAt&quot;: &quot;2026-11-01T17:01:05.778Z&quot;
+  },
+  &quot;outputDurationSeconds&quot;: 219.338912
+}</pre></details>
+    </section>
+    <section>
+      <h2>Cover</h2>
+      <a href="first-use-cover.png"><img src="first-use-cover.png" alt="Final cover"></a><p><a href="first-use-cover.png">Final cover</a></p>
+      <details open><summary>Cover candidates</summary><a href="first-use-cover-candidates/contact-sheet.png"><img src="first-use-cover-candidates/contact-sheet.png" alt="Cover candidates"></a><p><a href="first-use-cover-candidates/contact-sheet.png">Cover candidates</a></p></details>
+      <details><summary>Cover candidates JSON</summary><pre>{
+  &quot;dir&quot;: &quot;docs/recordings/first-use-cover-candidates&quot;,
+  &quot;contactSheet&quot;: &quot;docs/recordings/first-use-cover-candidates/contact-sheet.png&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;index&quot;: 1,
+      &quot;ratio&quot;: 0.12,
+      &quot;seconds&quot;: 26.080672,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-01-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-01-cover.png&quot;
+    },
+    {
+      &quot;index&quot;: 2,
+      &quot;ratio&quot;: 0.22,
+      &quot;seconds&quot;: 47.814565,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-02-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-02-cover.png&quot;
+    },
+    {
+      &quot;index&quot;: 3,
+      &quot;ratio&quot;: 0.36,
+      &quot;seconds&quot;: 78.242016,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-03-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-03-cover.png&quot;
+    },
+    {
+      &quot;index&quot;: 4,
+      &quot;ratio&quot;: 0.5,
+      &quot;seconds&quot;: 108.669466,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-04-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-04-cover.png&quot;
+    },
+    {
+      &quot;index&quot;: 5,
+      &quot;ratio&quot;: 0.66,
+      &quot;seconds&quot;: 143.443695,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-05-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-05-cover.png&quot;
+    },
+    {
+      &quot;index&quot;: 6,
+      &quot;ratio&quot;: 0.82,
+      &quot;seconds&quot;: 178.217924,
+      &quot;frame&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-06-frame.png&quot;,
+      &quot;cover&quot;: &quot;docs/recordings/first-use-cover-candidates/candidate-06-cover.png&quot;
+    }
+  ]
+}</pre></details>
+    </section>
+    <section>
+      <h2>Frame Review</h2>
+      <a href="first-use-frame-review-final/contact-sheet.png"><img src="first-use-frame-review-final/contact-sheet.png" alt="Frame review contact sheet"></a><p><a href="first-use-frame-review-final/contact-sheet.png">Frame review contact sheet</a></p>
+      <details><summary>Frame review JSON</summary><pre>{
+  &quot;video&quot;: &quot;docs/recordings/first-use-narrated.mp4&quot;,
+  &quot;outputDir&quot;: &quot;docs/recordings/first-use-frame-review-final&quot;,
+  &quot;contactSheet&quot;: &quot;docs/recordings/first-use-frame-review-final/contact-sheet.png&quot;,
+  &quot;cueSource&quot;: &quot;narration-report&quot;,
+  &quot;timeScale&quot;: 1,
+  &quot;sampleCount&quot;: 72,
+  &quot;totalCandidateFrames&quot;: 72,
+  &quot;offsetsMs&quot;: [
+    -220,
+    -80,
+    80,
+    220
+  ],
+  &quot;samples&quot;: [
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 2380,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/001-01-先备份-确认手机和电脑-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 2520,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/002-01-先备份-确认手机和电脑-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 2680,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/003-01-先备份-确认手机和电脑-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 2820,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/004-01-先备份-确认手机和电脑-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 21080,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/005-01-先备份-确认手机和电脑-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 21220,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/006-01-先备份-确认手机和电脑-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 21380,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/007-01-先备份-确认手机和电脑-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 1,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 21520,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/008-01-先备份-确认手机和电脑-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 24680,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/009-02-连接手机-按已有材料选路-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 24820,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/010-02-连接手机-按已有材料选路-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 24980,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/011-02-连接手机-按已有材料选路-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 25120,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/012-02-连接手机-按已有材料选路-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 44230,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/013-02-连接手机-按已有材料选路-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 44370,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/014-02-连接手机-按已有材料选路-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 44530,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/015-02-连接手机-按已有材料选路-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 2,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 44670,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/016-02-连接手机-按已有材料选路-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 47847,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/017-03-首次-Root-获取并导入对应固件-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 47987,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/018-03-首次-Root-获取并导入对应固件-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 48147,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/019-03-首次-Root-获取并导入对应固件-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 48287,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/020-03-首次-Root-获取并导入对应固件-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 66967,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/021-03-首次-Root-获取并导入对应固件-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 67107,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/022-03-首次-Root-获取并导入对应固件-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 67267,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/023-03-首次-Root-获取并导入对应固件-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 3,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 67407,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/024-03-首次-Root-获取并导入对应固件-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 70580,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/025-04-继续准备个人镜像-再确认刷写-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 70720,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/026-04-继续准备个人镜像-再确认刷写-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 70880,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/027-04-继续准备个人镜像-再确认刷写-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 71020,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/028-04-继续准备个人镜像-再确认刷写-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 92696,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/029-04-继续准备个人镜像-再确认刷写-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 92836,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/030-04-继续准备个人镜像-再确认刷写-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 92996,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/031-04-继续准备个人镜像-再确认刷写-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 4,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 93136,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/032-04-继续准备个人镜像-再确认刷写-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 96280,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/033-05-完成手机设置-重新验证-Root-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 96420,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/034-05-完成手机设置-重新验证-Root-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 96580,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/035-05-完成手机设置-重新验证-Root-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 96720,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/036-05-完成手机设置-重新验证-Root-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 117960,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/037-05-完成手机设置-重新验证-Root-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 118100,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/038-05-完成手机设置-重新验证-Root-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 118260,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/039-05-完成手机设置-重新验证-Root-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 5,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 118400,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/040-05-完成手机设置-重新验证-Root-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 121547,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/041-06-检查设备-备份并安装三网适配-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 121687,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/042-06-检查设备-备份并安装三网适配-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 121847,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/043-06-检查设备-备份并安装三网适配-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 121987,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/044-06-检查设备-备份并安装三网适配-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 143495,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/045-06-检查设备-备份并安装三网适配-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 143635,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/046-06-检查设备-备份并安装三网适配-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 143795,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/047-06-检查设备-备份并安装三网适配-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 6,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 143935,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/048-06-检查设备-备份并安装三网适配-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 146495,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/049-07-用手机菜单正常重启-再检查本次开机-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 146635,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/050-07-用手机菜单正常重启-再检查本次开机-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 146795,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/051-07-用手机菜单正常重启-再检查本次开机-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 146935,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/052-07-用手机菜单正常重启-再检查本次开机-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 168175,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/053-07-用手机菜单正常重启-再检查本次开机-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 168315,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/054-07-用手机菜单正常重启-再检查本次开机-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 168475,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/055-07-用手机菜单正常重启-再检查本次开机-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 7,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 168615,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/056-07-用手机菜单正常重启-再检查本次开机-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 171762,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/057-08-拔掉-USB-验收真实双向通话-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 171902,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/058-08-拔掉-USB-验收真实双向通话-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 172062,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/059-08-拔掉-USB-验收真实双向通话-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 172202,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/060-08-拔掉-USB-验收真实双向通话-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 193062,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/061-08-拔掉-USB-验收真实双向通话-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 193202,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/062-08-拔掉-USB-验收真实双向通话-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 193362,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/063-08-拔掉-USB-验收真实双向通话-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 8,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 193502,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/064-08-拔掉-USB-验收真实双向通话-end-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 196195,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/065-09-卡住时-保存一个能排查的反馈包-start-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 196335,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/066-09-卡住时-保存一个能排查的反馈包-start-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 196495,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/067-09-卡住时-保存一个能排查的反馈包-start-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;start&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 196635,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/068-09-卡住时-保存一个能排查的反馈包-start-plus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -220,
+      &quot;atMs&quot;: 218647,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/069-09-卡住时-保存一个能排查的反馈包-end-minus220.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: -80,
+      &quot;atMs&quot;: 218787,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/070-09-卡住时-保存一个能排查的反馈包-end-minus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 80,
+      &quot;atMs&quot;: 218947,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/071-09-卡住时-保存一个能排查的反馈包-end-plus80.png&quot;
+    },
+    {
+      &quot;cueIndex&quot;: 9,
+      &quot;kind&quot;: &quot;caption&quot;,
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;boundary&quot;: &quot;end&quot;,
+      &quot;offsetMs&quot;: 220,
+      &quot;atMs&quot;: 219087,
+      &quot;file&quot;: &quot;docs/recordings/first-use-frame-review-final/072-09-卡住时-保存一个能排查的反馈包-end-plus220.png&quot;
+    }
+  ]
+}</pre></details>
+    </section>
+    <section style="grid-column:1/-1">
+      <h2>Caption Timeline</h2>
+      <table>
+    <thead><tr><th>#</th><th>Time</th><th>Kind</th><th>Title</th><th>Body</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>00:02.600 - 00:21.300</td><td>caption</td><td>先备份，确认手机和电脑</td><td>从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。</td></tr><tr><td>2</td><td>00:21.900 - 00:24.300</td><td>transition</td><td>接下来</td><td>连接手机，按已有材料选路</td></tr><tr><td>3</td><td>00:24.900 - 00:44.450</td><td>caption</td><td>连接手机，按已有材料选路</td><td>有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。</td></tr><tr><td>4</td><td>00:45.067 - 00:47.467</td><td>transition</td><td>接下来</td><td>首次 Root：获取并导入对应固件</td></tr><tr><td>5</td><td>00:48.067 - 01:07.187</td><td>caption</td><td>首次 Root：获取并导入对应固件</td><td>可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。</td></tr><tr><td>6</td><td>01:07.800 - 01:10.200</td><td>transition</td><td>接下来</td><td>继续准备个人镜像，再确认刷写</td></tr><tr><td>7</td><td>01:10.800 - 01:32.916</td><td>caption</td><td>继续准备个人镜像，再确认刷写</td><td>看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。</td></tr><tr><td>8</td><td>01:33.500 - 01:35.900</td><td>transition</td><td>接下来</td><td>完成手机设置，重新验证 Root</td></tr><tr><td>9</td><td>01:36.500 - 01:58.180</td><td>caption</td><td>完成手机设置，重新验证 Root</td><td>点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。</td></tr><tr><td>10</td><td>01:58.767 - 02:01.167</td><td>transition</td><td>接下来</td><td>检查设备，备份并安装三网适配</td></tr><tr><td>11</td><td>02:01.767 - 02:23.715</td><td>caption</td><td>检查设备，备份并安装三网适配</td><td>检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。</td></tr><tr><td>12</td><td>02:23.715 - 02:26.115</td><td>transition</td><td>接下来</td><td>用手机菜单正常重启，再检查本次开机</td></tr><tr><td>13</td><td>02:26.715 - 02:48.395</td><td>caption</td><td>用手机菜单正常重启，再检查本次开机</td><td>点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。</td></tr><tr><td>14</td><td>02:48.982 - 02:51.382</td><td>transition</td><td>接下来</td><td>拔掉 USB，验收真实双向通话</td></tr><tr><td>15</td><td>02:51.982 - 03:13.282</td><td>caption</td><td>拔掉 USB，验收真实双向通话</td><td>拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。</td></tr><tr><td>16</td><td>03:13.415 - 03:15.815</td><td>transition</td><td>接下来</td><td>卡住时，保存一个能排查的反馈包</td></tr><tr><td>17</td><td>03:16.415 - 03:38.867</td><td>caption</td><td>卡住时，保存一个能排查的反馈包</td><td>点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。</td></tr>
+    </tbody>
+  </table>
+      <details><summary>Raw report</summary><pre>{
+  &quot;scenario&quot;: &quot;first-use&quot;,
+  &quot;title&quot;: &quot;BB10 VoLTE：完整首次使用&quot;,
+  &quot;dataMode&quot;: &quot;mock&quot;,
+  &quot;readonly&quot;: true,
+  &quot;baseUrl&quot;: &quot;native:BB10-VoLTE&quot;,
+  &quot;surface&quot;: &quot;native-desktop&quot;,
+  &quot;audience&quot;: &quot;customer&quot;,
+  &quot;durationMs&quot;: 219339,
+  &quot;pageErrors&quot;: [],
+  &quot;consoleMessages&quot;: [],
+  &quot;responseErrors&quot;: [],
+  &quot;nativeScope&quot;: &quot;Real Tk UI with isolated demonstration backends; not device acceptance.&quot;,
+  &quot;captions&quot;: [
+    {
+      &quot;title&quot;: &quot;先备份，确认手机和电脑&quot;,
+      &quot;body&quot;: &quot;从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。&quot;,
+      &quot;narration&quot;: &quot;这份教程带你从首次打开工具，一直到通话验收。先备份手机，在设置、关于里面核对准确型号和系统版本。只连接一台手机，保持电量充足。已有有效 Root 的手机，可以跳过首次刷写。&quot;,
+      &quot;startMs&quot;: 2600,
+      &quot;endMs&quot;: 21300,
+      &quot;segment&quot;: &quot;segment-1&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 21900,
+      &quot;endMs&quot;: 24300,
+      &quot;segment&quot;: &quot;segment-2&quot;
+    },
+    {
+      &quot;title&quot;: &quot;连接手机，按已有材料选路&quot;,
+      &quot;body&quot;: &quot;有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。&quot;,
+      &quot;narration&quot;: &quot;连接并解锁手机后，点击连接手机。有旧刷机文件夹，就选择整个文件夹。没有旧文件，但手机已经有有效 Root，可以从手机重新授权。连接失败，不等于手机没有 Root，不要直接重新刷机。&quot;,
+      &quot;startMs&quot;: 24900,
+      &quot;endMs&quot;: 44450,
+      &quot;segment&quot;: &quot;segment-2&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 45067,
+      &quot;endMs&quot;: 47467,
+      &quot;segment&quot;: &quot;segment-3&quot;
+    },
+    {
+      &quot;title&quot;: &quot;首次 Root：获取并导入对应固件&quot;,
+      &quot;body&quot;: &quot;可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。&quot;,
+      &quot;narration&quot;: &quot;首次 Root 时，进入首次 Root 页面，核对准确型号。可以让应用下载，也可以通过页面里的网盘入口下载完整固件。保留原文件，不要运行或解压。选择文件后，点击校验并导入固件。&quot;,
+      &quot;startMs&quot;: 48067,
+      &quot;endMs&quot;: 67187,
+      &quot;segment&quot;: &quot;segment-3&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 67800,
+      &quot;endMs&quot;: 70200,
+      &quot;segment&quot;: &quot;segment-4&quot;
+    },
+    {
+      &quot;title&quot;: &quot;继续准备个人镜像，再确认刷写&quot;,
+      &quot;body&quot;: &quot;看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。&quot;,
+      &quot;narration&quot;: &quot;导入成功后，还要向下滚动，点击自动准备 Root 镜像。等程序明确提示镜像已准备，再核对机型和备份，勾选同意清空手机数据。刷写会再次要求确认。请保持 USB 稳定，按提示完成，不要把导入成功当成刷写完成。&quot;,
+      &quot;startMs&quot;: 70800,
+      &quot;endMs&quot;: 92916,
+      &quot;segment&quot;: &quot;segment-4&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 93500,
+      &quot;endMs&quot;: 95900,
+      &quot;segment&quot;: &quot;segment-5&quot;
+    },
+    {
+      &quot;title&quot;: &quot;完成手机设置，重新验证 Root&quot;,
+      &quot;body&quot;: &quot;点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。&quot;,
+      &quot;narration&quot;: &quot;刷写结束后，先在手机上完成首次设置，并按 Root 方案打开一次 BlackBerry World。回到连接检查，点击重新检测。看到 Root 连接已验证，再继续。手机刚重启时，要先解锁并等服务启动。&quot;,
+      &quot;startMs&quot;: 96500,
+      &quot;endMs&quot;: 118180,
+      &quot;segment&quot;: &quot;segment-5&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 118767,
+      &quot;endMs&quot;: 121167,
+      &quot;segment&quot;: &quot;segment-6&quot;
+    },
+    {
+      &quot;title&quot;: &quot;检查设备，备份并安装三网适配&quot;,
+      &quot;body&quot;: &quot;检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。&quot;,
+      &quot;narration&quot;: &quot;打开三网自动适配，先检查设备，核对当前手机和运营商。检查通过后，点击备份并安装自动适配。等待原始配置备份、安装和回读完成，并保留电脑上的备份。如果状态未知，先重新检查设备，不要连续重复安装。&quot;,
+      &quot;startMs&quot;: 121767,
+      &quot;endMs&quot;: 143715,
+      &quot;segment&quot;: &quot;segment-6&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 143715,
+      &quot;endMs&quot;: 146115,
+      &quot;segment&quot;: &quot;segment-7&quot;
+    },
+    {
+      &quot;title&quot;: &quot;用手机菜单正常重启，再检查本次开机&quot;,
+      &quot;body&quot;: &quot;点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。&quot;,
+      &quot;narration&quot;: &quot;安装后，用手机电源菜单正常重启。开机解锁，等待大约三到五分钟，再点击已重启、重新检查。Passport 切入或离开电信策略时，可能还要再重启一次，请按提示操作。四 G 图标不能代替本次开机的注册检查。&quot;,
+      &quot;startMs&quot;: 146715,
+      &quot;endMs&quot;: 168395,
+      &quot;segment&quot;: &quot;segment-7&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 168982,
+      &quot;endMs&quot;: 171382,
+      &quot;segment&quot;: &quot;segment-8&quot;
+    },
+    {
+      &quot;title&quot;: &quot;拔掉 USB，验收真实双向通话&quot;,
+      &quot;body&quot;: &quot;拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。&quot;,
+      &quot;narration&quot;: &quot;本次开机注册成功后，拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通都从接通后开始计时，到三十五秒再挂断。确认双方听得见、全程保持 LTE，号码和运营商显示正确，才算完成这次通话验收。&quot;,
+      &quot;startMs&quot;: 171982,
+      &quot;endMs&quot;: 193282,
+      &quot;segment&quot;: &quot;segment-8&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;transition&quot;,
+      &quot;title&quot;: &quot;接下来&quot;,
+      &quot;body&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;narration&quot;: false,
+      &quot;durationMs&quot;: 2400,
+      &quot;startMs&quot;: 193415,
+      &quot;endMs&quot;: 195815,
+      &quot;segment&quot;: &quot;segment-9&quot;
+    },
+    {
+      &quot;title&quot;: &quot;卡住时，保存一个能排查的反馈包&quot;,
+      &quot;body&quot;: &quot;点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。&quot;,
+      &quot;narration&quot;: &quot;任何一步卡住，都可以点遇到问题、反馈。补充你做到了哪里，刷新预览，确认没有个人信息，再保存反馈包。把整个 ZIP 通过原联系渠道发给开发者。程序不会自动上传，之前失败的记录也不会因为一次重试成功就立即消失。&quot;,
+      &quot;startMs&quot;: 196415,
+      &quot;endMs&quot;: 218867,
+      &quot;segment&quot;: &quot;segment-9&quot;
+    }
+  ],
+  &quot;steps&quot;: [
+    {
+      &quot;label&quot;: &quot;prepare&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-1&quot;
+    },
+    {
+      &quot;label&quot;: &quot;connect&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-2&quot;
+    },
+    {
+      &quot;label&quot;: &quot;root&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-3&quot;
+    },
+    {
+      &quot;label&quot;: &quot;root-prepare&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-4&quot;
+    },
+    {
+      &quot;label&quot;: &quot;root-verified&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-5&quot;
+    },
+    {
+      &quot;label&quot;: &quot;install&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-6&quot;
+    },
+    {
+      &quot;label&quot;: &quot;restart&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-7&quot;
+    },
+    {
+      &quot;label&quot;: &quot;acceptance&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-8&quot;
+    },
+    {
+      &quot;label&quot;: &quot;feedback&quot;,
+      &quot;highlightVisible&quot;: false,
+      &quot;overflow&quot;: 0,
+      &quot;assertion&quot;: &quot;Dedicated mock window capture; no live device mutation&quot;,
+      &quot;segment&quot;: &quot;segment-9&quot;
+    }
+  ],
+  &quot;createdAt&quot;: &quot;2026-11-01T16:56:52.433Z&quot;,
+  &quot;video&quot;: &quot;docs/recordings/first-use-narrated.mp4&quot;,
+  &quot;mp4&quot;: &quot;docs/recordings/first-use-narrated.mp4&quot;,
+  &quot;assembly&quot;: {
+    &quot;schema&quot;: &quot;repo-demo-recorder/segmented-assembly.v1&quot;,
+    &quot;sourceReports&quot;: [
+      &quot;docs/recordings/first-use-build/01-prepare-report.json&quot;,
+      &quot;docs/recordings/first-use-build/02-connect-report.json&quot;,
+      &quot;docs/recordings/first-use-build/03-root-report.json&quot;,
+      &quot;docs/recordings/first-use-build/04-root-prepare-report.json&quot;,
+      &quot;docs/recordings/first-use-build/05-root-verified-report.json&quot;,
+      &quot;docs/recordings/first-use-build/06-install-report.json&quot;,
+      &quot;docs/recordings/first-use-build/07-restart-report.json&quot;,
+      &quot;docs/recordings/first-use-build/08-acceptance-report.json&quot;,
+      &quot;docs/recordings/first-use-build/09-feedback-report.json&quot;
+    ],
+    &quot;transitionCount&quot;: 8,
+    &quot;transitionDurationMs&quot;: 2400,
+    &quot;transitionFadeInMs&quot;: 180,
+    &quot;transitionFadeOutMs&quot;: 380
+  },
+  &quot;apiAssertions&quot;: [],
+  &quot;dbAssertions&quot;: [],
+  &quot;sourceCommit&quot;: &quot;6ca9147&quot;,
+  &quot;narrative&quot;: {
+    &quot;avoidVisibleTerms&quot;: [
+      &quot;fixture&quot;,
+      &quot;renderer-only&quot;,
+      &quot;dev warning&quot;
+    ]
+  },
+  &quot;qualityGates&quot;: {
+    &quot;maxOverflow&quot;: 0
+  },
+  &quot;caveats&quot;: [
+    &quot;Windows mock-backed native UI; not hardware acceptance.&quot;,
+    &quot;Feedback is an unreleased desktop change; current r14 uses Export check report.&quot;,
+    &quot;Native Tk has no browser HTTP/page console. Empty browser error arrays are not browser QA.&quot;,
+    &quot;FFmpeg gdigrab startup rate-estimation warning; capture exit codes were zero.&quot;,
+    &quot;Edge client emitted a nonfatal local sitecustomize/pip warning; audio was generated and measured.&quot;
+  ],
+  &quot;coverIntroMs&quot;: 2000
+}</pre></details>
+    </section>
+  </main>
+</body>
+</html>

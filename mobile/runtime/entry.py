@@ -30,7 +30,7 @@ SAFE_NAME = re.compile(r'\A(?:runtime|payload|profiles|materials)/[a-zA-Z0-9_.\-
 ACTIONS = ('inspect', 'status', 'poll', 'resume', 'install', 'enable', 'disable',
            'update', 'rollback', 'uninstall', 'export', 'compatibility',
            'confirm-calls', 'legacy-inspect', 'legacy-install', 'legacy-start',
-           'legacy-stop')
+           'legacy-stop', 'legacy-update', 'legacy-uninstall')
 
 
 class MobileError(Exception):

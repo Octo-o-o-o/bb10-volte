@@ -61,11 +61,11 @@
         <p class="guide-intro">依次完成准备、连接、预检、安装和通话测试。“注册通过”不代表通话成功：还要用系统拨号器测试呼入、呼出，并确认双方都能听清。</p>
         <p class="guide-intro">几个词先说明白：Root 是手机的系统管理员权限；预检就是安装前检查；IMS 注册，就是手机连上了运营商的通话服务。</p>
         <div class="guide-actions">
-          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe"><span class="button-copy"><span>下载 Windows x64</span><small>Windows 10 / 11 · 64 位（x64）</small></span></a>
-          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg"><span class="button-copy"><span>下载 macOS 通用版</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span></a>
+          <a class="button button-primary" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe"><span class="button-copy"><span>下载 Windows x64</span><small>Windows 10 / 11 · 64 位（x64）</small></span></a>
+          <a class="button button-secondary" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg"><span class="button-copy"><span>下载 macOS 通用版</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span></a>
         </div>
-        <p class="guide-release">当前公开版本为 <span data-release-version>最新版</span>。下载后请先核对 <a class="guide-release-link" href="#verify">SHA-256</a>，也可以在 <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r14" target="_blank" rel="noopener noreferrer">Release 页面</a>查看同名校验文件。</p>
-        <p class="guide-release">想从手机上安装与管理？请先看<a class="guide-release-link" href="mobile.html">手机原生候选方案与四种首次入口</a>。手机版尚未公开发布，本页继续说明桌面 r14 流程与已有验收范围。</p>
+        <p class="guide-release">当前公开版本为 <span data-release-version>最新版</span>。下载后请先核对 <a class="guide-release-link" href="#verify">SHA-256</a>，也可以在 <a class="guide-release-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r15" target="_blank" rel="noopener noreferrer">Release 页面</a>查看同名校验文件。</p>
+        <p class="guide-release">想从手机上安装与管理？请先看<a class="guide-release-link" href="mobile.html">手机原生候选方案与四种首次入口</a>。手机版尚未公开发布，本页继续说明桌面 r15 流程与已有验收范围。</p>
       </div>
     </section>
 
@@ -73,7 +73,8 @@
       <aside class="guide-toc" aria-labelledby="toc-title">
         <p class="guide-toc-title" id="toc-title">本页目录</p>
         <nav aria-label="指南章节">
-          <ol>
+          <ol><li><a href="#walkthrough">图文步骤与视频</a></li>
+            <li><a href="#walkthrough-trials">候选机型试测</a></li>
             <li><a href="#prepare">准备与风险</a></li>
             <li><a href="#start">启动应用</a></li>
             <li><a href="#connect">连接手机</a></li>
@@ -88,9 +89,117 @@
       </aside>
 
       <div class="guide-content">
-        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">准备与风险</h2><p>先在“设置 → 关于”核对准确硬件变体。三网自动适配适用于已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport（Q30）SQW100-4，系统 10.3.3.3216，原生文件哈希必须匹配。</p><ul class="guide-list"><li>使用移动 460-00、联通 460-01、电信 460-11 的 USIM，无 ISIM；套餐已开通 VoLTE，LTE 数据正常。</li><li>首次安装需要稳定的 USB 数据线、本人 Root SSH 私钥和可信主机密钥。</li><li>Windows 10/11 x64；Mac：Apple 芯片需 macOS 11+，Intel 需 macOS 10.15+。两者无需另装 Python。此前 r10 的 Mac＋Q20 连接及 USB 重连已验证；本次 r13 完成包级回归，Intel 未实机运行。</li><li>先备份手机。Q10、Q20、Passport 的首次 Root 准备约需 15 GB，旧系统升级需约 24 GB。应用按准确机型选择固件；刷写会清空数据，首刷和旧系统升级仍待实机验收，严禁跨机型刷写。</li><li>长期待机、漫游、其他地区及紧急呼叫尚未完整验证。</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 / 9 项功能验收通过 · 2026 年 11 月 1 日</caption><thead><tr><th scope="col">实测机型</th><th scope="col">中国移动</th><th scope="col">中国联通</th><th scope="col">中国电信</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Passport SQW100-4</th><td>已支持</td><td>已支持</td><td>已支持</td></tr></tbody></table></div><p>最新版已支持以上九项组合。具体测试时间、版本和证据保留在验收记录中。</p></section>
+<!-- first-use:start -->
+<section class="chapter guide-section" id="walkthrough" aria-labelledby="walkthrough-title">
+<p class="eyebrow">STEP BY STEP · 01—09</p><h2 id="walkthrough-title">跟着截图，一步一步完成</h2>
+<p class="guide-note">以下使用 Windows 真实程序界面与演示数据，录制基于 r14 加反馈功能；r15 已包含反馈入口，并新增型号前置检查，个别提示以当前程序为准。图文和视频用于操作讲解，不作为真实刷写或通话验收证据。自动流程仅适用已验证后缀；其他后缀先看下方候选试测说明。Mac 操作顺序相同，首次 Root 准备需 macOS 14+。</p>
+<nav class="tutorial-jump" aria-label="选择你卡住的步骤">
+<a href="#walkthrough-prepare">01 · 先备份，确认手机和电脑</a>
+<a href="#walkthrough-connect">02 · 连接手机，按已有材料选路</a>
+<a href="#walkthrough-root">03 · 首次 Root：获取并导入对应固件</a>
+<a href="#walkthrough-root-prepare">04 · 继续准备个人镜像，再确认刷写</a>
+<a href="#walkthrough-root-verified">05 · 完成手机设置，重新验证 Root</a>
+<a href="#walkthrough-install">06 · 检查设备，备份并安装三网适配</a>
+<a href="#walkthrough-restart">07 · 用手机菜单正常重启，再检查本次开机</a>
+<a href="#walkthrough-acceptance">08 · 拔掉 USB，验收真实双向通话</a>
+<a href="#walkthrough-feedback">09 · 卡住时，保存一个能排查的反馈包</a>
+</nav>
+<div class="tutorial-video">
+<video controls playsinline preload="metadata" poster="assets/tutorial/first-use-cover.png" aria-label="完整首次使用视频教程，中文女声与字幕">
+<source src="assets/tutorial/first-use.mp4" type="video/mp4">
+浏览器暂不支持播放，可下载视频观看。</video>
+<p><a href="assets/tutorial/first-use.mp4" download>下载完整教程视频</a> · 中文女声 · 中文字幕 · 可随时暂停对照操作</p></div></section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-prepare" aria-labelledby="tutorial-title-1">
+<p class="eyebrow">01 / 09</p>
+<h2 id="tutorial-title-1">先备份，确认手机和电脑</h2>
+<p>先在手机“设置 → 关于”核对准确硬件型号与系统版本。当前验收范围是 Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4，OS 10.3.3.3216。只连接一台手机，保持电量充足。</p>
+<p><strong>这样做：</strong> 从官网获取适合电脑的完整安装包并核对 SHA-256。Windows 10/11 x64；Mac 首次 Root 准备另需 macOS 14+。首次 Root 会清空手机，先备份照片、联系人和文件，电脑至少留出 15 GB。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/home.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/home.png" loading="lazy" width="1000" height="820" alt="先备份，确认手机和电脑"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 打开应用后看到“连接手机”和“三网自动适配”入口。已有有效 Root 的手机可以跳过首次刷写。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>旧系统先走“系统升级”，约需 24 GB 空间；不要跨机型刷固件。Windows 未识别手机时再检查数据线和驱动。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-connect" aria-labelledby="tutorial-title-2">
+<p class="eyebrow">02 / 09</p>
+<h2 id="tutorial-title-2">连接手机，按已有材料选路</h2>
+<p>用可传输数据的 USB 线连接并解锁手机，点击“连接手机”。首次开发连接按手机提示开启开发模式；已有可用 Root SSH 时无需一直开启。</p>
+<p><strong>这样做：</strong> 有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/connect.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/connect.png" loading="lazy" width="1000" height="820" alt="连接手机，按已有材料选路"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 检查完成后应显示手机型号、USB 网络与 Root 是否已验证。连接失败本身不能证明手机没有 Root。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>提示授权失败时找回原材料或重新授权；提示连接服务未启动时，已有 AutoRoot 的手机可打开一次 BlackBerry World 等待。不要因连接失败就直接重刷。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root" aria-labelledby="tutorial-title-3">
+<p class="eyebrow">03 / 09</p>
+<h2 id="tutorial-title-3">首次 Root：获取并导入对应固件</h2>
+<p>进入“首次使用与连接帮助 → 首次 Root”，确认检测到的准确型号。以下用 Q20 SQC100-2 演示，其他型号必须选择自己的固件。</p>
+<p><strong>这样做：</strong> 可以点击“下载对应机型固件”，也可以通过极空间或百度网盘下载。保留完整原文件，不运行、不解压；用“选择文件…”选中，再点“校验并导入固件”。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/root-import.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/root-import.png" loading="lazy" width="1000" height="820" alt="首次 Root：获取并导入对应固件"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 提示固件已导入并通过校验。这只完成了原版固件导入，还没有生成个人 Root 镜像。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>下载中断可使用备用来源；导入不通过时核对机型、文件是否完整。不要改文件名或跳过校验。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root-prepare" aria-labelledby="tutorial-title-4">
+<p class="eyebrow">04 / 09</p>
+<h2 id="tutorial-title-4">继续准备个人镜像，再确认刷写</h2>
+<p>固件导入成功后，向下滚动，点击“自动准备 Root 镜像”。程序还要补齐工具、生成个人连接材料，并构建、校验镜像。</p>
+<p><strong>这样做：</strong> 看到“Root 镜像已准备”后，再核对机型和备份，勾选“已备份并核对机型，同意清空手机数据”，点击“开始刷写 Root（清空数据）”，阅读第二次确认。保持 USB 稳定，按窗口提示配合。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/root-prepared.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/root-prepared.png" loading="lazy" width="1000" height="820" alt="继续准备个人镜像，再确认刷写"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 只有镜像准备成功、当前设备型号匹配且完成清空确认后，刷写按钮才会可用。不要把“固件已导入”当成“可以刷写”。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>按钮不可点时，先看它上方的原因。构建失败可导出反馈包；需要中断排查时保留镜像和准备记录，不要反复删除重建。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-root-verified" aria-labelledby="tutorial-title-5">
+<p class="eyebrow">05 / 09</p>
+<h2 id="tutorial-title-5">完成手机设置，重新验证 Root</h2>
+<p>刷写结束后，在手机上完成首次设置，按该 Root 方案打开一次 BlackBerry World，再回电脑的“连接检查”。商店显示无网络不等于 Root 失败。</p>
+<p><strong>这样做：</strong> 点击“重新检测”，等待 USB、SSH 和 Root 检查完成。显示“Root 连接已验证”后继续检查 VoLTE。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/root-verified.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/root-verified.png" loading="lazy" width="1000" height="820" alt="完成手机设置，重新验证 Root"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 准确型号、目标系统和有效 Root 均已确认。已有 Root 用户恢复连接后也从这里继续。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>刚重启的手机要先解锁并等待服务启动。身份记录不匹配时核对这台手机的可信连接材料，不要忽略校验。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-install" aria-labelledby="tutorial-title-6">
+<span id="walkthrough-preflight"></span>
+<p class="eyebrow">06 / 09</p>
+<h2 id="tutorial-title-6">检查设备，备份并安装三网适配</h2>
+<p>从主窗口进入“三网自动适配”，点击“检查设备”。核对当前手机、SIM 和运营商；使用已开通 VoLTE 的有效 USIM，并确保 LTE 数据正常。</p>
+<p><strong>这样做：</strong> 检查允许安装后，点击“备份并安装自动适配”。等待原始配置备份、下载校验、安装和回读完成，保留电脑备份。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/install.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/install.png" loading="lazy" width="1000" height="820" alt="检查设备，备份并安装三网适配"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 出现“原始配置已备份，自动适配已安装”的提示及下一步重启说明。若提示需先启用，就先点“启用自动适配”。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>安装中断或状态未知时先重新检查设备，不要直接重复覆盖安装。已有旧版本时按应用给出的停用、恢复、重启顺序更新。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-restart" aria-labelledby="tutorial-title-7">
+<p class="eyebrow">07 / 09</p>
+<h2 id="tutorial-title-7">用手机菜单正常重启，再检查本次开机</h2>
+<p>在手机电源菜单选择正常重启。开机后解锁，等待约 3–5 分钟，保持 USB 连接。</p>
+<p><strong>这样做：</strong> 点击“已重启，重新检查”。如果 USB 连接尚未恢复，先点击“重新检查连接”，再读取当前状态。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/restart.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/restart.png" loading="lazy" width="1000" height="820" alt="用手机菜单正常重启，再检查本次开机"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 应用确认本次开机的 SIM 选择、IMS 注册和 LTE。Passport 切入或离开电信入网策略时可能还需一次正常重启，按程序说明处理。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>4G 图标不能代替注册检查，飞行模式不能代替正常重启。仍在等待时先看当前阶段说明，不要重新刷机或重复安装。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-acceptance" aria-labelledby="tutorial-title-8">
+<p class="eyebrow">08 / 09</p>
+<h2 id="tutorial-title-8">拔掉 USB，验收真实双向通话</h2>
+<p>看到“本次开机注册成功”后，仍要在手机上验收真实通话。注册成功与通话成功是两项检查。</p>
+<p><strong>这样做：</strong> 拔掉 USB，用系统拨号器呼出，再让另一台手机回拨。每通从接通开始计时，屏幕达到 00:35 后再手动挂断。检查双方声音、全程 LTE、号码与运营商显示。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/ready.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/ready.png" loading="lazy" width="1000" height="820" alt="拔掉 USB，验收真实双向通话"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> 呼入、呼出都正常，双方都听得见，通话保持 LTE。以后换卡先正常关机，换卡后再开机并等待。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>搜索网络、仅限紧急通话或首次拨号失败时保留现场，记录发生在哪一步并导出反馈。不要反复重拨、重装或重启。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section tutorial-step" id="walkthrough-feedback" aria-labelledby="tutorial-title-9">
+<p class="eyebrow">09 / 09</p>
+<h2 id="tutorial-title-9">卡住时，保存一个能排查的反馈包</h2>
+<p>在当前页面点击“遇到问题 / 反馈”，写一句你做到哪一步、原本期待什么。入口在操作进行中也可使用。</p>
+<p><strong>这样做：</strong> 点击“刷新预览”检查内容，再点“保存反馈包…”。打开 ZIP 核对后，将整个文件通过原联系渠道发给开发者，或发至 octoooo@octoooo.com；应用不会自动发送。</p>
+<figure class="guide-shot tutorial-shot"><a href="assets/tutorial/feedback.png" target="_blank" rel="noopener noreferrer"><img src="assets/tutorial/feedback.png" loading="lazy" width="1000" height="820" alt="卡住时，保存一个能排查的反馈包"></a><figcaption>真实 Windows 界面，使用演示数据；点击可查看完整大图。</figcaption></figure>
+<div class="tutorial-result"><strong>成功标志：</strong> ZIP 包含当前步骤、版本、最近操作时间线、失败代码、允许的检查结果，以及可用的脱敏构建失败摘要。前一次失败不会因为重试成功而立即消失。</div>
+<details class="tutorial-help"><summary>卡在这一步？</summary><p>只覆盖启用该功能后的最近 5 次启动，每次最多 400 条。不会自动补回旧版日志，也不打包 private 目录、密钥、手机备份或原始 SIP 日志。不要在补充说明里填写密码或号码。</p><p><a href="#walkthrough-feedback">查看如何保存反馈包</a></p></details>
+</section>
+<section class="chapter guide-section" id="walkthrough-drivers"><h2>Windows 驱动</h2><p>只有电脑未识别手机或 USB 网络未就绪时，才进入“首次使用与连接帮助 → Windows 驱动”。日常使用不需要管理员权限；驱动安装会另行提示。</p><a href="#walkthrough-feedback">在这一步保存反馈</a></section>
+<section class="chapter guide-section" id="walkthrough-firmware"><h2>旧系统：先升级再 Root</h2><p>选择“系统升级 / 继续升级记录”，按准确机型分阶段操作，遵守备份要求和每次清空确认。不要跨机型刷写。确认达到目标系统后，再继续 Root 与连接验证。</p><a href="#walkthrough-feedback">在这一步保存反馈</a></section>
+<section class="chapter guide-section" id="walkthrough-pair"><h2>已有 Root，但连接材料丢失</h2><p>选择“没有旧文件，从手机重新授权”。这条路径需要手机已有有效 Root 终端；依次按提示准备授权文件、转移到手机、执行完整授权命令，再验证手机身份和实际 Root。它不能替未 Root 的手机完成 Root。</p><a href="#walkthrough-feedback">在这一步保存反馈</a></section>
+<!-- first-use:end -->
+<section class="chapter guide-section" id="walkthrough-trials" aria-labelledby="trials-title"><h2 id="trials-title">其他硬件后缀：先确认能走哪条流程</h2><p>r15 新增 13 组手动候选、6 组 Passport 只读诊断，新增后缀尚未实机验收。自动适配仍限 SQN100-3、SQC100-2、SQW100-4；Root 配方存在不代表加载器或首刷已验证。</p><div class="guide-table-wrap"><table class="guide-table"><caption>13 组手动、6 组只读；新增后缀均未实机验收</caption><thead><tr><th scope="col">完整硬件后缀</th><th scope="col">运营商</th><th scope="col">流程</th></tr></thead><tbody><tr><th scope="row">SQN100-1 / SQN100-5</th><td>电信 460-11</td><td>手动候选；需当地已有 LTE B5 数据</td></tr><tr><th scope="row">SQC100-1 / SQC100-3 / SQC100-5</th><td>移动 460-00／联通 460-01／电信 460-11</td><td>手动候选</td></tr><tr><th scope="row">SQC100-4</th><td>联通 460-01／电信 460-11</td><td>手动候选</td></tr><tr><th scope="row">SQW100-1 / SQW100-3</th><td>上述三个运营商</td><td>只读检查；停止与恢复未验证，禁止安装</td></tr></tbody></table></div><ol class="guide-list"><li>从“更多 → 候选机型本地试测”进入，选择完整后缀和实际运营商。需要已有有效 AutoRoot v4／Root SSH、OS 10.3.3.3216、六个原生文件匹配、无 ISIM 的指定 USIM、可用 LTE 数据及干净可恢复状态。</li><li>首次只读检查。手动候选通过后，明确勾选实验试用并重新检查；先安装，回读完成后再单独手动启动。自启动始终关闭。检查通过不代表通话成功。</li><li>使用系统拨号器和短信应用测试呼入、呼出、声音、LTE 和短信重复情况。停用并恢复后正常重启，导出检查报告、反馈 ZIP 和结果表。桌面端与手机版不能同时写入。</li></ol><p class="guide-note">SQN100-2/-4 的本批国内组合、SQC100-4／移动、未核实的 SQW100-2、其他 MNC 与 ISIM 不开放本批试装。缺少 Root 材料、原生文件未知或恢复条件不满足时，不能靠勾选同意或套用其他型号镜像绕过。</p><p><a href="https://github.com/Octo-o-o-o/bb10-volte/blob/v0.5.0-r15/docs/VARIANT-LOCAL-TRIALS.md" target="_blank" rel="noopener noreferrer">完整试测说明与结果表</a></p></section>
 
-        <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+        <section class="chapter guide-section" id="prepare" aria-labelledby="prepare-title"><h2 id="prepare-title">准备与风险</h2><p>先在“设置 → 关于”核对准确硬件变体。三网自动适配适用于已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport（Q30）SQW100-4，系统 10.3.3.3216，原生文件哈希必须匹配。</p><ul class="guide-list"><li>使用移动 460-00、联通 460-01、电信 460-11 的 USIM，无 ISIM；套餐已开通 VoLTE，LTE 数据正常。</li><li>首次安装需要稳定的 USB 数据线、本人 Root SSH 私钥和可信主机密钥。</li><li>Windows 10/11 x64；Mac：Apple 芯片需 macOS 11+，Intel 需 macOS 10.15+。两者无需另装 Python。r14 已完成 Apple 芯片 Mac＋Q20 的首次 Root 原生链路及重启自启验收；Intel 未实机运行。</li><li>先备份手机。Q10、Q20、Passport 的首次 Root 准备约需 15 GB，旧系统升级需约 24 GB。应用按准确机型选择固件；刷写会清空数据。r14 已验收 Windows／Passport 与 Apple 芯片 Mac／Q20 的首次 Root 原生链路；完整首次使用 GUI、Q10 首次 Root、Intel 刷写和旧系统升级仍待验收，严禁跨机型刷写。</li><li>长期待机、漫游、其他地区及紧急呼叫尚未完整验证。</li></ul><div class="guide-table-wrap"><table class="guide-table"><caption>9 / 9 项功能验收通过 · 2026 年 11 月 1 日</caption><thead><tr><th scope="col">实测机型</th><th scope="col">中国移动</th><th scope="col">中国联通</th><th scope="col">中国电信</th></tr></thead><tbody><tr><th scope="row">Q10 SQN100-3</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Q20 SQC100-2</th><td>已支持</td><td>已支持</td><td>已支持</td></tr><tr><th scope="row">Passport SQW100-4</th><td>已支持</td><td>已支持</td><td>已支持</td></tr></tbody></table></div><p>最新版已支持以上九项组合。具体测试时间、版本和证据保留在验收记录中。</p></section>
+
+        <section class="chapter guide-section" id="start" aria-labelledby="start-title"><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r15/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
           <p class="eyebrow">02 · 获取与启动</p>
           <h2 id="start-title">Windows / macOS 启动</h2>
           <div class="platform-grid">
@@ -98,7 +207,7 @@
               <h3 id="windows-title">Windows</h3>
               <p><strong>Windows 10 / 11 · 64 位（x64）</strong>。不支持 Windows 7、8 / 8.1 及 32 位系统。</p>
               <ol class="step-list">
-                <li>下载当前版本的 <code data-package-file="windows">bb10-volte-0.5.0-r14-windows-x64.exe</code> 及 Release 中同名 <code>.exe.sha256</code>。</li>
+                <li>下载当前版本的 <code data-package-file="windows">bb10-volte-0.5.0-r15-windows-x64.exe</code> 及 Release 中同名 <code>.exe.sha256</code>。</li>
                 <li>先按本页 <a href="#verify">SHA-256 校验</a>核对文件，再双击 EXE。Python、Tcl/Tk、SSH/SCP、运营商模板和手机端载荷均已内置。</li>
                 <li>这是单文件便携版，启动时会解压到系统临时目录，正常退出后清理。启动和日常使用不需要管理员权限；首次安装 USB 驱动时会单独出现 Windows UAC 提示。</li>
               </ol>
@@ -109,7 +218,7 @@
               <h3 id="macos-title">macOS</h3>
               <p><strong>Apple 芯片 macOS 11+ · Intel macOS 10.15+</strong>。首次 Root 准备另需 macOS 14 或更新版本。</p>
               <ol class="step-list">
-                <li>下载当前版本的 <code data-package-file="mac">bb10-volte-0.5.0-r14-macos-universal.dmg</code> 及同名 <code>.dmg.sha256</code>，先核对 SHA-256。</li>
+                <li>下载当前版本的 <code data-package-file="mac">bb10-volte-0.5.0-r15-macos-universal.dmg</code> 及同名 <code>.dmg.sha256</code>，先核对 SHA-256。</li>
                 <li>打开 DMG，将 <code>bb10-volte.app</code> 拖入“应用程序”，再从“应用程序”启动。无需另装 Python、Tk 或 OpenSSH；应用使用 macOS 自带的 SSH/SCP。</li>
                 <li>用 USB 数据线连接并解锁手机，允许 Mac 提示的附件连接。没有 USB 网络时，在手机“设置 → 存储和访问 → USB 连接”中核对“连接至 Mac”。</li>
               </ol>
@@ -166,18 +275,18 @@
 
           <figure class="code-block">
             <figcaption>Windows PowerShell</figcaption>
-            <pre><code data-checksum-command="windows">Get-FileHash "$HOME\Downloads\bb10-volte-0.5.0-r14-windows-x64.exe" -Algorithm SHA256</code></pre>
+            <pre><code data-checksum-command="windows">Get-FileHash "$HOME\Downloads\bb10-volte-0.5.0-r15-windows-x64.exe" -Algorithm SHA256</code></pre>
           </figure>
 
           <figure class="code-block">
             <figcaption>macOS 终端</figcaption>
-            <pre><code data-checksum-command="mac">shasum -a 256 "$HOME/Downloads/bb10-volte-0.5.0-r14-macos-universal.dmg"</code></pre>
+            <pre><code data-checksum-command="mac">shasum -a 256 "$HOME/Downloads/bb10-volte-0.5.0-r15-macos-universal.dmg"</code></pre>
           </figure>
 
           <p>命令会输出 64 位十六进制摘要，必须与 Release 同名校验文件中的 SHA-256 <strong>逐位一致</strong>（字母大小写不影响比较）。不要只看前几位。摘要不一致、文件来源不同或无法确认时，不要运行；删除后重新从 Release 下载。</p>
           <div class="guide-actions guide-download-links">
-            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe">Windows 下载地址</a>
-            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg">macOS 下载地址</a>
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe">Windows 下载地址</a>
+            <a class="text-link" target="_blank" rel="noopener noreferrer" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg">macOS 下载地址</a>
           </div>
         </section>
 

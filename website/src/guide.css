@@ -125,6 +125,10 @@
 
 .guide-section {
   display: block;
+  font-family: var(--heading);
+  font-size: 1rem;
+  letter-spacing: normal;
+  line-height: 1.8;
   scroll-margin-top: 6rem;
   padding: 0 0 clamp(3.5rem, 7vw, 5.5rem);
   margin: 0 0 clamp(3.5rem, 7vw, 5.5rem);
@@ -621,3 +625,18 @@
     display: flex;
   }
 }
+
+/* Illustrated first-use tutorial; full screenshots are never cropped. */
+.tutorial-jump { display:flex; flex-wrap:wrap; gap:.5rem; margin:1.4rem 0; }
+.tutorial-jump a { border:1px solid var(--line); border-radius:.6rem; padding:.55rem .8rem; color:var(--text); text-decoration:none; font-size:.9rem; }
+.tutorial-jump a:hover { border-color:var(--accent); }
+.tutorial-video video { display:block; width:100%; height:auto; aspect-ratio:3/2; background:#111b29; border-radius:12px; }
+.tutorial-video p, .tutorial-shot figcaption { font-size:.88rem; line-height:1.7; }
+.tutorial-shot { margin:1.5rem 0; }
+.tutorial-shot a { display:block; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.tutorial-shot img { display:block; width:100%; height:auto; object-fit:contain; }
+.tutorial-result { padding:1rem 1.25rem; border-left:3px solid var(--accent); background:var(--surface); line-height:1.8; }
+.tutorial-help { margin-top:1rem; padding:1rem 1.25rem; border:1px solid var(--line); border-radius:8px; }
+.tutorial-help summary { cursor:pointer; font-weight:650; }
+.tutorial-help p { margin-bottom:0; }
+.tutorial-step { scroll-margin-top:7rem; }

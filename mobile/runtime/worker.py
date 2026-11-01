@@ -21,7 +21,8 @@ DOCS = '/accounts/1000/shared/documents'
 SDCARD = '/accounts/1000/removable/sdcard'
 PROFILE_IDS = ('china-unicom', 'china-mobile', 'china-telecom', 'china-telecom-46011')
 JOB_ACTIONS = ('install', 'enable', 'disable', 'update', 'rollback', 'uninstall',
-               'export', 'compatibility', 'legacy-install', 'legacy-start', 'legacy-stop')
+               'export', 'compatibility', 'legacy-install', 'legacy-start', 'legacy-stop',
+               'legacy-update', 'legacy-uninstall')
 TERMINAL = ('completed', 'failed', 'interrupted')
 
 # Text is selected by state, never by a free-form native exception or modem log.
@@ -227,6 +228,10 @@ def inspect(request, folder):
                   actions=['status', 'compatibility', 'legacy-inspect'])
     details['carrier'] = result.get('operator', 'unknown')
     details['installed'] = bool(result.get('installed'))
+    if result.get('scope_error'):
+        details['error_code'] = result['scope_error']
+        return ui('unsupported', language, 'compatibility', details,
+                  actions=['status', 'compatibility', 'legacy-inspect'])
     if result.get('installed_stage') == 'pending' and result.get('phase') in (
             'stop_requested', 'awaiting_reboot', 'awaiting_final_reboot', 'removing_hook', 'removing_payload'):
         details['phase'] = result['phase']
@@ -526,12 +531,34 @@ def job_response(job, request):
 def profile_for(request, folder):
     e.require(request.get('experimental') is True, 'experimental_opt_in_required')
     profile_id = request.get('profile_id')
-    e.require(profile_id in PROFILE_IDS, 'invalid_profile')
+    trials = load(folder + '/materials/variant-trials.json')
+    identifiers = [case['profile_id'] for case in trials['cases']]
+    e.require(profile_id in PROFILE_IDS or profile_id in identifiers, 'invalid_profile')
     import profiles
     profile = load(folder + '/profiles/' + profile_id + '.json')
     profile['runtime']['autostart'] = False
     profiles.validate(profile)
+    if profile_id in identifiers:
+        target = profiles.trial_target(profile)
+        case = next(case for case in trials['cases'] if case['profile_id'] == profile_id)
+        e.require(target == {'variant': case['variant'], 'operator': case['operator']}, 'invalid_profile')
     return profile
+
+
+def validate_legacy_target(profile, facts, action, folder):
+    import profiles
+    target = profiles.trial_target(profile)
+    if target is None:
+        # Generic historic profiles must not bypass exact trial identities or
+        # the two extra native-image gates on newly exposed variants.
+        e.require(facts.get('variant') in ('SQN100-3', 'SQC100-2', 'SQW100-4'),
+                  'trial_exact_profile_required')
+        return
+    cases = load(folder + '/materials/variant-trials.json')['cases']
+    case = next(item for item in cases if item['profile_id'] == profile['id'])
+    e.require(facts.get('variant') == target['variant'], 'trial_exact_variant_required')
+    e.require(action == 'legacy-inspect' or case['route'] == 'manual_candidate',
+              'trial_read_only_lifecycle_pending')
 
 
 def legacy_command(action, request, folder, stage=None):
@@ -575,7 +602,7 @@ def run_operation(job):
         profile = profile_for(request, folder)
         with m.management_lock():
             e.require(not os.path.lexists(m.BASE + '/payload.json'), 'unified_installation_present')
-            stage = stage_payload(folder, job['id'], True, profile) if action == 'legacy-install' else None
+            stage = stage_payload(folder, job['id'], True, profile) if action in ('legacy-install', 'legacy-update') else None
             progress(job, 'legacy_installing' if action == 'legacy-install' else action)
             return legacy_command(action, request, folder, stage)
     if action == 'install':
@@ -799,14 +826,22 @@ def dispatch(action, request, folder):
             state = inspect(request, folder)
             report['status'] = {'state': state['state'], 'details': state['details']}
             name = 'diagnostics.json'
-        path = export_blobs({name: e.canonical(report)}, request.get('backup_location', 'internal'), operation)
+        blobs = {name: e.canonical(report)}
+        if os.path.isfile(ROOT + '/last-trial-report.json'):
+            trial = load(ROOT + '/last-trial-report.json')
+            if trial.get('snapshot') == os.path.basename(folder):
+                trial['observation'] = 'last_checked_not_live'
+                blobs['last-trial-report.json'] = e.canonical(trial)
+        path = export_blobs(blobs, request.get('backup_location', 'internal'), operation)
         return ui('exported', language, details={'path': path, 'identity_data_included': False})
     if action == 'legacy-inspect':
         profile_for(request, folder)
         request = dict(request, operation_id=request.get('operation_id') or nonce())
         report = legacy_command(action, request, folder)
+        save(ROOT + '/last-trial-report.json', {'schema': 1, 'snapshot': os.path.basename(folder),
+                                               'profile_id': request['profile_id'], 'report': report})
         actions = ['legacy-inspect', 'compatibility']
-        for suffix in ('install', 'start', 'stop'):
+        for suffix in ('install', 'start', 'stop', 'update', 'uninstall'):
             if report.get('can_' + suffix) is True:
                 actions.append('legacy-' + suffix)
         return ui('experimental', language, 'legacy-inspect', report, actions=actions)
