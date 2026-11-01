@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -79,8 +79,8 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r9';
-  const basename = 'bb10-volte-0.5.0-r9';
+  const tag = 'v0.5.0-r10';
+  const basename = 'bb10-volte-0.5.0-r10';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
     `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,
@@ -110,7 +110,7 @@ test('an older API release cannot downgrade curated downloads or mix mirror vers
   await page.goto('/guide.html');
   await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-download="windows"]').first()).toHaveAttribute('href', windowsFallback);
-  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', /github\.com\/.*\/v0\.5\.0-r9\/bb10-volte-0\.5\.0-r9-windows-x64\.exe$/);
+  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', /github\.com\/.*\/v0\.5\.0-r10\/bb10-volte-0\.5\.0-r10-windows-x64\.exe$/);
 });
 
 test('guide uses a readable single-column article on desktop', async ({ page }) => {

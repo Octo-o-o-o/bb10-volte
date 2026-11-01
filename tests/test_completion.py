@@ -7,11 +7,12 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+import i18n
+i18n.LANGUAGE = 'zh'  # Set the fixture language before modules cache translated labels.
 import build_windows
 import check_release
 import completion_dialog
 import gui
-import i18n
 from support_config import CONTACT_EMAIL, OCTOLAB_URL, PROJECT_WEBSITE_URL, QR_FILES, REPOSITORY_URL
 
 

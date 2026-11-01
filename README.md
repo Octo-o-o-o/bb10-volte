@@ -16,10 +16,10 @@
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r9/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r10/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。本轮 Mac 真实 USB 验收按机主安排暂缓。
 

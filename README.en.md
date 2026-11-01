@@ -16,10 +16,10 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r9/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/bb10-volte-0.5.0-r10-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r10/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r10/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. Current Mac physical USB acceptance is deferred at the owner's request.
 
