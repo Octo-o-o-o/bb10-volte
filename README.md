@@ -70,7 +70,7 @@ EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系
 
 ### 首次 Root 与连接
 
-已 Root 且有可信 SSH 的手机无需重新刷机。Windows 提供 Q10 首次准备向导；macOS 14+ 提供原生实验入口。首次 Root 刷写会清空数据，必须备份并使用准确型号的固件，约需 15 GB 空间；未 Root 手机的实际首刷尚未完成验收。Q20、Passport 仍需各自匹配的 Root 方法，禁止刷入 Q10 镜像。
+已 Root 且有可信 SSH 的手机无需重新刷机。当前源码与 `0.5.0-r11` 构建已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过，新的向导首刷尚未在未 Root 手机上验收；Mac 原生流程仍需实机验收。准备至少 15 GB 空间。导入后点击“自动准备 Root 镜像”，完成后再确认刷写，见[首次使用](docs/FIRST-RUN.md)。
 
 固件浏览器下载支持[极空间](https://t3.znas.cn/9jkbxczhAK4)及应用内百度网盘备用入口；下载后按机型校验导入，分享有效期以网页为准。它们与本页的 EXE/DMG 下载不同。见[首次使用](docs/FIRST-RUN.md)、[Mac 指南](docs/MACOS.md)和[连接说明](docs/GUI.md)。
 

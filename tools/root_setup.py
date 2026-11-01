@@ -1,4 +1,4 @@
-"""First-use preparation and explicitly confirmed Windows Q10 Root workflow."""
+"""First-use preparation and explicitly confirmed, model-bound Root workflow."""
 from i18n import tr
 import json
 import hashlib
@@ -224,7 +224,7 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
     folder = private_root() / ('root-kit-' + uuid.uuid4().hex[:12])
     progress(tr('生成本设备使用的个人密钥与 Root 镜像'))
     import prepare_root
-    prepare_root.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder),
+    prepare_root.main(['--variant', variant, '--seven-zip', str(tools['seven_zip']), '--output', str(folder),
                        '--cache', str(tools['cache']), '--openssl-dir', str(tools['openssl']),
                        '--ssh-keygen', str(tools['keygen'])])
     progress(tr('构建并校验系统与无线镜像；此步骤尚不刷写手机'))
@@ -242,6 +242,13 @@ def prepared_images(folder, allowed_stages=('prepared',)):
     build = json.loads((folder / 'build-verification.json').read_text(encoding='utf-8'))
     if build.get('offline_build_verified') is not True or len(build.get('images', [])) != 2:
         raise SetupError('image_not_verified')
+    stock = stock_firmware(state['variant'])
+    # Existing Q10 journals predate model-bound receipts. They are Q10-only.
+    legacy = 'variant' not in build and stock['family'] == 'q10'
+    if not legacy and (build.get('variant') != state['variant'] or build.get('firmware_id') != stock['id'] or
+                       build.get('stock_sha256') != stock['extracted_sha256'] or
+                       build.get('platform') != state.get('platform', 'win32')):
+        raise SetupError('image_not_verified')
     images = []
     suffixes = ('_os.unsigned', '_radio.signed') if state.get('platform') == 'darwin' else ('_os.exe', '_radio.exe')
     for suffix in suffixes:
@@ -249,6 +256,9 @@ def prepared_images(folder, allowed_stages=('prepared',)):
         if len(items) != 1 or Path(items[0]['file']).name != items[0]['file']:
             raise SetupError('image_not_verified')
         item = items[0]
+        expected_name = Path(stock['extracted_file']).stem + suffix
+        if item['file'] != expected_name and not (legacy and item['file'] == 'Q10' + suffix):
+            raise SetupError('image_not_verified')
         path = folder / 'images' / item['file']
         if path.is_symlink() or path.stat().st_size != item['bytes'] or sha(path) != item['sha256']:
             raise SetupError('image_not_verified')
@@ -306,7 +316,7 @@ def flash_root(folder, confirmed, progress):
     if state.get('platform', 'win32') != sys.platform:
         raise SetupError('root_platform_mismatch')
     usb = local_usb_state()
-    if usb.get('usb_count') != 1 or usb['device'].get('ModelName') != state['variant']:
+    if usb.get('usb_count') != 1 or (usb.get('device') or {}).get('ModelName') != state['variant']:
         raise SetupError('device_model_not_verified')
     if sys.platform == 'darwin' and usb.get('usb_address_ready') is not True:
         raise SetupError('usb_source_address_required')

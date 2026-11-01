@@ -156,7 +156,7 @@ def main():
     forbidden = ('private/', 'downloads/', 'ssh_config', 'known_hosts', 'q10_root_rsa', 'q10_host_rsa')
     assert not any(any(token in name for token in forbidden) for name in index)
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
-    assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
+    assert {'root_setup', 'root_images', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
             'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy',

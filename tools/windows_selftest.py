@@ -123,6 +123,7 @@ def run(output):
     assert wizard.import_firmware_button.cget('command')
     assert wizard.backup_download_button.cget('command')
     assert wizard.copy_backup_download_button.cget('command')
+    assert wizard.copy_domestic_download_button.cget('command')
     assert wizard.firmware_urls == []
     assert str(wizard.download_firmware_button.cget('state')) == 'disabled'
     wizard.variant.set('SQN100-3')
@@ -149,7 +150,17 @@ def run(output):
         assert item['backup_manual_download_code'] in wizard.backup_download_hint.cget('text')
         assert str(wizard.domestic_download_button.cget('state')) == 'normal'
         assert str(wizard.download_firmware_button.cget('state')) == 'normal'
-        assert str(wizard.prepare_button.cget('state')) == 'disabled'
+        assert str(wizard.prepare_button.cget('state')) == 'normal'
+        assert str(wizard.copy_domestic_download_button.cget('state')) == 'normal'
+        from root_images import recipe
+        stock, expected = recipe(variant)
+        assert stock['id'] == item['id'] == expected['firmware_id']
+        assert stock['extracted_sha256'] == expected['stock_sha256']
+        wizard.imported_variant = variant
+        wizard.ack.set(True)
+        assert str(wizard.flash_button.cget('state')) == 'disabled'
+        assert variant in wizard.root_hint.cget('text')
+        assert tr('自动准备 Root 镜像') in wizard.root_hint.cget('text')
         try:
             selected_firmware_variant('SQN100-3', wizard.usb)
         except SetupError as error:
@@ -290,6 +301,10 @@ def run(output):
               'device_firmware_routing_verified': True,
               'firmware_without_q10_default_verified': True,
               'domestic_manual_download_ui_verified': True,
+              'domestic_copy_link_ui_verified': True,
+              'q20_passport_root_preparation_enabled': True,
+              'model_bound_root_recipes_verified': True,
+              'import_requires_root_image_preparation_verified': True,
               'baidu_backup_download_ui_verified': True,
               'offline_material_import_verified': True,
               'existing_root_recovery_ui_verified': True,

@@ -68,7 +68,7 @@ Recognized old payloads are stopped and restored before upgrade. Restart to clea
 
 ## First-time Root and connections
 
-An already-rooted phone with trusted SSH does not need reflashing. Windows provides Q10 preparation; macOS 14+ has an experimental native preparation path. First-time Root flashing erases data, requires matching firmware and about 15 GB of storage, and has not been accepted on an unrooted phone. Q20 and Passport require their own matching Root methods; never flash the Q10 image onto them.
+An already-rooted phone with trusted SSH does not need reflashing. Current source and `0.5.0-r11` builds integrate automatic Root preparation and staged flashing for Q10, Classic (Q20), and Passport (Q30). Select firmware for the exact hardware variant; initial flashing erases data. Offline Windows builds and verification passed for all three firmware families. The new wizard has not been validated by first-flashing an unrooted phone, and native Mac hardware acceptance remains pending. Allow at least 15 GB. After importing firmware, prepare Root images before confirming flashing. See [First use](docs/FIRST-RUN.en.md).
 
 Stock-firmware browser alternatives include [ZSpace](https://t3.znas.cn/9jkbxczhAK4) and Baidu links inside the app, with model-specific import checks. Those downloads are separate from the desktop EXE/DMG. See [First run](docs/FIRST-RUN.en.md), [Mac](docs/MACOS.en.md) and [GUI](docs/GUI.en.md).
 

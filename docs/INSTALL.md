@@ -6,7 +6,7 @@
 
 本文面向 Windows。常驻版已完成单机正常重启、脱离电脑和双向短通话验证，仍属于实验版本；具体证据和限制以 [VALIDATION.md](VALIDATION.md) 为准。
 
-Windows 用户可直接从源码 GUI 或 EXE 的“首次使用”完成自动准备与确认后的 Q10 刷写，详见[首次使用](FIRST-RUN.md)。以下保留手动脚本步骤，便于维护和核对。
+Windows 用户可直接从源码 GUI 或 EXE 的“首次使用”完成按机型自动准备与确认后的 Q10 / Q20 / Q30 刷写，详见[首次使用](FIRST-RUN.md)。以下保留手动脚本步骤，便于维护和核对。
 
 ## 1. 核对设备与基线
 
@@ -16,21 +16,21 @@ Windows 用户可直接从源码 GUI 或 EXE 的“首次使用”完成自动�
 
 新电脑还需按 [Windows USB 驱动步骤](WINDOWS-USB.md) 准备并验证连接，再执行初次 Root。
 
-## 2. Q10 初次 Root 与自有 SSH 身份（其他机型需使用各自方法）
+## 2. 初次 Root 与自有 SSH 身份（以下以 Q10 为例）
 
 1. 进入本项目目录；按 [材料清单](../materials/README.md) 下载文件到 `downloads/`。
 2. 运行材料检查：
 
    ```powershell
-   python tools/fetch_materials.py --verify-only
+   python tools/fetch_materials.py --variant SQN100-3 --verify-only
    ```
 
-   缺失材料可运行 `python tools/fetch_materials.py` 下载，或使用浏览器下载到清单指定文件名后重新校验。
+   缺失材料可运行 `python tools/fetch_materials.py --variant SQN100-3` 下载，或使用浏览器下载到清单指定文件名后重新校验。
 
 3. 准备独立 Root 工作目录及个人密钥。此操作只处理电脑文件，不连接或刷写手机：
 
    ```powershell
-   python tools/prepare_root.py --seven-zip "C:\Program Files\7-Zip\7z.exe"
+   python tools/prepare_root.py --variant SQN100-3 --seven-zip "C:\Program Files\7-Zip\7z.exe"
    ```
 
    生成目录为 `private/root-kit/`。脚本会保留 AppWorld，关闭 BerryCore 全目录授权，使用新生成的个人 SSH/主机密钥，替换包内默认授权。输入文件和依赖哈希不符时停止。
@@ -66,7 +66,7 @@ python tools/bb10.py setup --ssh-config private/root-kit/ssh_config
 
 安装器在修改网络配置前校验原生文件、原始策略 `00`、既有 IMS/VPN 与软件算法提供器。若提示已有实验进程或配置，先收尾原实验，不能删除未知对象来强行通过。
 
-v0.3.0 支持机型自动识别、运营商配置和明确实验试用，见 [配置指南](PROFILES.md)。桌面只校验固定清单；手机写入前再次预检。`setup` 安装、回读、启动并观察注册；`install` 只安装，`update` 只更新，`check` 等同 `preflight`。不符合条件的预检退出码 2，执行错误为 1。Root 镜像准备部分仍只适用于 Q10，Q20 / Q30 需另行准备对应 Root SSH。
+v0.3.0 支持机型自动识别、运营商配置和明确实验试用，见 [配置指南](PROFILES.md)。桌面只校验固定清单；手机写入前再次预检。`setup` 安装、回读、启动并观察注册；`install` 只安装，`update` 只更新，`check` 等同 `preflight`。不符合条件的预检退出码 2，执行错误为 1。Root 镜像准备支持按准确型号选择 Q10 / Q20 / Q30 对应固件，示例中的 `SQN100-3` 必须替换为实际机型。
 
 手机上安装到 `/var/rootdata/q10_volte`。启动入口为 `/var/addons/q10-unicom-volte/init/start.sh`，使用已安装 AutoRoot v4 的 addon 机制。原厂 `/radio/bin/ims_rrm` 不被覆盖。服务自己管理进程，电脑命令返回后继续运行。
 

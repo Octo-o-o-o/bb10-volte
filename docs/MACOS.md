@@ -22,7 +22,7 @@
 
 ### 手机尚未 Root
 
-r6在 macOS 14+ 集成原生首次 Root 准备和确认后的分阶段执行，仍属**未实机首刷验收的实验功能**；请使用 `0.3.2-r6` 或更新版本，旧 r5 DMG 没有这个入口。请先备份并核对匹配型号的方法；当前配方只支持 Q10，具体步骤及暂停条件见[Mac 首次 Root](#mac-能否首次-root)。**未 Root 的 Q20 / Passport（Q30）目前没有已集成的匹配首刷材料，不能使用 Q10 自动配方。** 这些型号需先核对具体硬件变体，再分别接入匹配固件、loader 与 Root 方法，禁止刷入 Q10 镜像。首次 Root 会清空数据，详见[首次使用](FIRST-RUN.md)。USB 网络和开发模式都不能代替 Root。
+当前源码与 `0.5.0-r11` 构建已接入 Q10、Classic（Q20）、Passport（Q30）的自动 Root 准备和分阶段刷写。请按准确硬件型号选择对应固件；首次刷写会清空数据。Windows 三款固件的离线构建与校验已通过，新的向导首刷尚未在未 Root 手机上验收；Mac 原生流程仍需实机验收。 macOS 14+ 使用原生工具，单独确认后打开 Terminal 按阶段执行，见[Mac 首次 Root](#mac-能否首次-root)。USB 网络和开发模式都不能代替 Root。
 
 ### 手机已 Root，有本人的连接材料
 
@@ -61,7 +61,7 @@ r6在 macOS 14+ 集成原生首次 Root 准备和确认后的分阶段执行，�
 
 ### 实验流程与条件
 
-1. 仅适用于当前固定固件配方的 Q10，先从手机“关于”核对 `SQN100-1` 至 `SQN100-5` 变体并备份数据。准备至少 15 GB 空间。**首次刷写会清空手机数据**；已 Root 只缺连接材料时使用恢复连接，不用首刷修复密钥。
+1. 先从手机“关于”核对 Q10 `SQN100-*`、Q20 `SQC100-*` 或 Passport `SQW100-*` 的准确变体并备份数据。准备至少 15 GB 空间。**首次刷写会清空手机数据**；已 Root 只缺连接材料时使用恢复连接，不用首刷修复密钥。
 2. 在“首次使用 → 首次 Root”选择实际变体，点击“自动准备 Root 镜像”。**此步骤只在 Mac 准备文件，不连接 BootROM、不刷手机**。工具链要求 macOS 14+，与日常 GUI 的系统范围分开；应用获取固定官方 AutoRoot/7-Zip 和匹配架构的 bb10mt，以及固定 Homebrew 官方 libusb/LZO 包。只解包到个人工作目录，保留许可并核验 SHA-256，不需要安装 Homebrew、全局库或关闭安全设置。
 3. 每套工作目录生成独立个人登录密钥和手机主机密钥，替换默认授权、保留 AppWorld。构建后核对原厂分区和 radio 散列；原生执行使用构建出的 unsigned OS 载荷及原版 signed radio，不在 Mac 双击 Windows `.exe` autoloader。镜像构建与实际刷入分别验收。
 4. 核对备份和机型后，勾选“已备份并核对机型，同意清空手机数据”；Mac 还须勾选“已核对手机尚未 Root，理解 Mac 首刷尚未实机验收”。点击“开始刷写 Root”后仍需单独确认清空。程序再次验证唯一 USB 手机及实际变体、镜像/工具散列和电脑 USB 地址 `169.254.0.2`；已有有效 Root 或明确密钥问题会阻止重刷。不能通过更改其他网卡、默认网关或 DNS 来消除错误。
@@ -74,7 +74,7 @@ r6在 macOS 14+ 集成原生首次 Root 准备和确认后的分阶段执行，�
 
 [AutoRoot v4 原作者说明](https://bb10.root.sx/blog/autoroot-v4)给出 Linux/macOS 的 `bb10mt batch` 镜像构建用法。固定提交 [`d45b66b` 的 README](https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/README.md)、[Darwin 构建目标](https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/bb10mt.lpi)与 [USB 刷写实现](https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/uflash.pas)包含 Apple Silicon/Intel 原生目标及 flash/BootROM 逻辑。源码存在这些能力不等于本机实刷成功。
 
-本机 arm64 原生工具 `--help`、Q10 离线准备与 `batch` 构建已完成；4 个原厂分区的大小/散列及 radio 原散列核对通过，产出个人密钥对应的 unsigned OS 与原版 signed radio。源码 Root 诊断另外通过已有可信连接只读验证有效 UID 0，临时目录检查前后均为原有 22 个。**这些不证明 Mac 首刷成功**；没有执行会连接 BootROM/重启手机的 `info`、`loader` 或 `flash`。已启动操作自然结束后，按用户选择只开发、不再新增测试；Q30 的具体变体和匹配首刷材料仍待就绪。见[开发检查记录](../materials/macos-development-2026-10-29.json)及[独立验收范围](VALIDATION.md#本分支-mac-首次-root-集成不代表实刷验收)。
+2026-10-29 的 Mac 验证记录：arm64 原生工具 `--help`、Q10 离线准备与 `batch` 构建已完成；4 个原厂分区的大小/散列及 radio 原散列核对通过，产出个人密钥对应的 unsigned OS 与原版 signed radio。源码 Root 诊断另外通过已有可信连接只读验证有效 UID 0，临时目录检查前后均为原有 22 个。**这些不证明 Mac 首刷成功**；没有执行会连接 BootROM/重启手机的 `info`、`loader` 或 `flash`。已启动操作自然结束后，按用户选择只开发、不再新增测试；当时 Q30 的具体变体和匹配首刷材料尚未就绪。本次已接入三类机型的对应材料和构建分支，Mac 原生构建与实刷仍需另行验收。见[开发检查记录](../materials/macos-development-2026-10-29.json)及[独立验收范围](VALIDATION.md#本分支-mac-首次-root-集成不代表实刷验收)。
 
 ## 在 Mac 上准备构建
 
