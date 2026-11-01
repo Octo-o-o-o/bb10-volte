@@ -203,6 +203,8 @@ class SetupWizard(tk.Toplevel):
         self.prepare_button.pack(anchor='w', pady=(0, 8))
         self.root_hint = ttk.Label(root_tab, wraplength=730, justify='left')
         self.root_hint.pack(anchor='w', pady=(0, 12))
+        self.root_detect_button = ttk.Button(root_tab, text=tr('重新检测连接与机型'), command=self.detect)
+        self.root_detect_button.pack(anchor='w', pady=(0, 8))
         self.root_firmware_button = ttk.Button(root_tab, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
         self.root_firmware_button.pack(anchor='w', pady=(0, 12))
         self.ack_check = ttk.Checkbutton(root_tab, text=tr('已备份并核对机型，同意清空手机数据'), variable=self.ack)
@@ -243,7 +245,7 @@ class SetupWizard(tk.Toplevel):
             self.detect()
 
     def refresh(self):
-        for button in (self.detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button,
+        for button in (self.detect_button, self.root_detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button,
                        self.browser_download_button, self.copy_download_button, self.browse_firmware_button, self.import_firmware_button):
             button.configure(state='disabled' if self.busy else 'normal')
         try:
@@ -307,8 +309,10 @@ class SetupWizard(tk.Toplevel):
     def flash_blocker(self, variant):
         if self.busy:
             return tr('正在处理，请等待当前步骤完成。')
+        prepared_hint = (tr('已保留 {} 的 Root 镜像。请先重新检测连接与机型，核对目标手机后再确认刷写。').format(self.variant.get())
+                         if self.kit else None)
         if not variant:
-            return tr('请先确认准确机型，再获取对应固件和准备 Root 镜像。')
+            return prepared_hint or tr('请先确认准确机型，再获取对应固件和准备 Root 镜像。')
         if variant not in catalog()['auto_root_variants']:
             return MESSAGES['root_model_unsupported']
         if sys.platform not in ('win32', 'darwin'):
@@ -326,7 +330,7 @@ class SetupWizard(tk.Toplevel):
                     if self.imported_variant == variant else
                     tr('下一步：点击“自动准备 Root 镜像”。可先在上方导入固件，也可由应用自动下载。'))
         if self.usb.get('usb_count') != 1 or (self.usb.get('device') or {}).get('ModelName') != variant:
-            return MESSAGES['device_model_not_verified']
+            return prepared_hint
         if sys.platform == 'darwin' and self.usb.get('usb_address_ready') is not True:
             return MESSAGES['usb_source_address_required']
         if not self.ack.get():
@@ -597,6 +601,12 @@ class SetupWizard(tk.Toplevel):
                         self.device.configure(text=model + ' · ' + (device.get('PlatformVersion') or tr('系统待确认')))
                         if self.usb.get('usb_count') == 1 and model in firmware_variants():
                             self.variant.set(model)
+                        elif self.kit and (self.usb.get('usb_count') != 1 or not device.get('ModelName')):
+                            # Missing or ambiguous metadata is not evidence of a
+                            # different model. Keep the prepared selection, but
+                            # require a new verified connection and confirmation.
+                            self.ack.set(False)
+                            self.mac_flash_ack.set(False)
                         elif self.usb.get('usb_count') or self.usb.get('usb_present') or device:
                             self.variant.set('')
                         yesno = lambda value: tr('已就绪') if value is True else tr('未就绪') if value is False else tr('待确认')

@@ -4,6 +4,8 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    '重新检测连接与机型': 'Recheck connection and model',
+    '已保留 {} 的 Root 镜像。请先重新检测连接与机型，核对目标手机后再确认刷写。': 'Prepared Root images for {} are retained. Recheck the connection and model, verify the target phone, then confirm flashing again.',
     '此硬件型号尚无自动 Root 配方，请先核对准确型号。': 'No automatic Root recipe is available for this hardware variant. Check the exact model first.',
     'Root 镜像构建失败，尚未刷写手机。请保留本机 root-build.log，核对失败原因后再准备。': 'Root image preparation failed before flashing. Keep the local root-build.log and check the cause before preparing again.',
     'macOS 14+ 原生实验流程：按准确型号准备镜像，确认后打开 Terminal 刷写；Apple 芯片 Mac／Q20 已完成原生首刷验收，其他组合仍待验证。': 'Experimental native workflow on macOS 14+: prepare model-matched images and confirm before flashing in Terminal. Apple Silicon Mac/Q20 passed native first flashing; other combinations remain unverified.',

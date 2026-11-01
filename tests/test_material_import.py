@@ -306,6 +306,71 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(self.wizard.kit, 'prepared Q10 kit')
         self.assertTrue(self.wizard.ack.get())
 
+    def test_root_page_rechecks_phone_connected_after_offline_preparation(self):
+        self.wizard.variant.set('SQC100-3')
+        self.wizard.kit = 'prepared Q20 kit'
+        self.wizard.usb = {'usb_count': 0, 'device': {}}
+        self.wizard.refresh()
+        self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+        self.assertEqual(self.wizard.root_detect_button.winfo_parent(), self.wizard.prepare_button.winfo_parent())
+        usb = {'usb_count': 1, 'usb_present': True, 'usb_network': True, 'usb_address_ready': True,
+               'device': {'ModelName': 'SQC100-3', 'PlatformVersion': '10.3.3.3216'}}
+        with patch.object(w, 'local_usb_state', return_value=usb) as probe, \
+                patch.object(w, 'verify_root', side_effect=w.WorkflowError('connection_refused')):
+            self.wizard.root_detect_button.invoke()
+        self.drain()
+        probe.assert_called_once_with()
+        self.assertEqual(self.wizard.tabs.index(self.wizard.tabs.select()), 1)
+        self.assertEqual(self.wizard.kit, 'prepared Q20 kit')
+        self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+        self.wizard.ack.set(True)
+        self.wizard.mac_flash_ack.set(True)
+        self.assertEqual(str(self.wizard.flash_button.cget('state')), 'normal')
+
+    def test_uncertain_detection_retains_images_but_requires_new_confirmation(self):
+        valid = {'usb_count': 1, 'usb_address_ready': True,
+                 'device': {'ModelName': 'SQN100-3', 'PlatformVersion': '10.3.3.3216'}}
+        for usb in ({'usb_count': 0, 'device': {}},
+                    {'usb_count': 1, 'device': {}},
+                    {'usb_count': None, 'device': {}},
+                    {'usb_count': 2, 'device': valid['device']}):
+            with self.subTest(usb=usb):
+                self.wizard.usb = valid
+                self.wizard.kit = 'prepared Q10 kit'
+                self.wizard.ack.set(True)
+                self.wizard.mac_flash_ack.set(True)
+                self.detect_result(usb)
+                self.assertEqual(self.wizard.variant.get(), 'SQN100-3')
+                self.assertEqual(self.wizard.kit, 'prepared Q10 kit')
+                self.assertFalse(self.wizard.ack.get())
+                self.assertFalse(self.wizard.mac_flash_ack.get())
+                self.assertIn('已保留', self.wizard.root_hint.cget('text'))
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+                self.detect_result(valid)
+                self.assertEqual(self.wizard.kit, 'prepared Q10 kit')
+                self.assertFalse(self.wizard.ack.get())
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+
+    def test_confirmed_different_model_still_discards_prepared_selection(self):
+        for detected, selected in (('SQW100-4', 'SQW100-4'), ('STL100-1', '')):
+            with self.subTest(model=detected):
+                self.wizard.variant.set('SQN100-3')
+                self.wizard.kit = 'prepared Q10 kit'
+                self.wizard.ack.set(True)
+                self.detect_result({'usb_count': 1, 'device': {'ModelName': detected, 'PlatformVersion': '10.3.3.3216'}})
+                self.assertEqual(self.wizard.variant.get(), selected)
+                self.assertIsNone(self.wizard.kit)
+                self.assertFalse(self.wizard.ack.get())
+                self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+
+    def test_root_page_retry_cannot_start_during_another_operation(self):
+        self.wizard.busy = True
+        self.wizard.refresh()
+        self.assertEqual(str(self.wizard.root_detect_button.cget('state')), 'disabled')
+        with patch.object(w, 'local_usb_state') as probe:
+            self.wizard.root_detect_button.invoke()
+        probe.assert_not_called()
+
     def test_domestic_share_is_browser_only_and_names_the_selected_firmware(self):
         for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
             self.wizard.variant.set(variant)
