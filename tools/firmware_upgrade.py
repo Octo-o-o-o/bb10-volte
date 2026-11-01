@@ -208,12 +208,14 @@ def verify_boot(folder):
     state, _ = verify_kit(folder, allowed=('awaiting_reboot', 'os_verified'))
     if root.root_lock_path().exists():
         raise root.SetupError('flash_state_unknown')
-    observed = connected_target(state['variant'], root.local_usb_state())
+    usb = root.local_usb_state()
+    observed = connected_target(state['variant'], usb)
     if observed.state != 'ready':
         raise root.SetupError('firmware_boot_not_verified')
     state['stage'] = 'os_verified'
+    state['verified_os'] = observed.current
     write_state(folder, state)
-    return state
+    return dict(state, usb=usb)
 
 
 def pending_upgrades():

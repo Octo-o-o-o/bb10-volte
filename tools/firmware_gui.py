@@ -257,12 +257,13 @@ class FirmwareDialog(tk.Toplevel):
                     self.status.configure(text=tr('已恢复记录；不会自动继续刷写。'))
                 elif action == 'verified':
                     self.stage = value['stage']
+                    self.usb = value['usb']
                     self.status.configure(text=tr('系统版本已验证。下一步仍需单独确认 Root 刷写。'))
                 elif action == 'root_ready':
                     from setup_wizard import SetupWizard
                     wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root')
-                    wizard.kit = self.kit
                     wizard.variant.set(self.variant.get())
+                    wizard.kit = self.kit
                     wizard.ack.set(False)
                     wizard.refresh()
                     wizard.detect()

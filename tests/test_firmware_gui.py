@@ -96,6 +96,26 @@ class FirmwareDialogTests(unittest.TestCase):
                 d.continue_root()
             prepare.assert_not_called()
 
+    def test_boot_readback_updates_visible_version_and_root_handoff_keeps_kit(self):
+        import setup_wizard
+        d = self.dialog
+        d.kit = str(self.folder)
+        fresh = dict(self.usb, device=dict(self.usb['device'], PlatformVersion='10.3.3.3216'))
+        d.events.put(('verified', {'stage': 'os_verified', 'usb': fresh}))
+        d.after_cancel(d._job)
+        d.drain()
+        self.assertNotIn('10.3.3.2205', d.facts.cget('text'))
+        with patch.object(setup_wizard.SetupWizard, 'detect') as detect:
+            d.events.put(('root_ready', ({}, ({}, []))))
+            d.after_cancel(d._job)
+            d.drain()
+        wizard = next(child for child in d.winfo_children() if isinstance(child, setup_wizard.SetupWizard))
+        self.assertEqual(wizard.kit, str(self.folder))
+        self.assertEqual(wizard.variant.get(), 'SQW100-4')
+        self.assertFalse(wizard.ack.get())
+        detect.assert_called_once()
+        wizard.close()
+
 
 if __name__ == '__main__':
     unittest.main()

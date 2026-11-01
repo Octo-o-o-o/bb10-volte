@@ -400,6 +400,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
                 self.wizard.refresh()
                 self.assertIn('已备份', self.wizard.root_hint.cget('text'))
                 self.wizard.ack.set(True)
+                self.wizard.mac_flash_ack.set(True)
                 self.assertEqual(str(self.wizard.flash_button.cget('state')), 'normal')
                 with patch.object(w.messagebox, 'askyesno', return_value=False) as confirm, \
                         patch.object(w, 'flash_root') as flash:
