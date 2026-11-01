@@ -43,10 +43,10 @@ bb10_read_pps() {
     function path(s) {
         if (s == "<absent>" || s == "" || s == "\"\"") return "<empty_or_absent>"
         if (s ~ /^".*"$/) s = substr(s, 2, length(s) - 2)
-        if (s ~ /^\/(base\/)?etc\/carrier\/config\/[0-9]+\.xml$/ ||
-            s ~ /^\/var\/addons\/volte\/data\/carrier-[0-9]+-volte\.xml(\.[A-Za-z]+)?$/ ||
-            s ~ /^\/var\/(rootdata\/q10_volte|q20_volte|bb10_volte)\/runtime\/carrier\/[0-9]+(-ims)?\.xml$/ ||
-            s ~ /^\/var\/radio\/cdsc\/[0-9]+(-ims)?\.xml$/) return s
+        if (s ~ /^\/(base\/)?etc\/carrier\/config\/[0-9][0-9]?[0-9]?[0-9]?\.xml$/ ||
+            s ~ /^\/var\/addons\/volte\/data\/carrier-[0-9][0-9]?[0-9]?[0-9]?-volte\.xml(\.(disabled|bak|old|orig|backup))?$/ ||
+            s ~ /^\/var\/(rootdata\/q10_volte|q20_volte|bb10_volte)\/runtime\/carrier\/[0-9][0-9]?[0-9]?[0-9]?(-ims)?\.xml$/ ||
+            s ~ /^\/var\/radio\/cdsc\/[0-9][0-9]?[0-9]?[0-9]?(-ims)?\.xml$/) return s
         return "<other_path_not_exported>"
     }
     function service(s, name, apn, i, fields, count) {
@@ -63,7 +63,7 @@ bb10_read_pps() {
         key = substr(line, 1, index(line, ":") - 1)
         value = substr(line, index(line, ":") + 1); sub(/^[^:]*:/, "", value)
         count_fields++
-        if (mode == "device" && key == "modelnumber") print key "=" (value ~ /^SQ[NCW]100-[0-9]+$/ ? value : "<unknown>")
+        if (mode == "device" && key == "modelnumber") print key "=" (value ~ /^SQ[NCW]100-[0-9][0-9]?$/ ? value : "<unknown>")
         if (mode == "board" && key == "Board_Type") print key "=" (value ~ /^(CLASSICATT|CLASSICVZW|WINDERMERE4ROW)$/ ? value : "<unknown>")
         if (mode == "radio" && key == "network_service") print key "=" num(value)
         if (mode == "radio" && key ~ /^(active_bands|band_capability)$/) print key ".lte=" num(atom(value, "lte"))
@@ -164,7 +164,7 @@ printf 'BB10_READONLY_END\n'
 
 请单独建立电脑文件夹 `03-old-working/`，和当前手机下载的 `02-current-files/` 分开。现在手机上的文件，即使文件名相同，也不能直接标成“成功时的版本”。
 
-1. **当时实际使用的项目包**：原始 ZIP/安装包文件名、版本号/桌面修订号、下载地址或 Git 提交；仍保留安装包就一起提供。若只剩链接，提供链接和大约下载日期。不要重新下载最新版来代替旧包。若还用过上游 `volte.zip`，也请单独提供其来源和原包。
+1. **当时实际使用的项目包**：原始 ZIP/安装包文件名、版本号/桌面修订号、下载地址或 Git 提交；仍保留原始发行包就一起提供。若是自己打包的工程目录，只取相关代码、配置并按第 5 节去除私有资料。若只剩链接，提供链接和大约下载日期。不要重新下载最新版来代替旧包。若还用过上游 `volte.zip`，也请单独提供其来源和原包。
 2. **AI 实际执行记录**：相关对话导出或终端日志，至少包含实际执行的命令、生成/修改文件的完整内容和执行后的输出。请区分“建议但没执行”“执行失败”“确实执行成功”；尤其保留安装、停用、删除/改名、DCA/语音域修改、启动和重启步骤的顺序。只需这次操作相关段落，不用发送完整聊天历史。
 3. **成功时保存的配置副本**：当时的 446 运营商 XML、自定义 JSON、启动/服务脚本和改过的 DCA 文件；既要成功后的版本，也要还保留的修改前备份。每个文件注明“成功后保存”“修改前备份”或“来源不确定”。
 4. **成功证据**：当时的检查报告、加载的 XML 路径、终端输出和已有通话/数据测试记录。有截图可以附上；没有就按下面模板回忆，不要求现在重新操作。
@@ -186,6 +186,7 @@ printf 'BB10_READONLY_END\n'
 手机时间是否准确：
 同一台 SQC100-4、同一张电信 SIM：是 / 否 / 不确定
 当前 OS / Root 方案及版本：
+旧版成功时的 OS / Root 方案及版本（与当前是否相同）：
 当前电脑工具完整版本 / 桌面修订号：
 旧版成功时的项目包文件名 / 版本 / 来源：
 AI 操作记录：已附 / 未保存 / 仅剩事后总结
@@ -198,6 +199,7 @@ AI 操作记录：已附 / 未保存 / 仅剩事后总结
 当时通话是否全程保持 LTE：有记录 / 没有记录 / 不确定
 当时是否验证重启后仍正常：是 / 否 / 不确定
 成功时实际加载的 XML 路径：已附记录 / 未保存
+是否曾调整 carrier-339、carrier-36、carrier-446（改名/增删/切换加载路径）：
 
 从最后一次成功到当前失败，按顺序列出发生过的操作：
 1. 时间 — 操作（更新/卸载/停用/重刷/换卡/改 APN/改名或删除配置等）— 使用版本 — 操作后现象
