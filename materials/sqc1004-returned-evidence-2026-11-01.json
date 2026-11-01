@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "received_date": "2026-11-01",
+  "archive_sha256": "b7419c58456087825b6556d9f1a8267cf034ecd690913b9d0a58e327aff104ae",
+  "source_page": "https://bb10.root.sx/blog/volte",
+  "upstream_package": {
+    "url": "https://bb10.root.sx/blog/volte/volte.zip",
+    "download_date": "2026-11-01",
+    "sha256": "7af0b51d3af48a0bebfff82b8d8d245f8a43f168fcde39ed0bd01c1fce9831b5"
+  },
+  "files": [
+    {
+      "returned_relative_path": "carrier-339-volte.xml",
+      "upstream_path": "data/carrier-339-volte.xml",
+      "sha256": "614613b6da261c7f954a4f7574253578372729aff0b4178b9316d8fd928bcaea",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "carrier-36-volte.xml",
+      "upstream_path": "data/carrier-36-volte.xml",
+      "sha256": "b25408580b480de149e43f706a2c2341758051b1535ff7f0a8a01bd6d9a22cda",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "carrier-404-volte.xml",
+      "upstream_path": "data/carrier-404-volte.xml",
+      "sha256": "e05333aef2531117c479c6d0c4a666a726fa20d1d0486c41d4dfbe9d5317a518",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "init/devnp-volte-swcrypto.so",
+      "upstream_path": "init/devnp-volte-swcrypto.so",
+      "sha256": "477b273b5856e0a2040e0ee1eb70313b475bd357616b4309f9c1d5b7c4555607",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "init/ims_manager",
+      "upstream_path": "init/ims_manager",
+      "sha256": "95553878f90fe9d2e3907b9f34bc085a2083de10818b5d02e4bb9be9e0f11635",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "init/perms",
+      "upstream_path": "init/perms",
+      "sha256": "5c9d79fc826c92d45a1a70661414646a0bfb67b0910b869bb85a830ecfe550d5",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "init/start.sh",
+      "upstream_path": "init/start.sh",
+      "sha256": "35e8748c5e17448f08fbbd2e20340683e1d7aea25769f32301733c776cb76e2d",
+      "byte_identical": true
+    },
+    {
+      "returned_relative_path": "init/trusted",
+      "upstream_path": "init/trusted",
+      "sha256": "4794e914cf95c2c7996860f1af5a693ee6536412a680cd5c4ec2b5bb4ee0bbd7",
+      "byte_identical": true
+    }
+  ],
+  "phone_origin_of_returned_files": "not_confirmed",
+  "current_state_capture": "invalid_for_network_assessment",
+  "capture_failures": [
+    "printf_and_id_cannot_execute",
+    "awk_pps_message_too_long",
+    "relayed_command_text_has_format_changes"
+  ],
+  "reported_observations": {
+    "source": "unverified_operator_statement",
+    "working_recipe": "upstream_package_not_custom_446",
+    "sms": "ordinary_sms_impaired_business_sms_delayed_or_duplicated",
+    "sim_reinsertion": "emergency_state_reported",
+    "recovery": "reapplying_package_reported"
+  },
+  "acceptance": "not_established",
+  "source_comparison_commit": "8ac271b5b1170ae98c60dd248dc5c4485edf95f3",
+  "source_to_binary_reproducible_build_verified": false,
+  "device_writes_this_investigation": 0
+}

@@ -6,140 +6,17 @@
 
 请保持现在的 SIM、网络设置和工具状态，先采集，再讨论修复。此次不需要重新安装、恢复旧版、重启、切换飞行模式、改 APN、改名或删除 XML、结束进程，也不要重新执行聊天记录里的修复命令。
 
-以下命令在**已经连接手机的 root SSH 窗口**中执行，不是在电脑的 PowerShell 中执行。它们读取状态、列出指定目录和查询进程，不调用项目服务脚本，也不写入电话配置。输出留在终端；用电脑上的终端日志功能保存，或复制到电脑文本文件。
+首版采集命令已撤下，执行入口和修订命令见第二节链接。材料整理规则继续保留供查阅。
 
-命令包含两层筛选：只读取相关对象，只输出指定字段。运营商私有状态仅提取 carrier ID、MCC/MNC 和配置路径，不回传整个私有对象。进程参数、文件名和另行下载的文件仍需按第 5 节检查。
+不要回传整个运营商/SIM 私有对象。进程参数、文件名和另行下载的文件仍需按第 5 节检查。
 
-## 2. 一次粘贴的只读采集命令
+## 2. 首版命令已撤下，请使用修订版
 
-从下面第一个 `(` 复制到最后一个 `)`，整段粘贴。括号让临时函数在子 shell 内结束，不改变当前 SSH 会话的函数。没有输出的字段属于未报告/未识别，**不能按 0、关闭或不存在解释**。
+反馈机运行首版命令遇到 printf/id 缺失、awk 直接读取 PPS 的 Message too long 错误，回显还出现转义或转发格式损坏。首版只做了普通文件上的离线验证，没有覆盖这台 BB10 的 PPS 读取限制，不能继续作为可执行采集指引。
 
-如果某个命令不存在、读取失败或权限不足，保留错误，继续收集其他材料；不要为此安装组件或修改信任设置。如果长时间没有返回，可按 Ctrl+C，并注明停在哪个路径。此命令已做离线检查，尚未在这台反馈手机上运行。
+请使用 [第二轮统一补充清单](SQC1004-FOLLOWUP-R2.md)。修订版先验证 dd 是否可用，再使用 256 KiB 的单次读取和管道筛选；使用独立短命令，保留错误，不执行包内入口。原始首版保留在 Git 历史供维护者核对。
 
-```sh
-(
-printf 'BB10_READONLY_BEGIN\n'
-date -u
-id -u
-cat /etc/os.version
-
-bb10_read_pps() {
-    printf '\nPPS %s\n' "$1"
-    if [ ! -e "$1" ]; then printf 'MISSING_OR_UNREACHABLE\n'; return; fi
-    if [ ! -r "$1" ]; then printf 'UNREADABLE\n'; return; fi
-    awk -v mode="$2" '
-    function atom(s, key, tail) {
-        if (!match(s, "\"" key "\"[ \t]*:[ \t]*")) return "<absent>"
-        tail = substr(s, RSTART + RLENGTH)
-        if (match(tail, /^"[^"\\]*"/)) return substr(tail, 1, RLENGTH)
-        if (match(tail, /^(true|false|null|-?[0-9]+)([ \t]*[,}]|[ \t]*$)/)) {
-            tail = substr(tail, 1, RLENGTH)
-            sub(/[,}].*$/, "", tail); gsub(/[ \t]/, "", tail); return tail
-        }
-        return "<unparsed>"
-    }
-    function num(s) { return s ~ /^[0-9]+$/ && length(s) <= 10 ? s : "<unknown>" }
-    function flag(s) { return s == "true" || s == "false" ? s : "<unknown>" }
-    function path(s) {
-        if (s == "<absent>" || s == "" || s == "\"\"") return "<empty_or_absent>"
-        if (s ~ /^".*"$/) s = substr(s, 2, length(s) - 2)
-        if (s ~ /^\/(base\/)?etc\/carrier\/config\/[0-9][0-9]?[0-9]?[0-9]?\.xml$/ ||
-            s ~ /^\/var\/addons\/volte\/data\/carrier-[0-9][0-9]?[0-9]?[0-9]?-volte\.xml(\.(disabled|bak|old|orig|backup))?$/ ||
-            s ~ /^\/var\/(rootdata\/q10_volte|q20_volte|bb10_volte)\/runtime\/carrier\/[0-9][0-9]?[0-9]?[0-9]?(-ims)?\.xml$/ ||
-            s ~ /^\/var\/radio\/cdsc\/[0-9][0-9]?[0-9]?[0-9]?(-ims)?\.xml$/) return s
-        return "<other_path_not_exported>"
-    }
-    function service(s, name, apn, i, fields, count) {
-        apn = atom(s, "apn")
-        print name ".apn=" (apn ~ /^"(ctnet|ctlte|ctwap|ims|cmnet|3gnet|uninet)"$/ ? apn : "<unknown_or_other>")
-        count = split("enabled active connectable connected", fields, " ")
-        for (i = 1; i <= count; i++) print name "." fields[i] "=" flag(atom(s, fields[i]))
-        print name ".xmlfile_path=" path(atom(s, "xmlfile_path"))
-        print name ".carrierid=" num(atom(s, "carrierid"))
-    }
-    {
-        line = $0; sub(/^\[[^]]*\]/, "", line)
-        if (line ~ /^@/ || index(line, ":") == 0) next
-        key = substr(line, 1, index(line, ":") - 1)
-        value = substr(line, index(line, ":") + 1); sub(/^[^:]*:/, "", value)
-        count_fields++
-        if (mode == "device" && key == "modelnumber") print key "=" (value ~ /^SQ[NCW]100-[0-9][0-9]?$/ ? value : "<unknown>")
-        if (mode == "board" && key == "Board_Type") print key "=" (value ~ /^(CLASSICATT|CLASSICVZW|WINDERMERE4ROW)$/ ? value : "<unknown>")
-        if (mode == "radio" && key == "network_service") print key "=" num(value)
-        if (mode == "radio" && key ~ /^(active_bands|band_capability)$/) print key ".lte=" num(atom(value, "lte"))
-        if (mode == "radio" && key == "network_technology") {
-            compact = value; gsub(/[ \t]/, "", compact)
-            print key "=" (compact ~ /^\[("(lte|gsm|umts|wcdma|cdma|evdo)"(,"(lte|gsm|umts|wcdma|cdma|evdo)")*)?\]$/ ? compact : "<unknown>")
-        }
-        if (mode == "radio" && key == "power_status" || mode == "data" && key == "data_services_status" || mode == "settings" && key == "data_service_mode") print key "=" (value ~ /^(ON|OFF)$/ ? value : "<unknown>")
-        if (mode == "data" && key ~ /^(internet|ims)$/) service(value, key)
-        if (mode == "data" && key == "xmlfile_path" || mode == "settings" && key == "cdsc_xml") print key "=" path(value)
-        if (mode == "data" && key == "carrierid") print key "=" num(value)
-        if (mode == "carrier" && key == "true_home_carrier") {
-            print "true_home_carrier.mcc=" num(atom(value, "mcc"))
-            print "true_home_carrier.mnc=" num(atom(value, "mnc"))
-            print "true_home_carrier.carrierid=" num(atom(value, "carrierid"))
-            print "true_home_carrier.preloadedConfigFile=" path(atom(value, "preloadedConfigFile"))
-            print "true_home_carrier.downloadedConfigFile=" path(atom(value, "downloadedConfigFile"))
-        }
-        if (mode == "ims" && key ~ /^(status|default_ran|default_sys)$/) print key "=" (value ~ /^(connected|disconnected|idle|lte|LTE|wlan|WLAN|cellular)$/ ? value : "<unknown>")
-        if (mode == "ims" && key == "profiles") print "profiles=" (value ~ /^\[[ \t]*\]$/ ? "EMPTY_ARRAY" : "NONEMPTY_OR_UNPARSED")
-        if (mode == "ims" && key == "allowVoLteProvisioning" || mode == "ir92" && key == "UsePreconditions") print key "=" (value ~ /^[01]$/ ? value : "<unknown>")
-        if (mode == "policy" && key == "voice_domain_preference_EUTRAN" || mode == "engineering" && key == "voice_domain_preference_EUTRAN_override") print key "=" (value ~ /^[0-6]$/ ? value : "<unknown>")
-        if (mode == "policy" && key == "ue_usage_setting") print key "=" (value ~ /^(voice_centric|data_centric)$/ ? value : "<unknown>")
-        if (mode == "imscfg" && key ~ /^(IMS_profilesV2|supported_networks|IMS_services|Home_network_domain_name)$/) print key "=FIELD_PRESENT_CONTENT_NOT_EXPORTED"
-    }
-    END { print "parsed_attribute_count=" (count_fields + 0); print "UNLISTED_FIELDS_ARE_NOT_EVIDENCE_OF_ZERO_OR_ABSENCE" }
-    ' "$1"
-    bb10_read_result=$?
-    printf 'reader_exit=%s\n' "$bb10_read_result"
-}
-
-bb10_read_pps /pps/services/deviceproperties device
-bb10_read_pps /pps/services/hw_info/inventory board
-bb10_read_pps /pps/services/cellular/radioctrl/status_public radio
-bb10_read_pps /pps/services/cds/cnice/status data
-bb10_read_pps /pps/services/cds/cnice/status_persistent settings
-bb10_read_pps /pps/services/carriermanager/status_private carrier
-bb10_read_pps /pps/services/ims/status_public ims
-bb10_read_pps /pps/services/ims/status_persistent count_only
-bb10_read_pps /pps/services/carrier_config/radio_common/cellular_protocol_configuration policy
-for bb10_source in ims ims_defaults omadm test; do
-    bb10_read_pps "/var/dca/sources/$bb10_source/services/carrier_config/radio_common/cellular_protocol_configuration" policy
-done
-bb10_read_pps /pps/services/escreens/config engineering
-bb10_read_pps /pps/services/carrier_config/ims/ir92 ir92
-bb10_read_pps /pps/services/carrier_config/ims/ims imscfg
-
-printf '\nRELEVANT_PROCESSES\n'
-/bin/pidin -p ims_rrm arguments
-/bin/pidin -p ims_manager arguments
-/bin/pidin -p python3.2 arguments | awk '/\/var\/(rootdata\/q10_volte|q20_volte|bb10_volte)\// {print}'
-
-for bb10_dir in /var/addons/volte /var/addons/volte/data /var/addons/volte/init /var/addons/q10-unicom-volte/init /var/addons/bb10-unified-volte/init /var/rootdata/q10_volte /var/rootdata/q10_volte/runtime/carrier /var/q20_volte /var/q20_volte/runtime/carrier /var/bb10_volte /var/bb10_volte/runtime/carrier /var/radio/cdsc; do
-    printf '\nDIRECTORY %s\n' "$bb10_dir"
-    ls -ld "$bb10_dir"
-    if [ -d "$bb10_dir" ]; then ls -l "$bb10_dir"; fi
-done
-printf '\nCONFIG_PRESENCE_ONLY\n'
-ls -ld /var/ims/carrier/imsconfig_user.xml /pps/volte_probe /var/etc/autostart.conf
-
-printf '\nNATIVE_FILE_CHECKSUMS\n'
-if command -v sha256sum >/dev/null 2>&1; then
-    printf 'ALGORITHM=SHA256\n'
-    sha256sum /radio/bin/ims_rrm /radio/bin/qct_rrm /usr/sbin/dca /radio/lib/libradiocontrol.so.0.1 /etc/carrier/config/446.xml
-else
-    printf 'ALGORITHM=POSIX_CKSUM_NOT_SHA256\n'
-    cksum /radio/bin/ims_rrm /radio/bin/qct_rrm /usr/sbin/dca /radio/lib/libradiocontrol.so.0.1 /etc/carrier/config/446.xml
-fi
-date -u
-printf 'BB10_READONLY_END\n'
-)
-```
-
-把从 `BB10_READONLY_BEGIN` 到 `BB10_READONLY_END` 的输出，包括错误，一起保存为电脑上的 `01-current-state.txt`。如果中途停止，保存已得到的部分，注明“采集中断”。不要只截最后几行，也不要把上面的命令文字当成运行结果。
-
-这是依次读取的状态快照，不是同一时刻的原子快照。简单字段筛选不等于完整 JSON 校验；陌生格式保留为 unknown，不能据此宣布注册、数据或通话成功。工程 override 和 DCA 的枚举分别记录，不互换。命令不会读取基带注册拒绝原因或做真实数据、来电验收。
+已回传材料的用户不用重新收集下面全部文件，请以第二轮清单列出的缺项为准。
 
 ## 3. 当前手机上需要下载的文件
 
