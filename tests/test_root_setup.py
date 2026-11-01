@@ -160,11 +160,40 @@ class RootSetupTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_local_probe_does_not_open_development_or_raw_ssh_sessions(self):
-        with patch.object(r.sys, 'platform', 'darwin'), patch.object(r, 'discovery', return_value={'DeveloperModeEnabled': '0'}), patch('macos_usb.read_state', return_value={}), patch('socket.create_connection') as connect:
+        usb = {'usb_count': 1, 'network_interfaces': [{'active': True, 'ipv4': ['169.254.0.2'],
+                                                      'prefixes': {'169.254.0.2': 30}}]}
+        with patch.object(r.sys, 'platform', 'darwin'), patch.object(r, 'discovery', return_value={'DeveloperModeEnabled': '0'}), patch('macos_usb.read_state', return_value=usb), patch('socket.create_connection') as connect:
             state = r.local_usb_state()
         self.assertEqual(state['device']['DeveloperModeEnabled'], '0')
         self.assertIsNone(state['ssh_port'])
         connect.assert_not_called()
+
+    def test_root_check_uses_actual_phone_and_preserves_strict_trust(self):
+        cases = [(peer, source, code, succeeds)
+                 for peer, source in [('169.254.237.209', '169.254.237.210'), ('169.254.0.1', '169.254.0.2')]
+                 for code, succeeds in [('connection_refused', True), ('authentication_failed', False),
+                                        ('host_key_mismatch', False), ('connection_failed', False), (None, False)]]
+        for peer, source, code, succeeds in cases:
+            usb = dict(self.usb, usb_peer=peer, usb_source_address=source)
+            client = MagicMock(options=['-o', 'StrictHostKeyChecking=yes'])
+            client.remote.side_effect = WorkflowError(code) if code else None
+            self.state.write_text(json.dumps({'variant': 'SQN100-3', 'stage': 'prepared'}))
+            with patch.object(r.sys, 'platform', 'win32'), patch.object(r, 'local_usb_state', return_value=usb), \
+                    patch('workflow.Client', return_value=client), patch.object(r, 'verify_root') as old_probe, \
+                    patch.object(r, 'run_flash_stage', return_value={'completed': True}) as flash:
+                if succeeds:
+                    r.flash_root(self.kit, True, lambda _: None)
+                    self.assertEqual(flash.call_count, 2)
+                else:
+                    with self.assertRaisesRegex(r.SetupError, 'ssh_access_needs_repair'):
+                        r.flash_root(self.kit, True, lambda _: None)
+                    flash.assert_not_called()
+                old_probe.assert_not_called()
+            self.assertIn('HostName=' + peer, client.options)
+            self.assertIn('BindAddress=' + source, client.options)
+            self.assertIn('ProxyCommand=none', client.options)
+            self.assertIn('ProxyJump=none', client.options)
+            self.assertIn('StrictHostKeyChecking=yes', client.options)
 
     def root_client(self, result):
         client = MagicMock()

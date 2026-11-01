@@ -55,10 +55,14 @@ def interface_state(name, output):
     match = re.search(r'^\s*status:\s*(active|inactive)\s*$', output, re.M)
     if not match:
         raise ValueError('Interface link status unavailable')
-    addresses = []
-    for address in re.findall(r'^\s*inet\s+(\S+)\s+', output, re.M):
-        addresses.append(str(ipaddress.IPv4Address(address)))
-    return {'active': match.group(1) == 'active', 'ipv4': addresses}
+    addresses, prefixes = [], {}
+    for address, mask in re.findall(r'^\s*inet\s+(\S+)\s+netmask\s+(\S+)', output, re.M):
+        address = str(ipaddress.IPv4Address(address))
+        if mask.startswith('0x'):
+            mask = str(ipaddress.IPv4Address(int(mask, 16)))
+        prefixes[address] = ipaddress.IPv4Network(address + '/' + mask, strict=False).prefixlen
+        addresses.append(address)
+    return {'active': match.group(1) == 'active', 'ipv4': addresses, 'prefixes': prefixes}
 
 
 def read_state():
@@ -101,8 +105,10 @@ def read_state():
             interface.update(interface_state(name, raw.stdout))
             result['network_interfaces'].append(interface)
         result['usb_network'] = any(interface['active'] for interface in result['network_interfaces'])
-        result['usb_address_ready'] = any(interface['active'] and '169.254.0.2' in interface['ipv4']
-                                          for interface in result['network_interfaces'])
+        result['usb_address_ready'] = any(interface['active'] and any(
+            interface['prefixes'][address] == 30 and ipaddress.IPv4Address(address).is_link_local and
+            int(ipaddress.IPv4Address(address)) % 4 == 2 for address in interface['ipv4'])
+            for interface in result['network_interfaces'])
     except (OSError, ValueError, TypeError, plistlib.InvalidFileException, subprocess.SubprocessError):
         # Successful earlier facts remain valid, but unavailable later layers
         # stay unknown. Do not label a missing tool or parse failure as no USB.

@@ -1,14 +1,17 @@
 """First-use preparation and explicitly confirmed, model-bound Root workflow."""
 from i18n import tr
+import http.client
+import ipaddress
 import json
 import hashlib
 import os
 from pathlib import Path
 import re
 import shutil
+import socket
+import struct
 import subprocess
 import sys
-import urllib.request
 import uuid
 import xml.etree.ElementTree as ET
 import zipfile
@@ -80,23 +83,61 @@ def powershell():
     return str(Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
 
 
-def discovery():
+def discovery(peer='169.254.0.1', source=None, interface_index=None):
     # Anonymous metadata on the directly attached USB link only. Never send
     # credentials, follow a redirect or use an Internet proxy for this request.
-    class NoRedirect(urllib.request.HTTPRedirectHandler):
-        def redirect_request(self, *args):
-            return None
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
-    req = urllib.request.Request('http://169.254.0.1/cgi-bin/discovery.cgi', headers={'User-Agent': 'QNXWebClient/1.0'})
+    connection = http.client.HTTPConnection(peer, timeout=4)
     try:
-        with opener.open(req, timeout=4) as response:
-            body = response.read(131072)
+        if source:
+            connection.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            connection.sock.settimeout(4)
+            if sys.platform == 'win32' and interface_index is not None:
+                connection.sock.setsockopt(socket.IPPROTO_IP, 31, struct.pack('!I', interface_index))
+            connection.sock.bind((source, 0))
+            connection.sock.connect((peer, 80))
+        connection.request('GET', '/cgi-bin/discovery.cgi', headers={
+            'User-Agent': 'QNXWebClient/1.0', 'Connection': 'close'})
+        response = connection.getresponse()
+        if response.status != 200:
+            return {}
+        body = response.read(131073)
+        if len(body) > 131072:
+            return {}
         document = ET.fromstring(body)
-        allowed = {'OsType', 'ModelName', 'PlatformVersion', 'DeveloperModeEnabled'}
+        allowed = {'OsType', 'ModelName', 'PlatformVersion', 'DeveloperModeEnabled', 'OobeCompleted'}
         return {node.tag.rsplit('}', 1)[-1]: node.text for node in document.iter()
                 if node.tag.rsplit('}', 1)[-1] in allowed}
-    except (OSError, ValueError, ET.ParseError):
+    except (OSError, ValueError, ET.ParseError, http.client.HTTPException):
         return {}
+    finally:
+        connection.close()
+
+
+def usb_discovery_targets(state):
+    """Use only the attached BlackBerry link, including stock DHCP /30 leases."""
+    if state.get('usb_count') != 1:
+        return []
+    targets = []
+    for interface in state.get('network_interfaces', []):
+        if interface.get('active') is not True:
+            continue
+        for address in interface.get('ipv4', []):
+            try:
+                ip = ipaddress.IPv4Address(address)
+                # Stock firmware assigns host .2 and phone .1 in a link-local
+                # /30. Do not infer peers from Wi-Fi, /16 APIPA or arbitrary LANs.
+                prefix = interface.get('prefixes', {}).get(address)
+                if prefix != 30 or not ip.is_link_local or int(ip) % 4 != 2:
+                    continue
+                index = interface.get('index')
+                if sys.platform == 'win32' and (type(index) is not int or index < 1):
+                    continue
+                target = (str(ip - 1), str(ip), index)
+                if target not in targets:
+                    targets.append(target)
+            except (ValueError, TypeError):
+                continue
+    return targets
 
 
 def local_usb_state():
@@ -106,7 +147,13 @@ def local_usb_state():
 $ErrorActionPreference='Stop'
 $devices=@(Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match '^USB\\VID_0FCA&PID_[0-9A-F]{4}\\' })
 $adapters=@(Get-NetAdapter -IncludeHidden | Where-Object { $_.InterfaceDescription -match 'BlackBerry' })
-@{usb_present=($devices.Count -gt 0);usb_count=$devices.Count;driver_ready=(@($devices | Where-Object Status -eq 'OK').Count -eq $devices.Count -and $devices.Count -gt 0);usb_network=(@($adapters | Where-Object Status -eq 'Up').Count -gt 0)} | ConvertTo-Json -Compress
+$links=@($adapters | Where-Object { $_.PnPDeviceID -match '^USB\\VID_0FCA&' } | ForEach-Object {
+    $adapter=$_
+    $addresses=@(Get-NetIPAddress -InterfaceIndex $adapter.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object AddressState -eq 'Preferred')
+    $prefixes=@{}; foreach ($address in $addresses) { $prefixes[$address.IPAddress]=$address.PrefixLength }
+    @{index=[int]$adapter.ifIndex;active=($adapter.Status -eq 'Up');ipv4=@($addresses | Select-Object -ExpandProperty IPAddress);prefixes=$prefixes}
+})
+@{usb_present=($devices.Count -gt 0);usb_count=$devices.Count;driver_ready=(@($devices | Where-Object Status -eq 'OK').Count -eq $devices.Count -and $devices.Count -gt 0);usb_network=(@($links | Where-Object active).Count -gt 0);network_interfaces=$links} | ConvertTo-Json -Depth 5 -Compress
 """
         try:
             raw = subprocess.run([powershell(), '-NoProfile', '-Command', script], capture_output=True,
@@ -118,7 +165,14 @@ $adapters=@(Get-NetAdapter -IncludeHidden | Where-Object { $_.InterfaceDescripti
     elif sys.platform == 'darwin':
         from macos_usb import read_state
         result.update(read_state())
-    result['device'] = discovery()
+    result['device'] = {}
+    targets = usb_discovery_targets(result)
+    # A second active USB network is ambiguous; never choose by response order.
+    if len(targets) == 1:
+        peer, source, index = targets[0]
+        result['device'] = discovery(peer, source, index)
+        result['usb_peer'] = peer
+        result['usb_source_address'] = source
     # Do not open and abandon QNX development sessions or raw SSH sockets.
     # SSH availability is established by the ordinary, authenticated client.
     result['ssh_port'] = None
@@ -325,6 +379,20 @@ def flash_root(folder, confirmed, progress):
     if sys.platform == 'darwin' and usb.get('usb_address_ready') is not True:
         raise SetupError('usb_source_address_required')
     try:
+        if usb.get('usb_peer') and usb.get('usb_source_address'):
+            # A stock first boot uses DHCP, while AutoRoot uses 169.254.0.1.
+            # Probe the actual phone with an ordinary strict SSH client; an
+            # inaccessible old address (or absent saved profile) is not evidence
+            # that this phone is unrooted. This also applies to the default link.
+            from workflow import Client
+            client = Client('bb10-root', str(Path(folder) / 'ssh_config'))
+            client.options[:0] = ['-o', 'HostName=' + usb['usb_peer'],
+                                 '-o', 'BindAddress=' + usb['usb_source_address'],
+                                 '-o', 'ProxyCommand=none', '-o', 'ProxyJump=none',
+                                 '-o', 'User=root', '-o', 'Port=22',
+                                 '-o', 'HostKeyAlias=169.254.0.1']
+            client.remote('echo BB10_CONNECTION_READY', timeout=12)
+            raise SetupError('ssh_access_needs_repair')
         verify_root()
     except WorkflowError as error:
         if error.code not in ('connection_setup_required', 'connection_refused'):

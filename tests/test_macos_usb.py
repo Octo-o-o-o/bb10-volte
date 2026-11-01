@@ -46,7 +46,8 @@ class MacUSBTests(unittest.TestCase):
         self.assertTrue(state['usb_address_ready'])
         self.assertEqual(state['usb_count'], 1)
         self.assertEqual(state['network_interfaces'], [{'name': 'en37', 'driver': 'com.apple.driver.usb.cdc.ncm',
-                                                       'active': True, 'ipv4': ['169.254.0.2']}])
+                                                       'active': True, 'ipv4': ['169.254.0.2'],
+                                                       'prefixes': {'169.254.0.2': 30}}])
         self.assertEqual(run.call_args_list[-1].args[0], ['/sbin/ifconfig', 'en37'])
         self.assertNotIn('private-', json.dumps(state))
         self.assertEqual(run.call_args_list[0].args[0][-2:], ['-d', '1'])
@@ -83,6 +84,18 @@ class MacUSBTests(unittest.TestCase):
             self.assertIsNone(state['usb_present'])
             self.assertIsNone(state['driver_ready'])
             self.assertIsNone(state['usb_network'])
+
+    def test_stock_dhcp_lease_is_ready_but_apipa_or_missing_mask_is_not(self):
+        for address, mask, ready in [('169.254.237.210', '0xfffffffc', True),
+                                     ('169.254.237.210', '255.255.255.252', True),
+                                     ('169.254.0.2', '0xffff0000', False),
+                                     ('192.168.1.2', '0xfffffffc', False)]:
+            response = link(address=address)
+            response.stdout = response.stdout.replace('0xfffffffc', mask)
+            with self.subTest(address=address, mask=mask), patch.object(m.subprocess, 'run', side_effect=[
+                    plist([device()]), plist([device(children=[network()])]), response]):
+                self.assertEqual(m.read_state()['usb_address_ready'], ready)
+        self.assertEqual(m.interface_state('en37', 'en37: flags=1<UP>\n inet 169.254.0.2\n status: active\n')['ipv4'], [])
 
     def test_device_change_or_malformed_subtree_preserves_known_usb_but_unknown_driver(self):
         invalid = device()
