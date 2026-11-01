@@ -47,7 +47,7 @@ EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system
 
 Acceptance covers native incoming/outgoing calls, audio in both directions, LTE and SIM changes without a computer. Own-number and carrier display have also been checked. Phones in the image are illustrations. Exact SIM scope: Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM.
 
-**SMS send/receive and duplicate delivery have not passed acceptance.** This source contains a candidate SMS PS policy change, pending device testing and release. Historical ACK failures span devices and carriers; see [SMS diagnostics](docs/SMS-DIAGNOSTICS.en.md).
+**SMS send/receive and duplicate delivery have not passed device acceptance.** Source includes SMS PS policy and a [native MT ACK correlation candidate](docs/SMS-ACK-NATIVE.en.md), with offline instruction/ELF checks passed but no deployment or release. See [SMS diagnostics](docs/SMS-DIAGNOSTICS.en.md) for historical evidence and logging.
 
 The [acceptance record](materials/unified-carrier-acceptance.json) retains dates, tested software revisions, initial-card versus SIM-change cases, and the distinction between logs and owner confirmation. Other variants, OS versions, roaming, long standby and emergency calls are not comprehensively validated.
 

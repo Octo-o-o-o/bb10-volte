@@ -2,11 +2,12 @@
 
 [简体中文](BUILD.md) | **English**
 
-Device scripts target BB10's Python 3.2 and hash-checked native libraries. Desktop tools and tests use Python 3.14, without third-party Python packages. Installing the supplied helper does not require a QNX SDK.
+Device scripts target BB10's Python 3.2 and hash-checked native libraries. Desktop tools and tests use Python 3.14. Native SMS machine-code tests require Unicorn 2.1.4 on the test computer; phone scripts do not depend on it. Installing the supplied helper does not require a QNX SDK. Rebuilding the SMS candidate requires [pinned Zig 0.13.0](SMS-ACK-NATIVE.en.md#reproduction-and-remaining-acceptance).
 
 ## Source validation
 
 ```powershell
+python -m pip install unicorn==2.1.4
 python -m unittest discover -s tests -v
 python -m compileall -q device tools tests
 python tools/check_release.py

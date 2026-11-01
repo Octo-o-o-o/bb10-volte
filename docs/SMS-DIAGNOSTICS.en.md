@@ -2,7 +2,7 @@
 
 [简体中文](SMS-DIAGNOSTICS.md)
 
-2026-11-01: this source candidate adds an explicit SMS policy and an offline diagnostic tool. **Device SMS acceptance is pending; MT duplicate delivery is not fixed or verified.** No phone was connected or modified, and no SMS was sent during this investigation. Previous nine-combination acceptance covers voice, SIM changes and display, not SMS.
+2026-11-01: this source candidate adds an explicit SMS policy and an offline diagnostic tool. Follow-up analysis also implements a [native MT ACK correlation candidate](SMS-ACK-NATIVE.en.md). **Device SMS acceptance remains pending; elimination of duplicate delivery is not verified.** No phone was connected or modified, and no SMS was sent. Previous nine-combination acceptance covers voice, SIM changes and display, not SMS.
 
 The report concerns Q20, OS 10.3.3.3216, AutoRoot v4 and Unicom 460-01. It describes four MT deliveries about 30 seconds apart with different RP references, and MO failure after CS with `no retry default`. Raw logs and the exact hardware variant were not supplied.
 
@@ -59,4 +59,4 @@ The tool accepts slog2 SIP blocks or native SIP files with direction markers. Sp
 
 For each exact device/carrier pair, manually verify one MO, one MT, matching ACK headers/RP reference, the gateway response, and exactly one received message. Observe at least 180 seconds to cover this report's retry window; this is not a universal network retry limit. Also check intentional repeated content, multipart SMS, normal reboot, powered-off SIM changes, voice and restoration.
 
-MT repair still needs a complete correlated trace to distinguish construction/routing errors from gateway state. No native instruction change is justified by the current material. The candidate is based on cached repository commit `0091630`, not a newly published installer. If the reported PR means [bb10root PR #1](https://github.com/bb10root/bb10-volte/pull/1), the inspected head `5e2ecaf5ad6c6e56e05d206e8939dbcad336d1ed` concerns carrier selection, IR92 and provisioning gates, not SMS correlation. This Python payload cannot directly replace that C project's installation; no GPL implementation was copied.
+Follow-up native data-flow analysis identified two hook sites shared by all nine combinations and passed ARM instruction emulation and ELF checks. QNX loading and a complete device trace are still required to establish successful correlation and elimination of redelivery; see the [verification record](../materials/sms-ack-native-verification.json). The candidate is based on cached repository commit `0091630`, not a newly published installer. If the reported PR means [bb10root PR #1](https://github.com/bb10root/bb10-volte/pull/1), the inspected head `5e2ecaf5ad6c6e56e05d206e8939dbcad336d1ed` concerns carrier selection, IR92 and provisioning gates, not SMS correlation. This Python payload cannot directly replace that C project's installation; no GPL implementation was copied.

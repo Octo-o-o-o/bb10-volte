@@ -2,6 +2,14 @@
   "schema": 1,
   "date": "2026-11-01",
   "status": "candidate_pending_device_sms_acceptance",
+  "snapshot_scope": "Initial SMS policy investigation; candidate_change below describes that stage.",
+  "follow_up": {
+    "native_mt_correlation_candidate": "sms-ack-native-verification.json",
+    "analysis": "../docs/SMS-ACK-NATIVE.md",
+    "mt_candidate_implemented_in_source": true,
+    "device_deployed": false,
+    "device_sms_acceptance": false
+  },
   "source_base": "0091630 (locally cached origin/main; live fetch unavailable)",
   "user_report": {
     "device": "Q20, hardware variant not supplied",

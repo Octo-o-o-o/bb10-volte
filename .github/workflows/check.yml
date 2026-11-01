@@ -22,7 +22,11 @@ jobs:
         with:
           python-version: '3.14'
       - name: Regression tests
-        run: python -m unittest discover -s tests -v
+        # Executes the compiled ARM/Thumb SMS shim on both desktop platforms.
+        # This does not require or distribute BlackBerry firmware.
+        run: |
+          python -m pip install unicorn==2.1.4
+          python -m unittest discover -s tests -v
       - name: Compile source
         run: python -m compileall -q device tools tests
       - name: Public allowlist, hashes and privacy checks

@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## Source candidate · MT ACK correlation · 2026-11-01
+
+The native raw 3GPP SMS path does not carry the incoming Call-ID into the report's In-Reply-To. The candidate caches context by manager and RP reference, sets the report correlation and its MT gateway, and preserves RPDU, its own Call-ID and send count. Conflicts, expiry and missed captures never guess a correlation. Known-payload upgrades back up and replace `ims_image.py`.
+
+Adds reproducible C/ARM code, a generated manifest, instruction-emulation regression tests and ELF/call-site verification for all nine combinations. QNX loading, SIP gateway acceptance and single Hub delivery remain untested on devices. Not deployed or released; see [native analysis and validation limits](SMS-ACK-NATIVE.en.md).
+
 ## Source candidate · SMS policy and diagnostics · 2026-11-01
 
 Explicitly applies native `SMS_Over_IP_Network_Indication` alongside SMS service advertisement, preserving original values for restoration and backing up known payloads during upgrade. Native retry counts are unchanged. Adds offline SIP/RP correlation analysis without exporting numbers, Call-IDs or message content.

@@ -7,6 +7,7 @@
 ## 运行测试
 
 ```powershell
+python -m pip install unicorn==2.1.4
 python -m unittest discover -s tests -v
 python -m compileall -q device tools tests
 python tools/check_release.py

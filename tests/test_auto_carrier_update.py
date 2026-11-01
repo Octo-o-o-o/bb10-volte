@@ -102,7 +102,12 @@ class InactiveUpdateTests(unittest.TestCase):
         self.assertFalse(self.writes)
 
     def test_sms_policy_service_update_is_backed_up_and_verified(self):
-        name = 'device/service.py'
+        self.check_backed_up_component('device/service.py')
+
+    def test_sms_ack_image_builder_update_is_backed_up_and_verified(self):
+        self.check_backed_up_component('device/ims_image.py')
+
+    def check_backed_up_component(self, name):
         old, new = b'previous service', b'service with explicit SMS policy'
         self.fs[self.base + '/' + name] = old
         self.fs[self.stage + '/' + name] = new

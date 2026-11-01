@@ -2,6 +2,12 @@
 
 [English](UPDATELOG.en.md)
 
+## 源码候选 · MT ACK 关联 · 2026-11-01
+
+原生 raw 3GPP SMS 路径没有将下行 Call-ID 带入报告 MESSAGE 的 In-Reply-To。候选按 SMS manager 与 RP 参考号保存上下文，补齐 ACK／ERROR 的关联头及该次网关目标；保持 RPDU、自身 Call-ID 和发送次数不变。参考号冲突、过期或捕获失败时不猜测关联。已知载荷升级覆盖 `ims_image.py` 的备份与替换。
+
+新增可复现 C／ARM shim、生成清单、机器码仿真回归和九种组合的 ELF／调用点验证记录。移动与联通／电信临时镜像均共用这条路径；QNX 加载、SIP 网关接受和 Hub 不再重复尚未实机验证。候选未部署或发布，详见[原生定位与验证边界](SMS-ACK-NATIVE.md)。
+
 ## 源码候选 · 短信域配置与取证 · 2026-11-01
 
 显式应用原生 `SMS_Over_IP_Network_Indication`，补齐 SMS 能力声明之外的域选择配置；保存原值、恢复和旧载荷备份升级均覆盖新增字段。未修改原生重试次数。新增离线 SIP／RP 关联分析工具，公开报告不包含号码、Call-ID 或短信正文。
