@@ -12,6 +12,7 @@ import time
 from desktop_paths import frozen, resource_root
 from i18n import tr
 from root_setup import SetupError, root_lock_path
+from root_flash import writing_complete_line
 
 
 class StockFlashEvidence:
@@ -22,7 +23,7 @@ class StockFlashEvidence:
 
     def line(self, raw):
         lower = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', raw).strip().lower()
-        self.writing_complete |= 'writing' in lower and re.search(r'\b100(?:\.0+)?\s*%', lower) is not None
+        self.writing_complete |= writing_complete_line(lower)
         self.done |= self.writing_complete and lower == 'done.'
         self.error_seen |= re.search(r'\b(?:error|failed|failure|exception|aborted|cancelled|canceled)\b', lower) is not None
 

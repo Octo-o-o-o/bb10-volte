@@ -204,6 +204,9 @@ class StockEvidenceTests(unittest.TestCase):
                 (0, ['Writing 100%', 'Error: Security Error.', 'Done.'], False),
                 (0, ['Writing 100 bytes', 'Done.'], False),
                 (0, ['Writing 100.0%', 'Done.'], True),
+                (0, ['[                  Writing  0x0092C044 ] [############## 100 ##############]', 'Done.'], True),
+                (0, ['[                  Writing  0x0092C044 ] [##############  99 ##############]', 'Done.'], False),
+                (0, ['Writing 0x00000100', 'Done.'], False),
                 (1, ['Writing 100%', 'Done.'], False)]:
             evidence = flash.StockFlashEvidence()
             for line in lines:

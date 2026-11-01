@@ -9,13 +9,43 @@ import sys
 from i18n import tr
 
 
-def classify_output(phase, exit_code, writing_complete, failed_to_load, security_error, done):
+def writing_complete_line(text):
+    """Accept the native bracketed progress bar as well as percent output."""
+    text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text).strip().lower()
+    return bool(re.fullmatch(r'\[\s*writing\s+0x[0-9a-f]+\s*\]\s*\[[# ]*100[# ]*\]', text) or
+                re.search(r'\bwriting\b.*\b100(?:\.0+)?\s*%', text))
+
+
+def classify_output(phase, exit_code, writing_complete, failed_to_load, security_error, done,
+                    unexpected_error=False):
     expected = (phase == 'os' and exit_code == 73 and writing_complete and
-                failed_to_load and security_error)
+                failed_to_load and security_error and not unexpected_error)
+    error_seen = failed_to_load or security_error or unexpected_error
     return {'stage': phase, 'exit_code': exit_code, 'writing_complete': bool(writing_complete),
+            'done': bool(done), 'error_seen': bool(error_seen),
             'expected_v4_os_security_result': bool(expected),
-            'completed': bool(expected or exit_code == 0 and
-                              (phase == 'os' and writing_complete or phase == 'radio' and done))}
+            'completed': bool(expected or phase in ('os', 'radio') and exit_code == 0 and
+                              writing_complete and done and not error_seen)}
+
+
+class RootFlashEvidence:
+    def __init__(self):
+        self.flags = dict(writing_complete=False, failed_to_load=False,
+                          security_error=False, done=False, unexpected_error=False)
+
+    def line(self, raw):
+        lower = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', raw).strip().lower()
+        self.flags['writing_complete'] |= writing_complete_line(lower)
+        self.flags['done'] |= self.flags['writing_complete'] and lower == 'done.'
+        expected_errors = {'error: failed to load images.': 'failed_to_load',
+                           'error: security error.': 'security_error'}
+        if lower in expected_errors and self.flags['writing_complete']:
+            self.flags[expected_errors[lower]] = True
+        elif re.search(r'\b(?:error|failed|failure|exception|aborted|cancelled|canceled)\b', lower):
+            self.flags['unexpected_error'] = True
+
+    def result(self, phase, exit_code):
+        return classify_output(phase, exit_code, **self.flags)
 
 
 def run_stage(folder, phase, token):
@@ -24,7 +54,8 @@ def run_stage(folder, phase, token):
         return run_macos_stage(folder, phase, token)
     from root_setup import prepared_images, SetupError
     state, images = prepared_images(folder, allowed_stages=(phase + '_started',))
-    if not token or state.get('confirmation_token') != token or phase not in ('os', 'radio'):
+    if (sys.platform != 'win32' or state.get('platform', 'win32') != 'win32' or
+            not token or state.get('confirmation_token') != token or phase not in ('os', 'radio')):
         raise SetupError('flash_confirmation_required')
     image = images[0 if phase == 'os' else 1]
     if not ctypes.windll.kernel32.GetConsoleWindow():
@@ -37,12 +68,15 @@ def run_stage(folder, phase, token):
     sys.stderr = sys.stdout
     print(tr('bb10-volte：正在刷写 {} Root').format(phase.upper()), flush=True)
     print(tr('请保持 USB 连接；仅在黑莓工具提示时在此输入手机密码。'), flush=True)
-    child = subprocess.Popen([str(image)], cwd=image.parent, stdin=None,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
     pending = bytearray()
-    flags = {'writing_complete': False, 'failed_to_load': False, 'security_error': False, 'done': False}
+    evidence = RootFlashEvidence()
+    from macos_root_flash import public_line
     log = Path(folder) / ('flash-' + phase + '.log')
-    with log.open('xb', buffering=0) as file:
+    # Claim the stage before launching the destructive child. Reopening the
+    # same console must not execute the image before the existing-log check.
+    with log.open('x', encoding='utf-8') as file:
+        child = subprocess.Popen([str(image)], cwd=image.parent, stdin=sys.stdin,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
         while True:
             char = child.stdout.read(1)
             if not char:
@@ -51,19 +85,22 @@ def run_stage(folder, phase, token):
             sys.stdout.buffer.flush()
             pending.extend(char)
             if char in (b'\r', b'\n'):
-                line = bytes(pending).lower()
-                if b'password' not in line:
-                    file.write(pending)
-                else:
-                    file.write(b'[Native password prompt omitted]\n')
-                flags['writing_complete'] |= b'writing' in line and re.search(rb'\b100\b', line) is not None
-                flags['failed_to_load'] |= b'error: failed to load images.' in line
-                flags['security_error'] |= b'error: security error.' in line
-                flags['done'] |= line.strip() == b'done.'
+                line = pending.decode('utf-8', 'replace')
+                evidence.line(line)
+                file.write(public_line(line))
+                file.flush()
                 pending.clear()
-    result = classify_output(phase, child.wait(), **flags)
-    (Path(folder) / ('flash-' + phase + '.json')).write_text(json.dumps(result, indent=2), encoding='utf-8')
-    print(tr('\n本阶段已完成，请返回 bb10-volte 窗口。'), flush=True)
+        if pending:
+            line = pending.decode('utf-8', 'replace')
+            evidence.line(line)
+            file.write(public_line(line))
+        result = evidence.result(phase, child.wait())
+    output = Path(folder) / ('flash-' + phase + '.json')
+    temporary = output.with_suffix('.json.partial')
+    with temporary.open('x', encoding='utf-8') as file:
+        json.dump(result, file, indent=2)
+    temporary.replace(output)
+    print(tr('\n请返回 bb10-volte。状态未知或失败的阶段会保持暂停；不要重复运行。'), flush=True)
     return 0 if result['completed'] else 1
 
 
