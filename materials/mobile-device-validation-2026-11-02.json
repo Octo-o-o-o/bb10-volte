@@ -173,14 +173,15 @@
     "installed_engine_baseline": "desktop_r14",
     "disable_and_configuration_restore": "passed",
     "recorded_job_state": "waiting_reboot",
-    "normal_shutdown_reboot_performed": true,
     "root_ssh_return_observed": false,
     "root_ssh_unavailable_cause": "not_determined",
     "post_reboot_task_completion": "not_verified",
     "new_engine_migration_completed": false,
     "new_candidate_ims_acceptance": "not_run",
     "new_candidate_voice_acceptance": "not_run",
-    "next_action": "normal_unlock_restore_original_root_entry_then_query_and_resume_existing_task_with_verified_final_app"
+    "next_action": "normal_unlock_restore_original_root_entry_then_query_and_resume_existing_task_with_verified_final_app",
+    "normal_shutdown_reboot_requested": true,
+    "boot_completion_verified": false
   },
   "manual_acceptance_pending": [
     "final_bar_version_and_sud_result",
