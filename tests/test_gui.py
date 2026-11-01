@@ -32,6 +32,45 @@ def report(ready=True, tested=True, installed=False):
 
 
 class GuiTests(unittest.TestCase):
+    def test_sqc1004_feedback_prioritizes_network_and_wraps_selected_guidance(self):
+        from test_sqc1004_feedback import feedback_report
+        value = feedback_report()
+        before = copy.deepcopy(value)
+        self.app.render_report(value)
+        self.assertIn('仅紧急服务', self.app.summary.cget('text'))
+        self.assertIn('设置为 ON，实际状态为 OFF', self.app.detail.cget('text'))
+        self.assertIn('SQC100-4 尚未纳入', self.app.detail.cget('text'))
+        self.app.table.selection_set('apn')
+        self.app.table.event_generate('<<TreeviewSelect>>')
+        self.root.update()
+        note = self.app.table.item('apn', 'values')[2]
+        self.assertEqual(self.app.issue_detail.cget('text'), note)
+        self.assertIn(note, self.app.diagnostic_text())
+        self.assertGreater(int(self.app.issue_detail.cget('wraplength')), 0)
+        self.app.ack.set(True)
+        self.assertFalse(self.app.allowed_actions()['install'])
+        self.assertEqual(value, before)
+        # A refresh clears a previous selection and its stale explanation.
+        self.app.render_report(report())
+        self.root.update()
+        self.assertEqual(self.app.issue_detail.cget('text'), '')
+
+    def test_network_summary_does_not_hide_a_root_failure(self):
+        from test_sqc1004_feedback import feedback_report
+        value = feedback_report()
+        next(row for row in value['checks'] if row['id'] == 'root')['status'] = 'wait'
+        self.app.render_report(value)
+        self.assertNotIn('仅紧急服务', self.app.summary.cget('text'))
+        self.assertIn('root', self.app.table.get_children())
+
+    def test_combined_emergency_bitmap_is_not_described_as_a_single_flag(self):
+        from test_sqc1004_feedback import feedback_facts, feedback_report
+        facts = feedback_facts()
+        facts['network_service'] = 0x200001
+        self.app.render_report(feedback_report(facts))
+        self.assertEqual(self.app.summary.cget('text'), '网络仍含紧急服务标志')
+        self.assertFalse(self.app.allowed_actions()['install'])
+
     def test_unified_preflight_retains_extra_restart_guidance_through_result_rendering(self):
         from auto_carrier_managed import Adapter
         from test_auto_carrier_reboot_flow import state

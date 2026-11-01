@@ -2,6 +2,16 @@
 
 2026-10-29 社区反馈：Classic SQC100-4 / OS 10.3.3.3216，电信 SIM。以下仅包含与故障有关的字段，不含设备或用户身份。
 
+## 2026-11-01 · 0.5.0-r8 后续反馈
+
+同一硬件型号的新快照仍未正常入网：`network_service=1` 含紧急服务标志而无 LTE 数据位，`data_service_mode=ON`、`data_services_status=OFF`，`data_connected=false`、APN 未知。internet 的 enabled/connectable/active 为 true，不能抵消这些失败条件。全部配置覆盖检查通过；`ims_count=1` 是另一个等待项，进程数量不足以确定它来自系统还是其他工具。
+
+原报告的三项阻断是有效的；发现的桌面缺陷是主结论优先显示 IMS 数量、ON/OFF 文案含糊，以及列表长提示截断。未发布修订优先展示入网失败，直接区分设置 ON 与实际 OFF；选中列表项目后在下方完整换行展示处理方法。复制摘要与界面使用相同解释，不将未知值当作关闭或零。
+
+报告使用的是通用 `china-telecom` 试用模板，没有 `lte_attach` 入网修复。三网自动适配的 Q20 准入为 **SQC100-2 / CLASSICATT**，这份 **SQC100-4** 报告不在该范围；勾选实验试用不会扩大三网流程的型号准入。新增界面及摘要说明这一差异，沿用手机端载荷、准入、备份和恢复规则。即使后续 IMS 进程自行退出，当前网络阻断仍然存在。
+
+本轮只有用户提供的快照，没有连接反馈者的手机，**未修复或验收该手机的真实入网和通话**。现有数据缺少注册拒绝原因、IMS 进程来源及该硬件版本的策略验证，不能把数据开关、APN 或频段认定为唯一原因。后续应在原机核对这些信息和实际移动数据；不能用删除配置、结束未知 IMS 或套用 SQC100-2 参数来代替定位。独立的 SQC100-4 成功转述记录见 `materials/q20-peer-telecom-comparison-2026-10-31.json`，其缺少最终加载路径和原生策略读数，仍不构成本工具的实机验收。
+
 ## 已观察到的事实
 
 - `cnice/status` 中存在 `internet`；`enabled=true`、`connectable=false`、`active=false`，没有 `apn` 或 `connected` 字段；`data_services_status=OFF`。
