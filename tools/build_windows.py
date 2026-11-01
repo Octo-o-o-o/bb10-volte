@@ -52,7 +52,7 @@ def runtime_data():
                          'materials/macos-root-tools.json', 'materials/macos-device-validation-2026-10-28.json',
                          'materials/macos-development-2026-10-29.json',
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
-                         'materials/sources.json', 'materials/stock-partitions.json',
+                         'materials/sources.json', 'materials/stock-partitions.json', 'materials/stock-upgrade.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
     from auto_carrier import PAYLOAD_FILES
@@ -159,6 +159,7 @@ def main():
     assert {'root_setup', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
             'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
+            'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy',
             'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules

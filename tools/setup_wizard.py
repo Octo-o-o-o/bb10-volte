@@ -1,5 +1,6 @@
 """Guided local prerequisites; destructive flashing requires an explicit choice."""
 from i18n import tr
+from firmware_policy import baseline_error
 from pathlib import Path
 import queue
 import sys
@@ -20,6 +21,9 @@ from fetch_materials import DownloadError, MaterialImportError, source_urls, sou
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 
 MESSAGES = {
+    'firmware_version_unknown': tr('未读到完整 OS 版本。请先解锁手机并重新检测，确认系统版本后才能刷写 Root。'),
+    'firmware_upgrade_required': tr('手机系统低于 10.3.3.3216。请先使用“系统升级”完成升级，再确认 Root 刷写。'),
+    'firmware_downgrade_blocked': tr('手机系统高于已适配版本，不能自动降级或直接刷写当前 Root 镜像。'),
     'firmware_model_required': tr('请先检测设备，或按手机“关于”中的硬件型号选择固件。'),
     'firmware_model_unsupported': tr('此硬件型号尚无已校验的固件来源，请核对型号；不会自动改用 Q10 固件。'),
     'firmware_multiple_devices': tr('检测到多台黑莓。请只连接目标手机后重新检测，或断开设备再手动选择型号离线下载。'),
@@ -114,6 +118,8 @@ class SetupWizard(tk.Toplevel):
         self.continue_button.pack(anchor='e', pady=(20, 0))
         self.recovery_button = ttk.Button(connection, text=tr('已 Root 但没有连接配置？恢复连接'), command=self.recover_connection)
         self.recovery_button.pack(anchor='w', pady=(10, 0))
+        self.upgrade_help_button = ttk.Button(connection, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
+        self.upgrade_help_button.pack(anchor='w', pady=(8, 0))
 
         ttk.Label(root_tab, text=tr('自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写'), wraplength=740,
                   font=(FONT, 11, 'bold')).pack(anchor='w')
@@ -481,9 +487,18 @@ class SetupWizard(tk.Toplevel):
         if (not self.kit or not self.ack.get() or self.busy or
                 sys.platform == 'darwin' and not self.mac_flash_ack.get()):
             return
+        error = baseline_error((self.usb or {}).get('device'))
+        if error:
+            self.status.configure(text=MESSAGES[error])
+            return
         if messagebox.askyesno(tr('确认清空并刷写'), tr('此操作会清空手机数据，并写入对应 Q10 的 Root 系统与无线固件。\n\n'
                               '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？'), parent=self):
             self.start('flash', lambda progress: flash_root(self.kit, True, progress))
+
+    def open_firmware(self):
+        if not self.busy:
+            from firmware_gui import FirmwareDialog
+            FirmwareDialog(self, self.on_ready, self.usb)
 
     def drivers(self):
         if not messagebox.askokcancel(tr('安装 BlackBerry 驱动'), tr('将下载并校验驱动，然后请求 Windows 管理员确认。请先保存电脑上的工作。'), parent=self):

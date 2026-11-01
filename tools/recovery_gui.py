@@ -14,6 +14,7 @@ from root_setup import verify_root, SetupError
 from workflow import WorkflowError
 from profile_editor import FONT
 from mac_help import TRANSFER_HINT, scrolled_page, show_guide as show_mac_guide
+from pairing_instructions import phone_commands, export_pairing_files
 
 MESSAGES = {
     'pairing_export_conflict': tr('目标位置已有同名但内容不同的文件。请更换保存位置，原文件没有覆盖。'),
@@ -56,12 +57,8 @@ class RecoveryDialog(tk.Toplevel):
         self.tabs.pack(fill='both', expand=True)
         existing = ttk.Frame(self.tabs, padding=18)
         self.tabs.add(existing, text=tr('高级：手动导入密钥'))
-        if sys.platform == 'darwin':
-            missing_page, missing = scrolled_page(self.tabs)
-            self.tabs.add(missing_page, text=tr('从手机授权 / 继续上次'))
-        else:
-            missing = ttk.Frame(self.tabs, padding=18)
-            self.tabs.add(missing, text=tr('从手机授权 / 继续上次'))
+        missing_page, missing = scrolled_page(self.tabs)
+        self.tabs.add(missing_page, text=tr('从手机授权 / 继续上次'))
         ttk.Label(existing, text=tr('用于原刷机包提供了登录私钥，但没有 ssh_config 的情况。'), wraplength=750).pack(anchor='w')
         self.buttons = []
         for title, variable, callback in [(tr('登录私钥'), self.identity, self.select_identity),
@@ -102,7 +99,10 @@ class RecoveryDialog(tk.Toplevel):
         self.step_back = ttk.Button(row, text=tr('上一步'), command=lambda: self.set_step(self.pair_step - 1))
         self.step_next = ttk.Button(row, command=lambda: self.set_step(self.pair_step + 1))
         self.buttons.extend([self.generate_button, self.result_button, self.step_back, self.step_next])
-        self.commands = tk.Text(missing, height=5, wrap='word', font=(FONT, 10))
+        self.commands = tk.Text(missing, height=12, wrap='word',
+                                font=('Menlo' if sys.platform == 'darwin' else 'Consolas', 10))
+        self.copy_commands = ttk.Button(missing, text=tr('复制完整授权命令'), command=self.copy_phone_commands)
+        self.buttons.append(self.copy_commands)
         self.pair_hint = ttk.Label(missing, wraplength=740, justify='left')
         self.pair_hint.pack(anchor='w', pady=(12, 0))
         self.mac_transfer_help = None
@@ -153,11 +153,16 @@ class RecoveryDialog(tk.Toplevel):
                 self.status.configure(text=tr('暂时无法保存进度。请检查应用个人目录的写入权限。'))
                 return
         self.pair_step = step
+        for item in self.pending:
+            if item['script'] == self.pair_script:
+                item['step'] = step
+        self.resume_picker.configure(values=[item['script'].stem + tr(' · 第 ') + str(item['step']) + tr(' 步')
+                                              for item in self.pending])
         titles = {1: tr('把授权文件放到手机'), 2: tr('在手机上允许这台电脑连接'), 3: tr('取回手机授权结果')}
         self.step_label.configure(text=tr('第 {} / 3 步 · {}').format(step, titles[step]))
         descriptions = {
-            1: tr('保存本次授权文件，并复制到手机内部存储 Downloads。电脑私钥保留在本机。\n如果已经拿到结果，也可以直接选择手机授权结果。'),
-            2: tr('在手机已有 Root 终端按下方命令执行。脚本核验权限后，输入 PAIR 才会追加这台电脑的授权。\n只有脚本提示需要启动连接服务时，才另行输入 START。'),
+            1: tr('保存授权脚本和同编号的操作说明，将 .py 文件复制到手机内部存储 Downloads。\n电脑私钥保留在本机；已有结果可直接导入。'),
+            2: tr('先进入已有 Root 终端：__root 前有两个下划线，部分工具使用 u_root。执行 id -u，必须输出 0。\n再复制执行下方整个命令块。仅在脚本提示后输入大写 PAIR；不要在 $ 后直接输入 pair。'),
             3: tr('将手机内部 Downloads 中同编号的 result.json 复制回本电脑，再选择它并确认来源。\n应用会核对请求编号、本机密钥、手机身份与实际 Root 权限。'),
         }
         self.missing_steps.configure(text=descriptions[step])
@@ -172,13 +177,20 @@ class RecoveryDialog(tk.Toplevel):
             self.step_next.configure(text=tr('已复制到手机，下一步') if step == 1 else tr('手机已生成结果，下一步'))
             self.step_next.pack(side='left')
         self.commands.pack_forget()
+        self.copy_commands.pack_forget()
         if step == 2 and self.pair_script:
-            phone_path = '/accounts/1000/shared/downloads/' + self.pair_script.name
-            self.set_commands('__root\n/proc/boot/pathtrust !' + phone_path + '\n/usr/bin/python3.2 ' + phone_path)
+            self.set_commands(phone_commands(self.pair_script.name))
             self.commands.pack(fill='x', before=self.pair_hint)
+            self.copy_commands.pack(anchor='w', before=self.pair_hint, pady=(8, 0))
         self.pair_hint.configure(text=(tr('当前文件：') + self.pair_script.name if self.pair_script else tr('还没有生成本次授权文件。')) +
                                  tr('\n关闭应用后可继续本次授权，无需重新生成密钥。\n升级应用后，可返回第一步重新保存同编号的授权文件。'))
         self.refresh()
+
+    def copy_phone_commands(self):
+        if self.pair_script and self.pair_step == 2 and not self.busy:
+            self.clipboard_clear()
+            self.clipboard_append(phone_commands(self.pair_script.name))
+            self.status.configure(text=tr('已复制完整命令。ROOT_REQUIRED：先取得 Root；PAIR_FILE_NOT_FOUND：核对内部 Downloads 和文件名。'))
 
     def set_commands(self, text):
         self.commands.configure(state='normal')
@@ -226,14 +238,7 @@ class RecoveryDialog(tk.Toplevel):
         def work():
             script = refresh_pairing_script(existing_script) if existing_script else prepare_pairing()
             self.events.put(('prepared_script', script))
-            target = Path(folder) / script.name
-            # Exclusive creation avoids overwriting another exported request.
-            if target.exists():
-                if target.read_bytes() != script.read_bytes():
-                    raise RecoveryError('pairing_export_conflict')
-            else:
-                with target.open('xb') as output:
-                    output.write(script.read_bytes())
+            export_pairing_files(script, folder)
             return script
         self.start('script', work)
 

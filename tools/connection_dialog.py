@@ -96,6 +96,8 @@ class ConnectionDialog(tk.Toplevel):
             self.option(tr('查看 USB 连接指引'), self.usb_help)
         elif view.action == 'components':
             self.option(tr('查看连接组件'), lambda: self.open_setup('connection'))
+        elif view.action == 'firmware':
+            self.option(tr('查看对应机型的系统升级'), self.firmware)
         else:
             self.material_options()
         if view.state != 'ready':
@@ -174,6 +176,10 @@ class ConnectionDialog(tk.Toplevel):
     def open_setup(self, page):
         from setup_wizard import SetupWizard
         SetupWizard(self, self.adopt, auto_check=False, initial_page=page)
+
+    def firmware(self):
+        from firmware_gui import FirmwareDialog
+        FirmwareDialog(self, self.adopt, self.usb)
 
     def recover(self, mode):
         from recovery_gui import RecoveryDialog
@@ -293,10 +299,11 @@ class ConnectionDialog(tk.Toplevel):
     def refresh(self):
         for button in self.option_buttons + [self.retry_button, self.back_button]:
             button.configure(state='disabled' if self.busy else 'normal')
-        self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
+        ready = self.choice and guidance(self.usb, self.error, True).state == 'ready'
+        self.continue_button.configure(state='normal' if ready and not self.busy else 'disabled')
 
     def finish(self):
-        if self.choice and not self.busy:
+        if self.choice and not self.busy and guidance(self.usb, self.error, True).state == 'ready':
             choice = self.choice
             self.close()
             self.on_ready(choice['host'], choice['config'])

@@ -181,6 +181,23 @@ def run(output):
     recovery.withdraw()
     assert not recovery.busy and not recovery.verified and len(recovery.tabs.tabs()) == 2
     recovery.close()
+    from firmware_gui import FirmwareDialog
+    from firmware_upgrade import stock_images
+    from firmware_policy import assess_version
+    from root_setup import stock_firmware
+    from pairing_instructions import phone_commands
+    firmware = FirmwareDialog(root, lambda *_: None,
+        usb={'usb_count': 1, 'device': {'ModelName': 'SQW100-4', 'PlatformVersion': '10.3.3.2205'}})
+    firmware.withdraw()
+    assert str(firmware.upgrade_button.cget('state')) == 'disabled'
+    assert str(firmware.root_button.cget('state')) == 'disabled'
+    firmware.close()
+    assert assess_version('10.3.3.2205').state == 'upgrade'
+    assert assess_version('10.3.3.9999').state == 'newer'
+    for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
+        assert set(stock_images(stock_firmware(variant))) == {'stock_os', 'stock_radio'}
+    commands = phone_commands('bb10-pair-abcdef123456.py')
+    assert 'ROOT_REQUIRED' in commands and 'PAIR_FILE_NOT_FOUND' in commands and ' &&\n' in commands
     assert (bundle / 'tools/phone_pairing.py').is_file()
     # Map an invisible minimum-sized window so Tk computes actual geometry.
     # Check that the complete action row and status stay inside the viewport.
@@ -268,6 +285,8 @@ def run(output):
         assert (bundle / 'assets/app.ico').is_file()
         assert not private_root().is_relative_to(bundle)
     result = {'passed': True, 'version': manifest['version'], 'frozen': frozen(),
+              'firmware_upgrade_ui_and_stock_catalog_verified': True,
+              'pairing_shell_guards_bundled': True,
               'desktop_revision': json.loads((bundle / 'project.json').read_text(encoding='utf-8')).get('desktop_revision'),
               'python': sys.version.split()[0], 'tcl': tcl, 'tk': tk_version,
               'python_on_path': bool(shutil.which('python')),

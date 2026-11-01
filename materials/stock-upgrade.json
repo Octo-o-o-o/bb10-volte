@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "target": "10.3.3.3216",
+  "verification": "SHA-256 of signed components split from each pinned original autoloader; not a manufacturer-signature claim",
+  "families": {
+    "q10": {
+      "firmware_id": "stock-q10",
+      "stock_sha256": "18ab9ab0da25ad4dfb0f2a885aad81ddf2119c484d5b9b0b392a3472eedfa207",
+      "images": {
+        "stock_os": {"bytes": 3010003896, "sha256": "c91f679b615b3c28c097bbd427fa0f9805642972655c91c42749817ef3231e7c"},
+        "stock_radio": {"bytes": 30540608, "sha256": "ad47026501255f0bb503b195ff4fa41db528336803c861744d3949b9c5745b3f"}
+      }
+    },
+    "classic": {
+      "firmware_id": "stock-classic",
+      "stock_sha256": "d83b04dc9bb3e12b9b6a29b05d2aeb6350cabb6fca85866c231609ba575821e2",
+      "images": {
+        "stock_os": {"bytes": 3010003896, "sha256": "c91f679b615b3c28c097bbd427fa0f9805642972655c91c42749817ef3231e7c"},
+        "stock_radio": {"bytes": 54657856, "sha256": "9af6da88fb44d0c454d29ba871af94b9f2459c578743587e462e1eff5050f1cb"}
+      }
+    },
+    "passport": {
+      "firmware_id": "stock-passport",
+      "stock_sha256": "2c5b7759ba83e50cad96217a285fbfb2cc14f60438903757c9067e1571a03ed4",
+      "images": {
+        "stock_os": {"bytes": 3009479608, "sha256": "2005c8ff7c271ac30657aef2c5d745e0bdbdaafbcf9c6bf95b53e442f3a00734"},
+        "stock_radio": {"bytes": 38470464, "sha256": "78cf3ba0a208a60eb596ec257cfea5b40b9df0f9ef9901b486772ff766da5565"}
+      }
+    }
+  }
+}

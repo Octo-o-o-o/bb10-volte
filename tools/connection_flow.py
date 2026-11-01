@@ -1,6 +1,7 @@
 """Evidence-based connection guidance. Failure never proves a phone is unrooted."""
 from i18n import tr
 from dataclasses import dataclass
+from firmware_policy import assess_version
 
 
 @dataclass(frozen=True)
@@ -13,6 +14,15 @@ class Guidance:
 
 def guidance(usb=None, error=None, verified=False):
     usb = usb or {}
+    if usb.get('usb_count', 0) and usb['usb_count'] > 1:
+        return Guidance('multiple', tr('请只连接一台黑莓手机'), tr('暂时断开其他手机，再检查当前手机。'), 'retry')
+    version = assess_version((usb.get('device') or {}).get('PlatformVersion'))
+    if usb.get('usb_count') == 1 and version.state in ('upgrade', 'newer'):
+        if version.state == 'upgrade':
+            return Guidance('firmware_upgrade', tr('手机系统需要先升级'),
+                            tr('当前 OS {}，本工具要求 OS {}。先查看对应机型的升级准备；手机授权不会升级系统。').format(version.current, version.target), 'firmware')
+        return Guidance('firmware_newer', tr('当前系统版本尚未适配'),
+                        tr('当前 OS {}，已适配基线为 {}。程序不会自动降级；请先核对系统与原厂固件。').format(version.current, version.target), 'firmware')
     if verified:
         return Guidance('ready', tr('手机连接已验证'), tr('手机身份和有效 Root 权限均已核验，可以继续检查 VoLTE。'), 'continue')
     # Authentication evidence is stronger than a possibly incomplete OS USB inventory.
@@ -25,8 +35,6 @@ def guidance(usb=None, error=None, verified=False):
     if error in ('root_not_ready', 'root_probe_failed'):
         return Guidance('root_pending', tr('已连接手机，Root 权限仍需确认'),
                         tr('请通过原 Root 工具恢复有效权限后重试。连接诊断未通过不等于手机没有 Root。'), 'retry')
-    if usb.get('usb_count', 0) and usb['usb_count'] > 1:
-        return Guidance('multiple', tr('请只连接一台黑莓手机'), tr('暂时断开其他手机，再检查当前手机。'), 'retry')
     if error in ('openssh_missing', 'bundled_ssh_mismatch', 'ssh_algorithm_mismatch'):
         return Guidance('components', tr('电脑连接组件需要处理'),
                         tr('请查看连接组件说明。此问题不能说明手机是否已 Root。'), 'components')

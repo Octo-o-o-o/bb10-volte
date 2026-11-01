@@ -946,6 +946,7 @@ def main():
     parser.add_argument('--self-test', type=Path, help='Write an offline packaging self-test report and exit')
     parser.add_argument('--preflight-report', type=Path, help='Run read-only preflight, write a report and exit')
     parser.add_argument('--flash-stage', choices=('os', 'radio'), help=argparse.SUPPRESS)
+    parser.add_argument('--firmware-stage', choices=('stock', 'stock_os', 'stock_radio'), help=argparse.SUPPRESS)
     parser.add_argument('--root-kit', type=Path, help=argparse.SUPPRESS)
     parser.add_argument('--flash-token', help=argparse.SUPPRESS)
     parser.add_argument('--prepare-root-report', type=Path, help='Prepare and verify Root images only; never contacts or flashes a phone')
@@ -956,6 +957,11 @@ def main():
     args = parser.parse_args()
     selected_profile = next((p for p in presets() if p['id'] == args.profile_id), None)
     prepare_external_programs()
+    if args.firmware_stage:
+        if args.flash_stage or not args.root_kit or not args.flash_token:
+            parser.error('One confirmed firmware upgrade stage is required')
+        from firmware_flash import run_stage
+        return run_stage(args.root_kit, args.firmware_stage, args.flash_token)
     if args.flash_stage:
         if not args.root_kit or not args.flash_token:
             parser.error('A confirmed Root kit is required')

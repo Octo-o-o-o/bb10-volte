@@ -308,6 +308,10 @@ def flash_root(folder, confirmed, progress):
     usb = local_usb_state()
     if usb.get('usb_count') != 1 or usb['device'].get('ModelName') != state['variant']:
         raise SetupError('device_model_not_verified')
+    from firmware_policy import baseline_error
+    version_error = baseline_error(usb['device'])
+    if version_error:
+        raise SetupError(version_error)
     if sys.platform == 'darwin' and usb.get('usb_address_ready') is not True:
         raise SetupError('usb_source_address_required')
     try:

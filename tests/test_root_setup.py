@@ -33,7 +33,7 @@ class RootSetupTests(unittest.TestCase):
             (self.kit / 'images' / name).write_bytes(data)
             images.append({'file': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
         (self.kit / 'build-verification.json').write_text(json.dumps({'offline_build_verified': True, 'images': images}))
-        self.usb = {'usb_count': 1, 'device': {'ModelName': 'SQN100-3'}}
+        self.usb = {'usb_count': 1, 'device': {'ModelName': 'SQN100-3', 'PlatformVersion': '10.3.3.3216'}}
 
     def test_phone_confirmation_is_required_before_any_flash_process(self):
         with patch.object(r.sys, 'platform', 'win32'), patch.object(r.subprocess, 'run') as run:
