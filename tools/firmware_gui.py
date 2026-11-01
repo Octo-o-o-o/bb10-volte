@@ -26,7 +26,7 @@ MESSAGES = {
 
 
 class FirmwareDialog(tk.Toplevel):
-    def __init__(self, parent, on_ready, usb=None):
+    def __init__(self, parent, on_ready, usb=None, root_only=False):
         super().__init__(parent)
         self.title(tr('手机系统升级'))
         self.geometry('880x730')
@@ -37,9 +37,13 @@ class FirmwareDialog(tk.Toplevel):
         self.events = queue.Queue()
         self.variant = tk.StringVar(value=(self.usb.get('device') or {}).get('ModelName', ''))
         self.ack = tk.BooleanVar(value=False)
+        self.root_only = tk.BooleanVar(value=root_only)
         body = ttk.Frame(self, padding=20)
         body.pack(fill='both', expand=True)
         ttk.Label(body, text=tr('先升级系统，再验证 Root 与连接'), font=(FONT, 16, 'bold')).pack(anchor='w')
+        self.support_notice = ttk.Label(body, wraplength=790, justify='left')
+        self.support_notice.pack(fill='x', pady=(8, 0))
+        self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
         page, content = scrolled_page(body, padding=12)
         page.pack(fill='both', expand=True, pady=12)
         self.facts = ttk.Label(content, wraplength=710, justify='left')
@@ -58,6 +62,9 @@ class FirmwareDialog(tk.Toplevel):
         self.model.bind('<<ComboboxSelected>>', self.changed)
         self.detect_button = ttk.Button(row, text=tr('重新检测'), command=self.detect)
         self.detect_button.pack(side='left')
+        self.root_only_check = ttk.Checkbutton(content, variable=self.root_only, command=self.scope_changed,
+            text=tr('仅准备或恢复系统 / Root，不开通 VoLTE'))
+        self.root_only_check.pack(anchor='w', pady=(8, 0))
         self.prepare_button = ttk.Button(content, text=tr('准备升级与 Root 材料'), command=self.prepare)
         self.prepare_button.pack(anchor='w', pady=(12, 8))
         self.download_button = ttk.Button(content, text=tr('固件浏览器下载与离线导入'), command=self.downloads)
@@ -100,7 +107,19 @@ class FirmwareDialog(tk.Toplevel):
     def changed(self, *_):
         self.kit, self.stage = None, None
         self.ack.set(False)
+        self.root_only.set(False)
         self.refresh()
+
+    def scope_changed(self):
+        self.ack.set(False)
+        self.refresh()
+
+    def scope_blocker(self):
+        import device_support
+        detected = (self.usb.get('device') or {}).get('ModelName')
+        variant = detected if self.usb.get('usb_count') == 1 and detected else self.variant.get()
+        self.support_notice.configure(text=device_support.describe(device_support.assess(variant)))
+        return device_support.preparation_blocker(variant, self.root_only.get())
 
     def refresh(self):
         version = assess_version((self.usb.get('device') or {}).get('PlatformVersion'))
@@ -115,6 +134,8 @@ class FirmwareDialog(tk.Toplevel):
             target_valid = root.selected_firmware_variant(self.variant.get(), self.usb) == self.variant.get()
         except root.SetupError:
             pass
+        scope_blocker = self.scope_blocker()
+        target_valid = target_valid and not scope_blocker
         def state(button, allowed):
             button.configure(state='normal' if allowed and not self.busy else 'disabled')
         state(self.detect_button, True)
@@ -130,7 +151,10 @@ class FirmwareDialog(tk.Toplevel):
         self.model.configure(state='disabled' if self.busy or self.kit or self.usb.get('usb_count') else 'readonly')
         self.ack_check.configure(state='normal' if not self.busy and self.stage == 'prepared' else 'disabled')
         self.picker.configure(state='disabled' if self.busy else 'readonly')
-        if version.state in ('newer', 'ready') and not self.kit:
+        self.root_only_check.configure(state='disabled' if self.busy else 'normal')
+        if scope_blocker:
+            reason = scope_blocker
+        elif version.state in ('newer', 'ready') and not self.kit:
             reason = MESSAGES['firmware_downgrade_blocked' if version.state == 'newer' else 'firmware_already_current']
         elif self.stage == 'prepared' and locked:
             reason = tr('存在未结束的刷写记录。请保留现场与日志，不要重复刷写。')
@@ -163,6 +187,10 @@ class FirmwareDialog(tk.Toplevel):
         self.start('detect', lambda _: root.local_usb_state())
 
     def prepare(self):
+        blocker = self.scope_blocker()
+        if blocker:
+            self.status.configure(text=blocker)
+            return
         try:
             variant = root.selected_firmware_variant(self.variant.get(), self.usb)
         except root.SetupError as error:
@@ -176,6 +204,7 @@ class FirmwareDialog(tk.Toplevel):
         wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root')
         wizard.usb = self.usb
         wizard.variant.set(self.variant.get())
+        wizard.root_only.set(self.root_only.get())
         wizard.refresh()
 
     def resume(self):
@@ -193,6 +222,10 @@ class FirmwareDialog(tk.Toplevel):
 
     def flash(self):
         if self.busy or not self.kit or self.stage != 'prepared' or not self.ack.get():
+            return
+        blocker = self.scope_blocker()
+        if blocker:
+            self.status.configure(text=blocker)
             return
         version = assess_version((self.usb.get('device') or {}).get('PlatformVersion'))
         if version.state != 'upgrade':
@@ -263,6 +296,7 @@ class FirmwareDialog(tk.Toplevel):
                     from setup_wizard import SetupWizard
                     wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root')
                     wizard.variant.set(self.variant.get())
+                    wizard.root_only.set(self.root_only.get())
                     wizard.kit = self.kit
                     wizard.ack.set(False)
                     wizard.refresh()

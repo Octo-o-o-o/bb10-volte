@@ -323,6 +323,9 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(self.wizard.tabs.index(self.wizard.tabs.select()), 1)
         self.assertEqual(self.wizard.kit, 'prepared Q20 kit')
         self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+        # SQC100-3 may prepare standalone Root, but is not automatic VoLTE.
+        self.assertIn('尚待适配', self.wizard.support_notice.cget('text'))
+        self.wizard.root_only.set(True)
         self.wizard.ack.set(True)
         self.wizard.mac_flash_ack.set(True)
         self.assertEqual(str(self.wizard.flash_button.cget('state')), 'normal')
@@ -370,6 +373,66 @@ class FirmwareImportGuiTests(unittest.TestCase):
         with patch.object(w, 'local_usb_state') as probe:
             self.wizard.root_detect_button.invoke()
         probe.assert_not_called()
+
+    def test_every_suffix_shows_support_before_download_and_preparation(self):
+        for variant in root_setup.firmware_variants():
+            with self.subTest(variant=variant):
+                self.wizard.usb = {}
+                self.wizard.variant.set(variant)
+                expected = 'normal' if variant in ('SQN100-3', 'SQC100-2', 'SQW100-4') else 'disabled'
+                self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), expected)
+                self.assertEqual(str(self.wizard.prepare_button.cget('state')), expected)
+                self.assertIn(variant, self.wizard.support_notice.cget('text'))
+                if expected == 'disabled':
+                    with patch.object(w, 'download_stock_firmware') as download, \
+                            patch.object(w, 'prepare_root_kit') as prepare, patch.object(w.webbrowser, 'open') as browser:
+                        self.wizard.download_firmware()
+                        self.wizard.prepare_root()
+                        self.wizard.open_firmware_download()
+                    download.assert_not_called()
+                    prepare.assert_not_called()
+                    browser.assert_not_called()
+
+    def test_standalone_root_is_explicit_and_scope_changes_reset_erase_confirmation(self):
+        self.wizard.variant.set('SQC100-3')
+        self.wizard.root_only.set(True)
+        self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'normal')
+        self.wizard.kit = 'retained kit'
+        self.wizard.ack.set(True)
+        self.wizard.root_only.set(False)
+        self.assertFalse(self.wizard.ack.get())
+        self.assertEqual(self.wizard.kit, 'retained kit')
+        self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+        self.wizard.variant.set('SQW100-2')
+        self.wizard.root_only.set(True)
+        self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'disabled')
+
+    def test_selected_carrier_explains_q20_4_radio_limit_before_download(self):
+        self.wizard.variant.set('SQC100-4')
+        self.wizard.operator.set(self.wizard.operator_options[1])
+        self.assertIn('频段没有交集', self.wizard.support_notice.cget('text'))
+        self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), 'disabled')
+        self.wizard.operator.set(self.wizard.operator_options[2])
+        self.assertIn('尚待适配', self.wizard.support_notice.cget('text'))
+
+    def test_system_upgrade_does_not_bypass_unsupported_volte_preparation(self):
+        import firmware_gui
+        usb = {'usb_count': 1, 'device': {'ModelName': 'SQC100-3', 'PlatformVersion': '10.3.3.2205'}}
+        with patch.object(firmware_gui.upgrade, 'pending_upgrades', return_value=[]):
+            dialog = firmware_gui.FirmwareDialog(self.root, lambda *_: None, usb)
+        try:
+            self.assertEqual(str(dialog.prepare_button.cget('state')), 'disabled')
+            self.assertIn('尚待适配', dialog.support_notice.cget('text'))
+            with patch.object(firmware_gui.upgrade, 'prepare_upgrade') as prepare, \
+                    patch.object(firmware_gui.upgrade, 'upgrade') as flash:
+                dialog.prepare()
+                dialog.kit, dialog.stage = 'test-kit', 'prepared'
+                dialog.ack.set(True)
+                dialog.flash()
+            prepare.assert_not_called()
+            flash.assert_not_called()
+        finally:
+            dialog.close()
 
     def test_domestic_share_is_browser_only_and_names_the_selected_firmware(self):
         for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):

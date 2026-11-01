@@ -1,5 +1,7 @@
 # First use and connection setup
 
+The current branch shows exact-variant support before downloads and flashing. Automatic VoLTE currently covers SQN100-3, SQC100-2 and SQW100-4. A Root recipe does not establish VoLTE support. Unsupported activation preparation pauses early; users who only need stock recovery or standalone Root can select that purpose explicitly. See the [complete variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md). These early checks are not included in the published r14.
+
 `0.3.3-r3` starts with **Connect phone / Connection help**, with SSH paths under advanced settings. Released r6 and earlier applications may still use the older labels below; this flow is included in the new Windows EXE and Mac DMG. Reopening rechecks the last successful connection once. Pairing requests and completed image preparation can be resumed. Connection failure never establishes that a phone is unrooted.
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)

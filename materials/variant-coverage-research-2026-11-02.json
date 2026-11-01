@@ -1,0 +1,682 @@
+{
+  "schema": 1,
+  "kind": "research_snapshot_not_runtime_authorization",
+  "date": "2026-11-02",
+  "baseline": {
+    "release": "v0.5.0-r14",
+    "commit": "6ca9147732575617dfeb2019ae4fdd680f014734",
+    "windows_exe_sha256": "c30d3fb9ef247b4b510e9cf4bec981510a0679822691e7b974d685ffd36137ca",
+    "macos_dmg_sha256": "a5397a36cbab3bbee429608c44da82b5fa4e55dc0ba080c14926078330feafc7"
+  },
+  "research_scope": {
+    "phone_contacted": false,
+    "firmware_executed": false,
+    "runtime_support_changed": false,
+    "primary_source_checked_on": "2026-11-02",
+    "macos_execution_in_this_audit": false
+  },
+  "summary": {
+    "catalog_variants": 14,
+    "manufacturer_documented_variants_in_reviewed_sources": 13,
+    "identity_unconfirmed": [
+      "SQW100-2"
+    ],
+    "root_recipes": 14,
+    "runtime_auto_volte_variants": 3,
+    "policy_combinations_accepted": 9,
+    "policy_combinations_rejected": 33,
+    "r14_sms_device_cases": 2,
+    "radio_screen_candidate_cases": 28,
+    "radio_screen_no_overlap_cases": 11,
+    "radio_screen_unknown_cases": 3
+  },
+  "radio_screen": {
+    "classification": "inference_only_not_a_device_test",
+    "basis": [
+      "bb10_security_target",
+      "miit_spectrum",
+      "etsi_lte_bands"
+    ],
+    "operator_fdd_bands_for_screen": {
+      "mobile": [
+        3,
+        8
+      ],
+      "unicom": [
+        1,
+        3,
+        8
+      ],
+      "telecom": [
+        1,
+        3,
+        5
+      ]
+    },
+    "limitations": [
+      "Published hardware bands and regulator frequency permissions only; no guarantee of local LTE coverage, native firmware compatibility, SIM unlock or IMS provisioning.",
+      "No generic LTE TDD or 5G support is inferred from the presence of a similar MHz label.",
+      "No-overlap means not a current domestic carrier adaptation target on this evidence, not a global unsupported verdict.",
+      "The source table may omit bands or differ from another manufacturer publication; read actual model and radio capability before activation."
+    ]
+  },
+  "variants": [
+    {
+      "variant": "SQN100-1",
+      "family": "q10",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        2,
+        4,
+        5,
+        17
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        5
+      ],
+      "radio_candidate_operators": [
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-q10",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQN100-2",
+      "family": "q10",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        4,
+        13
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [],
+      "radio_candidate_operators": [],
+      "root_recipe_present": true,
+      "firmware_id": "stock-q10",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQN100-3",
+      "family": "q10",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        3,
+        7,
+        8,
+        20
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        3,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-q10",
+      "offline_build_evidence": "family_representative_build_record",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": true,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [
+        "460-00",
+        "460-01",
+        "460-11"
+      ],
+      "historical_voice_sim_display_cases": 3,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQN100-4",
+      "family": "q10",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        25
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [],
+      "radio_candidate_operators": [],
+      "root_recipe_present": true,
+      "firmware_id": "stock-q10",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQN100-5",
+      "family": "q10",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        2,
+        4,
+        5,
+        17
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        5
+      ],
+      "radio_candidate_operators": [
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-q10",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQC100-1",
+      "family": "classic",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": "RHH151LW",
+      "radio_reference_bands": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        8
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-classic",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": [
+        "The carrier datasheet additionally lists LTE 800 MHz; full global band exhaustiveness is unresolved."
+      ]
+    },
+    {
+      "variant": "SQC100-2",
+      "family": "classic",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": "RHE151LW",
+      "radio_reference_bands": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        17,
+        20
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        3,
+        5
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-classic",
+      "offline_build_evidence": "family_representative_build_record",
+      "root_device_acceptance": [
+        "macos-arm64"
+      ],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": true,
+      "required_board_in_r14": "CLASSICATT",
+      "auto_volte_plmns": [
+        "460-00",
+        "460-01",
+        "460-11"
+      ],
+      "historical_voice_sim_display_cases": 3,
+      "r14_sms_accepted_plmns": [
+        "460-01"
+      ],
+      "notes": []
+    },
+    {
+      "variant": "SQC100-3",
+      "family": "classic",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": "RHF141LW",
+      "radio_reference_bands": [
+        3,
+        4,
+        7,
+        13
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        3
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-classic",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQC100-4",
+      "family": "classic",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": "RHG161LW",
+      "radio_reference_bands": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        13,
+        17,
+        25
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        5
+      ],
+      "radio_candidate_operators": [
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-classic",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": [
+        "No B3/B8 in reviewed manufacturer evidence; prioritize Unicom/Telecom investigation, not a three-carrier promise."
+      ]
+    },
+    {
+      "variant": "SQC100-5",
+      "family": "classic",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": "RHF142LW",
+      "radio_reference_bands": [
+        3,
+        4,
+        7,
+        13
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        3
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-classic",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQW100-1",
+      "family": "passport",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        13,
+        17,
+        20
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-passport",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQW100-2",
+      "family": "passport",
+      "manufacturer_model_list_evidence": "not_found_do_not_infer_nonexistence",
+      "regulatory_model": null,
+      "radio_reference_bands": null,
+      "radio_reference_source": null,
+      "china_fdd_intersection": null,
+      "radio_candidate_operators": null,
+      "root_recipe_present": true,
+      "firmware_id": "stock-passport",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": [
+        "Present in firmware filename and software catalog only; do not infer a retail hardware identity."
+      ]
+    },
+    {
+      "variant": "SQW100-3",
+      "family": "passport",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        17,
+        20,
+        29
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-passport",
+      "offline_build_evidence": "family_recipe_only",
+      "root_device_acceptance": [],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": false,
+      "required_board_in_r14": null,
+      "auto_volte_plmns": [],
+      "historical_voice_sim_display_cases": 0,
+      "r14_sms_accepted_plmns": [],
+      "notes": []
+    },
+    {
+      "variant": "SQW100-4",
+      "family": "passport",
+      "manufacturer_model_list_evidence": "documented",
+      "regulatory_model": null,
+      "radio_reference_bands": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        13,
+        17,
+        20
+      ],
+      "radio_reference_source": "bb10_security_target",
+      "china_fdd_intersection": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "root_recipe_present": true,
+      "firmware_id": "stock-passport",
+      "offline_build_evidence": "family_representative_build_record",
+      "root_device_acceptance": [
+        "windows-x64"
+      ],
+      "gui_first_use_e2e_accepted": false,
+      "auto_volte_policy_allowed": true,
+      "required_board_in_r14": "WINDERMERE4ROW",
+      "auto_volte_plmns": [
+        "460-00",
+        "460-01",
+        "460-11"
+      ],
+      "historical_voice_sim_display_cases": 3,
+      "r14_sms_accepted_plmns": [
+        "460-00"
+      ],
+      "notes": []
+    }
+  ],
+  "materials": {
+    "local_original_firmware_and_autoroot_hashes_verified": 4,
+    "stock_families": 3,
+    "private_key_images_bundled": false,
+    "manufacturer_signature_verified_by_catalog": false,
+    "operator_profile_files_valid": 4,
+    "auto_plmns": [
+      "460-00",
+      "460-01",
+      "460-11"
+    ],
+    "template_only_additional_mncs": [
+      "02",
+      "07",
+      "09",
+      "03"
+    ],
+    "sim_route": "USIM without ISIM only"
+  },
+  "loader_audit": {
+    "upstream_commit": "d45b66ba9594a2912dd005e3607da1d4825fb06e",
+    "latest_commit_checked_on": "2026-11-02",
+    "archive_entries": 82,
+    "compressed_crc_and_decoded_size_passed": 81,
+    "corrupt_entry": "LDR_00",
+    "corrupt_entry_offset": 10,
+    "archive_header_bytes": 3126,
+    "cap_descriptors": 213,
+    "cap_embedded_loaders": 96,
+    "embedded_gzip_crc_passed": 96,
+    "r14_replacement_hardware_id": "9400270a",
+    "r14_replacement_sha256": "108ab6743c488b5558d29a8e3bc422dddeaa0466a36ed45e13a3082317e575ef",
+    "hypothetical_missing_ids": [
+      "9500270a",
+      "9600270a",
+      "9700270a",
+      "9c00270a"
+    ],
+    "missing_id_mapping_evidence": "IDs absent from pinned ini, replacement directory and cap descriptor table; suffix association must be obtained from the actual target, not guessed.",
+    "device_acceptance_inferred": false
+  },
+  "pending_patch": {
+    "commit": "7788443e8b2d5b7c8c3cbd94e9ac0041b913459a",
+    "in_r14": false,
+    "scope": "Root-tab retry and preserving prepared kit after transient unknown identity; does not expand phone compatibility."
+  },
+  "sources": {
+    "bb10_security_target": {
+      "url": "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-391%20ST%20v1.10.pdf",
+      "document_date": "2017-01-09",
+      "pages": "PDF 11-13, printed 3-5",
+      "type": "manufacturer_authored_certification_document"
+    },
+    "classic_quickstart": {
+      "url": "https://static.telus.com/common/cms/files/get-help/downloads/BlackBerry_Classic_QuickStart_Guide_EN.pdf",
+      "type": "manufacturer_authored_carrier_hosted"
+    },
+    "classic1_carrier_datasheet": {
+      "url": "https://one.nz/MEDIA_ProductCatalog/m630071_Product_Datasheet_1_14_-_BlackBerry_Classic.pdf",
+      "type": "carrier_datasheet",
+      "note": "Lists LTE 800 MHz in addition to CC table bands; this research does not claim the CC table is exhaustive."
+    },
+    "classic4_safety": {
+      "url": "https://device.report/m/fbe5c9940c9ad88dc77dfc85c16b8f6d2946b1a804fb5ca772141625fa1f5e43",
+      "type": "manufacturer_authored_mirror"
+    },
+    "miit_spectrum": {
+      "url": "https://wap.miit.gov.cn/jgsj/wgj/kpzs/art/2021/art_9105abf8095d49bd9065c1b6ebb06d2a.html",
+      "content_as_of": "2024-04",
+      "type": "regulator",
+      "note": "Frequency permission is not live local coverage or subscriber IMS eligibility."
+    },
+    "etsi_lte_bands": {
+      "url": "https://www.etsi.org/deliver/etsi_ts/136100_136199/136101/13.20.00_60/ts_136101v132000p.pdf",
+      "type": "standards_body"
+    },
+    "autoroot_v4": {
+      "url": "https://bb10.root.sx/blog/autoroot-v4",
+      "document_date": "2026-10-22",
+      "type": "upstream_author"
+    },
+    "bb10mt_loaders": {
+      "url": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/bb10mt.ini",
+      "type": "pinned_upstream_source"
+    },
+    "bb10mt_loader_selection": {
+      "url": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/ramloader.pas",
+      "type": "pinned_upstream_source"
+    },
+    "bb10mt_archive": {
+      "url": "https://github.com/bb10root/bb10mt/blob/d45b66ba9594a2912dd005e3607da1d4825fb06e/uarchive.pas",
+      "type": "pinned_upstream_source"
+    },
+    "upstream_volte": {
+      "url": "https://bb10.root.sx/blog/volte",
+      "document_date": "2026-10-29",
+      "type": "upstream_author"
+    }
+  },
+  "implementation": {
+    "branch": "fix/screenshot-onboarding-20261102",
+    "status": "implemented_unpublished_source_candidate",
+    "phone_contacted": false,
+    "automatic_model_or_carrier_whitelist_expanded": false,
+    "coverage_catalog": "materials/device-support.json",
+    "desktop_prep_checks": "tools/device_support.py",
+    "early_scope_errors": "device/unified_install.py",
+    "frozen_resources_shared_by_windows_and_macos": true,
+    "new_hardware_available_for_acceptance": false,
+    "mobile_integration": {
+      "reviewed_branch": "feat/native-mobile-20261102",
+      "state_when_reviewed": "implementation_in_progress_not_accepted_release",
+      "independent_mobile_workspace_modified": false,
+      "shared_file_needing_semantic_merge": "device/unified_install.py",
+      "shared_catalog_consumer_on_mobile": "planned_not_implemented_by_this_branch",
+      "rooted_phone_installation_replaces_desktop_transport_not_hardware_compatibility": true,
+      "stock_phone_initial_root_still_requires_computer": true
+    },
+    "offline_validation": {
+      "run": 643,
+      "passed": 641,
+      "skipped": 2,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 55.366,
+      "phone_contacted": false,
+      "skipped_reasons": [
+        "Windows symlink creation unavailable",
+        "Native POSIX terminal unavailable on Windows"
+      ]
+    }
+  }
+}

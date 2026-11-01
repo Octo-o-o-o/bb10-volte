@@ -10,6 +10,8 @@
 
 [使用指南](https://bb10-volte.octoooo.com/guide.html) · [发布与更新](https://github.com/Octo-o-o-o/bb10-volte/releases) · [更新日志](docs/UPDATELOG.md)
 
+本分支新增了 [14 个硬件后缀的覆盖研究与前置检查](docs/ALL-VARIANTS-COVERAGE-PLAN.md)：未适配的型号会在下载、Root 或安装前说明原因，并提供独立系统恢复 / Root 选项。这些改动尚未进入下方 r14 下载包，也没有扩大已验证的自动 VoLTE 范围。
+
 ## 下载
 
 | 电脑 | 系统要求 |

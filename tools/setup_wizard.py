@@ -1,6 +1,7 @@
 """Guided local prerequisites; destructive flashing requires an explicit choice."""
 from i18n import tr
 from firmware_policy import baseline_error
+import device_support
 from pathlib import Path
 import queue
 import sys
@@ -77,11 +78,16 @@ class SetupWizard(tk.Toplevel):
         self.imported_variant = None
         self.ack = tk.BooleanVar()
         self.mac_flash_ack = tk.BooleanVar()
+        self.root_only = tk.BooleanVar(value=False)
+        self.operator = tk.StringVar()
         body = ttk.Frame(self, padding=24)
         body.pack(fill='both', expand=True)
         ttk.Label(body, text=tr('准备好设备，再继续开通'), font=(FONT, 17, 'bold')).pack(anchor='w')
         self.status = ttk.Label(body, text=tr('已有 Root 的设备可直接检测；首次 Root 需要备份并刷写。'), wraplength=790)
         self.status.pack(anchor='w', pady=(8, 18))
+        self.support_notice = ttk.Label(body, wraplength=790, justify='left')
+        self.support_notice.pack(fill='x', pady=(0, 12))
+        self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
         connection_page, connection = scrolled_page(self.tabs, padding=20)
@@ -139,6 +145,20 @@ class SetupWizard(tk.Toplevel):
         ttk.Label(line, text=tr('手机型号')).pack(side='left', padx=(0, 14))
         self.model_picker = ttk.Combobox(line, textvariable=self.variant, values=firmware_variants(), state='readonly', width=20)
         self.model_picker.pack(side='left')
+        carrier_row = ttk.Frame(root_tab)
+        carrier_row.pack(fill='x', pady=8)
+        ttk.Label(carrier_row, text=tr('计划使用的运营商')).pack(side='left', padx=(0, 12))
+        self.operator_options = [tr('连接后核对 SIM'), tr('中国移动'), tr('中国联通'), tr('中国电信')]
+        self.operator_picker = ttk.Combobox(carrier_row, textvariable=self.operator,
+                                            values=self.operator_options, state='readonly', width=22)
+        self.operator_picker.current(0)
+        self.operator_picker.pack(side='left')
+        self.root_only_check = ttk.Checkbutton(root_tab, variable=self.root_only,
+            text=tr('仅准备或恢复系统 / Root，不开通 VoLTE'))
+        self.root_only_check.pack(anchor='w', pady=(0, 8))
+        self.root_scope = ttk.Label(root_tab, wraplength=730, justify='left')
+        self.root_scope.pack(fill='x', pady=(0, 12))
+        self.root_scope.bind('<Configure>', lambda event: self.root_scope.configure(wraplength=max(1, event.width - 4)))
         self.history = prepared_kit_history()
         history_row = ttk.Frame(root_tab)
         history_row.pack(fill='x', pady=(12, 0))
@@ -240,6 +260,8 @@ class SetupWizard(tk.Toplevel):
         self._job = self.after(100, self.drain)
         self.grab_set()
         self.variant.trace_add('write', self.model_changed)
+        self.root_only.trace_add('write', self.scope_changed)
+        self.operator.trace_add('write', self.scope_changed)
         self.refresh()
         if auto_check:
             self.detect()
@@ -264,7 +286,11 @@ class SetupWizard(tk.Toplevel):
                 self.firmware_source.current(0)
             else:
                 self.firmware_source.set('')
-        ready = item is not None and not self.busy
+        blocker = self.support_blocker()
+        self.support_notice.configure(text=device_support.describe(device_support.assess(self.support_variant(), self.selected_operator())))
+        self.root_scope.configure(text=device_support.root_scope_note(self.support_variant(), sys.platform)
+                                  if self.support_variant() else '')
+        ready = item is not None and not self.busy and not blocker
         for button in (self.download_firmware_button, self.browser_download_button, self.copy_download_button,
                        self.browse_firmware_button, self.import_firmware_button):
             button.configure(state='normal' if ready else 'disabled')
@@ -292,8 +318,25 @@ class SetupWizard(tk.Toplevel):
         self.firmware_source.configure(state='readonly' if ready else 'disabled')
         self.history_picker.configure(state='disabled' if self.busy else 'readonly')
         self.ack_check.configure(state='disabled' if self.busy else 'normal')
+        self.root_only_check.configure(state='disabled' if self.busy else 'normal')
+        self.operator_picker.configure(state='disabled' if self.busy else 'readonly')
         if self.mac_flash_check is not None:
             self.mac_flash_check.configure(state='disabled' if self.busy else 'normal')
+
+    def selected_operator(self):
+        return dict(zip(self.operator_options, (None, 'mobile', 'unicom', 'telecom'))).get(self.operator.get())
+
+    def support_variant(self):
+        detected = (self.usb.get('device') or {}).get('ModelName')
+        return detected if self.usb.get('usb_count') == 1 and detected else self.variant.get()
+
+    def support_blocker(self):
+        return device_support.preparation_blocker(self.support_variant(), self.root_only.get(), self.selected_operator())
+
+    def scope_changed(self, *_):
+        self.ack.set(False)
+        self.mac_flash_ack.set(False)
+        self.refresh()
 
     def model_changed(self, *_):
         variant = self.variant.get()
@@ -304,6 +347,7 @@ class SetupWizard(tk.Toplevel):
             self.firmware_path.set('')
             self.ack.set(False)
             self.mac_flash_ack.set(False)
+            self.root_only.set(False)
         self.refresh()
 
     def flash_blocker(self, variant):
@@ -315,6 +359,8 @@ class SetupWizard(tk.Toplevel):
             return prepared_hint or tr('请先确认准确机型，再获取对应固件和准备 Root 镜像。')
         if variant not in catalog()['auto_root_variants']:
             return MESSAGES['root_model_unsupported']
+        if self.support_blocker():
+            return self.support_blocker()
         if sys.platform not in ('win32', 'darwin'):
             return MESSAGES['windows_root_required']
         if self.choice:
@@ -341,7 +387,12 @@ class SetupWizard(tk.Toplevel):
 
     def firmware_target(self):
         try:
-            return selected_firmware_variant(self.variant.get(), self.usb)
+            variant = selected_firmware_variant(self.variant.get(), self.usb)
+            blocker = self.support_blocker()
+            if blocker:
+                self.status.configure(text=blocker)
+                return None
+            return variant
         except SetupError as error:
             self.status.configure(text=MESSAGES[str(error)])
             return None
@@ -567,7 +618,7 @@ class SetupWizard(tk.Toplevel):
     def open_firmware(self):
         if not self.busy:
             from firmware_gui import FirmwareDialog
-            FirmwareDialog(self, self.on_ready, self.usb)
+            FirmwareDialog(self, self.on_ready, self.usb, root_only=self.root_only.get())
 
     def drivers(self):
         if not messagebox.askokcancel(tr('安装 BlackBerry 驱动'), tr('将下载并校验驱动，然后请求 Windows 管理员确认。请先保存电脑上的工作。'), parent=self):

@@ -27,7 +27,8 @@ PREVIOUS_PAYLOADS = ('99ff0c8b1c3118bbb15b0177a9177e2f592b4d0711fb1c59698eddfb39
                      'a9a1609e31b8477e01c2c30511b6dfdc5914a4df5bff521f227f3deab77a963b',
                      'f0c4a5002dc41b8de7113db680936240d564e87ddae67793b79e27a45e8c9a2f',
                      '7de370bc3b3a9a646714336aa5e45de89026a50012e986f43a0d228d6dc638ff',
-                     '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc')
+                     '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc',
+                     'ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c438e3da')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py')
@@ -72,8 +73,32 @@ def root_kind(facts):
     return 'autoroot-v2'
 
 
+def blocked_probe(observed, code):
+    variant = observed.get('variant')
+    if not isinstance(variant, str) or not re.match(r'\ASQ[NCW]100-[0-9]{1,2}\Z', variant):
+        variant = 'unknown'
+    return {'schema': 1, 'variant': variant, 'scope_error': code,
+            'installed': False, 'can_install': False, 'can_update': False,
+            'sim_supported': False}
+
+
 def probe():
-    facts, family = identity()
+    # Report model/OS limits before native probing, legacy migration or backups.
+    # This path is read-only and never grants an unknown model permission.
+    assert os.geteuid() == 0 and os.uname()[0] == 'QNX' and ctypes.sizeof(ctypes.c_void_p) == 4
+    observed = device_info.read_identity()
+    try:
+        policy.model(observed)
+    except ValueError as error:
+        code = ('os_not_supported' if observed.get('variant') in policy.MODELS and
+                observed.get('os_version') != policy.OS_VERSION else str(error))
+        return blocked_probe(observed, code)
+    try:
+        facts, family = identity()
+    except AssertionError as error:
+        if str(error) != 'unknown_native_image':
+            raise
+        return blocked_probe(observed, 'unknown_native_image')
     result = {'schema': 1, 'variant': facts['variant'], 'family': family, 'os_version': facts['os_version'],
               'installed': os.path.isfile(BASE + '/payload.json'), 'call_idle': s.phone_idle(),
               'normal_reboot_after_sim_change': True, 'validation': 'candidate_pending_device_acceptance'}
@@ -117,6 +142,7 @@ def probe():
         result['sim_supported'] = True
     except ValueError as error:
         result['sim_supported'], result['sim_reason'] = False, str(error)
+        result['can_install'] = False
     return result
 
 

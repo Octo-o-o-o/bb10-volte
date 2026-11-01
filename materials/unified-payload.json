@@ -16,7 +16,7 @@
     "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
     "device/unified_service.py": "b85af72805abf614ec63cc0935db2da2b5ecfb876abef3dcf03c0429b7b1901a",
     "device/unified_dca.py": "a49ad390115cd6dfd89cd01121d80d24dcde46f7294f69051175bbe149055cef",
-    "device/unified_install.py": "f21e26596896866fdcee5b78e15ed97d84cf5844e1cfe217c9ed603d9bd847ab",
+    "device/unified_install.py": "49253391e5ee076386d7f0759321f615cc779b2f2ecaa0f6154f937824f03afc",
     "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
     "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
     "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",

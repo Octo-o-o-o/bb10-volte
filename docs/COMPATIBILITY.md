@@ -1,5 +1,7 @@
 # 兼容性预检与客户信息
 
+**范围说明（2026-11-02）：** 下文主要记录旧手动实验入口；当前统一自动服务以 `device/carrier_policy.py` 和 `project.json` 为准，已纳入 SQN100-3、SQC100-2、SQW100-4。逐后缀能力、r14 证据及本分支尚未发布的前置检查见[全后缀方案](ALL-VARIANTS-COVERAGE-PLAN.md)，不能把旧版 Passport 暂缓说明套用于已验收的 SQW100-4 自动服务。
+
 [English](COMPATIBILITY.en.md)
 
 0.3.3 在预检报告中加入按硬件、OS 和实际 MCC/MNC 精确匹配的社区证据，以及有限枚举的只读来电诊断。新增证据不代表本工具已验收。Passport 自动操作暂缓，见[社区研究](COMMUNITY-RESEARCH.md)。

@@ -14,6 +14,7 @@ from root_setup import local_usb_state, verify_root, SetupError
 from workflow import WorkflowError
 from mac_help import scrolled_page
 from profile_editor import FONT
+import device_support
 
 MATERIAL_MESSAGES = {
     'limited': tr('文件夹内容较多或层级过深。如果连接材料就在所选文件夹中，可以只检查这一层；也可以选择存放材料的子文件夹。'),
@@ -45,6 +46,8 @@ class ConnectionDialog(tk.Toplevel):
         self.detail.pack(fill='x', pady=(10, 12))
         self.facts = ttk.Label(body, wraplength=690, justify='left')
         self.facts.pack(fill='x', pady=(0, 12))
+        self.support_notice = ttk.Label(body, wraplength=690, justify='left')
+        self.support_notice.pack(fill='x', pady=(0, 12))
         # Footer remains reachable even with large system fonts or long help text.
         footer = ttk.Frame(body)
         footer.pack(side='bottom', fill='x', pady=(12, 0))
@@ -59,7 +62,7 @@ class ConnectionDialog(tk.Toplevel):
         self.progress = ttk.Progressbar(body, mode='indeterminate')
         self.status = ttk.Label(body, wraplength=690, justify='left')
         self.status.pack(side='bottom', fill='x', pady=(8, 12))
-        for label in (self.title_label, self.detail, self.facts, self.status):
+        for label in (self.title_label, self.detail, self.facts, self.status, self.support_notice):
             label.bind('<Configure>', lambda event, target=label: target.configure(wraplength=max(1, event.width - 4)))
         page, self.options = scrolled_page(body, padding=0)
         page.pack(fill='both', expand=True)
@@ -86,6 +89,8 @@ class ConnectionDialog(tk.Toplevel):
 
     def show_guidance(self):
         view = guidance(self.usb, self.error, bool(self.choice))
+        variant = (self.usb.get('device') or {}).get('ModelName') if self.usb.get('usb_count') == 1 else None
+        self.support_notice.configure(text=device_support.describe(device_support.assess(variant)))
         self.title_label.configure(text=view.title)
         self.detail.configure(text=view.detail)
         self.clear_options()

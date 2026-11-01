@@ -8,6 +8,7 @@ from connection import resolve_connection
 from completion_dialog import CompletionDialog
 from i18n import tr
 from auto_carrier_view import status_view, restart_guidance
+import device_support
 
 
 def status_text(result):
@@ -70,9 +71,11 @@ class AutoCarrierWindow:
         self.completion_button.configure(state='normal' if ready and not self.busy else 'disabled')
         for action, button in self.buttons.items():
             allowed = (not self.busy and (action == 'probe' or
-                action == 'install' and (report.get('can_install') or report.get('can_update')) or
+                action == 'install' and (report.get('can_install') and report.get('sim_supported') is True or report.get('can_update')) or
                 action in ('status', 'enable', 'disable') and report.get('installed') and
                     not report.get('installation_pending') and not report.get('update_pending')))
+            if report.get('scope_error') and action != 'probe':
+                allowed = False
             enabled = report.get('status', {}).get('enabled')
             if action == 'enable' and enabled is not False or action == 'disable' and enabled is False:
                 allowed = False
@@ -142,10 +145,14 @@ class AutoCarrierWindow:
                 self.busy = False
                 if error:
                     self.client, self.report = None, None
-                    self.reconnect_pending, self.status_button_override = True, None
+                    scope_error = device_support.error_message(error)
+                    self.reconnect_pending, self.status_button_override = not bool(scope_error), None
                     self.status.configure(text=tr('本次检查或操作未完成，请重新检查连接。') + '\n' + error)
                     details = tr('若刚重启手机，请解锁并等待约 3–5 分钟，保持 USB 连接，再点击“重新检查连接”。\n'
                                  '连接恢复后将重新读取手机状态。若安装或更新中断，先检查设备，不要重复覆盖安装。')
+                    if scope_error:
+                        self.status.configure(text=scope_error)
+                        details = scope_error
                 else:
                     self.reconnect_pending, self.status_button_override = False, None
                     if action == 'probe':
@@ -158,6 +165,10 @@ class AutoCarrierWindow:
                         if result.get('update_available'):
                             details += '\n\n' + (tr('可更新自动适配，更新前版本会保留备份。') if result.get('can_update') else
                                                 tr('有适配更新。请先停用，待恢复后正常重启，再检查并更新。'))
+                        scope_note = device_support.report_note(result)
+                        if scope_note:
+                            self.status.configure(text=scope_note)
+                            details = device_support.describe(device_support.assess(result.get('variant'))) + '\n\n' + scope_note
                     elif action == 'install':
                         self.report = dict(self.report or {}, installed=True, can_install=False, can_update=False,
                                            installation_pending=False, update_pending=False, update_available=False,

@@ -10,6 +10,8 @@ Install once from Windows or Mac. Then power off, change the SIM and start the p
 
 [Guide](https://bb10-volte.octoooo.com/en/guide.html) · [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) · [Changelog](docs/UPDATELOG.en.md)
 
+This branch adds [coverage research and early checks for 14 hardware variants](docs/ALL-VARIANTS-COVERAGE-PLAN.md) (Chinese): unsupported models receive an explanation before firmware downloads, Root or installation, with a separate system recovery / Root option. These changes are not in the r14 downloads below and do not expand the validated automatic VoLTE scope.
+
 ## Downloads
 
 | Computer | System requirements |

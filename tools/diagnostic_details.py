@@ -32,6 +32,10 @@ def adaptation_note(report):
     """Describe the exact model boundary, separately from legacy trial gates."""
     device = report.get('device') or {}
     variant = device.get('variant')
+    if (device.get('recognized') is True and not device.get('identity_conflict') and
+            device.get('family') in ('q10', 'passport') and variant not in carrier_policy.MODELS):
+        import device_support
+        return device_support.describe(device_support.assess(variant))
     if (device.get('recognized') is not True or device.get('identity_conflict') or
             device.get('family') != 'classic' or not isinstance(variant, str) or
             not re.fullmatch(r'SQC100-[0-9]{1,2}', variant) or variant in carrier_policy.MODELS):
