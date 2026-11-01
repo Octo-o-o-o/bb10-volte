@@ -75,7 +75,17 @@ def elf_checks(stock, patched):
     loads = [h for h in headers if h[0] == 1]
     assert all(h[4] <= h[5] and h[1]+h[4] <= len(patched) and h[6] in (5, 6)
                and (h[1]-h[2]) % h[7] == 0 for h in loads)
-    assert all(a[2]+a[5] <= b[2] for a, b in zip(loads, loads[1:]))
+    # QNX records one text and one data relocation bias. A third LOAD can
+    # pass generic ELF checks yet crash in the linker before IMS starts.
+    assert len(loads) == 2 and [h[6] for h in loads] == [5, 6]
+    rx, rw = loads
+    old_loads = [h for h in programs(stock) if h[0] == 1]
+    assert rx[:4] == old_loads[0][:4] and rw[:5] == old_loads[1][:5]
+    assert rx[1] == rx[2] == 0 and rx[4] == rx[5] == len(patched)
+    assert rw[5] >= old_loads[1][5] and rw[2]+rw[5] == image.SMS_ACK_BSS_VA+image.SMS_ACK_BSS_SIZE
+    rw_page_end = (rw[2]+rw[5]+4095) & ~4095
+    assert rw_page_end <= image.SMS_ACK_CODE_VA
+    assert all(h[1] == h[2] for h in headers if h[0] == 0x70000001)
     assert [h for h in programs(stock) if h[0] in (2, 3, 6, 0x6474e552)] == [
         h for h in headers if h[0] in (2, 3, 6, 0x6474e552)]
     assert branch(stock, 0x2eeff2) == 0x218098
@@ -91,7 +101,8 @@ def elf_checks(stock, patched):
     assert stock[0x218098:0x21809c] == bytes.fromhex('20307047')
     return {'original_unwind_entries_preserved': len(old), 'shim_unwind_entries': len(new)-len(old),
             'notes_preserved': True, 'dynamic_imports_and_relro_unchanged': True,
-            'nonoverlapping_rx_rw_segments': True, 'no_writable_executable_segment': True,
+            'qnx_two_load_headers_preserved': True, 'original_rw_overlay_and_bss_preserved': True,
+            'shim_outside_rw_pages': True, 'no_writable_executable_segment': True,
             'original_bl_targets_checked': True, 'stock_sms_logic_preserved_except_two_hooks': True,
             'qnx_loader_validated': False}
 
@@ -141,7 +152,7 @@ def verify(stock):
             'elf_checks': checks, 'matrix': matrix,
             'limitations': ['Native SIP header/URI/clock APIs are mocked at verified ABI boundaries.',
                             'No QNX process was launched and no carrier transaction was sent.',
-                            'The reported four Hub duplicates have not been reproduced or retested on a device.']}
+                            'This offline report cannot establish delivery counts, gateway acceptance or voice regression.']}
 
 
 def main():

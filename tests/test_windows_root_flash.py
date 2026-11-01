@@ -33,11 +33,17 @@ class WindowsRootFlashTests(unittest.TestCase):
                     evidence.line(line)
                 self.assertEqual(evidence.result(phase, code)['completed'], accepted)
 
-    def run_console(self, root, transcript, code, preexisting=False):
+    def run_console(self, root, transcript, code, preexisting=False, before_eof=None):
         image = root / 'images/Q10_radio.exe'
         console_in = MagicMock()
         console_out = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
-        child = MagicMock(stdout=io.BytesIO(transcript.encode()))
+        class Output(io.BytesIO):
+            def read(self, count=-1):
+                value = super().read(count)
+                if not value and before_eof:
+                    before_eof()
+                return value
+        child = MagicMock(stdout=Output(transcript.encode()))
         child.wait.return_value = code
         if preexisting:
             (root / 'flash-radio.log').write_text('prior stage must be preserved')
@@ -73,6 +79,18 @@ class WindowsRootFlashTests(unittest.TestCase):
     def test_reopening_console_does_not_launch_another_destructive_child(self):
         with tempfile.TemporaryDirectory() as folder:
             self.run_console(Path(folder), '', 0, preexisting=True)
+
+    def test_unterminated_password_prompt_is_visible_before_process_exit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            def still_waiting():
+                text = (root / 'flash-radio.log').read_text()
+                self.assertEqual(text.count('[Device password input requested in native console]'), 1)
+                self.assertNotIn('Please enter password', text)
+                self.assertFalse((root / 'flash-radio.json').exists())
+            unused, report = self.run_console(root, 'Resetting Device:\rPlease enter password: ', 1,
+                                               before_eof=still_waiting)
+            self.assertFalse(report['completed'])
 
 
 if __name__ == '__main__':

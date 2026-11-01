@@ -4,7 +4,9 @@
 
 [简体中文](SMS-ACK-NATIVE.md) · [SMS policy and capture](SMS-DIAGNOSTICS.en.md)
 
-2026-11-01: a missing correlation step has been identified in the pinned native IMS image and a source candidate implemented. **ARM instruction emulation and ELF checks pass; QNX loading, gateway acceptance and single Hub delivery remain untested on devices.** No phone was connected or SMS sent.
+The initial offline investigation on 2026-11-01 identified the missing correlation step. The first private Q20 trial subsequently crashed with SIGSEGV in the QNX dynamic linker before IMS entry. A third LOAD header replaced this linker's text relocation bias; generic ELF checks and callsite emulation did not cover that platform restriction.
+
+The revised candidate retains two LOAD headers, extends the original RX mapping and preserves the original RW overlay and zero-fill. Stock and revised images pass dependency enumeration with `LD_TLO=1` on the same phone; the old candidate reproduces the crash in that check. Trace-only behavior was first verified with `ls` without executing its normal directory access. **Revised IMS startup, gateway acceptance, delivery counts and voice regression remain pending.** See the [device acceptance record](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
 
 ## Native finding
 
@@ -43,7 +45,7 @@ Different Call-ID, gateway or RPDU for a live reference marks it ambiguous, incl
 - TX hook `0x2ee3c6`: replace `c7 f6 c5 fc` (`BL 0x1b5d54`), run the original URI setter, then attempt correlation. r4–r11 and stack alignment are preserved.
 - Header lookup/existence/copy setters: `0x16d14c`, `0x2185e8`, `0x218e80`. Header arrays expose values at `+4`, count at `+8`, consistent with getter `0x218574`. SAL String is a data pointer; native length getter is `0x1ffa94`.
 - URI size is `0x7c`; constructor/validator/copy setter/destructor: `0x23ea94`, `0x23c596`, `0x1b5d54`, `0x66140`. Thumb targets have bit 0 set; the `clock_gettime` PLT at `0x5b57c` is ARM. Clock ID 2 and two-word timestamps follow this image's native code, not assumptions from another QNX release. Failure/backwards time rejects correlation.
-- New RX code at `0x500000`; cache at `0x4a3000` in the extended zero-filled RW tail. Adjacent PT_NOTE descriptions are combined, preserving QNX/GNU note contents and freeing a program-header slot. All 15,823 original ARM unwind entries are rebased/copied and shim entries appended. Existing load addresses, imports, interpreter and RELRO remain unchanged, with no RWX segment. Only the two 4-byte SMS calls change in original SMS code.
+- Preserve both LOAD and both PT_NOTE headers. Extend the original RX mapping with identical file/virtual offsets; code remains at `0x500000`. The original RW mapping overlays its original range, with cache at `0x4a3000` in its extended zero-filled tail. New code/unwind data remain outside RW pages. All 15,823 original ARM unwind entries are rebased/copied and shim entries appended. Existing load addresses, imports, interpreter and RELRO remain unchanged, with no RWX segment. Only the two 4-byte SMS calls change in original SMS code. Live mappings and permissions still need verification after revised startup.
 
 Native header/URI/clock APIs are mocked at their inspected ABI boundaries in emulation. These tests do not execute the QNX loader, native C++ APIs, SIP stack or carrier network.
 
@@ -70,4 +72,4 @@ Tests execute actual ARM/Thumb instructions for a synthetic E3→FA→FB→0C se
 
 On a device, first verify QNX loading, then correlate one raw MT and report: In-Reply-To, RP reference, gateway target/To, successful SIP response, and one Hub entry over at least 180 seconds. Follow with concurrent/multipart/intentional repeated content, MO, voice, reboot, powered-off SIM change and restoration. See [capture instructions](SMS-DIAGNOSTICS.en.md#sip-logging).
 
-Known-payload updates back up and replace `ims_image.py`; the new temporary image is generated on a normal service restart, without modifying a running process. The native candidate is included in source, disabled by default and not deployed to phones; prior voice acceptance does not cover it. The user's `bb10root/bb10-volte main+PR#1` is a separate C project: this Python payload cannot directly replace its installation. Integration there requires the same native hash guard and separate device acceptance.
+Known-payload updates back up and replace `ims_image.py`; the new temporary image is generated on a normal service restart, without modifying a running process. The released native candidate remains disabled by default; private Q20 trials and the revision are described above; prior voice acceptance does not cover it. The user's `bb10root/bb10-volte main+PR#1` is a separate C project: this Python payload cannot directly replace its installation. Integration there requires the same native hash guard and separate device acceptance.

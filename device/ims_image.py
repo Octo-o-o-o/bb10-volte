@@ -69,10 +69,11 @@ def _relative31(target, place):
 def sms_ack_binary(image, patches=()):
     """Add a bounded correlation shim only to a known temporary IMS image.
 
-    Keep original load addresses, QNX/GNU notes, RELRO and dynamic imports.
-    Merge the two adjacent note descriptions to free one program-header slot
-    for an RX segment; extend only the existing RW segment's zero-filled tail.
-    Rebase/copy ARM unwind entries so native exception handling keeps its table.
+    Keep the two original LOAD headers, QNX/GNU notes and dynamic imports.
+    QNX's runtime linker selects one text and one data relocation bias: adding
+    another RX header replaces the text bias and crashes before program entry.
+    Extend the original RX mapping, then retain the original RW overlay and
+    its zero-filled tail. New code/unwind data sit beyond the RW mapping.
     """
     digest = hashlib.sha256(image).hexdigest()
     assert digest in (STOCK_SHA,
@@ -83,10 +84,11 @@ def sms_ack_binary(image, patches=()):
     header = struct.unpack_from('<16sHHIIIIIHHHHHH', image)
     assert header[1:3] == (3, 40) and header[5] == 52 and header[9:11] == (32, 9)
     phdr = [list(struct.unpack_from('<8I', image, 52 + i * 32)) for i in range(9)]
-    unwind, rw, note, spare = phdr[0], phdr[4], phdr[6], phdr[7]
+    unwind, rx, rw = phdr[0], phdr[3], phdr[4]
     assert unwind[0] == 0x70000001 and unwind[1] == unwind[2] == 0x431bdc
     assert rw[0] == 1 and rw[6] == 6 and rw[2] + rw[5] == 0x4a2ebc
-    assert note[:6] == [4, 360, 360, 360, 24, 24] and spare[:6] == [4, 384, 384, 384, 32, 32]
+    assert rx[:6] == [1, 0, 0, 0, 0x450a58, 0x450a58] and rx[6:] == [5, 4096]
+    assert [entry[0] for entry in phdr].count(1) == 2
     assert SMS_ACK_BSS_VA >= rw[2] + rw[5] and SMS_ACK_BSS_VA + SMS_ACK_BSS_SIZE < SMS_ACK_CODE_VA
     assert len(SMS_ACK_CODE) < 16384 and SMS_ACK_BSS_SIZE < 65536
 
@@ -108,16 +110,19 @@ def sms_ack_binary(image, patches=()):
         place = table_va + index * 8
         payload.extend(struct.pack('<II', _relative31(target, place),
                                    descriptor if compact else _relative31(descriptor, place + 4)))
-    file_offset = (len(image) + 4095) & ~4095
+    # The original RX mapping has identical file/virtual offsets. Preserve
+    # that relationship for the appended bytes; a separately placed segment
+    # cannot be represented by the loader's single text relocation bias.
+    file_offset = SMS_ACK_CODE_VA
+    assert len(image) <= file_offset and (SMS_ACK_BSS_VA + SMS_ACK_BSS_SIZE + 4095) & ~4095 <= file_offset
     changed = bytearray(image)
     changed.extend(b'\0' * (file_offset - len(changed)))
     changed.extend(payload)
     rw[5] = SMS_ACK_BSS_VA + SMS_ACK_BSS_SIZE - rw[2]
-    note[4] = note[5] = 56
-    phdr[7] = [1, file_offset, SMS_ACK_CODE_VA, SMS_ACK_CODE_VA, len(payload), len(payload), 5, 4096]
+    rx[4] = rx[5] = len(changed)
     unwind[1:6] = [file_offset + table_offset, table_va, table_va, len(entries)*8, len(entries)*8]
     allowed = []
-    for index in (0, 4, 6, 7):
+    for index in (0, 3, 4):
         start = 52 + index*32
         changed[start:start+32] = struct.pack('<8I', *phdr[index])
         allowed.append((start, start+32))

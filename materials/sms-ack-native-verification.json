@@ -2,6 +2,8 @@
   "schema": 1,
   "status": "native_correlation_candidate_pending_device_acceptance",
   "stock_sha256": "043d38b0f08cf6a9696ef405f3976679e32ff9ad943ec35294c3d3da69a12b67",
+  "default_voice_images_unchanged": true,
+  "native_sms_candidate_enabled_by_default": false,
   "shim_code_sha256": "2d737042edc0059054341c3355abda130fdf8d86f18b810a260e6fb567c092b3",
   "receive_hook": "0x2eeff2",
   "report_hook": "0x2ee3c6",
@@ -10,7 +12,9 @@
     "shim_unwind_entries": 9,
     "notes_preserved": true,
     "dynamic_imports_and_relro_unchanged": true,
-    "nonoverlapping_rx_rw_segments": true,
+    "qnx_two_load_headers_preserved": true,
+    "original_rw_overlay_and_bss_preserved": true,
+    "shim_outside_rw_pages": true,
     "no_writable_executable_segment": true,
     "original_bl_targets_checked": true,
     "stock_sms_logic_preserved_except_two_hooks": true,
@@ -21,7 +25,7 @@
       "variant": "SQN100-3",
       "operator": "mobile",
       "mnc": "00",
-      "image_sha256": "80022cc6a46a481a33cd925732372ea2d9f93781be69dbcd7b08a9d347dd8721",
+      "image_sha256": "e035bd7176e8944a927950d6521fa28e35100ecf8e3a5605a1e1f1c9470e3925",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -30,7 +34,7 @@
       "variant": "SQN100-3",
       "operator": "unicom",
       "mnc": "01",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -39,7 +43,7 @@
       "variant": "SQN100-3",
       "operator": "telecom",
       "mnc": "11",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -48,7 +52,7 @@
       "variant": "SQC100-2",
       "operator": "mobile",
       "mnc": "00",
-      "image_sha256": "80022cc6a46a481a33cd925732372ea2d9f93781be69dbcd7b08a9d347dd8721",
+      "image_sha256": "e035bd7176e8944a927950d6521fa28e35100ecf8e3a5605a1e1f1c9470e3925",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -57,7 +61,7 @@
       "variant": "SQC100-2",
       "operator": "unicom",
       "mnc": "01",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -66,7 +70,7 @@
       "variant": "SQC100-2",
       "operator": "telecom",
       "mnc": "11",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -75,7 +79,7 @@
       "variant": "SQW100-4",
       "operator": "mobile",
       "mnc": "00",
-      "image_sha256": "80022cc6a46a481a33cd925732372ea2d9f93781be69dbcd7b08a9d347dd8721",
+      "image_sha256": "e035bd7176e8944a927950d6521fa28e35100ecf8e3a5605a1e1f1c9470e3925",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -84,7 +88,7 @@
       "variant": "SQW100-4",
       "operator": "unicom",
       "mnc": "01",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -93,7 +97,7 @@
       "variant": "SQW100-4",
       "operator": "telecom",
       "mnc": "11",
-      "image_sha256": "8785269813d6bb467d0d1f877a8bce078324f836811612986c8a7df89b035566",
+      "image_sha256": "8849523746475e98295c89b39920e14d6a13ecfafd26d15bba052cb985bcea42",
       "same_receive_and_report_hooks": true,
       "emulated_callsite_aslr_cases": 3,
       "device_sms_acceptance": false
@@ -102,6 +106,6 @@
   "limitations": [
     "Native SIP header/URI/clock APIs are mocked at verified ABI boundaries.",
     "No QNX process was launched and no carrier transaction was sent.",
-    "The reported four Hub duplicates have not been reproduced or retested on a device."
+    "This offline report cannot establish delivery counts, gateway acceptance or voice regression."
   ]
 }

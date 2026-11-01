@@ -48,6 +48,11 @@ class RootFlashEvidence:
         return classify_output(phase, exit_code, **self.flags)
 
 
+def password_prompt(pending):
+    """Identify an unterminated console prompt without persisting its text."""
+    return bool(re.search(rb'(?i)(?:enter|input|type|provide)[^\r\n]*password|password\s*[:?]', pending))
+
+
 def run_stage(folder, phase, token):
     if sys.platform == 'darwin':
         from macos_root_flash import run_stage as run_macos_stage
@@ -69,6 +74,7 @@ def run_stage(folder, phase, token):
     print(tr('bb10-volte：正在刷写 {} Root').format(phase.upper()), flush=True)
     print(tr('请保持 USB 连接；仅在黑莓工具提示时在此输入手机密码。'), flush=True)
     pending = bytearray()
+    prompt_reported = False
     evidence = RootFlashEvidence()
     from macos_root_flash import public_line
     log = Path(folder) / ('flash-' + phase + '.log')
@@ -84,12 +90,17 @@ def run_stage(folder, phase, token):
             sys.stdout.buffer.write(char)
             sys.stdout.buffer.flush()
             pending.extend(char)
+            if not prompt_reported and password_prompt(pending):
+                file.write('[Device password input requested in native console]\n')
+                file.flush()
+                prompt_reported = True
             if char in (b'\r', b'\n'):
                 line = pending.decode('utf-8', 'replace')
                 evidence.line(line)
                 file.write(public_line(line))
                 file.flush()
                 pending.clear()
+                prompt_reported = False
         if pending:
             line = pending.decode('utf-8', 'replace')
             evidence.line(line)
