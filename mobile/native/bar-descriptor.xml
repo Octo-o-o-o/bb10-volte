@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<qnx xmlns="http://www.qnx.com/schemas/application/1.0">
+    <id>com.octolab.bb10volte</id>
+    <name>BB10 VoLTE</name>
+    <versionNumber>0.1.0</versionNumber>
+    <buildId>5</buildId>
+    <description>Manage BB10 VoLTE, backups and restoration on your rooted phone.</description>
+    <author>OctoLab</author>
+    <authorId>gYAOctoLabBB10VoLTE20261102</authorId>
+    <icon><image>assets/icon.png</image></icon>
+    <initialWindow><autoOrients>false</autoOrients><systemChrome>none</systemChrome></initialWindow>
+    <configuration name="Device-Debug">
+        <platformArchitecture>armle-v7</platformArchitecture>
+        <asset path="build/cmake/arm/o.le-v7-g/bb10volte" entry="true" type="Qnx/Elf">bb10volte</asset>
+    </configuration>
+    <asset path="assets">assets</asset>
+    <permission system="true">run_native</permission>
+    <permission>access_shared</permission>
+    <permission>access_internet</permission>
+    <env var="LD_LIBRARY_PATH" value="app/native/lib:/usr/lib/qt4/lib"/>
+</qnx>

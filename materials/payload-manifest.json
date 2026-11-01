@@ -15,7 +15,7 @@
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
     "device/run.sh": "3af90e97913804e78e9f65c3807698f875d8e83a8a8a83ae59f5d3a79f3587a1",
     "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
-    "device/telecom_attach.py": "2f8718583b7cb63fe4c84aa844e1b536f4d084ef09a2b71ffc8b1d5d26176b6b",
+    "device/telecom_attach.py": "fe3946dbd745676271dc34623d7ea527dc5c69f8080d4ab2533b63af94fa1fc8",
     "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
     "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
     "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"

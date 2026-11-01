@@ -187,9 +187,8 @@ def context():
 def originals():
     manifest = s.load(BACKUP + '/manifest.json')
     assert manifest['owner'] == policy.OWNER
-    receipt = s.load(BASE + '/desktop-backup-receipt.json')
-    assert receipt['owner'] == policy.OWNER and receipt['all_original_hashes_verified'] is True
-    assert receipt['backup_manifest_sha256'] == n.digest(n.read(BACKUP + '/manifest.json'))
+    from unified_install import verify_backup_receipt
+    verify_backup_receipt()
     files = manifest['dca']
     assert set(files) == set(dca.SOURCES)
     values = {}

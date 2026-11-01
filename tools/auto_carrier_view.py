@@ -23,7 +23,9 @@ PHASES = {
 
 def registration_ready(state):
     return (state.get('enabled') is True and state.get('status_from_current_boot') is True
-            and state.get('selected_this_boot') is True and registered(state))
+            and state.get('selected_this_boot') is True
+            and (state.get('management_schema') != 2 or state.get('current_sim_matches') is True)
+            and registered(state))
 
 
 def restart_guidance():

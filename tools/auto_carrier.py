@@ -60,7 +60,8 @@ class AutoClient:
             raise WorkflowError('invalid_action')
         trust = ' && '.join('/proc/boot/pathtrust ' + shlex.quote('!' + base + '/' + name)
                             for name in PAYLOAD_FILES if name.endswith('.py'))
-        command = trust + ' && ' + ENV + '/usr/bin/python3.2 ' + shlex.quote(base + '/device/' + script)
+        clean = 'unset PYTHONOPTIMIZE PYTHONINSPECT PYTHONSTARTUP PYTHONUSERBASE LD_PRELOAD; '
+        command = clean + trust + ' && ' + ENV + 'PYTHONNOUSERSITE=1 /usr/bin/python3.2 ' + shlex.quote(base + '/device/' + script)
         command += ' ' + ' '.join(shlex.quote(arg) for arg in args)
         if self.variant is not None:
             if self.variant not in policy.MODELS:
@@ -139,19 +140,28 @@ class AutoClient:
                 self.download(BASE + '/backup/' + name, folder / name)
                 if hashlib.sha256((folder / name).read_bytes()).hexdigest() != expected:
                     raise WorkflowError('unified_backup_not_verified')
-            receipt = {'owner': policy.OWNER, 'all_original_hashes_verified': True,
-                       'backup_manifest_sha256': manifest_sha}
-            receipt_file = folder / 'desktop-backup-receipt.json'
+            receipt = {'schema': 2, 'owner': policy.OWNER, 'all_original_hashes_verified': True,
+                       'installation_id': prepared['installation_id'], 'operation_id': uuid.uuid4().hex,
+                       'source': 'desktop', 'variant': backup['variant'], 'backup_manifest_sha256': manifest_sha,
+                       'files': backup['files'], 'readback': {name: hashlib.sha256((folder / name).read_bytes()).hexdigest()
+                                                          for name in backup['files']},
+                       'destination': {'type': 'desktop', 'id': str(folder)}}
+            receipt_file = folder / 'backup-receipt.json'
             receipt_file.write_bytes(policy.profiles.canonical(receipt))
-            self.upload(receipt_file, BASE + '/desktop-backup-receipt.json')
-            result = self.execute(BASE, 'unified_install.py', ('activate',), 240)
+            self.upload(receipt_file, stage + '/backup-receipt.json')
+            self.execute(stage, 'unified_install.py', ('record-backup', stage + '/backup-receipt.json'))
+            result = self.execute(stage, 'unified_install.py', ('activate',), 240)
             result['desktop_backup'] = str(folder)
         return result
 
     def action(self, action):
-        if action not in ('status', 'start', 'enable', 'disable'):
+        if action not in ('status', 'start', 'enable', 'disable', 'rollback', 'uninstall'):
             raise WorkflowError('invalid_action')
         expected = verify_package()
+        # The worker snapshot survives deletion/replacement of installed code.
+        if action in ('rollback', 'uninstall'):
+            with self.stage() as stage:
+                return self.execute(stage, 'unified_install.py', (action,), 420)
         try:
             installed = json.loads(self.client.remote('cat ' + BASE + '/payload.json'))
             if any(installed.get(key) != expected[key] for key in ('owner', 'schema')):
@@ -162,6 +172,11 @@ class AutoClient:
                     raise ValueError('payload')
         except (ValueError, TypeError, AttributeError):
             raise WorkflowError('unified_package_mismatch') from None
+        if installed.get('files') != expected['files']:
+            if action in ('start', 'enable'):
+                raise WorkflowError('unified_update_needs_stop_and_reboot')
+            with self.stage() as stage:
+                return self.execute(stage, 'unified_install.py', (action,), 180)
         if action == 'enable':
             state = self.execute(BASE, 'unified_service.py', ('status',), 180)
             if state.get('manager_alive'):
@@ -173,7 +188,7 @@ def main():
     import argparse
     from workflow import Client
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('manifest', 'probe', 'install', 'status', 'start', 'enable', 'disable'))
+    parser.add_argument('action', choices=('manifest', 'probe', 'install', 'status', 'start', 'enable', 'disable', 'rollback', 'uninstall'))
     parser.add_argument('--host', default='bb10-root')
     parser.add_argument('--ssh-config')
     args = parser.parse_args()

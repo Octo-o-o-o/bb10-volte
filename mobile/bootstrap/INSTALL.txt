@@ -1,0 +1,35 @@
+BB10 VoLTE — on-phone bootstrap / 手机端首次安装
+
+This archive is for an already rooted, compatible AutoRoot v4 phone with an
+existing working Root terminal. It does not root a stock phone. Obtain it only
+from the project's HTTPS download page or verified release. Verify the published
+SHA-256 before running an installer; the public key inside a download cannot
+authenticate that download by itself.
+
+已安装 BAR Installer：直接下载同版 .bar，用现有安装器安装。
+只有 Root 终端：手机浏览器下载本 ZIP 到 Downloads。在原 Root 终端中，
+使用已验证的本机 AutoRoot installer。确认下载文件名与下面命令完全相同：
+
+/var/rootdata/installer /accounts/1000/shared/downloads/bb10-volte-VERSION-bootstrap.zip
+
+构建时会把 VERSION 替换为实际版本。若仍看到 VERSION，说明这不是发行包中的说明；
+请使用下载页针对实际版本给出的完整命令。
+安装器返回成功后确认桌面出现 BB10 VoLTE 图标，打开并点击“检查手机”。
+仅看到任务已提交、进度开始或文件解压不代表安装成功。超时保留文件，
+检查同一任务结果，不反复重装。应用会再次验证内置载荷和手机兼容性，
+备份成功后才激活服务；需要重启时使用手机电源菜单正常重启。
+
+With a working Root terminal, download this bootstrap ZIP to Downloads and run
+the version-specific command above. Wait for the installer's final result, then
+open BB10 VoLTE and let it verify its signed payload. A submitted task, extracted
+files or an icon alone is not proof that activation succeeded. On timeout keep
+the input and inspect that same transaction before trying again.
+
+No installer and no effective Root terminal: restore the existing Root access
+or use the desktop setup once. A normal download page cannot grant Root.
+AutoRoot v2/v3 bootstrap support requires separate validation; do not assume
+that the v4 command applies. The desktop and phone applications share the
+device engine. Upgrade the desktop manager before managing a protocol-2 phone.
+
+Project: https://bb10-volte.octoooo.com/
+Source: https://github.com/Octo-o-o-o/bb10-volte

@@ -4,6 +4,8 @@
 
 [简体中文](README.md) | **English**
 
+**This source branch adds a native mobile release candidate alongside the desktop app.** Already rooted phones with a local installation entry can install the BAR, back up, enable, manage, update and restore VoLTE on the phone. See [mobile installation](docs/MOBILE-INSTALL.en.md), the [design](docs/MOBILE-NATIVE-PLAN.md) and [candidate validation](docs/MOBILE-VALIDATION.md). Mobile hardware acceptance is recorded separately; historical calling results do not validate the new management workflow. First Root on stock phones still uses desktop setup. Published-release statements below retain their historical scope.
+
 Install once from Windows or Mac. Then power off, change the SIM and start the phone: it automatically selects China Mobile, Unicom or Telecom, without reconnecting to a computer or flashing again. Keep your number, plan and native dialer for LTE calls.
 
 **The latest release supports all three models and carriers. It remains experimental.** Supported exact variants: rooted **Q10 SQN100-3, Q20 SQC100-2, Passport SQW100-4**, on **OS 10.3.3.3216**. Passport may require one additional normal restart when entering or leaving the Telecom attach policy. The application explains the reason and provides a recheck action.

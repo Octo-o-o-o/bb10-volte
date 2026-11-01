@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>手机原生版安装说明 — BB10 VoLTE</title>
+  <meta name="description" content="BB10 VoLTE 手机原生候选版的安装前提、四种首次入口、备份、正常重启与通话验收说明。候选版尚未公开发布，桌面 r14 下载继续提供。">
+  <meta name="theme-color" content="#f4f5f0">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="canonical" href="https://bb10-volte.octoooo.com/mobile.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://bb10-volte.octoooo.com/mobile.html">
+  <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/mobile.html">
+  <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/mobile.html">
+  <meta property="og:title" content="手机原生版安装说明 — BB10 VoLTE">
+  <meta property="og:description" content="先确认本机安装入口，再备份、开启、正常重启和验收通话。手机候选版尚未公开发布。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bb10-volte.octoooo.com/mobile.html">
+  <meta property="og:locale" content="zh_CN">
+  <link rel="stylesheet" href="mobile.css">
+</head>
+<body class="mobile-page">
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="mobile-header">
+    <div class="mobile-shell">
+      <a class="mobile-brand" href="index.html"><img src="assets/icon.png" width="38" height="38" alt=""><span>BB10 VoLTE</span><small>OCTOLAB</small></a>
+      <nav class="mobile-nav" aria-label="主导航">
+        <a href="index.html">首页</a><a href="guide.html">桌面使用指南</a><a href="#entry">安装入口</a><a href="#steps">使用步骤</a>
+        <a class="language-switch" data-language-switch="en" href="en/mobile.html" lang="en" hreflang="en" aria-label="Switch to English">English</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="mobile-hero" aria-labelledby="mobile-title">
+      <div class="mobile-shell">
+        <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
+        <h1 id="mobile-title">从手机上，<br>管理 VoLTE。</h1>
+        <p class="mobile-lead">手机原生方案把检查、备份、开启和恢复放进同一个应用。能否第一次就不用电脑，取决于手机上是否已有可用的安装工具和本机 Root 入口。</p>
+        <div class="release-status" id="release-status" role="note">
+          <strong>候选版仍在验收，尚未公开发布。</strong>
+          <p>本页说明候选方案的前提与流程，不代表首次安装、界面升级和完整恢复已全部实机通过。当前公开桌面版本仍为 <strong>v0.5.0-r14</strong>。</p>
+          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">查看正式 Release 页面</a><a class="mobile-button mobile-button-plain" href="index.html#download">继续下载桌面 r14</a></p>
+          <p class="small-copy">只有正式 Release 列出手机版文件、校验信息和适用范围后，才按对应版本操作。本页不提供尚不存在的手机包下载地址。</p>
+        </div>
+        <nav class="mobile-contents" aria-label="本页目录"><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
+      </div>
+    </section>
+
+    <div class="mobile-shell mobile-content">
+      <section class="mobile-section" id="entry" aria-labelledby="entry-title">
+        <p class="mobile-kicker">01 / FIRST INSTALL</p>
+        <h2 id="entry-title">先看手机上已有哪种入口</h2>
+        <p>Root 是系统管理员权限。Root 标记、SSH 可连接、终端图标和能够安装 BAR，是不同条件；不能互相替代。首次出现系统安装或存储权限提示时，需要你在手机上正常确认。</p>
+        <div class="entry-routes">
+          <article class="route-card" id="barinstaller" aria-labelledby="barinstaller-title">
+            <p class="route-index">A / 已有安装器</p>
+            <h3 id="barinstaller-title">已经装好 BARinstaller</h3>
+            <p>先确认它在当前 Root 方案下确实能安装原生 BAR，且手机有可用的本机 Root 执行入口。满足这两个条件，才可能全程在手机上安装与管理。</p>
+            <ol><li>等手机版正式发布后，从项目 Release 获取该版本的 BAR 和校验信息。</li><li>按发行说明核对来源与完整 SHA-256，再用已有 BARinstaller 打开 BAR，正常确认系统提示。</li><li>核对实际安装版本，再打开 BB10 VoLTE 检查本机 Root 和设备条件。</li></ol>
+            <p class="route-note">如果 BARinstaller 还没装好，它自己也需要首次安装入口；下载一个 BAR 文件不会自动补齐这个前提。</p>
+          </article>
+          <article class="route-card" id="root-terminal" aria-labelledby="root-terminal-title">
+            <p class="route-index">B / 只有本机终端</p>
+            <h3 id="root-terminal-title">有可用的 Root 终端</h3>
+            <p>需要能在手机上实际执行 Root 命令的终端，以及发行版支持的 Python 和系统安装接口。普通终端或只有电脑能连的 SSH 不等于已具备这条路线。</p>
+            <ol><li>等正式 Release 提供适用于当前 Root 方案的手机引导包。</li><li>把同一版本的引导包与 BAR 存到手机，核对来源和校验信息。</li><li>严格使用该发行版给出的本机命令，查看同一安装任务的结果与实际应用版本。</li></ol>
+            <p class="route-note">候选引导仍在实测。不要拼接其他版本的脚本，也不要把网页内容直接作为 Root 命令执行。</p>
+          </article>
+          <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
+            <p class="route-index">C / 已 Root，但没有本机入口</p>
+            <h3 id="no-entry-title">没有安装器，也没有可用 Root 终端</h3>
+            <p>浏览器不能凭空获得安装和 Root 执行能力。此时不能承诺第一次安装无需电脑。</p>
+            <p>使用原 Root 方案或已有的可信电脑连接恢复安装入口，再回来选择 A 或 B。已有 Root 不应仅因连接失败就重新刷机。</p>
+            <a href="guide.html#connect">查看桌面连接与恢复说明</a>
+          </article>
+          <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
+            <p class="route-index">D / 尚未 Root</p>
+            <h3 id="not-rooted-title">先完成单独的 Root 准备</h3>
+            <p>手机版不是 Root 工具，不能把未 Root 的手机直接变成可安装、可修改系统的设备。</p>
+            <p>先备份个人数据，按准确硬件型号选择桌面首次 Root 路线。涉及刷写时会清空数据，需要单独明确确认；不能跨机型使用固件。</p>
+            <a href="guide.html#connect">查看首次 Root 的条件与已测范围</a>
+          </article>
+        </div>
+        <aside class="mobile-callout" id="install-result" aria-labelledby="install-result-title">
+          <h3 id="install-result-title">安装成功，要看实际版本</h3>
+          <p>候选实测中，AutoRoot installer 在 <strong>120 秒超时</strong>后仍可能打印 <code>completed</code>。如果没有对应任务的 <code>SUD success</code>，而且应用注册版本没有变化，就不能记为安装成功。</p>
+          <p>保留原任务，检查系统安装结果和应用的实际版本是否与目标一致。仅有结束字样、图标或旧版能打开，都不足以证明新版本已安装；结果未知时不要反复提交安装。</p>
+        </aside>
+      </section>
+
+      <section class="mobile-section" id="steps" aria-labelledby="steps-title">
+        <p class="mobile-kicker">02 / BACK UP, ENABLE, CHECK</p>
+        <h2 id="steps-title">装好以后，按这四步走</h2>
+        <p>以下为候选版交互流程。使用自己的 SIM、号码和系统拨号器，仍按运营商套餐计费；SIM 需要开通 VoLTE 并有正常 LTE 数据。</p>
+        <ol class="mobile-steps">
+          <li><h3>检查手机，选好备份位置</h3><p>打开应用，确认型号、系统、当前 SIM 与检查结果。选择 SD 卡或内部存储；程序先保存原件并读回校验，再允许写入。</p></li>
+          <li><h3>点“激活 VoLTE”，等待当前任务</h3><p>阅读并确认操作。任务提交后在手机后台继续；关闭界面不会取消已提交的任务。重新打开只查询原任务，不要重复安装。</p></li>
+          <li><h3>按提示正常重启</h3><p>用电源菜单重启，解锁后等待约 3–5 分钟，再回到应用检查。Passport 进入或离开电信配置时，可能还需一次正常重启；飞行模式不能代替重启。</p></li>
+          <li><h3>自己验证呼出、呼入、声音和 LTE</h3><p>用系统拨号器呼出一次，再从另一部手机呼入，分别接通至少 35 秒。确认双方有声音、通话全程保持 LTE / 4G，再记录验证。应用不会替你拨号；IMS 已注册也不等于通话已通过。</p></li>
+        </ol>
+        <p class="mobile-callout">通话记录只对应当前 SIM、本次开机和当前载荷版本。换卡应先正常关机；换卡、重启或版本变化后重新验收。短信、号码显示和长期待机也应分别实测。</p>
+      </section>
+
+      <section class="mobile-section" id="backup" aria-labelledby="backup-title">
+        <p class="mobile-kicker">03 / KEEP THE ORIGINALS</p>
+        <h2 id="backup-title">备份放在哪里，有什么区别？</h2>
+        <dl class="mobile-definitions">
+          <dt>SD 卡：优先选择可用的独立副本</dt><dd>卡已挂载并能通过写入和读回校验时，可以把原始备份保存到卡上。安装完成前保留 SD 卡；完成后建议再把副本保存在另一处。</dd>
+          <dt>内部存储：可以使用，但仍在同一台手机上</dt><dd>没有 SD 卡时可选内部存储。它便于本机恢复，却不能防止手机丢失、存储损坏或系统无法启动后取不出文件。之后可以再导出到 SD 卡。</dd>
+          <dt>以应用显示的导出位置为准</dt><dd>内部导出位于 <code>/accounts/1000/shared/documents/BB10-VoLTE/</code> 下，SD 卡导出位于 <code>/accounts/1000/removable/sdcard/BB10-VoLTE/</code> 下；每次任务有自己的子目录。保留原始备份和回执，脱敏诊断报告不能代替原始备份。</dd>
+        </dl>
+      </section>
+
+      <section class="mobile-section" id="updates" aria-labelledby="updates-title">
+        <p class="mobile-kicker">04 / UPDATES &amp; RESTORATION</p>
+        <h2 id="updates-title">更新、停用与恢复</h2>
+        <h3>适配载荷更新与应用 BAR 升级是两件事</h3>
+        <p>候选应用中的“检查更新”和离线 ZIP 入口用于运行组件与适配载荷。程序会核验发布者签名；在线检查失败时可以使用同一发行版的可信离线包。已内置的安装载荷和离线包不需要联网下载，注册和通话仍需要运营商网络。</p>
+        <p>界面应用自身升级使用新的 BAR，沿用同一应用身份。按 Release 的版本要求，通过已有安装入口替换，再核对实际应用版本。不能把 ZIP 更新完成当作 BAR 已升级。</p>
+        <h3>恢复完成后，再移除应用</h3>
+        <p>在管理页选择停用并恢复、回滚或完整卸载，按提示正常重启并继续原任务。卸载可能需要分阶段重启；文件已移除不等于恢复已核对完成。仅删除桌面图标不会恢复服务配置，也不会移除 Root。</p>
+        <p>任务中断、未知文件或备份冲突时，保留原任务和原件，先重新检查或导出报告。恢复只使用有所有权与校验证据的内容，不用反复安装来覆盖未知状态。</p>
+        <p class="mobile-callout">手机版与新版桌面使用管理协议 2。公开 r14 及更早桌面不能完整管理新载荷；需要使用对应的新管理版本。旧客户端被拒绝时，应升级管理端并按发行说明接管。</p>
+      </section>
+
+      <section class="mobile-section" id="scope" aria-labelledby="scope-title">
+        <p class="mobile-kicker">05 / EVIDENCE &amp; DEVICE SCOPE</p>
+        <h2 id="scope-title">历史通话验收，不等于手机版已验收</h2>
+        <p>现有历史范围为 OS <strong>10.3.3.3216</strong> 的 Q10 <strong>SQN100-3</strong>、Q20 / Classic <strong>SQC100-2</strong>、Passport <strong>SQW100-4</strong>。r7 / r8 的三机三网九项语音组合记录继续保留。r14 短信验证覆盖 Q20＋联通、Passport＋移动；其他短信组合不能据此扩写。</p>
+        <p>手机候选版仍需分别完成首次安装、应用到 Root、界面升级、大小屏操作和完整恢复的实机验收。识别到机型、编译成功或看到图标都不能代替这些结果。</p>
+        <p>其他 Q10 / Classic 可以查看单独的实验路线，但仍要通过原生文件散列、ABI、SIM、网络和恢复检查；手动启动且不自动启用。SQC100-4 和其他未验收变体不标为已支持。未知设备可导出部分兼容性报告，没有“忽略检查继续”入口。</p>
+        <p><a href="acceptance.json">查看历史结构化验收记录</a> · <a href="guide.html#acceptance">查看详细通话验收步骤</a></p>
+      </section>
+    </div>
+  </main>
+  <footer class="mobile-footer"><div class="mobile-shell"><p><strong>BB10 VoLTE</strong> · 让老黑莓再多用一阵。</p><nav aria-label="页脚导航"><a href="index.html#download">桌面下载</a><a href="guide.html">使用指南</a><a href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab</a></nav><p class="small-copy">© 2026 OctoLab · MIT License · 独立开源项目，与 BlackBerry 官方无关。核心内容与导航不依赖 JavaScript。</p></div></footer>
+</body>
+</html>

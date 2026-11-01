@@ -7,6 +7,7 @@ import binascii
 import hashlib
 import json
 import os
+import re
 import stat
 import sys
 import time
@@ -51,6 +52,32 @@ def source_baseline():
     return True
 
 
+def verified_backup_receipt(folder, plan=None):
+    """Keep mobile provenance truthful while accepting historic desktop copies."""
+    assert os.path.realpath(folder) == folder
+    raw = n.read(folder + '/plan.json')
+    plan = json.loads(raw.decode('ascii')) if plan is None else plan
+    mobile = folder + '/backup-receipt.json'
+    path = mobile if os.path.lexists(mobile) else folder + '/desktop-backup-receipt.json'
+    assert not os.path.islink(path)
+    receipt = json.loads(n.read(path).decode('ascii'))
+    assert receipt['owner'] == OWNER and receipt['all_original_hashes_verified'] is True
+    assert receipt['plan_sha256'] == n.digest(raw)
+    if path == mobile:
+        assert receipt.get('schema') == 2 and receipt.get('source') == 'mobile'
+        assert re.match(r'\A[a-f0-9]{32}\Z', receipt.get('operation_id', ''))
+        expected = {name + '.original': item['original_sha256'] for name, item in plan['files'].items()}
+        assert set(plan['files']) == set(dca.SOURCES)
+        assert receipt['files'] == expected and receipt['readback'] == expected
+        destination = receipt['destination']
+        assert destination['type'] in ('same_device', 'removable')
+        assert isinstance(destination['id'], str) and 0 < len(destination['id']) <= 1024
+        for name, digest in expected.items():
+            assert not os.path.islink(folder + '/' + name)
+            assert n.digest(n.read(folder + '/' + name)) == digest
+    return receipt
+
+
 def observe(base=BASE):
     result = {'native_supported': False, 'source_baseline': False,
               'original_usage': False, 'backup_verified': False}
@@ -65,10 +92,8 @@ def observe(base=BASE):
         folder = pointer['folder']
         assert pointer['owner'] == OWNER and folder.startswith(base + '/state/telecom-attach-')
         assert os.path.realpath(folder) == folder
-        receipt = json.loads(n.read(folder + '/desktop-backup-receipt.json').decode('ascii'))
-        result['backup_verified'] = (receipt['owner'] == OWNER and
-            receipt['all_original_hashes_verified'] is True and
-            receipt['plan_sha256'] == n.digest(n.read(folder + '/plan.json')))
+        verified_backup_receipt(folder)
+        result['backup_verified'] = True
     except (OSError, ValueError, TypeError, KeyError, AssertionError):
         pass
     return result
@@ -119,9 +144,7 @@ def checked_plan(service, restoring=False):
     assert value['profile_sha256'] == profiles.fingerprint(service.ACTIVE_REQUEST)
     assert value['dca_sha256'] == native.DCA_HASH
     assert set(value['files']) == set(dca.SOURCES)
-    receipt = service.load(folder + '/desktop-backup-receipt.json')
-    assert receipt['owner'] == OWNER and receipt['all_original_hashes_verified'] is True
-    assert receipt['plan_sha256'] == n.digest(n.read(folder + '/plan.json'))
+    verified_backup_receipt(folder, value)
     for name in dca.SOURCES:
         item = value['files'][name]
         original = n.read(folder + '/' + name + '.original')

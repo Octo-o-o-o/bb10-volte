@@ -1,0 +1,83 @@
+/* Baseline uses literal colors and ordinary blocks for BB10's older WebKit. */
+* { -webkit-box-sizing: border-box; box-sizing: border-box; }
+html { background: #f4f5f0; }
+body { margin: 0; color: #202923; background: #f4f5f0; font: 16px/1.8 "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+header, nav, main, section, article, aside, footer { display: block; }
+a { color: #2e654d; text-decoration: underline; }
+a:focus { outline: 3px solid #9d593c; outline-offset: 4px; }
+img { max-width: 100%; height: auto; border: 0; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2, h3 { line-height: 1.3; }
+h1 { margin-bottom: 24px; font-size: 46px; font-weight: 600; letter-spacing: -1px; }
+h2 { margin-bottom: 24px; font-size: 31px; font-weight: 600; }
+h3 { margin-bottom: 12px; font-size: 21px; font-weight: 600; }
+p { margin-bottom: 18px; }
+li { margin-bottom: 12px; }
+ul, ol { padding-left: 26px; }
+code { padding: 1px 3px; background: #e4ebe1; font: 14px/1.8 Consolas, monospace; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: normal; }
+.mobile-shell { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.mobile-page a, .mobile-page p, .mobile-page li, .mobile-page dd { word-wrap: break-word; overflow-wrap: break-word; }
+.skip-link { position: absolute; left: -10000px; top: 0; }
+.skip-link:focus { left: 16px; top: 10px; z-index: 5; padding: 10px; background: #fff; }
+.mobile-header { border-bottom: 1px solid #d7ddd4; padding: 22px 0 12px; }
+.mobile-brand { display: inline-block; color: #202923; text-decoration: none; font-size: 20px; font-weight: 600; }
+.mobile-brand img { display: inline-block; vertical-align: middle; width: 38px; height: 38px; margin-right: 10px; border: 1px solid #d7ddd4; border-radius: 3px; }
+.mobile-brand span { vertical-align: middle; }
+.mobile-brand small { display: inline-block; margin-left: 16px; color: #657068; font-size: 10px; letter-spacing: 2px; vertical-align: middle; }
+.mobile-nav { padding-top: 14px; }
+.mobile-nav a, .mobile-footer nav a { display: inline-block; margin: 0 22px 10px 0; padding: 4px 0; font-size: 14px; }
+.mobile-hero { padding: 52px 0 32px; border-bottom: 1px solid #d7ddd4; }
+.mobile-kicker { margin-bottom: 20px; color: #657068; font: 11px/1.7 Consolas, monospace; letter-spacing: 1px; }
+.mobile-lead { max-width: 760px; font-size: 19px; line-height: 1.8; }
+.release-status { max-width: 900px; padding: 24px; margin: 30px 0; background: #fffdf7; border: 1px solid #c9d2c3; border-left: 4px solid #2e654d; }
+.release-status > strong { display: block; font-size: 19px; margin-bottom: 12px; }
+.release-status p:last-child { margin-bottom: 0; }
+.mobile-actions { margin: 22px 0 12px; }
+.mobile-button { display: inline-block; max-width: 100%; padding: 12px 18px; margin: 0 12px 10px 0; color: #fff; background: #2e654d; border: 1px solid #2e654d; border-radius: 3px; text-decoration: none; font-weight: 600; font-size: 14px; line-height: 1.6; }
+.mobile-button-plain { color: #202923; background: transparent; border-color: #b7c3b2; }
+.mobile-contents { margin-top: 28px; }
+.mobile-contents a { display: inline-block; margin: 0 22px 12px 0; font-size: 14px; }
+.mobile-content { max-width: 1040px; }
+.mobile-section { padding: 54px 0; border-bottom: 1px solid #d7ddd4; }
+.mobile-section > p { max-width: 860px; }
+.route-card { display: block; min-width: 0; margin: 26px 0; padding: 26px; background: #fcfcf8; border: 1px solid #d7ddd4; border-radius: 4px; }
+.route-card > :last-child { margin-bottom: 0; }
+.route-index { color: #2e654d; font-size: 12px; font-weight: 600; letter-spacing: 1px; }
+.route-note { padding-top: 16px; border-top: 1px solid #d7ddd4; color: #59655c; font-size: 14px; }
+.mobile-callout { padding: 22px 24px; margin: 26px 0 0; background: #e4ebe1; border-left: 3px solid #2e654d; }
+.mobile-callout > :last-child { margin-bottom: 0; }
+.mobile-steps { padding-left: 28px; margin: 28px 0; }
+.mobile-steps > li { padding: 0 0 12px 8px; margin-bottom: 24px; border-bottom: 1px solid #d7ddd4; }
+.mobile-steps p { max-width: 800px; }
+.mobile-definitions dt { font-weight: 600; font-size: 19px; margin-top: 24px; }
+.mobile-definitions dd { margin: 10px 0 26px; max-width: 850px; }
+.mobile-section > h3 { margin-top: 30px; }
+.mobile-footer { padding: 35px 0; color: #59655c; }
+.small-copy { font-size: 14px; line-height: 1.8; color: #59655c; }
+@media (max-width: 480px) {
+  .mobile-shell { padding-left: 18px; padding-right: 18px; }
+  .mobile-hero { padding-top: 34px; }
+  h1 { font-size: 36px; }
+  h2 { font-size: 27px; }
+  .mobile-lead { font-size: 17px; }
+  .mobile-section { padding-top: 38px; padding-bottom: 38px; }
+  .release-status, .route-card, .mobile-callout { padding: 18px; }
+  .mobile-brand small { display: none; }
+  .mobile-nav a, .mobile-contents a { margin-right: 16px; }
+  .mobile-button { display: block; margin-right: 0; text-align: center; }
+}
+/* Progressive layout: ignoring this whole block leaves a complete single column. */
+@supports (display: grid) {
+  @media (min-width: 820px) {
+    .entry-routes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 28px; }
+    .route-card { margin: 0; }
+  }
+}
+@media print {
+  body, html, .route-card, .release-status, .mobile-callout { background: #fff; color: #000; }
+  .mobile-header, .mobile-contents, .mobile-footer nav { display: none; }
+  .mobile-shell { max-width: none; padding: 0; }
+  .entry-routes { display: block; }
+  .route-card { margin-bottom: 20px; }
+  a { color: #000; }
+}

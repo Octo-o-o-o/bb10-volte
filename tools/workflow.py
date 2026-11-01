@@ -92,6 +92,14 @@ def public_status(raw):
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    if raw.get('management_schema') == 2:
+        result['management_schema'] = 2
+        value = raw.get('current_sim_matches')
+        result['current_sim_matches'] = value if type(value) is bool else None
+        schema = raw.get('installed_management_schema')
+        result['installed_management_schema'] = schema if type(schema) is int and schema in (1, 2) else None
+        phase = raw.get('installed_stage')
+        result['installed_stage'] = phase if phase in ('absent', 'pending', 'legacy', 'managed', 'uninstalled') else 'unknown'
     if raw.get('automatic_carrier_selection') is True:
         result['automatic_carrier_selection'] = True
         result['selected_this_boot'] = raw.get('selected_this_boot') is True

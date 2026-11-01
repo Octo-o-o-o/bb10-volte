@@ -66,7 +66,12 @@ class UnifiedDesktopTests(unittest.TestCase):
         transport.remote.return_value = json.dumps(old)
         auto = a.AutoClient(transport)
         auto.execute = Mock(return_value={'enabled': True})
-        self.assertEqual(auto.action('status'), {'enabled': True})
+        with patch.object(auto, 'stage') as stage:
+            stage.return_value.__enter__.return_value = '/var/bb10_auto_stage_123456789abc'
+            self.assertEqual(auto.action('status'), {'enabled': True})
+        stage.assert_called_once_with()
+        auto.execute.assert_called_once_with('/var/bb10_auto_stage_123456789abc',
+                                             'unified_install.py', ('status',), 180)
 
     def test_cached_register_success_is_not_presented_as_a_live_registration(self):
         from auto_carrier_gui import status_text

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe';
 
@@ -19,7 +20,7 @@ test('homepage renders real content, image and downloads without script errors',
 });
 
 test('all pages fit narrow, tablet and desktop viewports', async ({ page }) => {
-  for (const pathname of ['/', '/guide.html', '/missing-page', '/en/', '/en/guide.html', '/en/nested/missing-page']) {
+  for (const pathname of ['/', '/guide.html', '/mobile.html', '/missing-page', '/en/', '/en/guide.html', '/en/mobile.html', '/en/nested/missing-page']) {
     for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(pathname);
@@ -27,6 +28,46 @@ test('all pages fit narrow, tablet and desktop viewports', async ({ page }) => {
       expect(dimensions.content, `${pathname} overflows at ${width}px`).toBeLessThanOrEqual(dimensions.viewport + 1);
     }
   }
+});
+
+test('mobile installation guide works without JavaScript on small square screens', async ({ browser, baseURL }, testInfo) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, locale: 'zh-CN', baseURL, viewport: { width: 360, height: 360 } });
+  const page = await context.newPage();
+  for (const pathname of ['/mobile.html', '/en/mobile.html']) {
+    await page.goto(pathname);
+    await expect(page.locator('.mobile-nav')).toBeVisible();
+    await expect(page.locator('#release-status')).toContainText('r14');
+    await page.locator('.mobile-contents a[href="#entry"]').click();
+    await expect(page).toHaveURL(/#entry$/);
+    await expect(page.locator('#entry-title')).toBeInViewport();
+    await expect(page.locator('.entry-routes .route-card')).toHaveCount(4);
+    await expect(page.locator('#install-result')).toContainText('SUD success');
+    const dimensions = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+    await page.screenshot({ path: testInfo.outputPath(pathname.startsWith('/en/') ? 'mobile-en-square.png' : 'mobile-zh-square.png'), fullPage: true });
+  }
+  await page.locator('[data-language-switch]').click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
+  await context.close();
+});
+
+test('mobile guide retains ordinary-block fallback and readable long paths', async ({ browser, baseURL }, testInfo) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: { width: 320, height: 568 } });
+  const page = await context.newPage();
+  const css = await readFile(new URL('../src/mobile.css', import.meta.url), 'utf8');
+  await page.route('**/mobile.css', (route) => route.fulfill({ contentType: 'text/css', body: css.split('/* Progressive layout:')[0] }));
+  await page.goto('/en/mobile.html#backup');
+  await expect(page.locator('#backup-title')).toBeInViewport();
+  await expect(page.locator('.route-card').first()).toHaveCSS('display', 'block');
+  const widths = await page.locator('#backup code').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+  expect(Math.max(...widths)).toBeLessThanOrEqual(284);
+  await page.screenshot({ path: testInfo.outputPath('mobile-fallback-320.png'), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/mobile.html');
+  const cards = await page.locator('.route-card').evaluateAll((nodes) => nodes.map((node) => ({ top: node.offsetTop, left: node.offsetLeft })));
+  expect(cards[1].top).toBeGreaterThan(cards[0].top);
+  expect(cards[1].left).toBe(cards[0].left);
+  await context.close();
 });
 
 test('appearance selection persists across reloads', async ({ page }) => {
@@ -265,6 +306,9 @@ test('capture bilingual desktop and mobile layouts for visual review', async ({ 
       await page.setViewportSize({ width, height: 1000 });
       await page.goto(language === 'en' ? '/en/index.html' : '/index.html');
       await page.screenshot({ path: `.playwright/bilingual-${language}-${width}.png` });
+      await page.goto(language === 'en' ? '/en/mobile.html' : '/mobile.html');
+      await page.screenshot({ path: `.playwright/native-${language}-${width}.png` });
+      if (width === 390) await page.locator('#backup').screenshot({ path: `.playwright/native-backup-${language}-${width}.png` });
     }
   }
 });

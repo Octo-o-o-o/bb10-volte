@@ -32,7 +32,7 @@ jobs:
         if: runner.os == 'Windows'
         run: python -m unittest discover -s tests -v
       - name: Compile source
-        run: python -m compileall -q device tools tests
+        run: python -m compileall -q device tools tests mobile/runtime
       - name: Public allowlist, hashes and privacy checks
         run: python tools/check_release.py --check-git
       - name: Package and verify source archive

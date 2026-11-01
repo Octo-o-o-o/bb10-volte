@@ -20,7 +20,10 @@ TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md'
        'website/src/assets/app-icon.png', 'website/src/assets/app-status.png',
        'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png',
        'website/src/assets/carrier-acceptance.png', 'website/src/assets/windows-setup.jpg',
-       'website/src/assets/carrier-acceptance.prompt.txt'}
+       'website/src/assets/carrier-acceptance.prompt.txt',
+       'mobile/native/CMakeLists.txt', 'mobile/native/bar-descriptor.xml',
+       'mobile/native/src/bundle_identity.h.in', 'mobile/native/assets/icon.png',
+       'mobile/bootstrap/INSTALL.txt'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
@@ -28,7 +31,8 @@ PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'tools/*.py', 'tools/*.ps1', 'tests/*.py', 'docs/**/*.md', 'materials/*.md', 'materials/*.json', 'profiles/*.json',
             'website/scripts/*.mjs', 'website/tests/*.mjs', 'website/src/*.html',
             'website/src/en/*.html', 'website/src/*.css', 'website/src/*.js',
-            'website/src/*.xml', 'website/src/*.json')
+            'website/src/*.xml', 'website/src/*.json', 'mobile/runtime/*.py',
+            'mobile/native/src/*.c', 'mobile/native/src/*.cpp', 'mobile/native/src/*.h', 'mobile/native/assets/*.qml')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 RECORDING_MANIFEST = 'materials/recording-files.json'
 SENSITIVE = {
@@ -105,7 +109,7 @@ def check(check_git=False):
                          data.startswith(b'ID3') or len(data) > 1 and data[0] == 255 and data[1] & 224 == 224)
                 assert valid, 'Invalid recording media: ' + name
                 continue
-        if name == SUPPORT_ICON or name in bundled_receipt_images(ROOT) or name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}:
+        if name == SUPPORT_ICON or name in bundled_receipt_images(ROOT) or name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns', 'mobile/native/assets/icon.png'}:
             magic = {'.png': b'\x89PNG\r\n\x1a\n', '.ico': b'\x00\x00\x01\x00', '.icns': b'icns'}
             assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
             continue

@@ -70,9 +70,11 @@ def verify():
         assert not os.path.islink(path) and n.digest(n.read(path)) == expected, 'payload_changed'
     verify_native()
     assert n.digest(n.read(s.MODULE)) == n.HELPER_HASH
-    receipt = s.load(BASE + '/desktop-backup-receipt.json')
-    assert receipt['owner'] == policy.OWNER and receipt['all_original_hashes_verified'] is True
-    assert receipt['backup_manifest_sha256'] == n.digest(n.read(BASE + '/backup/manifest.json'))
+    from unified_install import verify_backup_receipt, management_identity
+    verify_backup_receipt()
+    assert s.load(BASE + '/backup/manifest.json')['variant'] == facts['variant'], 'backup_device_changed'
+    if os.path.isfile(BASE + '/management.json'):
+        management_identity(facts)
     return facts
 
 
@@ -101,11 +103,24 @@ def setup():
             'BIN': BASE + '/runtime/ims_rrm', 'MODULE': BASE + '/driver/devnp-volte_swcrypto_probe.so',
             'APN': BASE + '/runtime/carrier/36-ims.xml'}.items():
         setattr(s, key, value)
-    s.boot_token, s.restore, s.prepare_connection = boot_token, restore, prepare
+    s.boot_token, s.restore, s.prepare_connection = boot_token, locked_restore, locked_prepare
     s.stopping, s.configure = stopping, configure
     s.collect_vpn_evidence = collect
     s.live = live
     n.verify_stock = verify_native
+
+
+def locked_prepare():
+    from unified_install import management_lock
+    with management_lock(blocking=True):
+        assert os.path.isfile(BASE + '/enabled'), 'automatic_service_disabled'
+        return prepare()
+
+
+def locked_restore(previous_boot=False):
+    from unified_install import management_lock
+    with management_lock(blocking=True):
+        return restore(previous_boot)
 
 
 def live():
@@ -347,10 +362,20 @@ def public_status():
     value['variant'] = device_info.read_identity()['variant']
     value['automatic_carrier_selection'] = True
     value['normal_reboot_after_sim_change'] = True
+    value['management_schema'] = 2
+    from unified_install import installed_management_schema
+    value['installed_management_schema'] = installed_management_schema()
+    value['installed_stage'] = 'managed' if value['installed_management_schema'] == 2 else 'legacy'
+    value['current_sim_matches'] = None
     if os.path.isfile(SELECTION):
         saved = s.load(SELECTION)
         value['selected_operator'] = saved['operator']
         value['selected_this_boot'] = saved['boot'] == boot_token(False)
+        try:
+            current_selection = policy.select(device_info.read_identity(), card())
+            value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
+        except (OSError, ValueError, TypeError, KeyError):
+            pass
     return value
 
 
@@ -386,9 +411,8 @@ def launch():
         os._exit(0)
 
 
-def main():
+def service_action(action):
     setup()
-    action = sys.argv[1]
     if action in ('boot', 'start'):
         result = launch()
     elif action == 'status':
@@ -405,14 +429,24 @@ def main():
             s.j = s.load(s.JOURNAL)
             if s.j.get('boot') == boot_token():
                 restore()
+        if not active and os.path.isfile(s.STOP):
+            assert n.read(s.STOP) == b'disabled by owner\n', 'stop_request_changed'
+            os.unlink(s.STOP)
         result = {'disabled': True, 'reboot_required': True, 'restoration_pending': active}
     elif action == 'enable':
         verify()
+        assert s.phone_idle(), 'call_active'
+        assert not s.read_status().get('manager_alive'), 'restore_pending'
         n.atomic(BASE + '/enabled', b'automatic SIM selection re-enabled by owner\n')
         result = {'enabled': True, 'reboot_required': True}
     else:
         raise ValueError('unknown_action')
-    print(json.dumps(result))
+    return result
+
+
+def main():
+    from unified_install import manage
+    print(json.dumps(manage('start' if sys.argv[1] == 'boot' else sys.argv[1])))
 
 
 if __name__ == '__main__':

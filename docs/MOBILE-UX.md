@@ -1,0 +1,31 @@
+# Native mobile interaction contract
+
+The Cascades UI in `mobile/native` uses Qt 4 and C++98. The implementation is a client of protocol 2; it does not infer Root access, carrier readiness or installation eligibility from an icon, network label or an earlier UI step.
+
+## Home and tasks
+
+Home shows the hardware, carrier, current state, reason and one primary action returned by the runtime. First activation exposes the backup destination before confirmation. An available SD card is preferred on first use; internal storage remains possible and is explicitly described as a copy on the same phone. The runtime chooses the exact owned export path and performs readback verification.
+
+Device mutations return a persistent job identifier. The app saves that identifier and polls the existing job, displaying translated stages without inventing percentage progress. Closing the UI does not cancel the Root worker. Reopening resumes a query, never a second install command. A timeout preserves the operation identifier and asks the user to check the unknown result. Restart instructions come from device state rather than a UI restart counter. A second carrier-policy restart is distinct from installation or service-update restarts. Completed tasks trigger a fresh status read and retain the last exported backup/report location. The manual call record is a synchronous, guarded response with no background job.
+
+Registration and verified calls remain separate. The call page asks the user to complete outgoing and incoming calls, hear audio in both directions and observe LTE. It records the four explicit checks without placing calls. The backend binds the record to the current SIM, boot and payload; a SIM/boot change invalidates usability independently of the UI. The client submits the four booleans at the top level of protocol 2 along with `confirmed` and the opaque `call_context`, and clears the checkboxes whenever that context changes.
+
+## Management, offline access and recovery
+
+The management page provides language, backup destination, offline ZIP selection, update check, diagnostics, compatibility, enable, disable/restore, rollback and full uninstall. The system file picker only supplies a path; the runtime still copies and verifies the package in its private directory before use. Online metadata and downloads use HTTPS with normal certificate verification and an explicit project-domain allowlist. Download size and hash checks do not replace the runtime's publisher signature verification. Update comparison uses the active runtime version when available, because payload updates and BAR replacement have separate identities. No online access is required for the bundled installation or offline update path. Diagnostics and compatibility reports may return synchronously without taking over a pending write job; their exact exported location remains visible on Home and in management details after reopening the app.
+
+Destructive operations use a cancellable system confirmation describing the changes and required restarts. Button eligibility comes from the runtime's action list. While a job is running the UI does not submit another mutation. Full uninstall is a restoration workflow; deleting the app icon alone is not represented as service removal.
+
+The separate experimental page preserves the existing shared legacy engine's manual Q10/Classic route. It submits only the four public profile IDs (`china-mobile`, `china-unicom`, `china-telecom`, `china-telecom-46011`) and `experimental=true`, displays the lack of hardware acceptance and leaves autostart disabled. Changing a profile clears the previous profile's UI eligibility and requires a fresh check. A completed experimental task refreshes its selected profile. It is never the normal activation button. Native hashes, ABI, current SIM, network and recovery checks remain backend requirements; this page is not an override control.
+
+## Language and screen behavior
+
+Menus, Root/transport errors and confirmations have Chinese and English strings in `src/ui_strings.h`; runtime state text uses the requested language in its display model. Language changes trigger a fresh read when idle. Every content page scrolls vertically, body and error labels wrap, and diagnostic text is plain text. The UI uses full-width actions, normal Cascades focus behavior and the R refresh shortcut. Confirmation can be cancelled through the system dialog.
+
+Acceptance must cover the Q10/Classic smaller square screen and Passport larger square screen in both languages, physical keyboard/trackpad navigation where present, touch, long messages, FilePicker cancellation, Root unavailable, backup selection, installation interruption, both restart stages, offline update failure and reopening an existing task. Compile or static-contract tests do not establish those physical UI results. Added portrait devices require their own layout and functional acceptance.
+
+## Build and trust
+
+The BAR identity is `com.octolab.bb10volte`, author `OctoLab`, with a fixed author ID. The build pins the entry script SHA-256 into `bundle_identity.h`; the UI checks the original bytes before invoking `/bin/__root`. It sends those exact bytes through a literal, collision-checked heredoc into an exclusively created random Root-private directory. Only that private copy is pathtrusted and executed; the app's writable source path is never reopened as executable code after verification. The source assets directory is passed as data for the entry's independent signed-bundle verification. The helper receives a fixed minimal environment, an allowlisted action and base64 JSON. Cleanup unlinks only its own entry and removes its own empty directory. Device Python runs from a trusted file, not stdin. Entry source must end with LF and contain no NUL so the literal transfer preserves its bytes. An incomplete UI-only build has no valid entry hash and refuses device operations.
+
+Build validation includes ARM32/QNX ELF and library checks, BAR identity and assets, plus two-version replacement on a rooted phone. Until those hardware checks pass, a successful compile is only a build result.

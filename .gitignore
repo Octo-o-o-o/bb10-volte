@@ -30,3 +30,12 @@ id_ed25519*
 known_hosts
 ssh_config
 !driver/devnp-volte_swcrypto_probe.so
+*.bar
+mobile/native/assets/runtime/
+mobile/native/assets/payload/
+mobile/native/assets/profiles/
+mobile/native/assets/materials/
+mobile/native/assets/manifest.json
+mobile/native/assets/manifest.sig.json
+mobile/native/src/generated/
+mobile/native/bar-descriptor.build.xml

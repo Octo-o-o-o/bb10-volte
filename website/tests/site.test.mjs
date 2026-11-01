@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSITORY_URL, selectRelease } from '../src/site.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const pages = ['index.html', 'guide.html', '404.html', 'en/index.html', 'en/guide.html', 'en/404.html'];
+const pages = ['index.html', 'guide.html', 'mobile.html', '404.html', 'en/index.html', 'en/guide.html', 'en/mobile.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
 const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14';
 
@@ -140,7 +140,7 @@ test('applying a release updates every download and release link', () => {
 });
 
 test('language pages have reciprocal switches, localized metadata and matching sections', () => {
-  for (const name of ['index.html', 'guide.html']) {
+  for (const name of ['index.html', 'guide.html', 'mobile.html']) {
     const chinese = html[name];
     const english = html[`en/${name}`];
     assert.match(chinese, /<html lang="zh-CN">/);
@@ -226,8 +226,32 @@ test('security headers allow only local assets and the GitHub API', async () => 
 });
 
 test('published source does not expose workstation paths or the reference brand', async () => {
-  for (const file of [...pages, 'styles.css', 'guide.css', 'site.js', 'appearance.js']) {
+  for (const file of [...pages, 'styles.css', 'guide.css', 'mobile.css', 'site.js', 'appearance.js']) {
     const source = await readFile(path.join(root, 'dist', file), 'utf8');
     assert.ok(!/C:[\\/]|\/Users\/|Anyvia|手边/.test(source), `${file}: local path or unrelated brand`);
   }
+});
+
+test('mobile installation routes are static and do not invent candidate downloads', async () => {
+  for (const page of ['mobile.html', 'en/mobile.html']) {
+    const source = html[page];
+    assert.doesNotMatch(source, /<script\b|onclick=|javascript:/i);
+    for (const id of ['release-status', 'barinstaller', 'root-terminal', 'no-entry', 'not-rooted', 'install-result', 'steps', 'backup', 'updates', 'scope']) {
+      assert.ok(idsFor(source).has(id), `${page}: missing ${id}`);
+    }
+    assert.match(source, /https:\/\/github\.com\/Octo-o-o-o\/bb10-volte\/releases"/);
+    assert.match(source, /v0\.5\.0-r14/);
+    assert.match(source, /120/);
+    assert.match(source, /SUD success/);
+    assert.match(source, page.startsWith('en/') ? /not publicly released/ : /尚未公开发布/);
+    assert.doesNotMatch(source, /href="[^"]+\.(?:bar|zip|sh|py)(?:[?#][^"]*)?"/i);
+  }
+  for (const page of ['index.html', 'guide.html', 'en/index.html', 'en/guide.html']) {
+    assert.match(html[page], /href="mobile\.html"/);
+  }
+  const css = await readFile(path.join(root, 'dist/mobile.css'), 'utf8');
+  const baseline = css.split('/* Progressive layout:')[0];
+  assert.match(baseline, /\.route-card\s*\{\s*display: block/);
+  assert.match(baseline, /word-wrap: break-word/);
+  assert.doesNotMatch(baseline, /var\(|clamp\(|display:\s*(?:grid|flex)/);
 });

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Native mobile installation — BB10 VoLTE</title>
+  <meta name="description" content="Installation requirements, four first-install routes, backups, normal restarts and call checks for the BB10 VoLTE native mobile candidate. Not publicly released; desktop r14 remains available.">
+  <meta name="theme-color" content="#f4f5f0">
+  <link rel="icon" type="image/png" href="../assets/icon.png">
+  <link rel="canonical" href="https://bb10-volte.octoooo.com/en/mobile.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://bb10-volte.octoooo.com/mobile.html">
+  <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/mobile.html">
+  <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/mobile.html">
+  <meta property="og:title" content="Native mobile installation — BB10 VoLTE">
+  <meta property="og:description" content="Check your local installation entry point, then back up, enable, restart normally and test calls. The mobile candidate is not publicly released.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bb10-volte.octoooo.com/en/mobile.html">
+  <meta property="og:locale" content="en_US">
+  <link rel="stylesheet" href="../mobile.css">
+</head>
+<body class="mobile-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="mobile-header">
+    <div class="mobile-shell">
+      <a class="mobile-brand" href="index.html"><img src="../assets/icon.png" width="38" height="38" alt=""><span>BB10 VoLTE</span><small>OCTOLAB</small></a>
+      <nav class="mobile-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a><a href="guide.html">Desktop guide</a><a href="#entry">Installation routes</a><a href="#steps">Setup steps</a>
+        <a class="language-switch" data-language-switch="zh-CN" href="../mobile.html" lang="zh-CN" hreflang="zh-CN" aria-label="切换到中文">中文</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="mobile-hero" aria-labelledby="mobile-title">
+      <div class="mobile-shell">
+        <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
+        <h1 id="mobile-title">Manage VoLTE.<br>On your phone.</h1>
+        <p class="mobile-lead">The native mobile approach brings checks, backups, activation and restoration into one app. A first installation without a computer depends on having a working installer and local Root entry point already on the phone.</p>
+        <div class="release-status" id="release-status" role="note">
+          <strong>The candidate is still being tested and is not publicly released.</strong>
+          <p>This page describes its requirements and workflow. It does not establish complete hardware acceptance for first installation, app upgrades or restoration. The current public desktop release remains <strong>v0.5.0-r14</strong>.</p>
+          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Open official Releases</a><a class="mobile-button mobile-button-plain" href="index.html#download">Get desktop r14</a></p>
+          <p class="small-copy">Proceed only when an official Release lists mobile files, verification information and supported conditions. This page does not link to nonexistent mobile downloads.</p>
+        </div>
+        <nav class="mobile-contents" aria-label="On this page"><a href="#entry">Choose an entry point</a><a href="#steps">From backup to calls</a><a href="#backup">Where backups go</a><a href="#updates">Updates &amp; restoration</a><a href="#scope">What is verified</a></nav>
+      </div>
+    </section>
+
+    <div class="mobile-shell mobile-content">
+      <section class="mobile-section" id="entry" aria-labelledby="entry-title">
+        <p class="mobile-kicker">01 / FIRST INSTALL</p>
+        <h2 id="entry-title">Which entry point is already on your phone?</h2>
+        <p>Root means system administrator access. A Root marker, working SSH, a terminal icon and the ability to install a BAR are separate requirements. Confirm any first-use system installation or storage permission prompts normally on the phone.</p>
+        <div class="entry-routes">
+          <article class="route-card" id="barinstaller" aria-labelledby="barinstaller-title">
+            <p class="route-index">A / INSTALLER ALREADY PRESENT</p>
+            <h3 id="barinstaller-title">BARinstaller is already installed</h3>
+            <p>Confirm it can actually install native BAR files with your current Root setup, and that a local Root execution helper works. Both are needed for installation and management entirely on the phone.</p>
+            <ol><li>After an official mobile release is published, obtain its BAR and verification information from the project Release.</li><li>Verify the source and complete SHA-256 as instructed. Open the BAR with your existing BARinstaller and confirm system prompts.</li><li>Check the actual installed version, then open BB10 VoLTE to check local Root access and device requirements.</li></ol>
+            <p class="route-note">If BARinstaller is not installed yet, it needs its own first-install entry point. Downloading a BAR alone does not provide one.</p>
+          </article>
+          <article class="route-card" id="root-terminal" aria-labelledby="root-terminal-title">
+            <p class="route-index">B / LOCAL TERMINAL ONLY</p>
+            <h3 id="root-terminal-title">A working Root terminal is available</h3>
+            <p>The terminal must actually execute Root commands on the phone. The release must also support its Python environment and system installation interface. An ordinary terminal or SSH available only from a computer is insufficient.</p>
+            <ol><li>Wait for an official Release to provide a mobile bootstrap for your Root setup.</li><li>Save the matching bootstrap and BAR on the phone, then verify their source and checksums.</li><li>Use only that release's documented local command. Check the same installation job and the actual app version.</li></ol>
+            <p class="route-note">The candidate bootstrap is still under hardware testing. Do not combine scripts from different releases or execute web content directly as Root commands.</p>
+          </article>
+          <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
+            <p class="route-index">C / ROOTED, WITHOUT A LOCAL ENTRY POINT</p>
+            <h3 id="no-entry-title">No installer or working Root terminal</h3>
+            <p>A browser cannot create installation or Root execution privileges. A first installation without a computer cannot be promised in this state.</p>
+            <p>Restore an installation entry point through your original Root method or an existing trusted computer connection, then choose A or B. A connection failure alone is not a reason to flash an already rooted phone again.</p>
+            <a href="guide.html#connect">Read desktop connection and recovery guidance</a>
+          </article>
+          <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
+            <p class="route-index">D / NOT ROOTED YET</p>
+            <h3 id="not-rooted-title">Complete separate Root preparation first</h3>
+            <p>The mobile app is not a Root tool. It cannot directly grant an unrooted phone permission to install apps or modify the system.</p>
+            <p>Back up personal data, then choose the desktop first-Root process for the exact hardware variant. Flashing erases data and requires separate explicit confirmation. Never use firmware for a different model.</p>
+            <a href="guide.html#connect">Read first-Root requirements and tested scope</a>
+          </article>
+        </div>
+        <aside class="mobile-callout" id="install-result" aria-labelledby="install-result-title">
+          <h3 id="install-result-title">Verify installation through the actual version</h3>
+          <p>In candidate testing, AutoRoot installer could still print <code>completed</code> after a <strong>120-second timeout</strong>. Without a matching <code>SUD success</code> result, and with the registered app version unchanged, this is not an installation success.</p>
+          <p>Keep the original job and check its system installation result and actual app version against the target. A completion message, icon or working older version alone does not prove the new version is installed. Do not repeatedly submit an installation when its result is unknown.</p>
+        </aside>
+      </section>
+
+      <section class="mobile-section" id="steps" aria-labelledby="steps-title">
+        <p class="mobile-kicker">02 / BACK UP, ENABLE, CHECK</p>
+        <h2 id="steps-title">After installation, follow four steps</h2>
+        <p>This describes the candidate workflow. Keep your SIM, number and system dialer; your carrier's plan still applies. The SIM needs VoLTE provisioning and normal LTE data service.</p>
+        <ol class="mobile-steps">
+          <li><h3>Check the phone and choose a backup location</h3><p>Open the app and confirm the model, OS, current SIM and check results. Choose an SD card or internal storage. Originals are saved and read back for verification before changes are allowed.</p></li>
+          <li><h3>Choose “Activate VoLTE” and wait for the current task</h3><p>Read and confirm the operation. Submitted work continues in the phone's background; closing the app does not cancel it. Reopening queries the same task. Do not reinstall.</p></li>
+          <li><h3>Restart normally when prompted</h3><p>Use the power menu, unlock after restart, wait about 3–5 minutes and return to check. Passport may need one extra normal restart when entering or leaving the Telecom configuration. Airplane mode is not a substitute.</p></li>
+          <li><h3>Test outgoing calls, incoming calls, audio and LTE yourself</h3><p>Call out with the system dialer, then receive a call from another phone. Keep each connected for at least 35 seconds. Confirm audio in both directions and LTE / 4G throughout, then record the result. The app does not dial for you; IMS registration alone does not establish working calls.</p></li>
+        </ol>
+        <p class="mobile-callout">A call record applies only to the current SIM, boot and payload version. Power off before changing SIMs. Recheck after a SIM change, restart or version change. Test SMS, number display and long standby separately too.</p>
+      </section>
+
+      <section class="mobile-section" id="backup" aria-labelledby="backup-title">
+        <p class="mobile-kicker">03 / KEEP THE ORIGINALS</p>
+        <h2 id="backup-title">Where should backups go?</h2>
+        <dl class="mobile-definitions">
+          <dt>SD card: prefer an available separate copy</dt><dd>A mounted card that passes write and readback checks can hold original backups. Keep it inserted until installation finishes. Afterward, keep another copy elsewhere if possible.</dd>
+          <dt>Internal storage: usable, but still on the same phone</dt><dd>Internal storage is available without an SD card. It helps local restoration but does not protect against loss of the phone, storage failure or files becoming inaccessible when the OS cannot start. You can export to an SD card later.</dd>
+          <dt>Use the exact export location shown in the app</dt><dd>Internal exports are under <code>/accounts/1000/shared/documents/BB10-VoLTE/</code>; SD card exports are under <code>/accounts/1000/removable/sdcard/BB10-VoLTE/</code>. Each task has its own subdirectory. Keep original backups and receipts. A redacted diagnostic report cannot replace original backups.</dd>
+        </dl>
+      </section>
+
+      <section class="mobile-section" id="updates" aria-labelledby="updates-title">
+        <p class="mobile-kicker">04 / UPDATES &amp; RESTORATION</p>
+        <h2 id="updates-title">Update, disable or restore</h2>
+        <h3>Payload updates and app BAR upgrades are separate</h3>
+        <p>The candidate's update check and offline ZIP import update runtime components and adaptation payloads. The publisher's signature is verified. If an online check fails, use a trusted offline package from the corresponding release. Bundled installation payloads and offline packages need no online download; registration and calls still require the carrier network.</p>
+        <p>Upgrading the interface app itself uses a new BAR with the same application identity. Follow the Release requirements, replace it through an existing installation entry point and verify the actual app version. A completed ZIP update does not mean the BAR was upgraded.</p>
+        <h3>Finish restoration before removing the app</h3>
+        <p>Use disable and restore, rollback or full uninstall from management. Restart normally and continue the same task when prompted. Uninstall can require staged restarts; removed files do not prove restoration has been verified. Deleting the home-screen icon alone does not restore service configuration or remove Root.</p>
+        <p>If a task is interrupted, files are unknown or backups conflict, keep the original task and files. Recheck or export a report first. Restoration requires ownership and verification evidence; repeated installation is not a way to overwrite unknown state.</p>
+        <p class="mobile-callout">Mobile and the new desktop manager use management protocol 2. Public desktop r14 and earlier cannot fully manage the new payload. Use the corresponding new manager; if an older client is rejected, upgrade it and follow the release's takeover instructions.</p>
+      </section>
+
+      <section class="mobile-section" id="scope" aria-labelledby="scope-title">
+        <p class="mobile-kicker">05 / EVIDENCE &amp; DEVICE SCOPE</p>
+        <h2 id="scope-title">Historical call results do not validate the mobile app</h2>
+        <p>The historical scope is OS <strong>10.3.3.3216</strong> on Q10 <strong>SQN100-3</strong>, Q20 / Classic <strong>SQC100-2</strong> and Passport <strong>SQW100-4</strong>. The nine model/carrier voice combinations recorded on r7 / r8 remain documented. r14 SMS validation covers Q20 with Unicom and Passport with Mobile; it does not extend to other SMS combinations.</p>
+        <p>The mobile candidate still needs separate hardware acceptance for first installation, app-to-Root access, BAR upgrades, small and large screens, and full restoration. Recognizing a model, compiling successfully or seeing an icon cannot establish those results.</p>
+        <p>Other Q10 / Classic variants can inspect the separate experimental route. Native hashes, ABI, SIM, network and restoration checks still apply; startup is manual and autostart stays off. SQC100-4 and other unvalidated variants are not listed as supported. Unknown devices can export a partial compatibility report. There is no control to ignore failed checks.</p>
+        <p><a href="../acceptance.json">Read historical structured acceptance records</a> · <a href="guide.html#acceptance">Read the detailed call checklist</a></p>
+      </section>
+    </div>
+  </main>
+  <footer class="mobile-footer"><div class="mobile-shell"><p><strong>BB10 VoLTE</strong> · Keep your BlackBerry going.</p><nav aria-label="Footer navigation"><a href="index.html#download">Desktop downloads</a><a href="guide.html">Guide</a><a href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab</a></nav><p class="small-copy">© 2026 OctoLab · MIT License · An independent open-source project, not affiliated with BlackBerry. Core content and navigation need no JavaScript.</p></div></footer>
+</body>
+</html>
