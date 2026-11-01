@@ -2,6 +2,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'tools'))
 import build_sms_ack
@@ -14,6 +15,17 @@ except ModuleNotFoundError as error:
 
 
 class SmsAckArtifactTests(unittest.TestCase):
+    def test_normal_startup_does_not_enable_unaccepted_native_sms_hooks(self):
+        import ims_image
+        with patch.object(ims_image, '_voice_binary', return_value=(b'accepted', [])), \
+                patch.object(ims_image, 'sms_ack_binary', return_value=(b'candidate', [])) as shim:
+            self.assertEqual(ims_image.temporary_binary(b'stock', True), (b'accepted', []))
+            shim.assert_not_called()
+            self.assertEqual(ims_image.temporary_binary(b'stock', True, sms_ack=True), (b'candidate', []))
+            shim.assert_called_once_with(b'accepted', [])
+            with self.assertRaisesRegex(AssertionError, 'explicit'):
+                ims_image.temporary_binary(b'stock', True, sms_ack='true')
+
     def test_generated_payload_matches_pinned_source_and_manifest(self):
         build_sms_ack.check_generated()
 

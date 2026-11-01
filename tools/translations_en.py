@@ -774,7 +774,7 @@ ENGLISH = {
     '无法写入下载目录，请检查剩余空间和目录权限': 'Cannot write to the download directory; check free space and directory permissions',
     '。已保留可用进度；检查网络或“下载代理”后，再次点击准备按钮。': '. Available progress was preserved; check the network or “Download proxy”, then click the preparation button again.',
     '无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。': 'Cannot read the selected file. Choose a fully downloaded firmware archive or check its path and read permissions.',
-    '所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整 .7z 文件，不要解压。原文件和已有缓存均已保留。': 'The selected file does not match the required firmware. It may be incomplete, damaged or the wrong version. Download the complete .7z file specified on the page; do not extract it. The original file and existing cache were preserved.',
+    '所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整原版固件文件，保留其原有格式，不要解压。原文件和已有缓存均已保留。': 'The selected file does not match the required firmware. It may be incomplete, damaged or the wrong version. Download the complete stock firmware file specified on the page and keep its original format; do not extract it. The original file and existing cache were preserved.',
     '下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。': 'There is insufficient space on the download cache disk to copy the firmware. Free at least the firmware’s size and retry.',
     '导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。': 'Import did not finish. Check that the selected file is readable, the cache directory is writable and there is enough disk space. The original file and saved download progress were preserved.',
     '下载节点': 'Download source',

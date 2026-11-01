@@ -2,6 +2,16 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r13 · Integrated fixes, firmware workflows and SMS diagnostics · 2026-11-01
+
+Integrates r11/r12 model-bound Root preparation, old-OS upgrades and pairing fixes, plus precise SQC100-4 network guidance without weakening device admission. Standalone Mac downloads use system CA roots with TLS verification. Firmware import errors now cover stock EXE inputs as well as archives.
+
+Recognizes the previously omitted accepted Q20 Mobile autostart payload `a517c79c…`, retaining existing versions and per-file checks. Regression tests use the real historical manifest and reject altered bytes before upload.
+
+Includes SMS send-domain policy, original-value restoration, backed-up payload upgrades and redacted offline diagnostics. The native MT ACK candidate passes reproducible builds, ARM emulation and nine-combination/three-load-address checks, but lacks QNX and gateway acceptance. It is disabled by default; normal startup retains the known voice IMS images. Duplicate elimination is not claimed. Physical old-OS upgrades, initial Root, Intel Mac execution and long-term stability remain untested.
+
+See the [release review](RELEASE-REVIEW-2026-11-01.md). Windows EXE, signed/notarized universal Mac DMG, full source and checksums share one frozen source. Both website languages point to r13.
+
 ## 0.5.0-r12 · OS checks, stock upgrades and phone pairing · Local candidate
 
 Integrate r11 Root preparation for Q10/Q20/Passport, then add exact OS routing, explicit stock-upgrade erase confirmation, stock write and boot readback, separate Root confirmation, and resumable preparation records. Unknown/newer OS, multiple devices, mismatched materials and uncertain writes stop. Stock flashing never accepts the Root-only exit-73 exception. Mac signed OS/radio have independent pinned hashes; all three real stock inputs were freshly split and compared.

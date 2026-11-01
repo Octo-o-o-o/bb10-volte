@@ -73,7 +73,7 @@ class MaterialImportError(RuntimeError):
         super().__init__(code)
         self.user_message = {
             'import_source_invalid': tr('无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。'),
-            'import_hash_mismatch': tr('所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整 .7z 文件，不要解压。原文件和已有缓存均已保留。'),
+            'import_hash_mismatch': tr('所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整原版固件文件，保留其原有格式，不要解压。原文件和已有缓存均已保留。'),
             'import_insufficient_disk': tr('下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。'),
             'import_io_error': tr('导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。'),
         }[code]

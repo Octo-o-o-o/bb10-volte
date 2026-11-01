@@ -32,7 +32,7 @@ npm run dev
 
 Run `npm run build` and publish `dist` to the existing Cloudflare Pages project `bb10-volte`, production branch `main`. The official domain is https://bb10-volte.octoooo.com/; the Pages domain remains available. The output includes both languages, security headers, the sitemap and redacted `acceptance.json`.
 
-Download links are pinned to `v0.5.0-r10` in static HTML and `src/site.js`. Primary downloads use the dedicated R2 bucket `bb10-volte-releases` through https://bb10-downloads.octoooo.com/, with matching GitHub alternatives. Upload and anonymously verify all files and checksums before deploying a version update. The GitHub API must not downgrade the curated version or replace its matching R2 URLs. Update both translations, `RELEASE_TAG`, file names and checksums together.
+Download links are pinned to `v0.5.0-r13` in static HTML and `src/site.js`. Primary downloads use the dedicated R2 bucket `bb10-volte-releases` through https://bb10-downloads.octoooo.com/, with matching GitHub alternatives. Upload and anonymously verify all files and checksums before deploying a version update. The GitHub API must not downgrade the curated version or replace its matching R2 URLs. Update both translations, `RELEASE_TAG`, file names and checksums together.
 
 No Cloudflare credentials or raw phone evidence belong in this directory. Local builds and browser tests do not publish the website or establish real-phone call compatibility.
 

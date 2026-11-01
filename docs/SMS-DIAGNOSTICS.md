@@ -1,5 +1,7 @@
 # BB10 短信域选择与重复接收排查
 
+**r13 发布边界：** 已合并短信发送域配置与离线诊断；原生 MT ACK 关联候选保留在源码和验证器中，默认不启用。服务生成的语音 IMS 镜像保持此前受校验的字节；维护者离线验证器通过显式 `sms_ack=True` 评估候选。QNX 加载、网关接受 ACK、真实收发和重复短信消除仍待实机验收。
+
 [English](SMS-DIAGNOSTICS.en.md)
 
 2026-11-01：已加入发送侧配置候选修复和离线诊断工具；后续已定位并实现[MT ACK 原生关联修复候选](SMS-ACK-NATIVE.md)。**短信实机验收仍未完成，不能宣称 MT 重复已消除。** 本次没有连接、改写手机或发送短信。此前九项组合的验收范围是语音、换卡和显示，不能当作短信验收。
@@ -81,4 +83,4 @@ python tools/sms_diagnostics.py private/owned-ims.log --output private/sms-repor
 
 后续已通过原生数据流确定两个修改点，并完成 ARM 指令仿真与 ELF 结构检查。现在需要实机确认 QNX 加载和完整 SIP 事务，判断候选是否消除实际重投；[验证记录](../materials/sms-ack-native-verification.json) 明确保留这些未验证项。
 
-本候选基于本仓库缓存的 `0091630`，未发布为新安装包。用户提到的 PR 仓库尚未确认；若指 [bb10root/bb10-volte PR #1](https://github.com/bb10root/bb10-volte/pull/1)，核对的 head 为 `5e2ecaf5ad6c6e56e05d206e8939dbcad336d1ed`，内容涉及 carrier 选择、IR92 和 VoLTE provisioning 门槛，并没有短信关联修复。本项目的 Python 载荷不能直接覆盖该 C 项目的安装。本次未复制其 GPL 实现。
+初始候选基于 `0091630`；r13 已整合配置与诊断，原生候选默认关闭。用户提到的 PR 仓库尚未确认；若指 [bb10root/bb10-volte PR #1](https://github.com/bb10root/bb10-volte/pull/1)，核对的 head 为 `5e2ecaf5ad6c6e56e05d206e8939dbcad336d1ed`，内容涉及 carrier 选择、IR92 和 VoLTE provisioning 门槛，并没有短信关联修复。本项目的 Python 载荷不能直接覆盖该 C 项目的安装。本次未复制其 GPL 实现。

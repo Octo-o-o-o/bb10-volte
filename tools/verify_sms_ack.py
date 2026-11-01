@@ -98,8 +98,13 @@ def elf_checks(stock, patched):
 
 def verify(stock):
     assert hashlib.sha256(stock).hexdigest() == image.STOCK_SHA, 'Unknown stock IMS image'
-    images = {'mobile': image.mobile_binary(stock, True)[0],
-              'unicom': image.temporary_binary(stock, True)[0]}
+    defaults = {'mobile': image.mobile_binary(stock, True)[0],
+                'unicom': image.temporary_binary(stock, True)[0]}
+    expected = {'mobile': '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494',
+                'unicom': 'f388a23900d13d92c0390c662fc53e2de6d628bba2174973c0320416022a4438'}
+    assert {key: hashlib.sha256(raw).hexdigest() for key, raw in defaults.items()} == expected
+    images = {'mobile': image.mobile_binary(stock, True, sms_ack=True)[0],
+              'unicom': image.temporary_binary(stock, True, sms_ack=True)[0]}
     images['telecom'] = images['unicom']
     checks = elf_checks(stock, images['unicom'])
     elf_checks(stock, images['mobile'])
@@ -129,6 +134,8 @@ def verify(stock):
                            'device_sms_acceptance': False})
     return {'schema': 1, 'status': 'native_correlation_candidate_pending_device_acceptance',
             'stock_sha256': image.STOCK_SHA,
+            'default_voice_images_unchanged': True,
+            'native_sms_candidate_enabled_by_default': False,
             'shim_code_sha256': hashlib.sha256(image.SMS_ACK_CODE).hexdigest(),
             'receive_hook': '0x2eeff2', 'report_hook': '0x2ee3c6',
             'elf_checks': checks, 'matrix': matrix,

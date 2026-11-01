@@ -1,5 +1,7 @@
 # Native MT SMS ACK correlation candidate
 
+**r13 release boundary:** SMS send-domain policy and offline diagnostics are integrated. The native MT ACK candidate remains available in source and the verifier, disabled by default. Normal startup retains the previously hash-checked voice IMS bytes. The offline maintainer verifier explicitly selects `sms_ack=True`. QNX loading, gateway acceptance, real SMS delivery and duplicate elimination still require device acceptance.
+
 [简体中文](SMS-ACK-NATIVE.md) · [SMS policy and capture](SMS-DIAGNOSTICS.en.md)
 
 2026-11-01: a missing correlation step has been identified in the pinned native IMS image and a source candidate implemented. **ARM instruction emulation and ELF checks pass; QNX loading, gateway acceptance and single Hub delivery remain untested on devices.** No phone was connected or SMS sent.
@@ -68,4 +70,4 @@ Tests execute actual ARM/Thumb instructions for a synthetic E3→FA→FB→0C se
 
 On a device, first verify QNX loading, then correlate one raw MT and report: In-Reply-To, RP reference, gateway target/To, successful SIP response, and one Hub entry over at least 180 seconds. Follow with concurrent/multipart/intentional repeated content, MO, voice, reboot, powered-off SIM change and restoration. See [capture instructions](SMS-DIAGNOSTICS.en.md#sip-logging).
 
-Known-payload updates back up and replace `ims_image.py`; the new temporary image is generated on a normal service restart, without modifying a running process. This candidate is not deployed or released; prior voice acceptance does not cover it. The user's `bb10root/bb10-volte main+PR#1` is a separate C project: this Python payload cannot directly replace its installation. Integration there requires the same native hash guard and separate device acceptance.
+Known-payload updates back up and replace `ims_image.py`; the new temporary image is generated on a normal service restart, without modifying a running process. The native candidate is included in source, disabled by default and not deployed to phones; prior voice acceptance does not cover it. The user's `bb10root/bb10-volte main+PR#1` is a separate C project: this Python payload cannot directly replace its installation. Integration there requires the same native hash guard and separate device acceptance.

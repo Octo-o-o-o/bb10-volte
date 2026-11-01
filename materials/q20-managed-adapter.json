@@ -28,7 +28,8 @@
   "validation_record": "q20-device-validation-2026-10-30.json",
   "probe_sha256": "fd70d670e5433d5f4b8604523d87ae6d21cfebff0f5e590657b055831052c92e",
   "additional_manifest_sha256": [
-    "2451f798ac121462aea5fb53ebd3f87179b00dfda5aa0bb96d82aa1cc5e174f5"
+    "2451f798ac121462aea5fb53ebd3f87179b00dfda5aa0bb96d82aa1cc5e174f5",
+    "a517c79c1025068aa16fbaffc4122bc18cf415a7b6e368e8e101561bd2a05111"
   ],
   "additional_profile_validation": {
     "q20-sqc100-2-mobile-46000": "q20-mobile-validation-2026-10-31.json"

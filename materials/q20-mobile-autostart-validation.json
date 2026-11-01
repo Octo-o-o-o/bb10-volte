@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "recorded_local": "2026-10-31T15:18+08:00",
+  "reviewed_local_date": "2026-11-01",
+  "variant": "SQC100-2",
+  "carrier": "China Mobile 460-00",
+  "manifest": "q20-mobile-autostart-manifest.json",
+  "manifest_sha256": "a517c79c1025068aa16fbaffc4122bc18cf415a7b6e368e8e101561bd2a05111",
+  "controller_sha256": "7d1363071458739d5feb2cbc89811938a18d0c6a3cb56955e7bc11f0700f961c",
+  "ims_image_sha256": "647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494",
+  "normal_menu_reboot": true,
+  "usb_unplugged_during_calls": true,
+  "incoming_answered": true,
+  "outgoing_retry_answered": true,
+  "first_outgoing_attempt_answered": false,
+  "owner_confirmed_two_way_audio_and_lte": true,
+  "source_log_sha256": "89c347e0dbe3f71bd12630dbc3a8ad6b6d2855c99bf8a6fc741a31eaa1835742",
+  "scope": "Historical legacy-adapter recognition only; not new r13 phone or SMS acceptance.",
+  "private_identifiers_or_logs_included": false
+}

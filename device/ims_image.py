@@ -154,9 +154,15 @@ def sms_ack_binary(image, patches=()):
     return result, list(patches) + [record]
 
 
-def temporary_binary(original, normal_voice=False):
+def temporary_binary(original, normal_voice=False, sms_ack=False):
+    """Keep the accepted voice image unless a maintainer opts into the shim.
+
+    The native SMS candidate has no QNX loader or carrier acceptance yet.
+    Normal service startup must not silently replace every accepted IMS image.
+    """
+    assert type(sms_ack) is bool, 'SMS candidate opt-in must be explicit'
     changed, patches = _voice_binary(original, normal_voice)
-    return sms_ack_binary(changed, patches)
+    return sms_ack_binary(changed, patches) if sms_ack else (changed, patches)
 
 
 def proven_owned_profiles(configs, original_ids, event_text, native_stdout, pid):
@@ -187,9 +193,10 @@ def proven_owned_profiles(configs, original_ids, event_text, native_stdout, pid)
     return owned
 
 
-def mobile_binary(original, normal_voice=False):
+def mobile_binary(original, normal_voice=False, sms_ack=False):
     """Accepted Q20/Passport Mobile fix; only the temporary copy is changed."""
     assert normal_voice is True
+    assert type(sms_ack) is bool, 'SMS candidate opt-in must be explicit'
     changed, patches = _voice_binary(original, normal_voice)
     offset = 0xb8eb0
     assert changed[offset:offset + 4] == b'\x02\x21\x78\x44'
@@ -200,7 +207,7 @@ def mobile_binary(original, normal_voice=False):
     assert hashlib.sha256(result).hexdigest() == '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494'
     patches.append({'file_offset': offset, 'bytes_before': '0221', 'bytes_after': '0021',
                     'config_key': 'MediaDialog.EarlySdp', 'purpose': 'Reliable 180 without repeated SDP'})
-    return sms_ack_binary(result, patches)
+    return sms_ack_binary(result, patches) if sms_ack else (result, patches)
 
 
 # BEGIN GENERATED SMS ACK SHIM

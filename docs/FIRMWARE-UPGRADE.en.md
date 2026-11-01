@@ -2,7 +2,7 @@
 
 [简体中文](FIRMWARE-UPGRADE.md) · [First run](FIRST-RUN.en.md) · [Connection recovery](RECOVER-CONNECTION.en.md)
 
-The local `0.5.0-r12` candidate adds stock firmware upgrades and integrates personal Root-image preparation for Q10, Classic / Q20, and Passport / Q30. The required **OS is exactly 10.3.3.3216**. This is not the desktop application version or a minimum supported OS. Numeric comparison also accepts the firmware filename spelling `10.3.03.3216`.
+`0.5.0-r13` provides stock firmware upgrades and integrates personal Root-image preparation for Q10, Classic / Q20, and Passport / Q30. The required **OS is exactly 10.3.3.3216**. This is not the desktop application version or a minimum supported OS. Numeric comparison also accepts the firmware filename spelling `10.3.03.3216`.
 
 This is a full firmware reflash that erases phone data, existing Root, and authorization. Preparation can run automatically; connecting a phone never starts flashing. Software tests, offline image checks, and packaging tests do not establish physical upgrade acceptance. The candidate UI retains that limitation.
 
