@@ -148,7 +148,7 @@ class RootImageTests(unittest.TestCase):
                 images.verify_build(kit, variant)
             with patch.object(setup.sys, 'platform', 'win32'), \
                     patch.object(setup, 'root_lock_path', return_value=kit / 'flash.lock'), \
-                    patch.object(setup, 'local_usb_state', return_value={'usb_count': 1, 'device': {'ModelName': variant}}), \
+                    patch.object(setup, 'local_usb_state', return_value={'usb_count': 1, 'device': {'ModelName': variant, 'PlatformVersion': '10.3.3.3216'}}), \
                     patch.object(setup, 'verify_root', side_effect=WorkflowError('connection_refused')), \
                     patch.object(setup, 'run_flash_stage', return_value={'completed': True}) as flash:
                 setup.flash_root(kit, True, lambda _: None)

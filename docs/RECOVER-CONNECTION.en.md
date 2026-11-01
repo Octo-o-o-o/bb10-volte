@@ -2,6 +2,10 @@
 
 [简体中文](RECOVER-CONNECTION.md) · [First use](FIRST-RUN.en.md)
 
+The `0.5.0-r12` candidate exports both `.py` and matching `-instructions.txt` files. Enter the existing Root shell first: `__root` starts with **two underscores**, and some tools provide `u_root`. `id -u` must return `0`. Copy the complete command block; it checks privileges and the exact script path, and only starts Python after `pathtrust` succeeds. Enter uppercase `PAIR` only at the script prompt, never as a shell command.
+
+`ROOT_REQUIRED` means insufficient privileges. `PAIR_FILE_NOT_FOUND` means the matching file is missing from internal Downloads. Stop on `Permission denied` and restore existing Root access first. The resumed request keeps its ID and keys; the step heading and record selector now stay synchronized.
+
 In current development source on Windows and macOS, open **Connection help**. Select the entire original Root materials folder, or choose authorization from the phone when no old files are available. Advanced imports remain available. Released r6 and older applications use **First use → Connection checks → Recover connection**. The workflow uses available materials and verified access, without requiring the original firmware package name. It does not flash or erase the phone.
 
 Folder inspection stays within the selected directory, skips linked directories and stops at bounded depth/count limits. It does not execute discovered SSH configurations. A unique login key and trusted host identity can be confirmed, copied into the protected app directory and used to create paths for this computer. Multiple or incomplete sets require user action. Closing and reopening preserves incomplete phone pairing keys, IDs and progress; multiple requests require explicit selection rather than choosing the newest one.

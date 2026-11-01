@@ -51,6 +51,8 @@ EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系
 
 ## Windows 界面
 
+本地 `0.5.0-r12` 候选已增加[低版本 OS 升级与型号匹配](docs/FIRMWARE-UPGRADE.md)、手机授权命令前置检查及配套操作说明。升级会清空手机数据，须单独确认；旧系统真机升级闭环尚待验收。上方 r10 公开下载不包含这些新增流程。
+
 ![Windows 版三网自动适配界面](website/src/assets/windows-setup.jpg)
 
 真实程序界面，使用脱敏演示状态截图；它展示安装、重启后重新检查和完成入口，不作为实机测试证据。Windows 和 Mac 使用同一套自动适配流程。

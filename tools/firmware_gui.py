@@ -44,6 +44,8 @@ class FirmwareDialog(tk.Toplevel):
         page.pack(fill='both', expand=True, pady=12)
         self.facts = ttk.Label(content, wraplength=710, justify='left')
         self.facts.pack(anchor='w', pady=(0, 12))
+        ttk.Label(content, text=tr('原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。'),
+                  wraplength=710, justify='left').pack(anchor='w', pady=(0, 12))
         ttk.Label(content, text=tr('1. 检测准确机型与 OS，准备对应原版固件和 Root 镜像。\n'
                                   '2. 确认备份后升级原版系统；这会清空数据并移除现有 Root 与授权。\n'
                                   '3. 开机后重新检测 OS，再单独确认 Root 刷写，最后验证连接。'),
@@ -196,7 +198,8 @@ class FirmwareDialog(tk.Toplevel):
         if version.state != 'upgrade':
             self.show_error('firmware_version_unknown')
             return
-        message = tr('目标手机：{}\n当前 OS：{} → {}\n\n将清空手机数据、现有 Root 和授权。写入后必须回读系统，再单独确认 Root。\n请确认已备份、电量充足，只连接此手机。现在开始？').format(self.variant.get(), version.current, TARGET_OS)
+        message = (tr('原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。') + '\n\n' +
+                   tr('目标手机：{}\n当前 OS：{} → {}\n\n将清空手机数据、现有 Root 和授权。写入后必须回读系统，再单独确认 Root。\n请确认已备份、电量充足，只连接此手机。现在开始？').format(self.variant.get(), version.current, TARGET_OS))
         if messagebox.askyesno(tr('确认清空并升级系统'), message, parent=self):
             folder = self.kit
             self.ack.set(False)

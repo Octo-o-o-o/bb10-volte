@@ -378,6 +378,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
     def test_all_families_can_continue_from_import_through_prepare_to_confirmed_flash(self):
         for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
             with self.subTest(variant=variant):
+                self.wizard.usb = {}
                 self.wizard.variant.set(variant)
                 self.wizard.firmware_path.set('downloaded firmware')
                 with patch.object(w, 'import_stock_firmware', return_value='verified-cache'):
@@ -394,6 +395,9 @@ class FirmwareImportGuiTests(unittest.TestCase):
                 prepare.assert_called_once_with(variant, unittest.mock.ANY, None)
                 self.assertFalse(self.wizard.ack.get())
                 self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
+                self.wizard.usb = {'usb_count': 1, 'usb_address_ready': True,
+                                   'device': {'ModelName': variant, 'PlatformVersion': '10.3.3.3216'}}
+                self.wizard.refresh()
                 self.assertIn('已备份', self.wizard.root_hint.cget('text'))
                 self.wizard.ack.set(True)
                 self.assertEqual(str(self.wizard.flash_button.cget('state')), 'normal')

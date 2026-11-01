@@ -4,6 +4,8 @@
 
 [简体中文](FIRST-RUN.md) · [GUI](GUI.en.md)
 
+The `0.5.0-r12` candidate adds [stock OS upgrades](FIRMWARE-UPGRADE.en.md). An OS below 10.3.3.3216 requires matching stock preparation, explicit erase confirmation, and boot readback before separate Root confirmation. Unknown and newer versions stop. Combined stock/Root preparation needs 24 GB free; the Root-only 15 GB requirement below is insufficient for this flow. Physical old-OS upgrade acceptance is pending.
+
 The First use wizard provides connection checks, Windows SSH components, USB drivers and initial Root preparation. The local `0.5.0-r11` candidate supports matching firmware, image preparation and staged flashing for Q10, Q20 and Q30.
 
 ## First connection on a Mac

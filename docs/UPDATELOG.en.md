@@ -2,6 +2,12 @@
 
 [简体中文](UPDATELOG.md)
 
+## 0.5.0-r12 · OS checks, stock upgrades and phone pairing · Local candidate
+
+Integrate r11 Root preparation for Q10/Q20/Passport, then add exact OS routing, explicit stock-upgrade erase confirmation, stock write and boot readback, separate Root confirmation, and resumable preparation records. Unknown/newer OS, multiple devices, mismatched materials and uncertain writes stop. Stock flashing never accepts the Root-only exit-73 exception. Mac signed OS/radio have independent pinned hashes; all three real stock inputs were freshly split and compared.
+
+Phone pairing exports matching instructions and checks UID 0, the file path and pathtrust success before Python. Explain the two-underscore helper and uppercase PAIR; keep resumed step labels synchronized. Public r10 downloads remain the existing release. Physical old-OS upgrade acceptance is still pending; see [Firmware upgrades](FIRMWARE-UPGRADE.en.md).
+
 ## 0.5.0-r11 · Three-model initial Root and ZSpace downloads · Local candidate
 
 Add model-specific Root preparation, partition verification and staged flashing for Q20 and Passport. Preserve model/image/confirmation/uncertain-state gates. Place preparation after import with actionable disabled-state guidance; add ZSpace copy links and download instructions. Real offline Windows builds passed for all three firmware families; no phone was flashed.

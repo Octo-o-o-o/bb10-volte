@@ -850,6 +850,7 @@ ENGLISH = {
 
 # Unified carrier installation
 ENGLISH.update({
+    '原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。': 'Stock firmware upgrades still need physical-device acceptance. Back up first and use this candidate workflow only on a test phone that may be erased.',
     '准备原版系统与 Root 镜像至少需要 24 GB 可用空间。请释放空间后重试。': 'Preparing stock firmware and Root images needs at least 24 GB of free space. Free some space and try again.',
     '存在未结束的刷写记录。请保留现场与日志，不要重复刷写。': 'An unfinished flash record exists. Keep the logs and do not flash again.',
     '刷写前须只连接一台对应型号的手机，并读到低于目标版本的 OS。请解锁手机并重新检测。': 'Connect only the matching phone and read an OS below the target before flashing. Unlock the phone and detect again.',

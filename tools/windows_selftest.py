@@ -136,7 +136,7 @@ def run(output):
     assert wizard.firmware_source.get() == 'ia600407.us.archive.org'
     from root_setup import stock_firmware, selected_firmware_variant, SetupError
     for variant, family in [('SQC100-2', 'classic'), ('SQW100-4', 'passport')]:
-        wizard.usb = {'usb_count': 1, 'device': {'ModelName': variant}}
+        wizard.usb = {'usb_count': 1, 'device': {'ModelName': variant, 'PlatformVersion': '10.3.3.3216'}}
         wizard.variant.set(variant)
         item = stock_firmware(variant)
         assert item['family'] == family
