@@ -101,6 +101,30 @@ class InactiveUpdateTests(unittest.TestCase):
             installer.update(self.stage)
         self.assertFalse(self.writes)
 
+    def test_sms_policy_service_update_is_backed_up_and_verified(self):
+        self.check_backed_up_component('device/service.py')
+
+    def test_sms_ack_image_builder_update_is_backed_up_and_verified(self):
+        self.check_backed_up_component('device/ims_image.py')
+
+    def check_backed_up_component(self, name):
+        old, new = b'previous service', b'service with explicit SMS policy'
+        self.fs[self.base + '/' + name] = old
+        self.fs[self.stage + '/' + name] = new
+        self.before['files'][name] = hashlib.sha256(old).hexdigest()
+        self.after['files'][name] = hashlib.sha256(new).hexdigest()
+        self.fs[self.base + '/payload.json'] = profiles.canonical(self.before)
+        self.fs[self.stage + '/payload.json'] = profiles.canonical(self.after)
+        known = hashlib.sha256(profiles.canonical(self.before['files'])).hexdigest()
+        with patch.object(installer, 'PREVIOUS_PAYLOADS', (known,)), \
+                patch.object(installer.u, 'PAYLOAD_FILES', self.names + (name,)):
+            result = installer.update(self.stage)
+        self.assertTrue(result['updated'])
+        self.assertEqual(self.fs[self.base + '/' + name], new)
+        self.assertEqual(self.fs[result['phone_backup'] + '/' + name], old)
+        self.assertEqual(result['backup_files'][name], hashlib.sha256(old).hexdigest())
+        self.assertNotIn(self.base + '/driver/fixed.so', self.writes)
+
     def test_final_record_cleanup_can_resume_after_new_service_has_started(self):
         self.fail_finish = True
         with self.assertRaises(OSError):

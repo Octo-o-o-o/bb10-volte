@@ -22,9 +22,12 @@ PREVIOUS_PAYLOADS = ('7352686da4a229135d7685ffc58c2aae8b1c5c588bcb72fe733799b233
                      '5c2d9d893f88d40b6fde943f85722471da8cd3aa3a61ece7e403e03a48c84943',
                      'e179d971012e0013caf692fc51273c4f62ebaab861af1e36570400515c02382f',
                      'a9a1609e31b8477e01c2c30511b6dfdc5914a4df5bff521f227f3deab77a963b',
-                     'f0c4a5002dc41b8de7113db680936240d564e87ddae67793b79e27a45e8c9a2f')
+                     'f0c4a5002dc41b8de7113db680936240d564e87ddae67793b79e27a45e8c9a2f',
+                     '7de370bc3b3a9a646714336aa5e45de89026a50012e986f43a0d228d6dc638ff',
+                     '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
-                'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py')
+                'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
+                'device/service.py', 'device/ims_image.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
 ADDON = '/var/addons/bb10-unified-volte'
 BTOOL = '/apps/sys.android.gYABgKAOw1czN6neiAT72SGO.ns/native/system/xbin/btool'

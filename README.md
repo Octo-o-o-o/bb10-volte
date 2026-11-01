@@ -47,6 +47,8 @@ EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系
 
 实测包括系统拨号器呼出、呼入、双向声音、LTE 通话和不连电脑换卡；本机号码与运营商显示也已验证。图中手机为机型示意。准确 SIM 范围为移动 460-00、联通 460-01、电信 460-11 的 USIM（无 ISIM）。
 
+**短信收发和重复接收尚未实机验收。** 当前源码含短信 PS 配置与 [MT ACK 原生关联修复候选](docs/SMS-ACK-NATIVE.md)，已通过离线指令／ELF 检查，尚未部署或发布；历史证据和日志开关见[短信排查与取证](docs/SMS-DIAGNOSTICS.md)。
+
 不同组合的测试时间和依据保留在[验收记录](materials/unified-carrier-acceptance.json)，包括初始卡与换卡测试、日志和机主确认的区别。其他硬件变体、系统版本、漫游、长期待机和紧急呼叫尚未完整验证。
 
 ## Windows 界面

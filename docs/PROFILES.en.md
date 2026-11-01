@@ -14,7 +14,7 @@ The GUI offers the recorded Q10/Unicom parameters and public-data Unicom, Mobile
 | Stock ID / SHA-256 | `auto` uses `true_home_carrier.preloadedConfigFile`; optional numeric ID and hash; stock carrier files only |
 | IMS APN / IP family | Dedicated IMS service using IPv4, IPv6 or IPv4v6 |
 | Home domain | `auto` derives from actual SIM MCC/MNC, padding MNC to three digits; validated custom domains allowed |
-| SMS capability | Advertise IMS SMS; does not establish working SMS |
+| SMS capability | Advertise IMS SMS and explicitly apply native SMS over IP policy; [device acceptance pending](SMS-DIAGNOSTICS.en.md) |
 | SIM, IMS APN and existing-IMS waits | Bounded phone readiness waits; the IMS APN value applies per round, with at most three rounds |
 | Registration wait / poll interval | Desktop observation duration and runtime polling |
 | Autostart | Set boot startup; explicit manual start still works when disabled |

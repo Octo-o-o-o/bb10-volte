@@ -83,6 +83,8 @@ def check(check_git=False):
         assert name in names and hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, 'Stale payload manifest: ' + name
     from auto_carrier import verify_package as verify_unified
     verify_unified()
+    from build_sms_ack import check_generated
+    check_generated(ROOT)
     diagnostics = json.loads((ROOT/'materials/desktop-diagnostics.json').read_text(encoding='utf-8'))
     assert diagnostics.get('schema') == 1
     assert set(diagnostics['files']) == {'tools/root_probe.py', 'tools/stage_cleanup.py'}
