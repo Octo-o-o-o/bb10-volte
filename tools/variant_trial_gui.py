@@ -6,6 +6,7 @@ from tkinter import filedialog, messagebox, ttk
 import uuid
 import device_support
 import variant_trials
+from feedback_gui import help_row
 from i18n import tr
 from profile_editor import FONT
 
@@ -21,6 +22,7 @@ class VariantTrialDialog(tk.Toplevel):
         self.operator = tk.StringVar()
         body = ttk.Frame(self, padding=24)
         body.pack(fill='both', expand=True)
+        help_row(body, self, 'trials')
         ttk.Label(body, text=tr('先检查本机条件，再决定能否试用'), font=(FONT, 16, 'bold')).pack(anchor='w')
         ttk.Label(body, text=tr('手机需已有有效 Root。这里只读检查，不会刷机或自动安装。'), wraplength=650).pack(anchor='w', pady=12)
         row = ttk.Frame(body)

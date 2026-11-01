@@ -1,5 +1,7 @@
 """Firmware preparation, explicit data-loss confirmation, and boot readback."""
 from pathlib import Path
+from feedback import FeedbackQueue
+from feedback_gui import help_row
 import queue
 import sys
 import threading
@@ -34,12 +36,13 @@ class FirmwareDialog(tk.Toplevel):
         self.transient(parent)
         self.on_ready, self.usb = on_ready, usb or {}
         self.busy, self.kit, self.stage = False, None, None
-        self.events = queue.Queue()
+        self.events = FeedbackQueue(self, 'firmware')
         self.variant = tk.StringVar(value=(self.usb.get('device') or {}).get('ModelName', ''))
         self.ack = tk.BooleanVar(value=False)
         self.root_only = tk.BooleanVar(value=root_only)
         body = ttk.Frame(self, padding=20)
         body.pack(fill='both', expand=True)
+        help_row(body, self, 'firmware')
         ttk.Label(body, text=tr('先升级系统，再验证 Root 与连接'), font=(FONT, 16, 'bold')).pack(anchor='w')
         self.support_notice = ttk.Label(body, wraplength=790, justify='left')
         self.support_notice.pack(fill='x', pady=(8, 0))
@@ -169,6 +172,7 @@ class FirmwareDialog(tk.Toplevel):
     def start(self, action, function):
         if self.busy:
             return
+        self.events.begin(action)
         self.busy = True
         self.status.configure(text=tr('正在处理，请保持设备连接。'))
         self.progress.start()
@@ -178,8 +182,10 @@ class FirmwareDialog(tk.Toplevel):
                 result = function(lambda text: self.events.put(('progress', text)))
                 self.events.put((action, result))
             except (DownloadError, MaterialImportError) as error:
+                self.events.failure(error)
                 self.events.put(('download_error', error.user_message))
             except Exception as error:
+                self.events.failure(error)
                 self.events.put(('error', str(error)))
         threading.Thread(target=work, daemon=True).start()
 

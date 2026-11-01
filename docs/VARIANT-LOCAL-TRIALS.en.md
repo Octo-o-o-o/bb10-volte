@@ -17,7 +17,7 @@ There are 13 manual candidates and six read-only candidates. Actual checks still
 
 SQN100-3, SQC100-2 and SQW100-4 keep their existing automatic route. Domestic cases for SQN100-2/-4, SQC100-4/Mobile and the unconfirmed SQW100-2 do not receive trial installation. Other MNCs and ISIM are outside this batch.
 
-1. Use the package explicitly labeled `preview` and verify its supplied SHA-256. Keep the same package throughout the trial. Do not overwrite an active automatic installation or mobile transaction.
+1. Use the r15 Windows EXE or macOS DMG and verify its supplied SHA-256. The trial entry does not establish hardware acceptance. Keep the same package throughout the trial. Do not overwrite an active automatic installation or mobile transaction.
 2. Select the full variant from Settings / About and the actual carrier. Choose **Check this phone**; the main window also offers **More / Local candidate variant trials**. This does not automatically consent, install, flash or reboot.
 3. If blocked, use **More / Export check report**. Unknown native files, mismatched hardware/SIM, unavailable LTE data or unverified restoration cannot be bypassed by retrying or editing the profile.
 4. After technical checks, explicitly opt into experimental use and recheck. Confirm a backup, provisioned VoLTE and no active call. **Install and verify** installs only. The trial does not change radio attachment policy; Telecom requires working LTE data first.
@@ -34,6 +34,6 @@ python tools/gui.py --trial-variant SQC100-3 --trial-operator unicom
 python tools/variant_trials.py --export /path/to/new-trial-folder
 ```
 
-The Windows preview includes Python. Mac source use needs the existing Python/Tk environment; an old r14 DMG does not contain this new entry point.
+Both r15 Windows and Mac packages include the trial entry and Python/Tk. The older r14 packages do not include it. No new variants have hardware acceptance in this release.
 
 Mobile integration should reuse the reserved `variant-trial-` profiles and the device-side compatibility checks. Include the allowlisted `variant_trial` field in reports; never interpret it as hardware acceptance. Keep installation separate from start and autostart disabled. Merge the shared installer semantically and regenerate both manifests; only two additional fixed Python files, `profiles.py` and `compatibility.py`, join the known inactive-update set. Native binaries and automatic model/carrier authorization remain unchanged.

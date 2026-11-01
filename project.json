@@ -1,9 +1,9 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 14,
-  "state": "experimental_release_two_device_sms_and_first_root_accepted",
+  "desktop_revision": 15,
+  "state": "experimental_release_early_variant_checks_manual_trials_and_first_use_help",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine historical voice/SIM/display cases; r14 SMS, short bidirectional voice and normal reboot accepted on Q20/Unicom and Passport/Mobile. First Root accepted on Apple Silicon Mac/Q20 and Windows/Passport; full GUI first-use, Q10 first Root and Intel USB flashing unverified."
+  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine historical voice/SIM/display cases; r14 SMS, short bidirectional voice and normal reboot accepted on Q20/Unicom and Passport/Mobile. First Root accepted on Apple Silicon Mac/Q20 and Windows/Passport; full GUI first-use, Q10 first Root and Intel USB flashing unverified. r15 adds early exact-variant checks, 13 gated manual candidate combinations, six read-only Passport combinations, first-use tutorial and local feedback; no new hardware acceptance."
 }

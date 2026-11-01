@@ -1,0 +1,10 @@
+{
+  "source": "native-window-gdigrab",
+  "title": "BB10 Tutorial - home",
+  "startedUnix": 1793551478.875308,
+  "endedUnix": 1793551485.004934,
+  "exitCode": 0,
+  "targetSeconds": 6.0,
+  "desktopCaptured": false,
+  "frameRate": 30
+}

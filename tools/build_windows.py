@@ -170,7 +170,7 @@ def main():
             'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy', 'device_support',
-            'variant_trials', 'variant_trial_gui',
+            'variant_trials', 'variant_trial_gui', 'feedback', 'feedback_gui',
             'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)

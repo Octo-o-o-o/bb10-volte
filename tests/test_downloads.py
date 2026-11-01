@@ -4,7 +4,6 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
-import queue
 import ssl
 import subprocess
 import sys
@@ -21,6 +20,7 @@ i18n.LANGUAGE = 'zh'  # Progress-message assertions below use Chinese.
 import fetch_materials as f
 import macos_root
 import setup_wizard
+from feedback import Journal
 
 
 class DownloadTrustTests(unittest.TestCase):
@@ -361,7 +361,9 @@ class DownloadTests(unittest.TestCase):
     def test_wizard_shows_download_reason_and_enables_retry(self):
         wizard = MagicMock()
         wizard.busy = False
-        wizard.events = queue.Queue()
+        wizard.tabs.index.return_value = 1
+        wizard._root.return_value._feedback_journal = Journal(self.folder / 'feedback')
+        wizard.events = setup_wizard.FeedbackQueue(wizard, 'root')
         error = f.DownloadError('download_failed', 'firmware.7z', 'HTTP 503')
         with patch.object(setup_wizard.threading, 'Thread', side_effect=lambda target, **_: MagicMock(start=target)):
             setup_wizard.SetupWizard.start(wizard, 'prepare', MagicMock(side_effect=error))
@@ -370,6 +372,8 @@ class DownloadTests(unittest.TestCase):
         wizard.status.configure.assert_called_with(text=error.user_message)
         wizard.progress.stop.assert_called_once()
         self.assertEqual(wizard.refresh.call_count, 2)
+        self.assertEqual(wizard.events.journal.events[-1]['outcome'], 'failed')
+        self.assertEqual(wizard.events.journal.events[-1]['step'], 'root')
 
 
 if __name__ == '__main__':

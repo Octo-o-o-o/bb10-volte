@@ -1,0 +1,31 @@
+{
+  "scenario": "first-use",
+  "title": "连接手机，按已有材料选路",
+  "dataMode": "mock",
+  "readonly": true,
+  "baseUrl": "native:BB10-VoLTE",
+  "surface": "native-desktop",
+  "audience": "customer",
+  "durationMs": 20767,
+  "pageErrors": [],
+  "consoleMessages": [],
+  "responseErrors": [],
+  "nativeScope": "Real Tk UI with isolated demonstration backends; not device acceptance.",
+  "captions": [
+    {
+      "title": "连接手机，按已有材料选路",
+      "body": "有旧刷机文件夹：选择整个文件夹。没有旧文件但手机已有有效 Root：选择“没有旧文件，从手机重新授权”。从未 Root 或不确定：选择对应入口，先核实状态。",
+      "narration": "连接并解锁手机后，点击连接手机。有旧刷机文件夹，就选择整个文件夹。没有旧文件，但手机已经有有效 Root，可以从手机重新授权。连接失败，不等于手机没有 Root，不要直接重新刷机。",
+      "startMs": 600,
+      "endMs": 20150
+    }
+  ],
+  "steps": [
+    {
+      "label": "connect",
+      "highlightVisible": false,
+      "overflow": 0,
+      "assertion": "Dedicated mock window capture; no live device mutation"
+    }
+  ]
+}

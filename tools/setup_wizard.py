@@ -3,6 +3,8 @@ from i18n import tr
 from firmware_policy import baseline_error
 import device_support
 from pathlib import Path
+from feedback import FeedbackQueue
+from feedback_gui import help_row
 import queue
 import sys
 import threading
@@ -68,7 +70,7 @@ class SetupWizard(tk.Toplevel):
         self.geometry('860x730')
         self.minsize(800, 680)
         self.transient(parent)
-        self.on_ready, self.events = on_ready, queue.Queue()
+        self.on_ready, self.events = on_ready, FeedbackQueue(self, 'root')
         self.busy, self.choice, self.kit, self.usb = False, None, None, {}
         self.host, self.config = 'bb10-root', ''
         self.variant = tk.StringVar()
@@ -82,6 +84,7 @@ class SetupWizard(tk.Toplevel):
         self.operator = tk.StringVar()
         body = ttk.Frame(self, padding=24)
         body.pack(fill='both', expand=True)
+        help_row(body, self, lambda: ('connect', 'root', 'drivers')[self.tabs.index(self.tabs.select())])
         ttk.Label(body, text=tr('准备好设备，再继续开通'), font=(FONT, 17, 'bold')).pack(anchor='w')
         self.status = ttk.Label(body, text=tr('已有 Root 的设备可直接检测；首次 Root 需要备份并刷写。'), wraplength=790)
         self.status.pack(anchor='w', pady=(8, 18))
@@ -399,6 +402,8 @@ class SetupWizard(tk.Toplevel):
     def start(self, action, function):
         if self.busy:
             return
+        self.events.step = ('connect', 'root', 'drivers')[self.tabs.index(self.tabs.select())]
+        self.events.begin(action)
         self.busy = True
         self.refresh()
         self.progress.start(12)
@@ -407,10 +412,13 @@ class SetupWizard(tk.Toplevel):
             try:
                 self.events.put(('result', (action, function(lambda value: self.events.put(('progress', value))))))
             except (DownloadError, MaterialImportError) as error:
+                self.events.failure(error)
                 self.events.put(('download_error', error.user_message))
             except (SetupError, WorkflowError) as error:
+                self.events.failure(error)
                 self.events.put(('error', str(error)))
-            except Exception:
+            except Exception as error:
+                self.events.failure(error)
                 self.events.put(('error', 'preparation_failed'))
         threading.Thread(target=worker, daemon=True).start()
 

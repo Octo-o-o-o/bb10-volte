@@ -21,6 +21,10 @@ TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md'
        'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png',
        'website/src/assets/carrier-acceptance.png', 'website/src/assets/windows-setup.jpg',
        'website/src/assets/carrier-acceptance.prompt.txt'}
+TUTORIAL_IMAGES = ('home', 'connect', 'root', 'root-import', 'root-prepared',
+                   'root-verified', 'install', 'restart', 'ready', 'feedback', 'first-use-cover')
+TOP.update('website/src/assets/tutorial/' + name + '.png' for name in TUTORIAL_IMAGES)
+TOP.add('website/src/assets/tutorial/first-use.mp4')
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
@@ -110,6 +114,10 @@ def check(check_git=False):
             assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
             continue
         if name == HELPER:
+            continue
+        if name == 'website/src/assets/tutorial/first-use.mp4':
+            assert data[4:8] == b'ftyp', 'Invalid tutorial video'
+            assert hashlib.sha256(data).hexdigest() == recordings['docs/recordings/first-use-narrated.mp4'], 'Tutorial video differs from reviewed recording'
             continue
         if name.startswith('website/src/assets/') and path.suffix in ('.png', '.jpg'):
             assert ((path.suffix == '.png' and data.startswith(b'\x89PNG\r\n\x1a\n')) or

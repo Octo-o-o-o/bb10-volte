@@ -291,7 +291,12 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
                        '--ssh-keygen', str(tools['keygen'])])
     progress(tr('构建并校验系统与无线镜像；此步骤尚不刷写手机'))
     import build_root
-    build_root.main(['--kit', str(folder)])
+    try:
+        build_root.main(['--kit', str(folder)])
+    except Exception as error:
+        from feedback import build_failure_excerpt
+        error.feedback_log = build_failure_excerpt(folder)
+        raise
     (folder / 'setup-state.json').write_text(json.dumps({'variant': variant, 'stage': 'prepared'}, indent=2), encoding='utf-8')
     return str(folder)
 

@@ -1,5 +1,7 @@
 """bb10-volte: standard-library desktop UI over the fixed workflow."""
 from i18n import document_path, tr
+from feedback import FeedbackQueue
+from feedback_gui import FeedbackDialog
 import argparse
 import json
 import os
@@ -142,7 +144,7 @@ SERVICE_PHASES = {'waiting_for_native_ims': tr('等待系统 IMS 初始化结束
 
 class App:
     def __init__(self, root, host='bb10-root', config='', auto_connect=False, profile=None):
-        self.root, self.events = root, queue.Queue()
+        self.root, self.events = root, FeedbackQueue(root, 'preflight')
         self.busy, self.report, self.last_result = False, None, None
         self.report_connection = None
         self.display_report, self.device_info = None, {}
@@ -184,6 +186,7 @@ class App:
         root.protocol('WM_DELETE_WINDOW', self.close)
         apply_theme(root, FONT)
         self.build()
+        self.root._feedback_status_labels = [self.summary, self.detail, self.activity]
         self.host.trace_add('write', self.connection_changed)
         self.config.trace_add('write', self.connection_changed)
         self.experimental.trace_add('write', lambda *_: self.connection_changed(preserve_device=True))
@@ -214,6 +217,7 @@ class App:
         self.auto_carrier_button.pack(side='left', padx=20)
         self.more_button = ttk.Menubutton(header, text=tr('更多'))
         self.more_button.pack(side='right')
+        ttk.Button(header, text=tr('遇到问题 / 反馈'), command=lambda: FeedbackDialog(self.root, 'preflight')).pack(side='right', padx=8)
         self.menu = tk.Menu(self.more_button, tearoff=False, font=(FONT, 11))
         self.more_button.configure(menu=self.menu)
         self.menu_actions = {}
@@ -591,6 +595,7 @@ class App:
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
         host, config = self.host.get().strip(), self.config.get().strip()
         profile, experimental = profiles.validate(self.profile), self.experimental.get()
+        self.events.begin(action)
         self.busy = True
         self.connection_status.configure(text=tr('正在连接并检查手机…'))
         self.last_result = None
@@ -621,8 +626,10 @@ class App:
                     result = client.install(mode, start=profiles.trial_target(profile) is None) if action == 'install' else client.action(action)
                 self.events.put(('result', (action, result)))
             except WorkflowError as error:
+                self.events.failure(error)
                 self.events.put(('error', (error.code, error.report)))
-            except Exception:
+            except Exception as error:
+                self.events.failure(error)
                 # Do not expose unfiltered errors or SSH output in exported reports.
                 self.events.put(('error', ('unexpected_error', None)))
         threading.Thread(target=work, daemon=True).start()

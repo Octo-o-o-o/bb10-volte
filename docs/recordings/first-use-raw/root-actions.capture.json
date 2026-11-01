@@ -1,0 +1,10 @@
+{
+  "source": "native-window-gdigrab",
+  "title": "BB10 Tutorial - root-import",
+  "startedUnix": 1793551735.524862,
+  "endedUnix": 1793551775.665348,
+  "exitCode": 0,
+  "targetSeconds": 40.0,
+  "desktopCaptured": false,
+  "frameRate": 30
+}

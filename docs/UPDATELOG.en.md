@@ -1,5 +1,11 @@
 # Update log
 
+## 0.5.0-r15 — Early variant checks, local trials and first-use help
+
+Preserve prepared Root images across transient connection failures and allow a retry on the Root page. Explain exact-variant and carrier limits before preparation. Add 13 gated manual candidate combinations and six read-only Passport combinations, with six native-file checks, separate install/start and autostart off. The accepted automatic whitelist is unchanged; new variants have no hardware acceptance.
+
+Include the nine-step bilingual illustrated tutorial, a 3:39 Chinese narrated/subtitled video and local redacted feedback ZIPs. Feedback keeps earlier failures, candidate binding and native digest summaries without automatic upload. Windows, signed/notarized Mac, website and READMEs use the same release source. The mobile branch remains independent. See the [release review](RELEASE-REVIEW-R15-2026-11-02.md).
+
 ## 0.5.0-r14 — Hardware SMS fix and Mac/Windows first Root
 
 Enables native SMS ACK correlation. Q20/Unicom and Passport/Mobile passed short, two-part and independent identical-text messages without extra delivery, plus short bidirectional audio/LTE calls. Mac/Q20 and Windows/Passport passed first Root and normal-restart autostart. Repairs fresh addon setup, USB discovery, native prompt buffering, Windows completion classification and pinned Mac loader/final reconnect. Failed receipts and strict stop conditions are retained. See the [scope and evidence](SMS-ROOT-ACCEPTANCE-2026-11-01.md).

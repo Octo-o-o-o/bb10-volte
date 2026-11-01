@@ -10,9 +10,18 @@
 
 [使用指南](https://bb10-volte.octoooo.com/guide.html) · [发布与更新](https://github.com/Octo-o-o-o/bb10-volte/releases) · [更新日志](docs/UPDATELOG.md)
 
-本分支新增了 [14 个硬件后缀的覆盖研究与前置检查](docs/ALL-VARIANTS-COVERAGE-PLAN.md)：未适配的型号会在下载、Root 或安装前说明原因，并提供独立系统恢复 / Root 选项。这些改动尚未进入下方 r14 下载包，也没有扩大已验证的自动 VoLTE 范围。
+**r15 新增：**完整后缀前置检查、Root 页重新检测并保留已准备镜像、[9 步图文与中文讲解视频](https://bb10-volte.octoooo.com/guide.html#walkthrough)，以及各步骤的[脱敏反馈包](docs/FEEDBACK.md)。反馈保存在本地，由用户检查后自行发送，不自动上传。
 
-新增的[本地候选试测入口](docs/VARIANT-LOCAL-TRIALS.md)为 13 个 Q10/Classic 组合准备了受检查约束的手动流程，为 6 个 Passport 组合提供只读检查与报告。它们尚无新增实机验收；文件名带 `preview` 的试测包与正式 r14 分开标识。
+“更多 → 候选机型本地试测”提供 13 组受检查约束的手动候选、6 组 Passport 只读检查，**新增后缀尚未实机验收，不属于上面的自动适配范围**。完整型号、系统、SIM、原生文件或恢复条件不满足时提前说明原因。详见[本地试测指南](docs/VARIANT-LOCAL-TRIALS.md)及[14 个后缀的材料与覆盖研究](docs/ALL-VARIANTS-COVERAGE-PLAN.md)。
+
+| 候选后缀 | 运营商 | r15 提供的流程 |
+| --- | --- | --- |
+| SQN100-1、SQN100-5 | 电信 460-11 | 手动候选；需当地已有 LTE B5 数据 |
+| SQC100-1、SQC100-3、SQC100-5 | 移动 460-00、联通 460-01、电信 460-11 | 手动候选；检查后先安装，再单独启动 |
+| SQC100-4 | 联通 460-01、电信 460-11 | 手动候选；检查后先安装，再单独启动 |
+| SQW100-1、SQW100-3 | 上述三个运营商 | 只读诊断；停止及恢复未验证，安装阻断 |
+
+候选流程需要已有有效 AutoRoot v4／Root SSH、OS 10.3.3.3216 和可用 LTE 数据，自启动始终关闭。SQN100-2/-4 的本批国内组合、SQC100-4／移动、未核实的 SQW100-2、其他 MNC 和 ISIM 不开放本批试装。Root 配方存在不代表对应加载器或首刷已经验证。
 
 ## 下载
 
@@ -30,10 +39,10 @@
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/bb10-volte-0.5.0-r14-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r14/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r14/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/bb10-volte-0.5.0-r15-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r15/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r15/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

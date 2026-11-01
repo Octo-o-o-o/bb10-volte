@@ -1,5 +1,7 @@
 # bb10-volte
 
+**Upcoming first-use improvements:** Each main step provides feedback and an illustrated guide. Preview and save a redacted ZIP with earlier failures, including across retries and restarts. See [feedback](FEEDBACK.en.md) and the [complete walkthrough](recordings/FIRST-USE-RECORDING.md). Published r14 users can use More → Export check report.
+
 <!-- unified-current:start -->
 **Current experimental release 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
 

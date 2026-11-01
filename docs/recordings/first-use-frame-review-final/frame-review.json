@@ -1,0 +1,665 @@
+{
+  "video": "docs/recordings/first-use-narrated.mp4",
+  "outputDir": "docs/recordings/first-use-frame-review-final",
+  "contactSheet": "docs/recordings/first-use-frame-review-final/contact-sheet.png",
+  "cueSource": "narration-report",
+  "timeScale": 1,
+  "sampleCount": 72,
+  "totalCandidateFrames": 72,
+  "offsetsMs": [
+    -220,
+    -80,
+    80,
+    220
+  ],
+  "samples": [
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 2380,
+      "file": "docs/recordings/first-use-frame-review-final/001-01-先备份-确认手机和电脑-start-minus220.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 2520,
+      "file": "docs/recordings/first-use-frame-review-final/002-01-先备份-确认手机和电脑-start-minus80.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 2680,
+      "file": "docs/recordings/first-use-frame-review-final/003-01-先备份-确认手机和电脑-start-plus80.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 2820,
+      "file": "docs/recordings/first-use-frame-review-final/004-01-先备份-确认手机和电脑-start-plus220.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 21080,
+      "file": "docs/recordings/first-use-frame-review-final/005-01-先备份-确认手机和电脑-end-minus220.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 21220,
+      "file": "docs/recordings/first-use-frame-review-final/006-01-先备份-确认手机和电脑-end-minus80.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 21380,
+      "file": "docs/recordings/first-use-frame-review-final/007-01-先备份-确认手机和电脑-end-plus80.png"
+    },
+    {
+      "cueIndex": 1,
+      "kind": "caption",
+      "title": "先备份，确认手机和电脑",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 21520,
+      "file": "docs/recordings/first-use-frame-review-final/008-01-先备份-确认手机和电脑-end-plus220.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 24680,
+      "file": "docs/recordings/first-use-frame-review-final/009-02-连接手机-按已有材料选路-start-minus220.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 24820,
+      "file": "docs/recordings/first-use-frame-review-final/010-02-连接手机-按已有材料选路-start-minus80.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 24980,
+      "file": "docs/recordings/first-use-frame-review-final/011-02-连接手机-按已有材料选路-start-plus80.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 25120,
+      "file": "docs/recordings/first-use-frame-review-final/012-02-连接手机-按已有材料选路-start-plus220.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 44230,
+      "file": "docs/recordings/first-use-frame-review-final/013-02-连接手机-按已有材料选路-end-minus220.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 44370,
+      "file": "docs/recordings/first-use-frame-review-final/014-02-连接手机-按已有材料选路-end-minus80.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 44530,
+      "file": "docs/recordings/first-use-frame-review-final/015-02-连接手机-按已有材料选路-end-plus80.png"
+    },
+    {
+      "cueIndex": 2,
+      "kind": "caption",
+      "title": "连接手机，按已有材料选路",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 44670,
+      "file": "docs/recordings/first-use-frame-review-final/016-02-连接手机-按已有材料选路-end-plus220.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 47847,
+      "file": "docs/recordings/first-use-frame-review-final/017-03-首次-Root-获取并导入对应固件-start-minus220.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 47987,
+      "file": "docs/recordings/first-use-frame-review-final/018-03-首次-Root-获取并导入对应固件-start-minus80.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 48147,
+      "file": "docs/recordings/first-use-frame-review-final/019-03-首次-Root-获取并导入对应固件-start-plus80.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 48287,
+      "file": "docs/recordings/first-use-frame-review-final/020-03-首次-Root-获取并导入对应固件-start-plus220.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 66967,
+      "file": "docs/recordings/first-use-frame-review-final/021-03-首次-Root-获取并导入对应固件-end-minus220.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 67107,
+      "file": "docs/recordings/first-use-frame-review-final/022-03-首次-Root-获取并导入对应固件-end-minus80.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 67267,
+      "file": "docs/recordings/first-use-frame-review-final/023-03-首次-Root-获取并导入对应固件-end-plus80.png"
+    },
+    {
+      "cueIndex": 3,
+      "kind": "caption",
+      "title": "首次 Root：获取并导入对应固件",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 67407,
+      "file": "docs/recordings/first-use-frame-review-final/024-03-首次-Root-获取并导入对应固件-end-plus220.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 70580,
+      "file": "docs/recordings/first-use-frame-review-final/025-04-继续准备个人镜像-再确认刷写-start-minus220.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 70720,
+      "file": "docs/recordings/first-use-frame-review-final/026-04-继续准备个人镜像-再确认刷写-start-minus80.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 70880,
+      "file": "docs/recordings/first-use-frame-review-final/027-04-继续准备个人镜像-再确认刷写-start-plus80.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 71020,
+      "file": "docs/recordings/first-use-frame-review-final/028-04-继续准备个人镜像-再确认刷写-start-plus220.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 92696,
+      "file": "docs/recordings/first-use-frame-review-final/029-04-继续准备个人镜像-再确认刷写-end-minus220.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 92836,
+      "file": "docs/recordings/first-use-frame-review-final/030-04-继续准备个人镜像-再确认刷写-end-minus80.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 92996,
+      "file": "docs/recordings/first-use-frame-review-final/031-04-继续准备个人镜像-再确认刷写-end-plus80.png"
+    },
+    {
+      "cueIndex": 4,
+      "kind": "caption",
+      "title": "继续准备个人镜像，再确认刷写",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 93136,
+      "file": "docs/recordings/first-use-frame-review-final/032-04-继续准备个人镜像-再确认刷写-end-plus220.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 96280,
+      "file": "docs/recordings/first-use-frame-review-final/033-05-完成手机设置-重新验证-Root-start-minus220.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 96420,
+      "file": "docs/recordings/first-use-frame-review-final/034-05-完成手机设置-重新验证-Root-start-minus80.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 96580,
+      "file": "docs/recordings/first-use-frame-review-final/035-05-完成手机设置-重新验证-Root-start-plus80.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 96720,
+      "file": "docs/recordings/first-use-frame-review-final/036-05-完成手机设置-重新验证-Root-start-plus220.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 117960,
+      "file": "docs/recordings/first-use-frame-review-final/037-05-完成手机设置-重新验证-Root-end-minus220.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 118100,
+      "file": "docs/recordings/first-use-frame-review-final/038-05-完成手机设置-重新验证-Root-end-minus80.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 118260,
+      "file": "docs/recordings/first-use-frame-review-final/039-05-完成手机设置-重新验证-Root-end-plus80.png"
+    },
+    {
+      "cueIndex": 5,
+      "kind": "caption",
+      "title": "完成手机设置，重新验证 Root",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 118400,
+      "file": "docs/recordings/first-use-frame-review-final/040-05-完成手机设置-重新验证-Root-end-plus220.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 121547,
+      "file": "docs/recordings/first-use-frame-review-final/041-06-检查设备-备份并安装三网适配-start-minus220.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 121687,
+      "file": "docs/recordings/first-use-frame-review-final/042-06-检查设备-备份并安装三网适配-start-minus80.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 121847,
+      "file": "docs/recordings/first-use-frame-review-final/043-06-检查设备-备份并安装三网适配-start-plus80.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 121987,
+      "file": "docs/recordings/first-use-frame-review-final/044-06-检查设备-备份并安装三网适配-start-plus220.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 143495,
+      "file": "docs/recordings/first-use-frame-review-final/045-06-检查设备-备份并安装三网适配-end-minus220.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 143635,
+      "file": "docs/recordings/first-use-frame-review-final/046-06-检查设备-备份并安装三网适配-end-minus80.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 143795,
+      "file": "docs/recordings/first-use-frame-review-final/047-06-检查设备-备份并安装三网适配-end-plus80.png"
+    },
+    {
+      "cueIndex": 6,
+      "kind": "caption",
+      "title": "检查设备，备份并安装三网适配",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 143935,
+      "file": "docs/recordings/first-use-frame-review-final/048-06-检查设备-备份并安装三网适配-end-plus220.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 146495,
+      "file": "docs/recordings/first-use-frame-review-final/049-07-用手机菜单正常重启-再检查本次开机-start-minus220.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 146635,
+      "file": "docs/recordings/first-use-frame-review-final/050-07-用手机菜单正常重启-再检查本次开机-start-minus80.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 146795,
+      "file": "docs/recordings/first-use-frame-review-final/051-07-用手机菜单正常重启-再检查本次开机-start-plus80.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 146935,
+      "file": "docs/recordings/first-use-frame-review-final/052-07-用手机菜单正常重启-再检查本次开机-start-plus220.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 168175,
+      "file": "docs/recordings/first-use-frame-review-final/053-07-用手机菜单正常重启-再检查本次开机-end-minus220.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 168315,
+      "file": "docs/recordings/first-use-frame-review-final/054-07-用手机菜单正常重启-再检查本次开机-end-minus80.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 168475,
+      "file": "docs/recordings/first-use-frame-review-final/055-07-用手机菜单正常重启-再检查本次开机-end-plus80.png"
+    },
+    {
+      "cueIndex": 7,
+      "kind": "caption",
+      "title": "用手机菜单正常重启，再检查本次开机",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 168615,
+      "file": "docs/recordings/first-use-frame-review-final/056-07-用手机菜单正常重启-再检查本次开机-end-plus220.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 171762,
+      "file": "docs/recordings/first-use-frame-review-final/057-08-拔掉-USB-验收真实双向通话-start-minus220.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 171902,
+      "file": "docs/recordings/first-use-frame-review-final/058-08-拔掉-USB-验收真实双向通话-start-minus80.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 172062,
+      "file": "docs/recordings/first-use-frame-review-final/059-08-拔掉-USB-验收真实双向通话-start-plus80.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 172202,
+      "file": "docs/recordings/first-use-frame-review-final/060-08-拔掉-USB-验收真实双向通话-start-plus220.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 193062,
+      "file": "docs/recordings/first-use-frame-review-final/061-08-拔掉-USB-验收真实双向通话-end-minus220.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 193202,
+      "file": "docs/recordings/first-use-frame-review-final/062-08-拔掉-USB-验收真实双向通话-end-minus80.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 193362,
+      "file": "docs/recordings/first-use-frame-review-final/063-08-拔掉-USB-验收真实双向通话-end-plus80.png"
+    },
+    {
+      "cueIndex": 8,
+      "kind": "caption",
+      "title": "拔掉 USB，验收真实双向通话",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 193502,
+      "file": "docs/recordings/first-use-frame-review-final/064-08-拔掉-USB-验收真实双向通话-end-plus220.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "start",
+      "offsetMs": -220,
+      "atMs": 196195,
+      "file": "docs/recordings/first-use-frame-review-final/065-09-卡住时-保存一个能排查的反馈包-start-minus220.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "start",
+      "offsetMs": -80,
+      "atMs": 196335,
+      "file": "docs/recordings/first-use-frame-review-final/066-09-卡住时-保存一个能排查的反馈包-start-minus80.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "start",
+      "offsetMs": 80,
+      "atMs": 196495,
+      "file": "docs/recordings/first-use-frame-review-final/067-09-卡住时-保存一个能排查的反馈包-start-plus80.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "start",
+      "offsetMs": 220,
+      "atMs": 196635,
+      "file": "docs/recordings/first-use-frame-review-final/068-09-卡住时-保存一个能排查的反馈包-start-plus220.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "end",
+      "offsetMs": -220,
+      "atMs": 218647,
+      "file": "docs/recordings/first-use-frame-review-final/069-09-卡住时-保存一个能排查的反馈包-end-minus220.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "end",
+      "offsetMs": -80,
+      "atMs": 218787,
+      "file": "docs/recordings/first-use-frame-review-final/070-09-卡住时-保存一个能排查的反馈包-end-minus80.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "end",
+      "offsetMs": 80,
+      "atMs": 218947,
+      "file": "docs/recordings/first-use-frame-review-final/071-09-卡住时-保存一个能排查的反馈包-end-plus80.png"
+    },
+    {
+      "cueIndex": 9,
+      "kind": "caption",
+      "title": "卡住时，保存一个能排查的反馈包",
+      "boundary": "end",
+      "offsetMs": 220,
+      "atMs": 219087,
+      "file": "docs/recordings/first-use-frame-review-final/072-09-卡住时-保存一个能排查的反馈包-end-plus220.png"
+    }
+  ]
+}

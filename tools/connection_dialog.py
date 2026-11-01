@@ -1,5 +1,7 @@
 """One connection entry point for new users, returning owners and replacement PCs."""
 from i18n import tr
+from feedback import FeedbackQueue
+from feedback_gui import help_row
 import queue
 import sys
 import threading
@@ -36,10 +38,11 @@ class ConnectionDialog(tk.Toplevel):
         self.minsize(700, 580)
         self.transient(parent)
         self.on_ready, self.host, self.config = on_ready, host, config
-        self.events, self.busy, self.choice = queue.Queue(), False, None
+        self.events, self.busy, self.choice = FeedbackQueue(self, 'connect'), False, None
         self.usb, self.error, self.materials = {}, None, None
         body = ttk.Frame(self, padding=22)
         body.pack(fill='both', expand=True)
+        help_row(body, self, 'connect')
         self.title_label = ttk.Label(body, font=(FONT, 18, 'bold'), wraplength=690)
         self.title_label.pack(fill='x')
         self.detail = ttk.Label(body, wraplength=690, justify='left')
@@ -241,6 +244,7 @@ class ConnectionDialog(tk.Toplevel):
     def start(self, action, work):
         if self.busy:
             return
+        self.events.begin(action)
         self.busy, self.choice = True, None
         self.status.configure(text=tr('正在识别所选文件夹…') if action == 'materials' else tr('正在检查连接和权限，请稍候…'))
         self.refresh()
@@ -250,6 +254,7 @@ class ConnectionDialog(tk.Toplevel):
             try:
                 self.events.put((action, work()))
             except Exception as error:
+                self.events.failure(error)
                 self.events.put(('error', str(error) if isinstance(error, (WorkflowError, SetupError, RecoveryError)) else 'connection_check_failed'))
         threading.Thread(target=worker, daemon=True).start()
 
