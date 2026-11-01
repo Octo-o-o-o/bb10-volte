@@ -12,6 +12,10 @@
 
 本轮只有用户提供的快照，没有连接反馈者的手机，**未修复或验收该手机的真实入网和通话**。现有数据缺少注册拒绝原因、IMS 进程来源及该硬件版本的策略验证，不能把数据开关、APN 或频段认定为唯一原因。后续应在原机核对这些信息和实际移动数据；不能用删除配置、结束未知 IMS 或套用 SQC100-2 参数来代替定位。独立的 SQC100-4 成功转述记录见 `materials/q20-peer-telecom-comparison-2026-10-31.json`，其缺少最终加载路径和原生策略读数，仍不构成本工具的实机验收。
 
+后续 SSH 补充：用户确认在“不做任何操作”的情况下无法 4G 上网。两次读取 `/pps/services/ims/status_public` 均为 `default_ran::lte`、`status::disconnected`、`sys_list={"cellular":"disconnected"}`、`profiles=[]`；`/pps/services/ims/status_persistent` 只有对象头。这里的默认 IMS 接入类型不能证明无线网络已经正常注册；空 profiles 和空持久状态对象也不能单独证明配置损坏或需要人工补写。
+
+这份补充没有提供新的无线层正常入网或实际数据成功证据，不改变原有安装阻断。下一步应核对实际无线服务及当前入网策略，另行确认“不做任何操作”是否暗指存在已成功上网的操作步骤；在拿到步骤前不假定已有可复现的恢复方法。配置层 `ue_usage_setting` 与语音域读数也不能代替基带实际生效回读。
+
 ## 已观察到的事实
 
 - `cnice/status` 中存在 `internet`；`enabled=true`、`connectable=false`、`active=false`，没有 `apn` 或 `connected` 字段；`data_services_status=OFF`。
