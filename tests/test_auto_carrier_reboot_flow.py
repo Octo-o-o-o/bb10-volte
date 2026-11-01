@@ -175,6 +175,42 @@ class RebootWindowTests(unittest.TestCase):
         self.assertIn('disabled', self.ui.buttons['enable'].state())
         self.assertNotIn('disabled', self.ui.buttons['status'].state())
 
+    def test_completion_waits_through_extra_restart_and_only_opens_once(self):
+        with patch('auto_carrier_gui.CompletionDialog') as popup:
+            self.deliver('install', {'desktop_backup': 'verified-backup', 'status': state()})
+            self.deliver('status', state())
+            self.deliver('status', state('running', status_from_current_boot=False))
+            self.deliver('status', state('running', selected_this_boot=False))
+            popup.assert_not_called()
+            self.assertIn('disabled', self.ui.completion_button.state())
+            self.deliver('status', error='connection_refused')
+            self.deliver('probe', {'installed': True, 'variant': 'SQW100-4', 'status': state('running')})
+            popup.assert_called_once_with(self.ui.window)
+            self.deliver('status', state('running'))
+            popup.assert_called_once()
+
+    def test_readonly_registered_device_offers_manual_completion_without_popup(self):
+        with patch('auto_carrier_gui.CompletionDialog') as popup:
+            self.deliver('probe', {'installed': True, 'variant': 'SQW100-4', 'status': state('running')})
+            popup.assert_not_called()
+            self.assertNotIn('disabled', self.ui.completion_button.state())
+            self.ui.completion_button.invoke()
+            popup.assert_called_once_with(self.ui.window)
+
+    def test_disable_cancels_pending_completion(self):
+        with patch('auto_carrier_gui.CompletionDialog') as popup:
+            self.deliver('enable', {'enabled': True})
+            self.deliver('disable', {'restoration_pending': False})
+            self.deliver('status', state('running'))
+            popup.assert_not_called()
+
+    def test_enabling_requires_a_fresh_ready_status_before_completion(self):
+        with patch('auto_carrier_gui.CompletionDialog') as popup:
+            self.deliver('enable', {'enabled': True})
+            popup.assert_not_called()
+            self.deliver('status', state('running'))
+            popup.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

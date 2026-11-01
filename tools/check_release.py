@@ -7,8 +7,10 @@ import subprocess
 from pathlib import Path
 from urllib.parse import unquote
 
+from support_config import SUPPORT_ICON, bundled_receipt_images
+
 ROOT = Path(__file__).resolve().parents[1]
-TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
+TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
        'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
        'tools/windows-freeze-requirements.txt', 'tools/macos-freeze-requirements.txt',
        'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns',
@@ -17,8 +19,8 @@ TOP = {'.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTIN
        'website/src/_headers', 'website/src/robots.txt',
        'website/src/assets/app-icon.png', 'website/src/assets/app-status.png',
        'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png',
-       'website/src/assets/carrier-acceptance-r8.png',
-       'website/src/assets/carrier-acceptance-r8.prompt.txt'}
+       'website/src/assets/carrier-acceptance.png', 'website/src/assets/windows-setup.jpg',
+       'website/src/assets/carrier-acceptance.prompt.txt'}
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
@@ -54,6 +56,7 @@ def recording_files():
 
 def selected_files():
     files = {ROOT / name for name in TOP | {HELPER}}
+    files.update(ROOT / name for name in bundled_receipt_images(ROOT))
     files.update(ROOT / name for name in recording_files())
     for pattern in PATTERNS:
         files.update(ROOT.glob(pattern))
@@ -100,7 +103,7 @@ def check(check_git=False):
                          data.startswith(b'ID3') or len(data) > 1 and data[0] == 255 and data[1] & 224 == 224)
                 assert valid, 'Invalid recording media: ' + name
                 continue
-        if name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}:
+        if name == SUPPORT_ICON or name in bundled_receipt_images(ROOT) or name in {'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns'}:
             magic = {'.png': b'\x89PNG\r\n\x1a\n', '.ico': b'\x00\x00\x01\x00', '.icns': b'icns'}
             assert data.startswith(magic[path.suffix]), 'Invalid icon format: ' + name
             continue

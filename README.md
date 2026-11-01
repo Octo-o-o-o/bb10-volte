@@ -6,9 +6,9 @@
 
 首次连接 Windows 或 Mac 安装一次；以后正常关机换卡、开机，手机自动适配移动、联通、电信，无需再次连接电脑刷机。继续使用自己的 SIM、号码、套餐和系统拨号器，在 LTE 下接打电话。
 
-当前版本 **0.5.0-r8，实验版**。适用于已 Root 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**，系统 **10.3.3.3216**。Passport 切入或离开电信入网策略时，可能需要再正常重启一次；程序会解释原因并提示重新检查。
+**最新版已支持三款机型、三家运营商，当前仍为实验版。**适用于已 Root 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**，系统 **10.3.3.3216**。Passport 切入或离开电信入网策略时，可能需要再正常重启一次；程序会解释原因并提示重新检查。
 
-[官网与下载](https://bb10-volte.octoooo.com/) · [使用指南](https://bb10-volte.octoooo.com/guide.html) · [Release](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r8) · [更新日志](docs/UPDATELOG.md)
+[使用指南](https://bb10-volte.octoooo.com/guide.html) · [发布与更新](https://github.com/Octo-o-o-o/bb10-volte/releases) · [更新日志](docs/UPDATELOG.md)
 
 ## 下载
 
@@ -16,28 +16,34 @@
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r9/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。本轮 Mac 真实 USB 验收按机主安排暂缓。
 
-## 当前验收
+## 支持情况
 
-九个准确机型／运营商组合已通过功能验收。以下标注**每项实际测试的手机载荷版本**；三台现均安装 r8，不等于九项都用同一份 r8 重新测试。
+**最新版已支持以下九项组合，均已通过实机功能验收。**
 
-| 机型 / OS 10.3.3.3216 | 移动 460-00 | 联通 460-01 | 电信 460-11 |
+![Q10、Q20、Passport 与移动、联通、电信的九项功能验收，全部通过](website/src/assets/carrier-acceptance.png)
+
+| 机型 / OS 10.3.3.3216 | 中国移动 | 中国联通 | 中国电信 |
 | --- | --- | --- | --- |
-| Q10 SQN100-3 | 通过 · r7 | 通过 · r7 | 通过 · r8 |
-| Q20 SQC100-2 | 通过 · r7 | 通过 · r8 | 通过 · r7 |
-| Passport SQW100-4 | 通过 · r8 | 通过 · r7 | 通过 · r7 |
+| Q10 SQN100-3 | 已支持 | 已支持 | 已支持 |
+| Q20 SQC100-2 | 已支持 | 已支持 | 已支持 |
+| Passport SQW100-4 | 已支持 | 已支持 | 已支持 |
 
-六项包含不连电脑换卡，另三项是安装后的初始卡基线。通话验收包括系统拨号器呼出／呼入、双方声音和 LTE；最后一轮三台的双向接通时长均由机主确认超过 35 秒，本机号码正确，Passport 移动名称正确。Q10 电信采用机主指定的最后一组成功通话；此前对端号码问题另记，本轮不判断首次呼出通过。
+实测包括系统拨号器呼出、呼入、双向声音、LTE 通话和不连电脑换卡；本机号码与运营商显示也已验证。图中手机为机型示意。准确 SIM 范围为移动 460-00、联通 460-01、电信 460-11 的 USIM（无 ISIM）。
 
-部分环形日志已轮转，机主确认的时长与完整保留的 SIP 计时分别记录。接回后的 LTE 快照不能代替全程连续采样。Q10 移动另有约 20 分钟持续驻网及双向通话记录。具体版本、证据与限制见[结构化验收矩阵](materials/unified-carrier-acceptance.json)。
+不同组合的测试时间和依据保留在[验收记录](materials/unified-carrier-acceptance.json)，包括初始卡与换卡测试、日志和机主确认的区别。其他硬件变体、系统版本、漫游、长期待机和紧急呼叫尚未完整验证。
 
-r8 修复三款手机的当前 SIM 本机号码显示和换卡旧缓存恢复；入网策略及 IMS 引擎沿用 r7。Q10 联通号码修复另已验证。未覆盖其他变体、系统、MNC、ISIM、所有地区、漫游、长期待机及紧急呼叫；仍属实验版。
+## Windows 界面
+
+![Windows 版三网自动适配界面](website/src/assets/windows-setup.jpg)
+
+真实程序界面，使用脱敏演示状态截图；它展示安装、重启后重新检查和完成入口，不作为实机测试证据。Windows 和 Mac 使用同一套自动适配流程。
 
 ## 快速开始
 
@@ -69,8 +75,16 @@ python tools/gui.py
 
 源码运行需要 Python 3.14（含 Tk）；完整 Root 准备使用该版本的 Zstandard 支持。原厂 `/radio/bin/ims_rrm` 不被覆盖，安装使用经过校验的独立副本；原生文件不匹配会停止。固定材料、上游来源与许可证见 [sources.json](materials/sources.json)及 [NOTICE](NOTICE.md)。
 
-完整桌面回归 474 项，473 项通过、1 项跳过。软件测试、冻结包自检、签名公证与真实手机通话分开验收。源码发布使用显式文件清单和敏感信息扫描；私钥、原始通信日志、号码与设备标识不在公开资料中。官网源码与测试见 [website/README](website/README.md)。
+软件测试、冻结包自检、签名公证与真实手机通话分开验收。源码发布使用显式文件清单和敏感信息扫描；私钥、原始通信日志、号码与设备标识不在公开资料中。官网源码与测试见 [website/README](website/README.md)。
 
 [Windows 打包](docs/WINDOWS-EXE.md) · [macOS 打包](docs/MACOS.md) · [源码构建](docs/BUILD.md) · [统一流程](docs/AUTO-CARRIERS.md) · [贡献说明](CONTRIBUTING.md) · [MIT 许可证](LICENSE)
 
 历史单运营商适配、社区证据和旧版限制保留在各文档与更新日志，不能用来替代上面的当前统一流程范围。欢迎在 [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues) 提交准确机型和脱敏结果；不要上传私钥、private 目录或原始号码日志。
+
+## 分享与支持
+
+安装并确认注册后，完成页提供中英文“分享给好友”、GitHub Star 和可选咖啡打赏。分享只复制文案与官网链接，由你自行发送；支付宝、微信均支持 ¥9.90 / ¥19.90 / ¥29.90 / 自定义金额，是否打赏不影响任何功能。详情见[完成与支持](docs/SUPPORT.md)。
+
+开源包只包含程序、脱敏材料及明确的公共资源；不包含 SSH 私钥、原始设备日志、个人号码、原始收款截图或原厂固件。公开收款码使用 OctoLab 图标，保留原付款去向；扫码后请在支付应用中核对收款人和金额。
+
+<sub>[项目官网](https://bb10-volte.octoooo.com/) · [OctoLab 出品](https://octoooo.com/) · [联系开发者](mailto:octoooo@octoooo.com)</sub>

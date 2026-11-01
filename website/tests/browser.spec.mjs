@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -74,13 +74,13 @@ test('GitHub API failure preserves verified release downloads and star label', a
   await page.route('https://api.github.com/**', (route) => route.abort());
   await page.goto('/');
   await expect(page.locator('[data-download="windows"]').first()).toHaveAttribute('href', windowsFallback);
-  await expect(page.locator('[data-release-version]').first()).toHaveText('v0.5.0-r8');
+  await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-star-count]')).toHaveText('在 GitHub 点个 Star');
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r8';
-  const basename = 'bb10-volte-0.5.0-r8';
+  const tag = 'v0.5.0-r9';
+  const basename = 'bb10-volte-0.5.0-r9';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
     `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,
@@ -91,7 +91,7 @@ test('guide updates version, package names and checksum commands together', asyn
     body: JSON.stringify([{ tag_name: tag, draft: false, published_at: '2026-11-01T00:00:00Z', assets: names.map((name) => ({ name })) }]),
   }));
   await page.goto('/guide.html');
-  await expect(page.locator('[data-release-version]').first()).toHaveText(tag);
+  await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-package-file="windows"]')).toHaveText(`${basename}-windows-x64.exe`);
   await expect(page.locator('[data-package-file="mac"]')).toHaveText(`${basename}-macos-universal.dmg`);
   await expect(page.locator('[data-checksum-command="windows"]')).toContainText(`${basename}-windows-x64.exe`);
@@ -108,9 +108,9 @@ test('an older API release cannot downgrade curated downloads or mix mirror vers
     contentType: 'application/json', body: JSON.stringify([{ tag_name: tag, draft: false, published_at: '2026-11-02T00:00:00Z', assets: names.map((name) => ({ name })) }]),
   }));
   await page.goto('/guide.html');
-  await expect(page.locator('[data-release-version]').first()).toHaveText('v0.5.0-r8');
+  await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-download="windows"]').first()).toHaveAttribute('href', windowsFallback);
-  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', /github\.com\/.*\/v0\.5\.0-r8\/bb10-volte-0\.5\.0-r8-windows-x64\.exe$/);
+  await expect(page.locator('[data-github-download="windows"]').first()).toHaveAttribute('href', /github\.com\/.*\/v0\.5\.0-r9\/bb10-volte-0\.5\.0-r9-windows-x64\.exe$/);
 });
 
 test('guide uses a readable single-column article on desktop', async ({ page }) => {

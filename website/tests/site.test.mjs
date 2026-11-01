@@ -8,7 +8,7 @@ import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSI
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guide.html', '404.html', 'en/index.html', 'en/guide.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8';
+const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9';
 
 function idsFor(source) {
   return new Set([...source.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]));
@@ -134,7 +134,7 @@ test('applying a release updates every download and release link', () => {
   for (const key of RELEASE_KEYS) {
     for (const element of get(`[data-download="${key}"]`)) assert.equal(element.href, release.urls[key]);
   }
-  for (const element of get('[data-release-version]')) assert.equal(element.textContent, release.tag);
+  for (const element of get('[data-release-version]')) assert.equal(element.textContent, '最新版');
   for (const element of get('[data-release-link]')) assert.equal(element.href, release.page);
   for (const element of get('[data-release-checksums]')) assert.equal(element.href, release.urls.checksums);
 });
@@ -210,7 +210,7 @@ test('both translations retain the extra restart and offline SIM-change scope', 
     for (const variant of ['SQN100-3', 'SQC100-2', 'SQW100-4']) assert.ok(source.includes(variant));
     assert.ok(source.includes('acceptance.json'));
     assert.ok(source.includes('data-github-download="windows"'));
-    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r8/'));
+    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r9/'));
     assert.match(source, page.startsWith('en/') ? /extra normal restart|additional normal restart/ : /再正常重启一次|还需一次正常重启/);
   }
 });

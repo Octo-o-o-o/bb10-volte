@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 from auto_carrier import AutoClient
 from connection import resolve_connection
+from completion_dialog import CompletionDialog
 from i18n import tr
 from auto_carrier_view import status_view, restart_guidance
 
@@ -25,6 +26,8 @@ class AutoCarrierWindow:
         self.window.grab_set()
         self.events, self.busy = queue.Queue(), False
         self.client, self.report = None, None
+        self.completion_pending = False
+        self.completion_dialog = None
         self.reconnect_pending, self.status_button_override = False, None
         box = ttk.Frame(self.window, padding=24)
         box.pack(fill='both', expand=True)
@@ -34,7 +37,7 @@ class AutoCarrierWindow:
             '移动 460-00、联通 460-01、电信 460-11；其他 SIM 类型待适配。\n'
             'Passport 切换电信入网策略时可能需要再重启一次。'),
             wraplength=680, justify='left').pack(anchor='w', pady=(16, 12))
-        self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机。新统一版本仍需实机换卡验收。'),
+        self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机。三款机型的三网组合均已通过功能验收。'),
                                 wraplength=680, justify='left')
         self.status.pack(anchor='w', pady=12)
         row = ttk.Frame(box)
@@ -48,6 +51,8 @@ class AutoCarrierWindow:
             button = ttk.Button(row, text=tr(title), command=lambda a=action: self.run(a))
             button.pack(side='left', padx=(0, 8))
             self.buttons[action] = button
+        self.completion_button = ttk.Button(row, text=tr('完成与支持'), command=self.show_completion, state='disabled')
+        self.completion_button.pack(side='left', padx=(0, 8))
         self.details = tk.Text(box, height=10, wrap='word', state='disabled')
         self.details.pack(fill='both', expand=True, pady=(12, 0))
         self.refresh()
@@ -61,6 +66,8 @@ class AutoCarrierWindow:
 
     def refresh(self):
         report = self.report or {}
+        ready = status_view(report.get('status', {}))['ready']
+        self.completion_button.configure(state='normal' if ready and not self.busy else 'disabled')
         for action, button in self.buttons.items():
             allowed = (not self.busy and (action == 'probe' or
                 action == 'install' and (report.get('can_install') or report.get('can_update')) or
@@ -100,6 +107,33 @@ class AutoCarrierWindow:
             except Exception as error:
                 self.events.put((action, None, getattr(error, 'code', type(error).__name__)))
         threading.Thread(target=work, daemon=True).start()
+
+    def update_completion(self, action, error=None):
+        # An explicit setup can complete after USB reconnect and both Passport
+        # reboots. A read-only probe offers the manual entry, never a popup.
+        if action == 'disable':
+            self.completion_pending = False
+        if not error and action in ('install', 'enable'):
+            self.completion_pending = True
+        ready = status_view((self.report or {}).get('status', {}))['ready']
+        if not ready and self.completion_dialog and self.completion_dialog.winfo_exists():
+            self.completion_dialog.destroy()
+        if not error and ready and self.completion_pending and action in ('status', 'probe'):
+            self.completion_pending = False
+            self.show_completion()
+
+    def show_completion(self):
+        if self.busy or not status_view((self.report or {}).get('status', {}))['ready']:
+            return
+        if self.completion_dialog and self.completion_dialog.winfo_exists():
+            self.completion_dialog.lift()
+            return
+        self.window.grab_release()
+        self.completion_dialog = CompletionDialog(self.window)
+        def restore_grab(event):
+            if event.widget is self.completion_dialog and self.window.winfo_exists():
+                self.window.grab_set()
+        self.completion_dialog.bind('<Destroy>', restore_grab, add='+')
 
     def poll(self):
         try:
@@ -156,6 +190,7 @@ class AutoCarrierWindow:
                         self.report = dict(self.report or {}, status=result)
                         title, details = status_text(result)
                         self.status.configure(text=title)
+                self.update_completion(action, error)
                 self.details.configure(state='normal')
                 self.details.delete('1.0', 'end')
                 self.details.insert('end', details)

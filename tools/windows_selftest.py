@@ -84,6 +84,8 @@ def run(output):
     assert automatic.status.cget('text') == tr('还需一次正常重启，适配尚未完成')
     assert automatic.buttons['status'].cget('text') == tr('已重启，重新检查')
     assert '200 OK' not in automatic.details.get('1.0', 'end')
+    assert str(automatic.completion_button.cget('state')) == 'disabled'
+    assert automatic.completion_dialog is None
     automatic.window.update_idletasks()
     for widget in list(automatic.buttons.values()) + [automatic.status, automatic.details]:
         x = widget.winfo_rootx() - automatic.window.winfo_rootx()
@@ -97,6 +99,11 @@ def run(output):
     automatic.poll()
     assert automatic.status.cget('text') == tr('本次开机注册成功，请验收通话')
     assert automatic.buttons['status'].cget('text') == tr('刷新状态')
+    assert str(automatic.completion_button.cget('state')) == 'normal'
+    assert automatic.completion_dialog is None
+    automatic.completion_button.invoke()
+    assert automatic.completion_dialog.winfo_exists()
+    automatic.completion_dialog.done_button.invoke()
     automatic.close()
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
@@ -189,6 +196,41 @@ def run(output):
         assert x >= 0 and y >= 0 and x + widget.winfo_width() <= root.winfo_width()
         assert y + widget.winfo_height() <= root.winfo_height()
     assert all(button.winfo_width() >= 100 for button in visible_buttons)
+    # The optional receipt UI must load inside the frozen app without Pillow
+    # or a network client. Exercise every installed amount/provider resource.
+    from completion_dialog import CompletionDialog
+    from support_config import AMOUNTS, PROVIDERS, QR_FILES, SUPPORT_ICON
+    assert (bundle / SUPPORT_ICON).is_file()
+    completion = CompletionDialog(root)
+    assert not completion.payment.winfo_manager()
+    completion.toggle_coffee()
+    receipt_images_verified = []
+    for provider in PROVIDERS:
+        for amount in AMOUNTS:
+            name = QR_FILES[provider][amount]
+            assert (bundle / name).is_file()
+            if (bundle / name).is_file():
+                completion.provider.set(provider)
+                completion.amount.set(amount)
+                completion.update_receipt()
+                assert completion.qr_image is not None
+                assert 48 < completion.qr_image.width() <= 264
+                assert 48 < completion.qr_image.height() <= 264
+                receipt_images_verified.append(name)
+    from unittest.mock import patch
+    from support_config import OCTOLAB_URL, PROJECT_WEBSITE_URL
+    copied = []
+    with patch.object(completion, 'clipboard_clear'), patch.object(completion, 'clipboard_append', side_effect=copied.append), patch('completion_dialog.webbrowser.open') as browser:
+        for language in ('zh', 'en'):
+            with patch.object(i18n, 'LANGUAGE', language):
+                completion.copy_share()
+        assert len(copied) == 2 and copied[0] != copied[1]
+        assert all(PROJECT_WEBSITE_URL in value for value in copied)
+        browser.assert_not_called()
+        completion.brand_button.invoke()
+        browser.assert_called_once_with(OCTOLAB_URL)
+    completion.done_button.invoke()
+    assert not completion.winfo_exists()
     tcl, tk_version = root.tk.call('info', 'patchlevel'), root.tk.call('package', 'provide', 'Tk')
     app.close()
     client = Client()
@@ -259,6 +301,10 @@ def run(output):
               'system_language_and_translations_verified': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,
+              'completion_page_verified': True, 'support_brand_icon_present': True,
+              'receipt_images_verified': receipt_images_verified,
+              'localized_share_and_octolab_link_verified': True,
+              'automatic_carrier_completion_gate_verified': True,
               'phone_contacted': False}
     output.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     return 0

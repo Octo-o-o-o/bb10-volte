@@ -18,6 +18,7 @@ from diagnostic_details import baseline_rows, baseline_summary, has_read_failure
 from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
+from completion_dialog import CompletionDialog
 from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
 from auto_carrier_view import status_view as unified_status_view, restart_guidance as unified_restart_guidance
 
@@ -145,6 +146,9 @@ class App:
         self.connection_options_visible = False
         self.connection_dialog = None
         self._startup_job = None
+        self.completion_dialog = None
+        self.completion_pending = False
+        self.completion_available = False
         self.presets = presets()
         self.profile = profiles.validate(profile) if profile is not None else profiles.default()
         self.profile_name = tk.StringVar(value=picker_label(self.profile['label']))
@@ -218,6 +222,8 @@ class App:
         self.menu.add_command(label=tr('使用与恢复指南'), command=self.guide)
         self.menu.add_command(label=tr('社区研究与适配进展'), command=lambda: self.show_document(
             tr('社区研究与适配进展'), ROOT / 'docs/COMMUNITY-RESEARCH.md'))
+        self.completion_index = self.menu.index('end') + 1
+        self.menu.add_command(label=tr('完成与支持'), command=self.show_completion, state='disabled')
         self.menu.add_command(label=tr('关于与开源许可'), command=self.licenses)
         self.device_label = self.label(main, tr('BlackBerry 10 设备 · 等待连接'), 11, MUTED, anchor='w')
         self.device_label.pack(fill='x', pady=(5, 22))
@@ -310,6 +316,7 @@ class App:
         self.refresh_buttons()
 
     def connection_changed(self, *_, preserve_device=False):
+        self.reset_completion()
         self.report, self.report_connection, self.last_result = None, None, None
         self.display_report = None
         self.running_baseline_expected = False
@@ -522,6 +529,8 @@ class App:
                            tr('将启用自动适配；请正常重启，由手机识别当前 SIM。'))
             if not messagebox.askokcancel(tr('确认设备操作'), message + tr('\n\n请保持 USB 连接，操作期间不要换卡或拨打电话。'), parent=self.root):
                 return
+        if action in ('install', 'start', 'enable', 'disable'):
+            self.reset_completion()
         mode = 'update' if (self.report or {}).get('can_update') else 'install'
         host, config = self.host.get().strip(), self.config.get().strip()
         profile, experimental = profiles.validate(self.profile), self.experimental.get()
@@ -586,6 +595,7 @@ class App:
                 self.progress.stop()
                 self.progress.pack_forget()
                 if kind == 'error':
+                    self.reset_completion(keep_pending=True)
                     code, report = payload
                     if report and 'checks' in report:
                         self.render_report(report)
@@ -676,10 +686,49 @@ class App:
                                 wait['attempt'], wait.get('max_attempts', 3), wait.get('seconds_per_attempt', 45))
                         self.detail.configure(text=detail)
                     self.activity.configure(text=tr('操作完成 · ') + time.strftime('%H:%M:%S'))
+                    self.maybe_complete(action, result)
                 self.refresh_buttons()
         except queue.Empty:
             pass
         self._drain_job = self.root.after(100, self.drain)
+
+    def reset_completion(self, keep_pending=False):
+        if not keep_pending:
+            self.completion_pending = False
+        self.completion_available = False
+        self.menu.entryconfigure(self.completion_index, state='disabled')
+        if self.completion_dialog and self.completion_dialog.winfo_exists():
+            self.completion_dialog.destroy()
+        self.completion_dialog = None
+
+    def maybe_complete(self, action, result):
+        # Preparing/flashing Root and read-only discovery alone are not a
+        # completed VoLTE setup. Retain a pending setup through status retries.
+        if action == 'disable' or result.get('restored'):
+            self.reset_completion()
+            return
+        if action in ('install', 'start', 'enable'):
+            self.completion_pending = True
+        verified = (result.get('registration') == 'verified' or result.get('registered') is True)
+        state = result.get('status', {})
+        report = result.get('preflight') or {}
+        unified = (report.get('managed_adapter') == 'unified_carriers'
+                   or result.get('automatic_carrier_selection') or 'status_from_current_boot' in state)
+        ready = unified_status_view(state)['ready'] if unified else verified and registered(state)
+        if (self.completion_pending and ready
+                and action in ('install', 'start', 'status', 'preflight')):
+            self.completion_pending = False
+            self.completion_available = True
+            self.menu.entryconfigure(self.completion_index, state='normal')
+            self.show_completion()
+
+    def show_completion(self):
+        if self.busy or not self.completion_available:
+            return
+        if self.completion_dialog and self.completion_dialog.winfo_exists():
+            self.completion_dialog.lift()
+        else:
+            self.completion_dialog = CompletionDialog(self.root)
 
     def explain_row(self, _):
         rows = self.table.selection()

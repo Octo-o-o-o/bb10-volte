@@ -14,6 +14,7 @@ import zipfile
 
 from check_release import ROOT, check
 from workflow import FILES, verify_package
+from support_config import SUPPORT_ICON, bundled_receipt_images
 from desktop_paths import desktop_release_version
 
 
@@ -65,6 +66,8 @@ def runtime_data():
                   'materials/q20-peer-telecom-comparison-2026-10-31.json'})
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'profiles').glob('*.json'))
     names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*.md'))
+    names.add(SUPPORT_ICON)
+    names.update(bundled_receipt_images(ROOT))
     return sorted(names)
 
 
@@ -157,7 +160,7 @@ def main():
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
             'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy',
-            'unified_service', 'unified_install'} <= set(archive_modules)
+            'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)
     output.with_suffix('.exe.sha256').write_text(sha + '  ' + output.name + '\n', encoding='ascii')

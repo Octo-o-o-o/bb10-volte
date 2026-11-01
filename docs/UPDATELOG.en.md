@@ -2,6 +2,10 @@
 
 [简体中文](UPDATELOG.md)
 
+## Desktop update · completion, sharing and public documentation · 2026-11-01
+
+Adds localized sharing, OctoLab, GitHub Star, contact and optional coffee support to both packages. Completion requires current-boot registration and respects Passport extra restarts and USB reconnects. Only verified branded QR presentation images are public; original receipt screenshots stay private. README now includes the nine-combination infographic and Windows UI illustration. User-facing support labels say “supported in the latest release”; release records retain exact versions and hashes. The accepted phone payload is unchanged.
+
 ## 0.5.0-r8 · Q10 and Passport own-number display · 2026-11-01
 
 Q10 could call after switching to Unicom while its dialer number remained blank; the unified service previously invoked authenticated number filling only on Q20. r8 enables it for all three supported models, retaining current-boot, current-SIM and native-process REGISTER-200 proof. Display-cache updates and restoration do not write SIM records or radio settings.

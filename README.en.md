@@ -6,9 +6,9 @@
 
 Install once from Windows or Mac. Then power off, change the SIM and start the phone: it automatically selects China Mobile, Unicom or Telecom, without reconnecting to a computer or flashing again. Keep your number, plan and native dialer for LTE calls.
 
-Current version: **0.5.0-r8, experimental**. Supported exact variants: rooted **Q10 SQN100-3, Q20 SQC100-2, Passport SQW100-4**, on **OS 10.3.3.3216**. Passport may require one additional normal restart when entering or leaving the Telecom attach policy. The application explains the reason and provides a recheck action.
+**The latest release supports all three models and carriers. It remains experimental.** Supported exact variants: rooted **Q10 SQN100-3, Q20 SQC100-2, Passport SQW100-4**, on **OS 10.3.3.3216**. Passport may require one additional normal restart when entering or leaving the Telecom attach policy. The application explains the reason and provides a recheck action.
 
-[Website and downloads](https://bb10-volte.octoooo.com/en/) · [Guide](https://bb10-volte.octoooo.com/en/guide.html) · [Release](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r8) · [Changelog](docs/UPDATELOG.en.md)
+[Guide](https://bb10-volte.octoooo.com/en/guide.html) · [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) · [Changelog](docs/UPDATELOG.en.md)
 
 ## Downloads
 
@@ -16,28 +16,34 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/bb10-volte-0.5.0-r8-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r8/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r8/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/bb10-volte-0.5.0-r9-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r9/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r9/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. Current Mac physical USB acceptance is deferred at the owner's request.
 
-## Acceptance scope
+## Supported phones and carriers
 
-All nine exact-model/carrier combinations passed functional acceptance. Each cell names the **phone payload actually tested**. All three phones now have r8, but the matrix does not claim nine retests on identical r8 bytes.
+**All nine combinations passed hardware functional acceptance and are supported in the latest release.**
 
-| Device / OS 10.3.3.3216 | Mobile 460-00 | Unicom 460-01 | Telecom 460-11 |
+![Q10, Q20 and Passport: all nine China Mobile, Unicom and Telecom combinations passed](website/src/assets/carrier-acceptance.png)
+
+| Device / OS 10.3.3.3216 | China Mobile | China Unicom | China Telecom |
 | --- | --- | --- | --- |
-| Q10 SQN100-3 | Passed · r7 | Passed · r7 | Passed · r8 |
-| Q20 SQC100-2 | Passed · r7 | Passed · r8 | Passed · r7 |
-| Passport SQW100-4 | Passed · r8 | Passed · r7 | Passed · r7 |
+| Q10 SQN100-3 | Supported | Supported | Supported |
+| Q20 SQC100-2 | Supported | Supported | Supported |
+| Passport SQW100-4 | Supported | Supported | Supported |
 
-Six cases include phone-only SIM changes; the three initial-card baselines are distinct. Tests cover native outgoing/incoming calls, audio in both directions and LTE. In the final round, the owner confirmed both calls over 35 connected seconds and correct own-number display on all three phones, plus the correct Mobile name on Passport. Q10 Telecom uses the owner's final successful pair; earlier peer-number problems are recorded separately, so first-attempt success is not assessed for that run.
+Acceptance covers native incoming/outgoing calls, audio in both directions, LTE and SIM changes without a computer. Own-number and carrier display have also been checked. Phones in the image are illustrations. Exact SIM scope: Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM.
 
-Some ring logs rotated. Owner-confirmed duration and complete retained SIP timing are distinguished; a post-call LTE snapshot is not a continuous trace. Q10 Mobile also has about 20 minutes of LTE persistence and a separate pair of calls recorded. See the [structured acceptance matrix](materials/unified-carrier-acceptance.json).
+The [acceptance record](materials/unified-carrier-acceptance.json) retains dates, tested software revisions, initial-card versus SIM-change cases, and the distinction between logs and owner confirmation. Other variants, OS versions, roaming, long standby and emergency calls are not comprehensively validated.
 
-r8 corrects authenticated own-number display and old-SIM cache restoration across all three models. Attach policy and IMS remain from r7; Q10 Unicom number display also has a separate successful check. Other variants, OS versions, MNCs, ISIM, all regions, roaming, long-term standby and emergency calls are not comprehensively validated.
+## Windows interface
+
+![Windows automatic carrier setup](website/src/assets/windows-setup.jpg)
+
+Actual application UI using sanitized demonstration state, not a hardware acceptance screenshot. Windows and Mac share the same installation, restart and registration checks.
 
 ## Quick start
 
@@ -67,8 +73,16 @@ python tools/gui.py
 
 Source execution requires Python 3.14 with Tk. The original `/radio/bin/ims_rrm` is preserved; installation uses a verified independent copy. Native hash mismatches stop installation. Fixed materials, provenance and licenses are recorded in [sources.json](materials/sources.json) and [NOTICE](NOTICE.md).
 
-The complete desktop regression ran 474 tests: 473 passed, one skipped. Software tests, frozen-package checks, signatures/notarization and actual phone calls are separate evidence. Public packages use an explicit allowlist and privacy scan, excluding keys, raw communications logs, numbers and device identifiers. The bilingual website and its tests are included; see [website/README](website/README.md).
+Software tests, frozen-package checks, signatures/notarization and actual phone calls are separate evidence. Public packages use an explicit allowlist and privacy scan, excluding keys, raw communications logs, numbers and device identifiers. The bilingual website and its tests are included; see [website/README](website/README.md).
 
 [Windows](docs/WINDOWS-EXE.en.md) · [macOS](docs/MACOS.en.md) · [Build](docs/BUILD.en.md) · [Automatic carriers](docs/AUTO-CARRIERS.en.md) · [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
 
 Historical single-carrier restrictions remain in dated records; they do not replace the current unified workflow scope above. Share exact-model, redacted results in [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues). Do not upload private keys, private directories or raw number logs.
+
+## Sharing and support
+
+After installation and verified registration, the completion page offers localized sharing, a GitHub Star link and optional coffee support. Sharing copies a message and the project website URL; you choose where to send it. Alipay and WeChat offer CNY 9.90 / 19.90 / 29.90 / a custom amount. All features remain available without contributing. See [Completion and support](docs/SUPPORT.en.md).
+
+Public packages contain the program, sanitized evidence and explicit public assets. They exclude SSH private keys, raw device logs, personal phone numbers, original payment screenshots and stock firmware. Public receipt codes use the OctoLab icon and preserve their payment destination. Check the recipient and amount in your payment app.
+
+<sub>[Project website](https://bb10-volte.octoooo.com/en/) · [Made by OctoLab](https://octoooo.com/) · [Contact](mailto:octoooo@octoooo.com)</sub>

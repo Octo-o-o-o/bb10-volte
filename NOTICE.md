@@ -29,3 +29,9 @@ libusb、LZO、OpenSSL、Git for Windows、Zig与7-Zip按各自许可证分发�
 The Windows EXE embeds CPython, Tcl/Tk, the PyInstaller bootloader and Microsoft Win32-OpenSSH client/crypto binaries. Full upstream licenses and notices, including the PyInstaller bootloader exception, are available offline in the application. Sources and hashes are pinned in [windows-runtime.json](materials/windows-runtime.json). No third-party Root kit, stock firmware, USB driver or personal SSH credential is embedded. The generated project icon follows the owner-requested BlackBerry-style design; it does not indicate endorsement. See [branding](docs/BRANDING.md).
 
 Windows EXE 内置 CPython、Tcl/Tk、PyInstaller 引导程序和 Microsoft Win32-OpenSSH 客户端 / crypto 文件，原作者许可完整保留，可在应用内离线查看。未内置第三方 Root 包、原版固件、USB 驱动和个人 SSH 凭据；本项目 MIT 许可不替代第三方许可。
+
+## Optional support assets / 自愿支持资源
+
+The owner supplied the public receipt codes and requested the OctoLab favicon. Only verified QR presentation images are distributed; original payment screenshots, names and personal avatars are excluded. Codes retain the owner's payment destination. Payment-service names and BlackBerry device illustrations identify compatibility and do not imply endorsement. Program use and source access do not require payment.
+
+收款码和 OctoLab 图标由项目所有者提供或指定使用。公开包仅包含核验过的二维码展示图，不含原始收款截图、个人头像或收款名；扫码仍指向原收款账户。支付平台名称与黑莓机型示意用于说明，不代表官方背书；软件使用和源码获取均无需打赏。

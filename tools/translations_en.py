@@ -861,3 +861,48 @@ ENGLISH.update({'重启后由手机识别当前 SIM，无需再次连接电脑�
 ENGLISH.update({'更新自动适配': 'Update automatic setup', '可更新自动适配，更新前版本会保留备份。': 'An update is available. The previous version will be backed up.', '有适配更新。请先停用，待恢复后正常重启，再检查并更新。': 'An update is available. Disable automatic setup, wait for restoration, restart normally, then check and update.', '自动适配已更新，旧版本已备份。请正常重启。': 'Automatic setup updated and the previous version backed up. Restart normally.'})
 
 ENGLISH.update({'适配未完成，运行配置已恢复，请导出报告': 'Setup did not complete. Runtime settings were restored; export a report.', '恢复尚未完成，请保留现场并导出报告': 'Restoration is incomplete. Preserve the state and export a report.', '未确认': 'Unconfirmed'})
+
+ENGLISH.update({
+    '恭喜，老黑莓重获新生': 'Your BlackBerry has a new lease on life',
+    '谢谢你，让经典继续。': 'Thank you for keeping a classic alive.',
+    '完成，去用我的黑莓': 'Done. Enjoy my BlackBerry',
+    '恭喜，你的老黑莓重获新生。': 'A new chapter for your BlackBerry.',
+    '熟悉的按键，久违的铃声。\n让这台经典，继续陪你过新的日常。': 'Familiar keys. A ringtone you have missed.\nA classic, ready for new everyday moments.',
+    'VoLTE 服务已启用 · 4G 网络注册成功': 'VoLTE enabled · Registered on the 4G network',
+    '接下来，请试着拨出和接听一通电话，确认双向声音与全程 4G；重启后再复测。': 'Next, make and receive a call. Check audio in both directions and 4G throughout, then test again after a restart.',
+    '如果你愿意，也可以支持一下这个小项目': 'If you would like to support this little project',
+    '请开发者喝杯咖啡': 'Buy the developer a coffee',
+    '为了让这些老黑莓重新打上电话，我花了不少 Token，也熬了几个晚上。\n如果它帮到了你，愿意请我喝杯咖啡吗？随意就好，能让老手机继续陪伴你，我已经很开心。': 'Bringing calls back to these old BlackBerrys took plenty of AI tokens and several late nights.\nIf this helped you, would you like to buy me a coffee? No pressure. Seeing your old phone stay by your side already makes me happy.',
+    '我想请你喝杯咖啡': 'I would like to buy you a coffee',
+    '打赏完全自愿，金额随心；不影响任何功能。': 'Entirely optional, at any amount. All features remain available.',
+    '在 GitHub 点一颗 Star': 'Give the project a star on GitHub',
+    '让更多老黑莓爱好者，\n发现它还能继续发光。': 'Help other BlackBerry fans discover\nwhat their old phones can still do.',
+    '去 GitHub 加星': 'Star on GitHub',
+    '还有想做的东西？一起聊聊': 'Have another idea? Let us talk',
+    '产品点子、小工具，或其他开发需求，\n欢迎写信，一起把想法做出来。': 'A product idea, a tool or another project?\nEmail me and let us bring it to life.',
+    '写封邮件': 'Email me',
+    '复制邮箱': 'Copy email',
+    '选一份心意（人民币）': 'Choose an amount (CNY)',
+    '自定义金额': 'Custom amount',
+    '支付宝': 'Alipay',
+    '微信支付': 'WeChat Pay',
+    '请在支付 App 中确认收款人和金额。是否转账，由你决定。': 'Check the recipient and amount in your payment app. You decide whether to send.',
+    '收起打赏': 'Hide coffee options',
+    '收款码暂未开放，感谢你的心意。': 'Receipt codes are not available yet. Thank you for the thought.',
+    '也可以给项目一颗 Star，或把它分享给需要的人。': 'You can also star the project or share it with someone who needs it.',
+    '用{}扫码，在支付 App 中填写你想支持的金额。': 'Scan with {} and enter your preferred amount in the payment app.',
+    '用{}扫码，支持 ¥{}。': 'Scan with {} to contribute CNY {}.',
+    '用{}扫码后，请手动填写 ¥{}；此收款码不预设金额。': 'Scan with {}, then enter CNY {} yourself. This code does not preset the amount.',
+    '收款码暂时无法显示，感谢你的心意。': 'This receipt code could not be displayed. Thank you for the thought.',
+    '邮箱已复制': 'Copied',
+    '未能打开，请手动访问：{}': 'Could not open this link. Please open it manually: {}',
+    '完成与支持': 'Completion and support',
+    'OctoLab 出品': 'Made by OctoLab',
+    '让更多人发现这个项目': 'Help others discover the project',
+    '分享给好友': 'Share with friends',
+    '分享一个让老黑莓重获新生的项目：BB10 VoLTE。\n喜欢实体键盘、想让经典继续陪伴你的朋友，可以来看看：\n{}': 'Discover BB10 VoLTE, a project that gives old BlackBerrys a new lease on life.\nIf you love physical keys and want to keep a classic going, take a look:\n{}',
+    '分享文案已复制': 'Copied',
+    '已复制文案和官网链接，可以粘贴给好友。': 'Message and website link copied. Paste them to share with a friend.',
+})
+
+ENGLISH.update({'请连接已完成 Root 的手机。三款机型的三网组合均已通过功能验收。': 'Connect a rooted phone. All nine model/carrier combinations have passed functional acceptance.'})
