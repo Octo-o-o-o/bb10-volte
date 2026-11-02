@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "status": "passport_v12_r18_accepted_q20_startup_failure_under_validation",
+  "status": "passport_v12_r18_accepted_q20_migration_accepted_full_lifecycle_pending",
   "target": {
     "mobile_version": "0.1.0.12",
     "desktop_version": "0.5.0-r18",
@@ -212,7 +212,7 @@
     "owner_unlock_after_migration_reboot": "pending"
   },
   "manual_acceptance_pending": [
-    "q20_native_activation_calls_sms_and_full_lifecycle",
+    "q20_full_restore_uninstall_reinstall_and_new_call_save_feedback",
     "q10_native_workflow",
     "q20_q10_bilingual_small_screen_full_interaction",
     "new_native_sim_change_and_number_display",
@@ -554,18 +554,32 @@
       "four_original_backups_unchanged": true,
       "update_reconciled_by_native_ui": true,
       "enable_reconciled_by_native_ui": true,
-      "service_startup_result": "pidin_io_pkt_memory_query_timeout_before_provider_enable_and_ims_launch",
       "restoration_verified": true,
       "autostart_flag_retained": true,
       "new_kernel_reset_this_enable_boot": false,
-      "new_ims_calls_sms_passed": false,
-      "next_step": "one_normal_menu_reboot_with_read_only_startup_capture"
+      "new_ims_calls_sms_passed": true,
+      "next_step": "complete_existing_uninstall_then_fresh_native_install",
+      "prior_service_startup_result": "pidin_io_pkt_memory_query_timeout_before_provider_enable_and_ims_launch",
+      "second_normal_boot_ims_lte": true,
+      "prior_timeout_root_cause": "unproven_not_claimed_fixed",
+      "three_complete_sip_calls_seconds": [
+        123.596,
+        156.922,
+        122.955
+      ],
+      "voice_window_lte_ims_samples": 110,
+      "owner_bidirectional_audio_continuous_lte": true,
+      "owner_bidirectional_short_long_identical_sms": true,
+      "persisted_owner_acceptance": true,
+      "call_save_feedback_issue": "saved_true_but_response_unconfirmed_reopen_auto_verified",
+      "post_v12_feedback_fix": "source_only_not_deployed",
+      "full_uninstall_reinstall": "in_progress"
     },
     "q10_native_workflow": "not_run",
     "new_native_sim_change_matrix": "not_run",
     "phone_only_first_install": "not_established_on_current_q20",
     "q20_android_root_click_probe": "retired_after_separate_kernel_loader_reset_not_in_release",
-    "desktop_graphical_app_provisioning": "source_review_and_tests_only_no_hardware_install_acceptance",
+    "desktop_graphical_app_provisioning": "qnx_inspect_all_69_installed_files_verified_no_sud_install_or_disconnect_acceptance",
     "post_v12_native_progress_ui": "source_review_and_sdk_compile_only_not_in_v12_bar",
     "published": false
   }

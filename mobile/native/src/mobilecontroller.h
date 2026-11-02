@@ -35,6 +35,7 @@ class MobileController : public QObject {
     Q_PROPERTY(bool waitingForRoot READ waitingForRoot NOTIFY modelChanged)
     Q_PROPERTY(bool jobRunning READ jobRunning NOTIFY modelChanged)
     Q_PROPERTY(bool operationInProgress READ operationInProgress NOTIFY modelChanged)
+    Q_PROPERTY(bool callConfirmationInProgress READ callConfirmationInProgress NOTIFY modelChanged)
     Q_PROPERTY(bool sdAvailable READ sdAvailable NOTIFY settingsChanged)
     Q_PROPERTY(bool hasPackage READ hasPackage NOTIFY settingsChanged)
     Q_PROPERTY(bool hasUpdate READ hasUpdate NOTIFY modelChanged)
@@ -68,6 +69,7 @@ public:
     bool waitingForRoot() const { return m_waitingForRoot; }
     bool jobRunning() const;
     bool operationInProgress() const;
+    bool callConfirmationInProgress() const;
     bool sdAvailable() const;
     bool hasPackage() const { return !m_packagePath.isEmpty(); }
     bool hasUpdate() const { return !m_update.isEmpty(); }
@@ -125,6 +127,9 @@ private:
     bool verifyEntry(QByteArray *bytes, QString *bundlePath);
     void invoke(const QString &action, const QVariantMap &extra = QVariantMap());
     void acceptResponse(const QVariantMap &response);
+    void clearPendingOperation();
+    bool confirmedCallResponse(const QVariantMap &response) const;
+    void reconcileCallConfirmation();
     void scheduleRefresh();
     bool refreshBlocked() const;
     void fail(const QString &code);
@@ -149,6 +154,8 @@ private:
     QString m_lastExportPath;
     QString m_jobId;
     QString m_operationId;
+    QString m_operationAction;
+    QString m_pendingCallContext;
     QString m_action;
     QByteArray m_command;
     QString m_pendingAction;
@@ -169,6 +176,7 @@ private:
     bool m_pickerClosed;
     bool m_pickerResultHandled;
     bool m_refreshPending;
+    bool m_reconcilingCalls;
     QNetworkAccessManager m_network;
     QNetworkReply *m_reply;
     QTimer m_networkDeadline;

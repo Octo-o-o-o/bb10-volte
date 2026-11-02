@@ -202,6 +202,68 @@ class MobileRuntimeTests(unittest.TestCase):
             WORKER.check_confirmation(request)
             self.assertTrue(save.call_args.args[1]['calls_verified'])
 
+    def test_call_confirmation_ack_does_not_depend_on_post_commit_probe(self):
+        request = dict.fromkeys(('confirmed', 'incoming', 'outgoing', 'audio', 'lte'), True)
+        request['call_context'] = 'a' * 32
+        result = {'installed': True, 'sim_supported': True, 'installed_management_schema': 2,
+                  'can_update': False, 'status': ready()}
+        state = {'saved': False, 'locked': False}
+        manager = mock.Mock(BASE='/owned')
+        @contextlib.contextmanager
+        def locked():
+            state['locked'] = True
+            try:
+                yield
+            finally:
+                state['locked'] = False
+        def probe(action):
+            self.assertEqual(action, 'probe')
+            self.assertTrue(state['locked'])
+            if state['saved']:
+                raise TimeoutError('post-commit probe exceeded response budget')
+            return result
+        def save(path, value):
+            self.assertTrue(state['locked'])
+            self.assertTrue(value['calls_verified'])
+            state['saved'] = True
+        manager.management_lock.side_effect = locked
+        manager.manage.side_effect = probe
+        context = {'context': 'a' * 32, 'calls_verified': False}
+        with mock.patch.object(ENTRY, 'private_directory'), \
+             mock.patch.object(WORKER, 'engine', return_value=manager), \
+             mock.patch.object(WORKER, 'inspection_details', return_value={}), \
+             mock.patch.object(WORKER, 'call_context', return_value=context) as current, \
+             mock.patch.object(WORKER, 'save', side_effect=save) as write:
+            response = WORKER.dispatch('confirm-calls', request, '/verified')
+        self.assertEqual(response['state'], 'verified')
+        self.assertEqual(response['call_context'], request['call_context'])
+        self.assertTrue(state['saved'])
+        self.assertFalse(state['locked'])
+        manager.manage.assert_called_once_with('probe')
+        current.assert_called_once_with(False)
+        write.assert_called_once()
+
+    def test_lost_confirmation_response_is_recovered_by_reading_without_another_save(self):
+        request = dict.fromkeys(('confirmed', 'incoming', 'outgoing', 'audio', 'lte'), True)
+        request['call_context'] = 'a' * 32
+        manager = mock.Mock(BASE='/owned')
+        manager.management_lock.side_effect = contextlib.nullcontext
+        manager.manage.return_value = {'installed': True, 'sim_supported': True,
+            'installed_management_schema': 2, 'can_update': False, 'status': ready()}
+        stored = {'context': 'a' * 32, 'calls_verified': False}
+        with mock.patch.object(ENTRY, 'private_directory'), \
+             mock.patch.object(WORKER, 'engine', return_value=manager), \
+             mock.patch.object(WORKER, 'active_job', return_value=None), \
+             mock.patch.object(WORKER, 'inspection_details', return_value={}), \
+             mock.patch.object(WORKER, 'call_context', side_effect=lambda *args: dict(stored)), \
+             mock.patch.object(WORKER, 'save', side_effect=lambda path, value: stored.update(value)) as write:
+            WORKER.dispatch('confirm-calls', request, '/verified')  # Its response is lost.
+            response = WORKER.dispatch('inspect', {}, '/verified')
+        self.assertEqual(response['state'], 'verified')
+        self.assertEqual(response['call_context'], request['call_context'])
+        self.assertEqual(manager.manage.call_count, 2)  # One per request, neither is a mutation.
+        write.assert_called_once()
+
     def test_shareable_errors_never_include_raw_native_messages(self):
         self.assertEqual(WORKER.safe_error(RuntimeError('private identity: example')), 'preflight_or_recovery_check_failed')
         self.assertEqual(WORKER.safe_error(RuntimeError('call_active')), 'call_active')

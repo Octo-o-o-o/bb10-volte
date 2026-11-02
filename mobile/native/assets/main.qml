@@ -166,7 +166,7 @@ NavigationPane {
                             horizontalAlignment: HorizontalAlignment.Center
                         }
                         Label {
-                            text: navigation.t("operation_wait")
+                            text: volteController.callConfirmationInProgress ? volteController.statusTitle : navigation.t("operation_wait")
                             multiline: true
                             textStyle.fontSize: FontSize.XLarge
                             textStyle.color: Color.create("#18273F")
@@ -180,7 +180,7 @@ NavigationPane {
                             textFormat: TextFormat.Plain
                         }
                         Label {
-                            text: navigation.t("operation_wait_help")
+                            text: volteController.callConfirmationInProgress ? volteController.statusMessage : navigation.t("operation_wait_help")
                             multiline: true
                             textStyle.color: Color.create("#18273F")
                             textFormat: TextFormat.Plain

@@ -55,7 +55,7 @@ MobileController::MobileController(QObject *parent)
     : QObject(parent), m_settings(), m_busy(false), m_timedOut(false), m_runtimeError(false),
       m_waitingForRoot(false), m_refreshLegacy(false),
       m_foreground(true), m_sleeping(false), m_experimentalVisible(false),
-      m_pickerOpen(false), m_pickerClosed(false), m_pickerResultHandled(false), m_refreshPending(true),
+      m_pickerOpen(false), m_pickerClosed(false), m_pickerResultHandled(false), m_refreshPending(true), m_reconcilingCalls(false),
       m_network(this), m_reply(0), m_downloadBytes(0), m_redirects(0)
 {
     m_language = m_settings.value("language", QLocale::system().name().startsWith("zh") ? "zh" : "en").toString();
@@ -68,6 +68,15 @@ MobileController::MobileController(QObject *parent)
     if (!safeId(m_jobId)) m_jobId.clear();
     m_operationId = m_settings.value("pending_operation").toString();
     if (!QRegExp("^[a-f0-9]{32}$").exactMatch(m_operationId)) m_operationId.clear();
+    m_operationAction = m_settings.value("pending_operation_action").toString();
+    m_pendingCallContext = m_settings.value("pending_call_context").toString();
+    if (m_operationId.isEmpty() || m_operationAction != "confirm-calls" ||
+        !QRegExp("^[a-f0-9]{32}$").exactMatch(m_pendingCallContext)) {
+        m_operationAction.clear();
+        m_pendingCallContext.clear();
+    } else {
+        m_reconcilingCalls = true;
+    }
     m_lastExportPath = m_settings.value("last_export_path").toString().left(2048);
     if (!m_lastExportPath.startsWith("/accounts/1000/shared/") &&
         !m_lastExportPath.startsWith("/accounts/1000/removable/sdcard/")) m_lastExportPath.clear();
@@ -199,6 +208,7 @@ QString MobileController::display(const QString &key, const QString &code) const
 QString MobileController::statusTitle() const
 {
     if (m_waitingForRoot) return label("state_waiting_root");
+    if (callConfirmationInProgress()) return label(m_reconcilingCalls ? "calls_rechecking" : "calls_saving");
     if (!m_error.isEmpty()) {
         if (m_runtimeError && !display("title", "title_code").isEmpty()) return display("title", "title_code");
         const QString local = label(m_error);
@@ -213,6 +223,7 @@ QString MobileController::statusTitle() const
 QString MobileController::statusMessage() const
 {
     if (m_waitingForRoot) return label("root_waiting_help");
+    if (callConfirmationInProgress()) return label(m_reconcilingCalls ? "calls_rechecking_help" : "calls_saving_help");
     if (m_runtimeError && !display("message", "message_code").isEmpty()) return display("message", "message_code");
     if (m_error == "root_not_ready") return label("root_help");
     if (!m_error.isEmpty()) return label("inspect");
@@ -346,8 +357,15 @@ bool MobileController::operationInProgress() const
     if (!m_error.isEmpty()) return false;
     const QStringList changes = QString("install,enable,disable,update,rollback,uninstall,legacy-install,legacy-start,legacy-stop,legacy-update,legacy-uninstall").split(',');
     const QString jobAction = m_model.value("job").toMap().value("action").toString();
-    return (m_busy && (changes.contains(m_action) || (m_action == "resume" && changes.contains(jobAction)))) ||
+    return callConfirmationInProgress() ||
+           (m_busy && (changes.contains(m_action) || (m_action == "resume" && changes.contains(jobAction)))) ||
            (jobRunning() && changes.contains(jobAction));
+}
+
+bool MobileController::callConfirmationInProgress() const
+{
+    return (m_busy && m_action == "confirm-calls") ||
+           (m_reconcilingCalls && (m_busy || m_refreshPending));
 }
 
 bool MobileController::knownAction(const QString &action)
@@ -460,7 +478,12 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     if (!m_jobId.isEmpty() && (action == "poll" || action == "resume" || action == "inspect" || action == "status")) request.insert("job_id", m_jobId);
     if (!readAction(action)) {
         m_operationId = newOperationId();
+        m_operationAction = action;
+        m_pendingCallContext = action == "confirm-calls" ? extra.value("call_context").toString() : QString();
+        m_reconcilingCalls = false;
         m_settings.setValue("pending_operation", m_operationId);
+        m_settings.setValue("pending_operation_action", m_operationAction);
+        m_settings.setValue("pending_call_context", m_pendingCallContext);
         m_settings.sync();
     }
     if (!m_operationId.isEmpty()) request.insert("operation_id", m_operationId);
@@ -533,6 +556,7 @@ void MobileController::processError(QProcess::ProcessError error)
     if (error != QProcess::FailedToStart) return;
     m_deadline.stop();
     m_busy = false;
+    m_reconcilingCalls = false;
     m_action.clear();
     fail("root_not_ready");
     scheduleRefresh();
@@ -541,8 +565,46 @@ void MobileController::processError(QProcess::ProcessError error)
 void MobileController::processTimeout()
 {
     m_timedOut = true;
-    fail(readAction(m_action) ? "request_timeout" : "operation_unknown");
+    if (m_action == "confirm-calls") reconcileCallConfirmation();
+    else {
+        m_reconcilingCalls = false;
+        fail(readAction(m_action) ? "request_timeout" : "operation_unknown");
+    }
     m_process.kill();
+}
+
+void MobileController::clearPendingOperation()
+{
+    m_operationId.clear();
+    m_operationAction.clear();
+    m_pendingCallContext.clear();
+    m_settings.remove("pending_operation");
+    m_settings.remove("pending_operation_action");
+    m_settings.remove("pending_call_context");
+}
+
+bool MobileController::confirmedCallResponse(const QVariantMap &response) const
+{
+    return m_operationAction == "confirm-calls" && !m_operationId.isEmpty() &&
+           !m_pendingCallContext.isEmpty() && response.value("schema").toInt() == 2 &&
+           response.value("ok").type() == QVariant::Bool && response.value("ok").toBool() &&
+           response.value("state").toString() == "verified" &&
+           response.value("call_context").toString() == m_pendingCallContext;
+}
+
+void MobileController::reconcileCallConfirmation()
+{
+    // This schedules one read, never a repeated confirmation or device write.
+    // The matching operation type/context also survive closing the app.
+    if (m_operationAction != "confirm-calls" || m_pendingCallContext.isEmpty()) {
+        fail("operation_unknown");
+        return;
+    }
+    m_reconcilingCalls = true;
+    m_refreshPending = true;
+    m_runtimeError = false;
+    m_error.clear();
+    emit modelChanged();
 }
 
 void MobileController::processFinished(int code, QProcess::ExitStatus status)
@@ -551,7 +613,6 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
     processOutput();
     processErrorOutput();
     m_busy = false;
-    if (m_timedOut) { m_action.clear(); emit modelChanged(); return; }
     QVariantMap response = parseObject(m_output.trimmed());
     if (response.isEmpty()) {
         // Some Root shells print a greeting. Only accept a complete JSON response line.
@@ -560,13 +621,37 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
             if (lines.at(i).trimmed().startsWith('{')) response = parseObject(lines.at(i).trimmed());
     }
     m_output.clear();
+    if (m_timedOut) {
+        // A complete matching ACK remains useful if the Root shell's cleanup
+        // finishes late. Otherwise only a fresh read may resolve the result.
+        if (m_action == "confirm-calls" && confirmedCallResponse(response)) {
+            m_error.clear();
+            acceptResponse(response);
+            m_reconcilingCalls = false;
+            m_refreshPending = false;
+        } else if (m_action == "confirm-calls") {
+            reconcileCallConfirmation();
+        } else {
+            m_reconcilingCalls = false;
+        }
+        m_action.clear();
+        scheduleRefresh();
+        emit modelChanged();
+        return;
+    }
     if (response.isEmpty()) {
-        fail(!readAction(m_action) ? "operation_unknown" :
-             (code != 0 || status != QProcess::NormalExit ? "root_not_ready" : "invalid_response"));
+        if (m_action == "confirm-calls") reconcileCallConfirmation();
+        else {
+            m_reconcilingCalls = false;
+            fail(!readAction(m_action) ? "operation_unknown" :
+                 (code != 0 || status != QProcess::NormalExit ? "root_not_ready" : "invalid_response"));
+        }
     } else if (response.value("schema").toInt() != 2) {
+        m_reconcilingCalls = false;
         fail("protocol_mismatch");
     } else {
         acceptResponse(response);
+        m_reconcilingCalls = false;
     }
     m_action.clear();
     scheduleRefresh();
@@ -615,14 +700,17 @@ void MobileController::acceptResponse(const QVariantMap &response)
             m_update.clear();
         }
         m_jobId.clear();
-        m_operationId.clear();
+        if (m_operationAction != "confirm-calls" || confirmedCallResponse(response)) clearPendingOperation();
         m_settings.remove("pending_job");
-        m_settings.remove("pending_operation");
         if (followUp) m_refreshPending = true;
-    } else if (id.isEmpty() && !readAction(m_action) && !m_runtimeError) {
+    } else if (id.isEmpty() && !readAction(m_action) && !m_runtimeError &&
+               (m_action != "confirm-calls" || confirmedCallResponse(response))) {
         // Call confirmation and read-only exports can return without a job.
-        m_operationId.clear();
-        m_settings.remove("pending_operation");
+        clearPendingOperation();
+    } else if (id.isEmpty() && readAction(m_action) && confirmedCallResponse(response)) {
+        // An observation may resolve this one saved call check. It must not
+        // erase an unknown install/enable/update operation or another context.
+        clearPendingOperation();
     }
     m_settings.sync();
     emit settingsChanged();

@@ -227,16 +227,27 @@ def call_context(create=True):
     return value
 
 
+def inspection_details(folder):
+    return {'device': sanitized_identity(), 'version': load(folder + '/manifest.json')['version'],
+            'support': 'new_mobile_workflow_pending_hardware_acceptance'}
+
+
 def inspect(request, folder):
-    language = request.get('language', 'zh')
-    details = {'device': sanitized_identity(), 'version': load(folder + '/manifest.json')['version'],
-               'support': 'new_mobile_workflow_pending_hardware_acceptance'}
+    details = inspection_details(folder)
     try:
         result = engine().manage('probe')
     except Exception as error:
         details['error_code'] = safe_error(error)
-        return ui('unsupported', language, 'compatibility', details,
+        return ui('unsupported', request.get('language', 'zh'), 'compatibility', details,
                   actions=['status', 'compatibility', 'legacy-inspect'])
+    return inspection_response(request, result, details)
+
+
+def inspection_response(request, result, details, confirmed_context=None):
+    # A confirmation renders the same observation that authorized its save.
+    # A second full probe after committing can lose or misreport a completed
+    # save when the native client's request deadline expires.
+    language = request.get('language', 'zh')
     details['carrier'] = result.get('operator', 'unknown')
     details['installed'] = bool(result.get('installed'))
     if result.get('scope_error'):
@@ -289,7 +300,7 @@ def inspect(request, folder):
         # when its IMS registration is waiting. Do not hide this behind Check.
         return ui('update_requires_stop', language, 'disable', details, actions=actions)
     if registered(status):
-        context = call_context()
+        context = confirmed_context if confirmed_context is not None else call_context()
         state = 'verified' if context['calls_verified'] else 'registered'
         return ui(state, language, 'status' if context['calls_verified'] else 'confirm-calls', details,
                   actions=actions + ['confirm-calls'], call_context=context['context'])
@@ -312,6 +323,7 @@ def check_confirmation(request):
               'call_context_changed')
     context['calls_verified'] = True
     save(ROOT + '/call-context.json', context)
+    return result, context
 
 
 def export_directory(location, operation_id):
@@ -890,8 +902,9 @@ def dispatch(action, request, folder):
         return inspect(request, folder)
     if action == 'confirm-calls':
         with engine().management_lock():
-            check_confirmation(request)
-        return inspect(request, folder)
+            details = inspection_details(folder)
+            result, context = check_confirmation(request)
+            return inspection_response(request, result, details, context)
     if action == 'compatibility' or (action == 'export' and request.get('export_kind', 'diagnostics') == 'diagnostics'):
         # Reports remain available while another transaction awaits a reboot;
         # they never replace that transaction's active-job pointer.
