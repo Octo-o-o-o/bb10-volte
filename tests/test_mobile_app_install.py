@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 import zipfile
@@ -40,6 +41,30 @@ def fixture(folder, version='0.1.0.12', author='gYAOctoLabBB10VoLTE20261102'):
 
 
 class AppArtifactTests(unittest.TestCase):
+    def test_fixed_bb10_system_etc_alias_is_supported(self):
+        for target in ('/etc/os.version', '/base/etc/os.version'):
+            with patch.object(device.os.path, 'realpath', return_value=target), \
+                 patch.object(device.os, 'lstat', return_value=SimpleNamespace(st_uid=0, st_mode=0o100644)), \
+                 patch.object(device, 'regular', return_value=b'10.3.3.3216\n') as read:
+                device.verify_os()
+            read.assert_called_once_with(target, 128)
+
+    def test_os_alias_cannot_redirect_to_user_data(self):
+        with patch.object(device.os.path, 'realpath', return_value='/accounts/1000/shared/os.version'), \
+             patch.object(device, 'regular') as read:
+            with self.assertRaisesRegex(device.InstallError, 'os_not_supported'):
+                device.verify_os()
+        read.assert_not_called()
+
+    def test_writable_or_non_system_os_version_is_rejected(self):
+        for uid, mode in ((1000, 0o100644), (0, 0o100664), (0, 0o100646)):
+            with patch.object(device.os.path, 'realpath', return_value='/base/etc/os.version'), \
+                 patch.object(device.os, 'lstat', return_value=SimpleNamespace(st_uid=uid, st_mode=mode)), \
+                 patch.object(device, 'regular') as read:
+                with self.assertRaisesRegex(device.InstallError, 'os_not_supported'):
+                    device.verify_os()
+            read.assert_not_called()
+
     def test_pinned_release_matches_the_current_packaged_helper(self):
         pin = host.release()
         self.assertEqual(hashlib.sha256((host.ROOT / host.HELPER).read_bytes()).hexdigest(), pin['helper_sha256'])
@@ -193,6 +218,27 @@ class InstalledAppFilesystemTests(unittest.TestCase):
         (self.app / 'native/bb10volte').write_bytes(b'unreviewed')
         with self.assertRaisesRegex(device.InstallError, 'same_version_conflict'):
             device.installed(self.pin)
+
+    def test_system_hardlinked_installed_resource_still_requires_exact_bytes(self):
+        self.write_files()
+        resource = self.app / 'native/assets/main.qml'
+        alias = self.folder / 'system-catalog-resource'
+        os.link(resource, alias)
+        self.assertEqual(resource.stat().st_nlink, 2)
+        self.assertTrue(device.installed(self.pin)['all_files_verified'])
+        alias.write_bytes(b'x' * resource.stat().st_size)
+        with self.assertRaisesRegex(device.InstallError, 'same_version_conflict'):
+            device.installed(self.pin)
+
+    def test_hardlinked_installer_staging_and_private_records_remain_rejected(self):
+        for name in ('application.bar', 'native-installer', 'record.json', 'lock'):
+            path = self.folder / name
+            path.write_bytes(b'original')
+            path.chmod(0o600)
+            os.link(path, self.folder / (name + '.alias'))
+            for options in ({}, {'private': True}, {'private': True, 'allow_hardlinks': True}):
+                with self.assertRaisesRegex(device.InstallError, 'unsafe_file'):
+                    device.regular(str(path), **options)
 
     def test_newer_version_is_compared_numerically_and_never_downgraded(self):
         unused, pin, files = fixture(self.folder, version='0.1.0.20')

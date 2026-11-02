@@ -39,9 +39,10 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def regular(path, limit=16777216, private=False):
+def regular(path, limit=16777216, private=False, allow_hardlinks=False):
     info = os.lstat(path)
-    require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and
+    single_link = info.st_nlink == 1 or (allow_hardlinks and not private and info.st_nlink > 0)
+    require(stat.S_ISREG(info.st_mode) and single_link and
             os.path.realpath(path) == path and info.st_size <= limit, 'unsafe_file')
     if private:
         require(info.st_uid == os.geteuid() and info.st_mode & 0o077 == 0, 'unsafe_private_file')
@@ -116,7 +117,7 @@ def installed(release):
     require(len(matches) == 1, 'app_identity_conflict')
     path = APP_ROOT + '/' + matches[0]
     require(os.path.realpath(path) == path and os.path.isdir(path), 'app_identity_conflict')
-    raw = regular(path + '/META-INF/MANIFEST.MF', 131072)
+    raw = regular(path + '/META-INF/MANIFEST.MF', 131072, allow_hardlinks=True)
     info = headers(raw)
     for key, expected in release['identity'].items():
         if key not in ('Package-Version', 'Application-Version'):
@@ -131,10 +132,13 @@ def installed(release):
     require(digest(raw) == release['platform_manifest_sha256'], 'same_version_conflict')
     # SUD success and a matching metadata file cannot substitute for actual
     # native executable/QML/runtime byte verification.
+    # SUD may hard-link installed resources such as the launcher icon. These
+    # are read only and still need exact pinned bytes; staged inputs, the
+    # installer and private transaction records retain the single-link rule.
     for member, expected in release['installed_files'].items():
         require(member.startswith(('native/', 'META-INF/')) and '..' not in member.split('/') and
                 '\\' not in member, 'invalid_release')
-        blob = regular(path + '/' + member, expected['size'] + 1)
+        blob = regular(path + '/' + member, expected['size'] + 1, allow_hardlinks=True)
         require(len(blob) == expected['size'] and digest(blob) == expected['sha256'], 'same_version_conflict')
     return {'state': 'installed', 'can_install': False, 'version': info['Package-Version'],
             'all_files_verified': True}
@@ -329,9 +333,20 @@ def provision(release, stage, identifier, expected_device):
         return summary(release, device, reconcile(job, release))
 
 
+def verify_os():
+    # BB10 mounts /etc through the system-owned /base/etc alias. Accept only
+    # these fixed OS locations; user-provided packages still require canonical
+    # non-linked paths and retain the stricter private-file checks.
+    path = os.path.realpath('/etc/os.version')
+    require(path in ('/etc/os.version', '/base/etc/os.version'), 'os_not_supported')
+    info = os.lstat(path)
+    require(info.st_uid == 0 and info.st_mode & 0o022 == 0, 'os_not_supported')
+    require(regular(path, 128).strip() == b'10.3.3.3216', 'os_not_supported')
+
+
 def main():
     require(os.geteuid() == 0 and os.uname()[0] == 'QNX' and struct.calcsize('P') == 4, 'root_qnx_required')
-    require(regular('/etc/os.version', 128).strip() == b'10.3.3.3216', 'os_not_supported')
+    verify_os()
     stage = os.path.dirname(os.path.abspath(__file__))
     require(re.match(r'\A/var/bb10_volte_app_stage_[a-f0-9]{32}\Z', stage), 'invalid_stage')
     private_directory(stage)
