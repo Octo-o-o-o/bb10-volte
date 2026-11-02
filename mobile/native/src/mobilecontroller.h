@@ -32,6 +32,7 @@ class MobileController : public QObject {
     Q_PROPERTY(QString confirmationTitle READ confirmationTitle NOTIFY confirmationNeeded)
     Q_PROPERTY(QString confirmationBody READ confirmationBody NOTIFY confirmationNeeded)
     Q_PROPERTY(bool busy READ busy NOTIFY modelChanged)
+    Q_PROPERTY(bool waitingForRoot READ waitingForRoot NOTIFY modelChanged)
     Q_PROPERTY(bool jobRunning READ jobRunning NOTIFY modelChanged)
     Q_PROPERTY(bool sdAvailable READ sdAvailable NOTIFY settingsChanged)
     Q_PROPERTY(bool hasPackage READ hasPackage NOTIFY settingsChanged)
@@ -63,6 +64,7 @@ public:
     QString confirmationTitle() const;
     QString confirmationBody() const;
     bool busy() const { return m_busy; }
+    bool waitingForRoot() const { return m_waitingForRoot; }
     bool jobRunning() const;
     bool sdAvailable() const;
     bool hasPackage() const { return !m_packagePath.isEmpty(); }
@@ -78,6 +80,11 @@ public:
     Q_INVOKABLE void confirmAction();
     Q_INVOKABLE void cancelConfirmation();
     Q_INVOKABLE void choosePackage(const QString &path);
+    Q_INVOKABLE bool beginPackageSelection();
+    Q_INVOKABLE void endPackageSelection();
+    Q_INVOKABLE void packagePickerClosed();
+    Q_INVOKABLE void packagePickerError();
+    Q_INVOKABLE void setExperimentalVisible(bool visible);
     Q_INVOKABLE void confirmCalls(bool outgoing, bool incoming, bool audio, bool lte, const QString &context);
     Q_INVOKABLE void exportBackup();
     Q_INVOKABLE void legacyAction(const QString &action, const QString &profileId);
@@ -98,6 +105,10 @@ private slots:
     void processError(QProcess::ProcessError error);
     void processTimeout();
     void poll();
+    void enteredForeground();
+    void enteredBackground();
+    void screenAsleep();
+    void screenAwake();
     void networkReady();
     void networkFinished();
     void networkTimeout();
@@ -112,6 +123,8 @@ private:
     bool verifyEntry(QByteArray *bytes, QString *bundlePath);
     void invoke(const QString &action, const QVariantMap &extra = QVariantMap());
     void acceptResponse(const QVariantMap &response);
+    void scheduleRefresh();
+    bool refreshBlocked() const;
     void fail(const QString &code);
     void beginNetwork(const QUrl &url);
     void finishNetworkError(const QString &code);
@@ -122,6 +135,8 @@ private:
     QSettings m_settings;
     QVariantMap m_model;
     QString m_language;
+    QString m_requestLanguage;
+    QString m_modelLanguage;
     QString m_backupLocation;
     QString m_legacyProfile;
     QString m_checkedLegacyProfile;
@@ -143,7 +158,15 @@ private:
     bool m_busy;
     bool m_timedOut;
     bool m_runtimeError;
+    bool m_waitingForRoot;
     bool m_refreshLegacy;
+    bool m_foreground;
+    bool m_sleeping;
+    bool m_experimentalVisible;
+    bool m_pickerOpen;
+    bool m_pickerClosed;
+    bool m_pickerResultHandled;
+    bool m_refreshPending;
     QNetworkAccessManager m_network;
     QNetworkReply *m_reply;
     QTimer m_networkDeadline;

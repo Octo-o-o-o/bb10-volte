@@ -199,7 +199,7 @@ class DcaTransactionTests(unittest.TestCase):
     def test_switch_away_restores_explicit_original_nv_and_exact_files(self):
         d.set_usage(1, self.selected)
         self.token = ['second']
-        selected = p.select(facts(), card('00'))
+        selected = p.select(facts(), card('01'))
         self.assertFalse(d.prepare(selected))
         self.assertEqual(self.usage, 0)
         self.assertEqual(self.sources, self.original)
@@ -230,8 +230,8 @@ class DcaTransactionTests(unittest.TestCase):
         self.assertTrue(record['source_repair_only'])
         self.assertEqual(record['policy_changed_boot'], ['first'])
 
-    def test_q10_mobile_fix_does_not_change_other_non_telecom_usage_settings(self):
-        for variant, mnc in (('SQC100-2', '00'), ('SQW100-4', '00'),
+    def test_mobile_fix_does_not_change_classic_or_unicom_usage_settings(self):
+        for variant, mnc in (('SQC100-2', '00'),
                              ('SQN100-3', '01'), ('SQC100-2', '01'), ('SQW100-4', '01')):
             with self.subTest(variant=variant, mnc=mnc):
                 self.assertTrue(d.prepare(p.select(facts(variant), card(mnc))))
@@ -239,6 +239,23 @@ class DcaTransactionTests(unittest.TestCase):
                 self.assertEqual(self.sources, self.original)
                 self.assertFalse(self.writes)
                 self.assertNotIn(d.RECORD, self.files)
+
+    def test_passport_mobile_candidate_waits_for_boot_then_preserves_policy(self):
+        mobile = p.select(facts(), card('00'))
+        self.assertFalse(d.prepare(mobile))
+        self.assertEqual(self.usage, 1)
+        self.assertEqual(json.loads(self.files[d.RECORD])['operator'], 'mobile')
+        self.assertFalse(d.prepare(mobile))
+        self.token = ['next-mobile-boot']
+        self.sources.update(self.original)  # DCA recreates sources during boot.
+        self.assertTrue(d.prepare(mobile))
+        self.assertEqual(self.usage, 1)
+        self.assertTrue(json.loads(self.files[d.RECORD])['source_repair_only'])
+        self.assertTrue(d.prepare(p.select(facts(), card('11'))))
+        self.assertEqual(self.usage, 1)  # Mobile -> Telecom needs no usage change.
+        d.restore_original()
+        self.assertEqual(self.usage, 0)
+        self.assertEqual(self.sources, self.original)
 
     def test_calls_block_all_source_writes(self):
         with patch.object(d.s, 'phone_idle', return_value=False), self.assertRaises(AssertionError):

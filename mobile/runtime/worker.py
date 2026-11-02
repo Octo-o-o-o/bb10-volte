@@ -31,20 +31,20 @@ MESSAGES = {
                          'Ready to enable VoLTE', 'Device checks passed. Original files will be backed up and verified first.', 'Enable VoLTE'),
     'working': ('正在处理', '可以离开此应用；任务在手机后台继续。请保持电量充足。', '查看进度',
                 'Working', 'The task continues on the phone if you leave this app. Keep the battery charged.', 'Check progress'),
-    'reboot_required': ('请正常重启手机', '请使用电源菜单重启，解锁后等待约 3–5 分钟，再回来检查。程序不会强制重启。', '已重启，继续检查',
-                        'Restart your phone normally', 'Use the power menu, unlock after restart, then wait about 3–5 minutes and check again.', 'Check after restart'),
-    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 进入或离开电信时可能需要第二次正常重启。请使用电源菜单重启，解锁后等待约 5 分钟再检查。', '已再次重启，检查状态',
-                                'Carrier settings saved; restart again', 'Passport may need a second normal restart when entering or leaving China Telecom. Restart from the power menu, unlock and wait about five minutes.', 'Check after second restart'),
+    'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁，等系统出现 Root 成功提示后，再打开应用一次。未打开时不要连续点图标。进入应用后会自动检查，网络可能需要约 3–5 分钟。', '立即检查',
+                        'Restart your phone normally', 'Restart from the power menu and unlock. Wait for the system Root success notification, then open the app once. Do not tap repeatedly if it does not open. Checks run automatically inside the app; the network may take 3–5 minutes.', 'Check now'),
+    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需一次正常重启。解锁后先等系统 Root 成功提示，再打开应用一次；进入后会自动检查。不要连续点图标。', '立即检查',
+                                'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. Unlock, wait for the system Root success notification, then open the app once for automatic checking. Do not tap repeatedly.', 'Check now'),
     'registered': ('IMS 已连接，待通话验收', '请完成一次呼出和一次呼入，确认双方有声音且通话保持 LTE。', '验收通话',
                    'IMS connected; check calls', 'Make and receive a call. Confirm audio in both directions and LTE during the call.', 'Check calls'),
     'verified': ('当前 SIM 已完成通话验收', '本次开机、当前 SIM 和当前版本的双向通话已由你确认。短信能力请另外实测。', '刷新状态',
                  'Calls verified for this SIM', 'You confirmed calls for this boot, SIM and version. Test text messages separately.', 'Refresh'),
-    'disabled': ('VoLTE 自动服务已停用', '恢复完成后请正常重启。重新启用后仍需检查 IMS 和通话。', '启用自动服务',
-                 'Automatic service disabled', 'Restart normally after restoration. Recheck IMS and calls after enabling.', 'Enable service'),
+    'disabled': ('VoLTE 自动服务已停用', '需要使用时可重新启用，按任务提示正常重启，再检查 IMS 和通话。', '启用自动服务',
+                 'Automatic service disabled', 'Enable the service when needed, restart when the task asks, then check IMS and calls.', 'Enable service'),
     'update_ready': ('手机服务可以更新', '现有服务已完成停用与恢复。使用应用内置版本更新，原始备份会保留，完成后按提示正常重启。', '更新手机服务',
                      'Phone service update ready', 'The existing service is stopped and restored. Apply the bundled update, keep the originals, then restart normally when prompted.', 'Update phone service'),
-    'waiting': ('等待手机网络就绪', '保持移动网络和正常 LTE 数据可用。若长时间未就绪，可以导出不含身份信息的报告。', '刷新状态',
-                'Waiting for the network', 'Keep cellular and normal LTE data available. Export a report if this persists.', 'Refresh'),
+    'waiting': ('等待手机网络就绪', '此页面会自动检查。请保持移动网络和正常 LTE 数据可用；若长时间未就绪，可以导出不含身份信息的报告。', '立即检查',
+                'Waiting for the network', 'This page checks automatically. Keep cellular and LTE data available; export a report if this persists.', 'Check now'),
     'unsupported': ('需要进一步适配', '可以导出兼容性报告。检测到机型不代表已经验证可用；高级页面保留已有的实验路线。', '导出兼容性报告',
                     'Further adaptation needed', 'Export a compatibility report. Recognizing a model does not establish support. Existing experimental routes are in Advanced.', 'Export compatibility'),
     'sim_unsupported': ('当前 SIM 尚未通过检查', '请检查 SIM、LTE 数据服务及运营商 VoLTE 开通状态，换卡请关机后操作。', '重新检查',
@@ -59,8 +59,8 @@ MESSAGES = {
                  'Files exported', 'See the saved location below. Internal storage cannot protect against loss or storage failure; keep another copy.', 'Back to status'),
     'experimental': ('实验兼容性结果', '实验安装不会启用开机自启动。只有全部原生哈希、网络和恢复检查通过，才会提供可执行操作。', '刷新实验检查',
                      'Experimental compatibility', 'Experimental installs do not enable autostart. Actions require native hash, network and recovery checks.', 'Check experiment'),
-    'error': ('操作未完成', '现场和备份已保留。请查看错误代码或导出报告，不要删除原始备份。', '重新检查',
-              'Operation incomplete', 'State and backups are retained. Check the error code or export a report; keep the originals.', 'Check again'),
+    'error': ('操作未完成', '请查看下方提示或导出诊断报告，并保留现有文件。', '重新检查',
+              'Operation incomplete', 'Read the details below or export diagnostics, and keep the existing files.', 'Check again'),
 }
 
 
@@ -124,12 +124,17 @@ def safe_error(error):
 def ui(state, language, action='status', details=None, ok=True, actions=None, **extra):
     values = MESSAGES.get(state, MESSAGES['error'])
     offset = 0 if language != 'en' else 3
+    localized = {}
+    for name, start in (('zh', 0), ('en', 3)):
+        localized[name] = {'title': values[start], 'message': values[start + 1],
+                           'primary_label': values[start + 2], 'level': 'error' if not ok else 'info'}
     result = {'schema': 2, 'ok': ok, 'state': state, 'title_code': state,
               'message_code': state, 'primary_action': action,
               'actions': actions if actions is not None else [action, 'compatibility'],
               'details': details or {}, 'display': {'title': values[offset],
               'message': values[offset + 1], 'primary_label': values[offset + 2],
-              'level': 'error' if not ok else 'info'}, 'call_context': ''}
+              'level': 'error' if not ok else 'info'}, 'display_language': 'en' if language == 'en' else 'zh',
+              'display_i18n': localized, 'call_context': ''}
     result.update(extra)
     return result
 
@@ -528,6 +533,61 @@ def job_response(job, request):
               job_id=job['id'], job=public_job(job))
 
 
+def valid_boot(value):
+    return (isinstance(value, list) and len(value) == 2 and
+            isinstance(value[0], str) and bool(value[0]) and
+            isinstance(value[1], str) and re.match(r'\A[a-f0-9]{48}\Z', value[1]) is not None)
+
+
+def observed_job_response(job, request, folder):
+    """Observe a committed reboot boundary, never retry a device operation."""
+    def response(current):
+        if current['state'] == 'completed' and current['action'] in ('install', 'update', 'enable', 'disable'):
+            result = inspect(request, folder)
+            result.update(job_id=current['id'], job=public_job(current), live_status=True)
+            return result
+        return job_response(current, request)
+
+    if job['state'] not in ('waiting_reboot', 'completed') or job['action'] not in ('install', 'update', 'enable', 'disable'):
+        return response(job)
+    try:
+        with job_lock():
+            # Another client may have completed this job and submitted a new
+            # one while we waited. Never write our earlier copy over its state.
+            current = active_job()
+            if current is None:
+                return response(load(job_path(job['id'])))
+            if current['id'] != job['id'] or current['state'] != 'waiting_reboot':
+                return response(current)
+            old_boot = current.get('boot')
+            if not valid_boot(old_boot):
+                return response(current)
+            # A disabled boot hook does not create the volatile boot marker.
+            # The existing engine creates it on the first observation; this
+            # changes only its shmem nonce, never modem or service settings.
+            new_boot = boot()
+            if not valid_boot(new_boot) or old_boot[0] != new_boot[0] or old_boot == new_boot:
+                return response(current)
+            action = current['action']
+            if action in ('enable', 'disable'):
+                state = engine().manage('status')
+                if state.get('enabled') is not (action == 'enable'):
+                    return response(current)
+                if action == 'disable' and state.get('manager_alive') is not False:
+                    return response(current)
+            else:
+                committed = current.get('result') or {}
+                keys = ('installed', 'activated') if action == 'install' else ('updated',)
+                if not any(committed.get(key) is True for key in keys):
+                    return response(current)
+            progress(current, 'complete', state='completed')
+            return response(current)
+    except e.MobileError as error:
+        if str(error) != 'operation_in_progress':
+            raise
+        return job_response(job, request)
+
+
 def profile_for(request, folder):
     e.require(request.get('experimental') is True, 'experimental_opt_in_required')
     profile_id = request.get('profile_id')
@@ -804,13 +864,15 @@ def dispatch(action, request, folder):
         return resume(request)
     if action == 'poll':
         job = recover_job(load(job_path(request.get('job_id'))))
-        return job_response(job, request)
+        return observed_job_response(job, request, folder)
     if action in ('inspect', 'status'):
         job = active_job()
         if job:
             job = recover_job(job)
             if job['state'] not in TERMINAL or resumable_job(job):
-                return job_response(job, request)
+                return observed_job_response(job, request, folder)
+            if job['state'] == 'completed' and request.get('job_id') == job['id']:
+                return observed_job_response(job, request, folder)
         return inspect(request, folder)
     if action == 'confirm-calls':
         with engine().management_lock():

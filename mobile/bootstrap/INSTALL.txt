@@ -25,6 +25,9 @@ SUD success，实际仍是 v1 注册版本，因此 completed、旧图标或旧�
 升级成功证据。超时保留输入并查询同一任务，不反复提交安装。
 
 正常解锁并自行确认首次系统安装/应用权限。到达权限对话框不代表界面已经加载。
+每次重启后，先等系统出现 Root 成功提示，再打开应用一次。Root 尚未生效时，
+系统可能直接拒绝启动本应用，应用内等待页此时也无法运行。若图标没有反应，
+不要连续点击；本机已观察到反复启动被拒绝后系统桌面卡住。
 应用会再核验签名载荷和手机条件。若已有 waiting_reboot 任务，先继续原任务；
 旧服务停用、恢复并重启后，用应用的内置更新入口接管，不另选同版本更新 ZIP。
 真正未安装服务的手机才从备份开始激活。按提示正常重启后，自己验证呼出、呼入、
@@ -48,6 +51,10 @@ input and query that same job rather than resubmitting an unknown result.
 
 Unlock normally and personally accept the system's installation and first-use
 permission prompts. A permission dialog does not establish a loaded app UI.
+After every restart, wait for the system Root success notification, then open
+the app once. Before Root is ready, the OS may reject the app before its waiting
+page can run. Do not repeatedly tap an unresponsive icon: repeated rejected
+launches have been observed to freeze the system home screen on this phone.
 Resume any existing waiting_reboot task before starting another change. After
 an old service is stopped, restored and normally restarted, use the app's
 bundled-update action; the same-version ZIP is not that adoption path.
@@ -62,7 +69,7 @@ Passport trials never authorize writes.
 No installer and no effective Root terminal: restore the original local entry,
 or use the desktop setup once. A browser cannot grant missing privileges.
 AutoRoot v2/v3 require separate validation; do not assume the v4 command applies.
-Use desktop r16 for protocol-2 management. Old r14 and r15 adoption requires
+Use desktop r17 for this protocol-2 payload. Old r14, r15 and r16 adoption requires
 stop/restore and a normal restart first; never run old and new writers together.
 
 Runtime ZIP updates do not replace the C++/QML app BAR. Internal backup copies

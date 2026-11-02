@@ -1,6 +1,7 @@
 """Public native client contracts; hardware rendering is a separate acceptance gate."""
 from pathlib import Path
 import ast
+import importlib.util
 import re
 import unittest
 import xml.etree.ElementTree as ET
@@ -11,6 +12,41 @@ NS = {"q": "http://www.qnx.com/schemas/application/1.0"}
 
 
 class NativeDeliveryContracts(unittest.TestCase):
+    def test_native_old_runtime_fallback_contains_the_same_complete_state_translations(self):
+        spec = importlib.util.spec_from_file_location('native_translation_generator', ROOT / 'tools/mobile_i18n.py')
+        translations = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(translations)
+        translations.check_generated()
+        source = (NATIVE / 'src/mobilecontroller.cpp').read_text(encoding='utf-8')
+        self.assertIn('#include "state_strings.h"', source)
+        strings = (NATIVE / 'src/ui_strings.h').read_text(encoding='utf-8')
+        for phase in ('running', 'registering', 'stopped', 'restoring', 'waiting_for_sim',
+                      'carrier_reboot_required', 'legacy_installing', 'legacy-stop', 'removing_payload'):
+            self.assertIn('"phase_' + phase + '"', strings)
+
+    def test_controller_bindings_do_not_resolve_to_cascades_builtin_properties(self):
+        main = (NATIVE / "src/main.cpp").read_text(encoding="utf-8")
+        names = re.findall(r'setContextProperty\("([A-Za-z_][A-Za-z0-9_]*)",\s*&controller\)', main)
+        self.assertEqual(len(names), 1)
+        context = names[0]
+        # Actual BB10 10.3.1 SDK: UIObject.ui (revision 3) and
+        # Control.navigation (revision 4) shadow context properties in QML.
+        self.assertNotIn(context, {"ui", "navigation"})
+        header = (NATIVE / "src/mobilecontroller.h").read_text(encoding="utf-8")
+        api = set(re.findall(r'Q_PROPERTY\(\S+\s+(\w+)', header))
+        api.update(re.findall(r'Q_INVOKABLE\s+\S+\s+(\w+)\(', header))
+        signals = header.split("signals:", 1)[1].split("private slots:", 1)[0]
+        api.update(re.findall(r'void\s+(\w+)\(', signals))
+        for path in (NATIVE / "assets").glob("*.qml"):
+            text = path.read_text(encoding="utf-8")
+            references = set(re.findall(r'\b' + re.escape(context) + r'\.(\w+)', text))
+            self.assertTrue(references, path.name)
+            self.assertLessEqual(references, api, path.name)
+            stale = set(re.findall(r'\bui\.(\w+)', text)) & api
+            self.assertFalse(stale, f"{path.name}: backend API resolves to UIConfig: {stale}")
+        manage = (NATIVE / "assets/Manage.qml").read_text(encoding="utf-8")
+        self.assertNotRegex(manage, r'onClicked:\s*navigation\.push\(')
+
     def test_bar_keeps_upgrade_identity_and_minimum_permissions(self):
         root = ET.parse(NATIVE / "bar-descriptor.xml").getroot()
         self.assertEqual(root.findtext("q:id", namespaces=NS), "com.octolab.bb10volte")
@@ -87,8 +123,8 @@ class NativeDeliveryContracts(unittest.TestCase):
         end = source.index('void MobileController::requestAction', start)
         self.assertIn('m_packagePath.clear()', source[start:end])
         self.assertIn('requestAction("update")', source[start:end])
-        self.assertIn('visible: ui.canApplyBundledUpdate', manage)
-        self.assertIn('onClicked: ui.applyBundledUpdate()', manage)
+        self.assertIn('visible: volteController.canApplyBundledUpdate', manage)
+        self.assertIn('onClicked: volteController.applyBundledUpdate()', manage)
 
     def test_verified_entry_bytes_are_executed_from_a_private_copy(self):
         source = (NATIVE / "src/mobilecontroller.cpp").read_text(encoding="utf-8")

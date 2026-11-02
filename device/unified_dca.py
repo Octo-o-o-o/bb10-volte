@@ -301,12 +301,13 @@ def prepare(selected):
     wait_policy_idle()
     ensure_lte_mode(selected)
     wait_policy_idle()
-    # SQN100-3 / 460-00 can initially register IMS in voice-centric mode,
-    # then receive CS-domain rejection 18 and have LTE disabled by the modem.
-    # Use the backed-up DCA transaction before IMS starts, as for Telecom.
-    # Other non-Telecom combinations retain their original usage policy.
+    # Q10/Mobile previously lost LTE after CS-domain rejection 18. Passport/
+    # Mobile also lost its bearer and call after that rejection with usage=0,
+    # although its configured LTE mask stayed enabled. Data-centric is the
+    # candidate mitigation for Passport; longer real calls remain a release
+    # gate. Apply only through the backed-up, idle-before-IMS transaction.
     desired = 1 if (selected['operator'] == 'telecom' or
-                    selected['family'] == 'q10' and selected['operator'] == 'mobile') else 0
+                    selected['family'] in ('q10', 'passport') and selected['operator'] == 'mobile') else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))
     if selected['family'] == 'passport' and policy_boot == s.boot_token():

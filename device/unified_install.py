@@ -39,7 +39,8 @@ PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa94042
                      'a9a1609e31b8477e01c2c30511b6dfdc5914a4df5bff521f227f3deab77a963b',
                      'f0c4a5002dc41b8de7113db680936240d564e87ddae67793b79e27a45e8c9a2f',
                      '7de370bc3b3a9a646714336aa5e45de89026a50012e986f43a0d228d6dc638ff',
-                     '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc')
+                     '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc',
+                     'fad645e6f1304ca3c9731ad5ac28d3adb7776906cc399e45f2d129192f54e863')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')

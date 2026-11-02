@@ -6,9 +6,11 @@ import subprocess
 import re
 import xml.etree.ElementTree as ET
 from package_mobile import ROOT, BUILDER, MOBILE_VERSION, package, prepare_assets
+from mobile_i18n import check_generated
 
 
 def build(key, version=MOBILE_VERSION):
+    check_generated()
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', version):
         raise ValueError('Mobile/BAR version must have four numeric components')
     source = ROOT / 'mobile/native'

@@ -12,7 +12,7 @@ Q_DECL_EXPORT int main(int argc, char **argv)
     MobileController controller(&app);
     bb::cascades::QmlDocument *document = bb::cascades::QmlDocument::create("asset:///main.qml").parent(&app);
     if (document->hasErrors()) return 1;
-    document->documentContext()->setContextProperty("ui", &controller);
+    document->documentContext()->setContextProperty("volteController", &controller);
     bb::cascades::AbstractPane *scene = document->createRootObject<bb::cascades::AbstractPane>();
     if (!scene) return 1;
     app.setScene(scene);

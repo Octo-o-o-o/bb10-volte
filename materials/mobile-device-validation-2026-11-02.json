@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "status": "local_candidate_pending_manual_acceptance",
+  "status": "candidate_voice_and_sms_passed_remaining_acceptance_separate",
   "target": {
-    "mobile_version": "0.1.0.6",
-    "desktop_version": "0.5.0-r16",
+    "mobile_version": "0.1.0.11",
+    "desktop_version": "0.5.0-r17",
     "management_protocol": 2
   },
   "post_merge_validation": {
@@ -212,20 +212,14 @@
     "owner_unlock_after_migration_reboot": "pending"
   },
   "manual_acceptance_pending": [
-    "normal_system_permission_confirmation",
-    "real_cascades_ui",
-    "small_and_large_square_screens",
-    "bundled_engine_update",
-    "r14_to_r16_migration",
-    "r15_to_r16_migration",
-    "ui_exit_and_reopen_job",
-    "normal_restart_and_current_sim_registration",
-    "outgoing_incoming_audio_lte",
-    "sms",
+    "bilingual_physical_ui_picker_foreground_and_sleep",
+    "small_square_screens",
+    "r15_to_r17_direct_migration",
+    "new_boot_voice_and_sms_recheck",
     "sim_change_and_number_display",
-    "offline_update_and_bar_upgrade",
+    "higher_version_offline_runtime_update",
     "restore_rollback_uninstall_reinstall",
-    "desktop_mobile_interoperation"
+    "simultaneous_desktop_mobile_ui_lock"
   ],
   "v6_experimental_scope": {
     "native_options": 23,
@@ -255,5 +249,285 @@
   "stock_phone_root_requires_desktop": true,
   "new_hardware_acceptance_claims": [],
   "artifact_hashes": "use_final_package_validation_and_SHA256SUMS_after_document_repack",
-  "private_operation_ids_paths_keys_sim_identifiers_included": false
+  "private_operation_ids_paths_keys_sim_identifiers_included": false,
+  "current_cycle": {
+    "v7_ui": {
+      "owner_confirmed_home_and_manage": true,
+      "cause": "Cascades_ui_and_navigation_property_shadowing_fixed"
+    },
+    "r14_to_r16_migration": {
+      "completed_after_real_reboot": true,
+      "original_backups_byte_identical": true,
+      "desktop_r16_verified_installed_payload": true
+    },
+    "v7_enable": {
+      "owner_used_native_ui": true,
+      "job_survived_app_reopen": true,
+      "system_menu_reboot_verified": true,
+      "current_boot_ims_200_lte_verified": true
+    },
+    "call_drop": {
+      "hardware": "SQW100-4",
+      "carrier": "China Mobile 460-00",
+      "symptom": "connected_outgoing_call_dropped_then_emergency_only",
+      "outgoing_connected_seconds_approx": 36,
+      "observed_chain": [
+        "network_rejection_cause_18",
+        "data_service_unavailable",
+        "local_RTP_RTCP_timeout_BYE",
+        "LTE_to_GSM",
+        "IMS_disconnected"
+      ],
+      "manager_and_native_survived": true,
+      "usage_setting": 0,
+      "voice_domain_preference": 3,
+      "configured_technology_mask": 19,
+      "root_cause": "not_fully_established",
+      "calls_accepted": false
+    },
+    "v8_candidate": {
+      "passport_mobile_usage": 1,
+      "policy_change_requires_new_boot": true,
+      "other_variant_admission_unchanged": true,
+      "native_context_fix_included": true,
+      "automatic_reboot_reconciliation": true,
+      "foreground_waiting_refresh": true,
+      "windows_tests": {
+        "run": 756,
+        "skipped_platform_specific": 2,
+        "failures": 0,
+        "errors": 0,
+        "seconds": 58.229
+      },
+      "mobile_tests": 90,
+      "auto_carrier_tests": 79,
+      "sdk_build": "passed",
+      "readback": {
+        "version": "0.1.0.8",
+        "protocol": 2,
+        "signed_files": 59,
+        "manifest_sha256": "7e8380a52982a448e97c052769b1b50cd0128e88cc556763c1d8a5a8ebde5317",
+        "signature_verified": true,
+        "update_and_bar_match_current_inputs": true,
+        "bootstrap_embeds_exact_bar": true,
+        "bootstrap_instructions_verified": true,
+        "hardware_acceptance": false,
+        "reviewed_code_sha256": {
+          "mobile/runtime/worker.py": "e61c2062c718d500df8ad16b144a3ec517d4b7aa381177c68f3427071f829b03",
+          "mobile/runtime/legacy_entry.py": "2581bfdfbf10e33a2acfff7766cc07edea7c40db75e698cd3b4323425771d365",
+          "device/unified_install.py": "3edd12d26fe26fa15b3fc2e9178a88d99ad7b091582887f7070de54c526a8bfd"
+        },
+        "artifacts": {
+          "bb10-volte-0.1.0.8.bar": "7b190deb31a6f517ccc58ccf5edc6fe71216b1b0c7dee451044ced2001556152",
+          "bb10-volte-0.1.0.8-update.zip": "554fe7d240554d2b2d56a9d9da6e005d4c89d6cb8e59ff49c294e2e24457d45b",
+          "bb10-volte-0.1.0.8-bootstrap.zip": "18634f0c2f73a251e0b5e1389dc4ca71abbc7669f5806604c733719e14177fe3"
+        }
+      },
+      "installed_manifest_matches_bar": true,
+      "installer_sud_success": true,
+      "hardware_acceptance": "pending",
+      "automatic_disabled_reboot_check_owner_confirmed": true,
+      "native_ui_update_to_r17_completed_after_reboot": true,
+      "r17_original_backups_byte_identical": true
+    },
+    "recovery_baseline": {
+      "normal_power_menu_boot_confirmed": true,
+      "service_enabled": false,
+      "radio": "lte",
+      "usage_setting": 0,
+      "voice_domain_preference": 0,
+      "crypto_provider": -1
+    },
+    "remote_reboot_note": "Neither two historical shutdown -S reboot requests nor one later -f -r recovery request automatically restored a boot screen. Owner power-key recovery is distinct from successful earlier system-menu restarts. No remote retry is authorized by these results.",
+    "v9_candidate": {
+      "change": "native_root_waiting_and_foreground_read_retry",
+      "device_payload_unchanged_from_r17": true,
+      "native_review": "passed_no_blocking_findings",
+      "sdk_build": "passed",
+      "mobile_tests": 90,
+      "readback": {
+        "version": "0.1.0.9",
+        "protocol": 2,
+        "signed_files": 59,
+        "manifest_sha256": "926fc963169266008befc37b5e753b84f0947fbf762eb21fce8f78580a43d78c",
+        "signature_verified": true,
+        "update_and_bar_match_current_inputs": true,
+        "bootstrap_embeds_exact_bar": true,
+        "bootstrap_instructions_verified": true,
+        "hardware_acceptance": false,
+        "reviewed_code_sha256": {
+          "mobile/runtime/worker.py": "e61c2062c718d500df8ad16b144a3ec517d4b7aa381177c68f3427071f829b03",
+          "mobile/runtime/legacy_entry.py": "2581bfdfbf10e33a2acfff7766cc07edea7c40db75e698cd3b4323425771d365",
+          "device/unified_install.py": "3edd12d26fe26fa15b3fc2e9178a88d99ad7b091582887f7070de54c526a8bfd"
+        },
+        "artifacts": {
+          "bb10-volte-0.1.0.9.bar": "a8c9448a65690723b31c6a24259246b9a1d4f8a1057bfb8ba8ee11033b8bbc3c",
+          "bb10-volte-0.1.0.9-update.zip": "ead6fc1212177b93975ad9e07fccb15846839396146379e76651038e01efa895",
+          "bb10-volte-0.1.0.9-bootstrap.zip": "7752d5a3e367935ee5dc03f9e59b0cae071547a0b6f900580febe31e2bcf089c"
+        }
+      },
+      "hardware_root_wait_acceptance": "pending"
+    },
+    "early_launch_freeze": {
+      "observed": true,
+      "before_autoroot_ready": true,
+      "application_launches_rejected": 9,
+      "launcher_error": "EACCES_13",
+      "app_process_started": false,
+      "navigator_cycle": "event_thread_joined_splash_thread_which_waited_for_event_thread_render_mutex",
+      "screen_later_off": true,
+      "root_ssh_still_responsive_before_recovery": true,
+      "single_menu_parameter_reboot_request": "did_not_restore_boot_screen",
+      "manual_power_start": "owner_confirmed_boot_unlock_and_root_success; fresh_boot_verified",
+      "product_change": "wait_for_system_Root_success_before_opening_once; in_app_helper_retry_does_not_cover_prelaunch_gate"
+    },
+    "v10_candidate": {
+      "source_scope": "native_app_and_shared_r17_backend; no_new_device_admission",
+      "startup_boundary": "open_once_after_system_Root_success; helper_wait_only_after_process_launch",
+      "sdk_build": "passed",
+      "installer_sud_success": true,
+      "installed_manifest_matches_bar": true,
+      "readback": {
+        "version": "0.1.0.10",
+        "protocol": 2,
+        "signed_files": 59,
+        "manifest_sha256": "2ef61507b930b6310e340abb166457dda5071dcad176454acb7f94fab5321aba",
+        "signature_verified": true,
+        "update_and_bar_match_current_inputs": true,
+        "bootstrap_embeds_exact_bar": true,
+        "bootstrap_instructions_verified": true,
+        "hardware_acceptance": false,
+        "reviewed_code_sha256": {
+          "mobile/runtime/worker.py": "e4de1c583ec015f9494d3f3379c80855538955c26a647e28def47867c6bad056",
+          "mobile/runtime/legacy_entry.py": "2581bfdfbf10e33a2acfff7766cc07edea7c40db75e698cd3b4323425771d365",
+          "device/unified_install.py": "3edd12d26fe26fa15b3fc2e9178a88d99ad7b091582887f7070de54c526a8bfd"
+        },
+        "artifacts": {
+          "bb10-volte-0.1.0.10.bar": "c105458b8b32567b5f1b150044b09faad077fa566cfe99d9aba729f565161eb1",
+          "bb10-volte-0.1.0.10-update.zip": "0f8181fb7c7158bc67da348c1635d7803553a20ceb68ffba138593d274a5092a",
+          "bb10-volte-0.1.0.10-bootstrap.zip": "8785238d752a66ecbaf0638a9fa41e147effde1a7e060a4e9e3f767eeec5b26d"
+        }
+      },
+      "windows_tests": {
+        "run": 756,
+        "seconds": 55.759,
+        "skipped_platform_specific": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      "website": {
+        "static_tests": 18,
+        "browser_tests": 25,
+        "syntax_checks": "passed"
+      },
+      "independent_native_review": {
+        "result": "no_remaining_blockers_in_reviewed_scope",
+        "mobile_tests": 90,
+        "cross_checked_with_device_reviewer": true
+      },
+      "policy_boot": {
+        "fresh_boot_verified": true,
+        "usage_setting": 1,
+        "voice_domain_preference": 3,
+        "crypto_provider": 0,
+        "radio": "lte",
+        "ims": "connected",
+        "register_status": "200 OK",
+        "dca_phase": "ready",
+        "extra_policy_restart_completed": true,
+        "manager_and_native_alive": true,
+        "fresh_sip_register_challenge_and_200_verified": true
+      },
+      "voice_retest": {
+        "hardware": "SQW100-4",
+        "carrier": "China Mobile 460-00",
+        "owner_confirmed": true,
+        "directions": [
+          "outgoing",
+          "incoming",
+          "outgoing"
+        ],
+        "minimum_connected_seconds_each": 120,
+        "two_way_audio": "owner_confirmed",
+        "continuous_4g": "owner_confirmed",
+        "no_dropped_call": "owner_confirmed",
+        "call_record_survived_app_close_reopen": "owner_confirmed",
+        "root_cause_fully_established": false,
+        "other_devices_or_long_term_stability_inferred": false,
+        "sip_connected_to_bye_seconds": [
+          123.335,
+          124.257,
+          124.287
+        ],
+        "complete_initial_invite_200_ack_bye_dialogs": 3,
+        "sampled_lte_ims_connected_observations": 167,
+        "sample_window_local": "12:32:57.617-12:47:19.512 Asia/Shanghai",
+        "network_rejection_or_path_failure_observed_in_reviewed_window": false
+      },
+      "sms_retest": {
+        "owner_confirmed": true,
+        "bidirectional": true,
+        "short_english": "passed",
+        "long_chinese_over_100_characters": "passed",
+        "two_identical_independent_messages_each_direction": "passed",
+        "content_complete": true,
+        "no_loss_or_extra_duplicates": true,
+        "notification_behavior_separately_confirmed": false
+      },
+      "subsequent_manual_and_final_desktop_artifact_results": "see_same_version_candidate_receipt",
+      "independent_device_review": {
+        "result": "three_complete_calls_and_current_boot_registration_supported",
+        "read_only": true,
+        "cross_checked_with_native_reviewer": true
+      },
+      "desktop_read_only_status_after_owner_acceptance": "r17_recognized_same_current_boot_payload; mobile_state_verified",
+      "native_ui_checks": {
+        "owner_confirmed_foreground_sleep_picker_cancel": true,
+        "language_switch_bug": "late_English_response_remained_on_Chinese_home_status_and_button; addressed_in_v11"
+      }
+    },
+    "v11_candidate": {
+      "change": "presentation_language_updates_without_device_requests; bilingual_states_native_fallback_and_localized_details",
+      "wireless_payload_unchanged_from_v10_r17": true,
+      "windows_tests": {
+        "run": 759,
+        "seconds": 59.901,
+        "skipped_platform_specific": 2,
+        "failures": 0,
+        "errors": 0
+      },
+      "final_mobile_regression_tests": 93,
+      "reviewers": 2,
+      "review_scope": "localization_native_runtime_and_signed_artifacts",
+      "remaining_code_or_packaging_blockers_in_reviewed_scope": 0,
+      "runtime_states": 17,
+      "localized_service_and_task_phases": 41,
+      "sdk_build": "passed",
+      "installer_sud_success": true,
+      "installed_manifest_matches_bar": true,
+      "native_hardware_language_acceptance": "pending",
+      "readback": {
+        "version": "0.1.0.11",
+        "protocol": 2,
+        "signed_files": 59,
+        "manifest_sha256": "3b56a2cfdc4eebc9dcd168ecf7a786c56c81baf8c340b484260c264356b3993a",
+        "signature_verified": true,
+        "update_and_bar_match_current_inputs": true,
+        "bootstrap_embeds_exact_bar": true,
+        "bootstrap_instructions_verified": true,
+        "hardware_acceptance": false,
+        "reviewed_code_sha256": {
+          "mobile/runtime/worker.py": "cd09c35ed31e43c534a84cd2c61f8e35bd82f27d44e3b05b9e69765e408c550f",
+          "mobile/runtime/legacy_entry.py": "2581bfdfbf10e33a2acfff7766cc07edea7c40db75e698cd3b4323425771d365",
+          "device/unified_install.py": "3edd12d26fe26fa15b3fc2e9178a88d99ad7b091582887f7070de54c526a8bfd"
+        },
+        "artifacts": {
+          "bb10-volte-0.1.0.11.bar": "f1fe6a2e3be9cf11c8b6b7bf5ee841a54305b344ce742c29fa7f3d03d2467bdd",
+          "bb10-volte-0.1.0.11-update.zip": "a5ea634358365af043716da9ad5185c43228e9f20f4f7726e41b0fbad1b5d0f9",
+          "bb10-volte-0.1.0.11-bootstrap.zip": "4a9875dd7970c04d953385108837550df500302e711ccbd61cd35843a2dd8e48"
+        }
+      }
+    }
+  },
+  "historical_sections_note": "v6 and earlier sections retain their original checkpoint; current_cycle and the final candidate receipt supersede historical pending actions."
 }

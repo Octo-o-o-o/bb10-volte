@@ -30,6 +30,30 @@ def ready():
 
 
 class MobileRuntimeTests(unittest.TestCase):
+    def test_completed_observation_can_change_language_without_another_operation(self):
+        # An English request may finish after the UI has switched to Chinese.
+        # Both presentations belong to the same observation and acceptance.
+        with mock.patch.object(WORKER, 'engine') as manager:
+            response = WORKER.ui('verified', 'en', 'status', {'version': '0.1.0.11'},
+                                 actions=['status', 'confirm-calls'], call_context='a' * 32)
+        manager.assert_not_called()
+        self.assertEqual(response['display']['primary_label'], 'Refresh')
+        self.assertEqual(response['display_i18n']['zh']['primary_label'], '刷新状态')
+        self.assertEqual(response['display_i18n']['zh']['title'], '当前 SIM 已完成通话验收')
+        self.assertEqual(response['call_context'], 'a' * 32)
+        self.assertEqual(response['actions'], ['status', 'confirm-calls'])
+
+    def test_every_state_has_complete_bilingual_presentation_for_late_responses(self):
+        for state in WORKER.MESSAGES:
+            for language in ('zh', 'en'):
+                response = WORKER.ui(state, language, ok=state != 'error')
+                self.assertEqual(response['display_language'], language)
+                self.assertEqual(response['display'], response['display_i18n'][language])
+                for field in ('title', 'message', 'primary_label'):
+                    self.assertRegex(response['display_i18n']['zh'][field], r'[\u4e00-\u9fff]')
+                    self.assertNotRegex(response['display_i18n']['en'][field], r'[\u4e00-\u9fff]')
+                self.assertEqual(response['ok'], state != 'error')
+
     def test_export_child_has_only_shared_storage_credentials_before_writing(self):
         class ChildExit(BaseException):
             pass
@@ -308,6 +332,139 @@ class MobileRuntimeTests(unittest.TestCase):
              mock.patch.object(WORKER, 'inspect', return_value={'state': 'disabled'}) as inspect:
             self.assertEqual(WORKER.dispatch('inspect', {}, '/verified')['state'], 'disabled')
             inspect.assert_called_once()
+
+
+class AutomaticRebootObservationTests(unittest.TestCase):
+    def setUp(self):
+        self.old = ['bb10-unified-carriers-v1', '1' * 48]
+        self.new = ['bb10-unified-carriers-v1', '2' * 48]
+        self.job = {'id': 'a' * 32, 'action': 'enable', 'state': 'waiting_reboot',
+                    'phase': 'awaiting_reboot', 'boot': self.old,
+                    'result': {'enabled': True, 'reboot_required': True}}
+        self.manager = mock.Mock()
+        self.manager.manage.return_value = {'enabled': True, 'manager_alive': True}
+        self.locked = False
+
+        @contextlib.contextmanager
+        def lock():
+            self.assertFalse(self.locked, 'POSIX job locks must not be nested')
+            self.locked = True
+            try:
+                yield
+            finally:
+                self.locked = False
+
+        def save(path, value):
+            self.assertTrue(self.locked, 'Completion must be persisted under the job lock')
+
+        patches = {
+            'job_lock': mock.Mock(side_effect=lock),
+            'active_job': mock.Mock(side_effect=lambda: self.job),
+            'boot': mock.Mock(return_value=self.new),
+            'engine': mock.Mock(return_value=self.manager),
+            'save': mock.Mock(side_effect=save),
+            'inspect': mock.Mock(side_effect=lambda *args: {'schema': 2, 'state': 'waiting', 'call_context': ''}),
+            'spawn': mock.Mock(side_effect=AssertionError('Observation may not launch a worker')),
+        }
+        self.mocks = patches
+        for name, value in patches.items():
+            patch = mock.patch.object(WORKER, name, value)
+            patch.start()
+            self.addCleanup(patch.stop)
+
+    def observe(self):
+        return WORKER.observed_job_response(dict(self.job), {}, '/verified')
+
+    def test_committed_actions_finish_once_with_fresh_status_and_terminal_id(self):
+        for action, result in (('enable', {'enabled': True}), ('disable', {'disabled': True}),
+                               ('install', {'installed': True}), ('install', {'activated': True}),
+                               ('update', {'updated': True})):
+            with self.subTest(action=action, result=result):
+                self.job.update(action=action, result=result, state='waiting_reboot')
+                self.manager.manage.return_value = {'enabled': action == 'enable', 'manager_alive': False}
+                self.mocks['save'].reset_mock()
+                response = self.observe()
+                self.assertEqual(response['state'], 'waiting')  # Never infer IMS or call acceptance.
+                self.assertEqual(response['job']['state'], 'completed')
+                self.assertEqual(response['job_id'], self.job['id'])
+                self.assertTrue(response['live_status'])
+                self.assertEqual(self.job['boot'], self.old)
+                self.mocks['save'].assert_called_once()
+                self.assertEqual(self.observe()['job']['state'], 'completed')  # Lost response retry.
+                self.mocks['save'].assert_called_once()
+        self.mocks['spawn'].assert_not_called()
+        self.assertTrue(all(call == mock.call('status') for call in self.manager.manage.call_args_list))
+
+    def test_same_unknown_or_invalid_boot_never_completes(self):
+        for old, new in ((self.old, self.old), (None, self.new), ([], self.new),
+                         (['unknown'], self.new), (self.old, None), (self.old, []),
+                         (self.old, ['different-owner', '2' * 48])):
+            with self.subTest(old=old, new=new):
+                self.job['boot'] = old
+                self.mocks['boot'].return_value = new
+                self.assertEqual(self.observe()['job']['state'], 'waiting_reboot')
+        self.mocks['save'].assert_not_called()
+        self.manager.manage.assert_not_called()
+
+    def test_failed_interrupted_and_multi_phase_actions_need_explicit_recovery(self):
+        for action, state in (('enable', 'failed'), ('disable', 'interrupted'),
+                              ('rollback', 'waiting_reboot'), ('uninstall', 'waiting_reboot'),
+                              ('legacy-install', 'waiting_reboot')):
+            self.job.update(action=action, state=state)
+            self.assertEqual(self.observe()['job']['state'], state)
+        self.mocks['save'].assert_not_called()
+        self.mocks['boot'].assert_not_called()
+        self.mocks['spawn'].assert_not_called()
+
+    def test_uncommitted_or_truthy_results_do_not_finish_install_or_update(self):
+        for action, result in (('install', {}), ('install', {'installed': 1}),
+                               ('install', {'updated': True}), ('update', {'updated': 'true'}),
+                               ('update', {'installed': True})):
+            self.job.update(action=action, result=result)
+            self.assertEqual(self.observe()['job']['state'], 'waiting_reboot')
+        self.mocks['save'].assert_not_called()
+
+    def test_service_state_must_match_and_disable_must_finish_restoring(self):
+        for action, status in (('enable', {'enabled': False}), ('enable', {}),
+                               ('disable', {'enabled': True, 'manager_alive': False}),
+                               ('disable', {'enabled': False, 'manager_alive': True}),
+                               ('disable', {'enabled': False})):
+            self.job['action'] = action
+            self.manager.manage.return_value = status
+            self.assertEqual(self.observe()['job']['state'], 'waiting_reboot')
+        self.mocks['save'].assert_not_called()
+
+    def test_reloads_under_lock_and_never_overwrites_new_active_job(self):
+        stale = dict(self.job)
+        self.job.update(id='b' * 32, action='disable', state='running')
+        response = WORKER.observed_job_response(stale, {}, '/verified')
+        self.assertEqual(response['job_id'], 'b' * 32)
+        self.assertEqual(response['job']['state'], 'running')
+        self.mocks['save'].assert_not_called()
+        self.mocks['boot'].assert_not_called()
+
+    def test_lock_contention_is_observation_only(self):
+        self.mocks['job_lock'].side_effect = ENTRY.MobileError('operation_in_progress')
+        self.assertEqual(self.observe()['job']['state'], 'waiting_reboot')
+        self.mocks['save'].assert_not_called()
+        self.mocks['boot'].assert_not_called()
+
+    def test_all_read_entries_reconcile_and_return_live_terminal_job(self):
+        for action in ('inspect', 'status', 'poll'):
+            self.job['state'] = 'waiting_reboot'
+            with mock.patch.object(ENTRY, 'private_directory'), mock.patch.object(WORKER, 'load', return_value=self.job):
+                response = WORKER.dispatch(action, {'job_id': self.job['id']}, '/verified')
+            self.assertEqual(response['job']['state'], 'completed')
+            self.assertTrue(response['live_status'])
+
+    def test_plain_status_does_not_replay_old_update_completion(self):
+        self.job.update(action='update', state='completed', result={'updated': True})
+        for action in ('inspect', 'status'):
+            with mock.patch.object(ENTRY, 'private_directory'):
+                self.assertNotIn('job', WORKER.dispatch(action, {}, '/verified'))
+                response = WORKER.dispatch(action, {'job_id': self.job['id']}, '/verified')
+                self.assertEqual(response['job']['state'], 'completed')
+        self.mocks['save'].assert_not_called()
 
 
 if __name__ == '__main__':

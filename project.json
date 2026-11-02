@@ -1,11 +1,11 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 16,
-  "mobile_version": "0.1.0.6",
+  "desktop_revision": 17,
+  "mobile_version": "0.1.0.11",
   "management_protocol": 2,
   "state": "native_mobile_and_shared_management_release_candidate",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine historical voice/SIM/display cases; r14 SMS, short bidirectional voice and normal reboot accepted on Q20/Unicom and Passport/Mobile. First Root accepted on Apple Silicon Mac/Q20 and Windows/Passport; full GUI first-use, Q10 first Root and Intel USB flashing unverified. r15 adds early exact-variant checks, 13 gated manual candidate combinations, six read-only Passport combinations, first-use tutorial and local feedback; no new hardware acceptance. r16 adds native mobile management and shared protocol 2; mobile hardware acceptance remains pending."
+  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on OS 10.3.3.3216; Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM. Nine historical voice/SIM/display cases; r14 SMS, short bidirectional voice and normal reboot accepted on Q20/Unicom and Passport/Mobile. First Root accepted on Apple Silicon Mac/Q20 and Windows/Passport; full GUI first-use, Q10 first Root and Intel USB flashing unverified. r15 adds early exact-variant checks, 13 gated manual candidate combinations, six read-only Passport combinations, first-use tutorial and local feedback; no new hardware acceptance. r16 adds native mobile management and shared protocol 2; mobile hardware acceptance remains pending. r17 / mobile v10 includes a Passport/Mobile data-centric mitigation after a real call drop; three calls of at least two minutes, two-way audio, continuous LTE and bidirectional short/long/repeated-content SMS passed on SQW100-4/Mobile. Startup requires the system Root success notification. Remaining acceptance and final artifact receipts are recorded separately; no new hardware admission. Mobile v11 fixes late-response language switching and completes Chinese state, phase and error text; wireless payload remains r17."
 }

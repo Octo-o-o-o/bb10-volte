@@ -75,6 +75,31 @@
         "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
       },
       "fingerprint": "f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa9404270580f"
+    },
+    {
+      "label": "desktop-r16",
+      "commit": "e5f9dc62fe0396211a8b182be53b1bfe7cf7b644",
+      "files": {
+        "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+        "device/profiles.py": "c0d67448b46649166bb9434d3c22ffce1636ea2c791318e5751864d4c89b9bba",
+        "device/device_info.py": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
+        "device/compatibility.py": "d9f1bb16af978d7318d65ffa393a6d5f4b237ea98bcda0c0554be05edb2532eb",
+        "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
+        "device/ims_image.py": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
+        "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+        "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+        "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+        "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
+        "device/unified_service.py": "60b7937f95a9fe4ef7d58a8cba3d4161e4048e15f6472eb0387ab7ab84701d5c",
+        "device/unified_dca.py": "fe3222c7c6e6676a63dd214d0cc9b65bc5a56bd8143bd959ebafb69329f88915",
+        "device/unified_install.py": "be3ebfd36996015233827506f2b5b57120191f2dded7215031fa499aaebdb216",
+        "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
+        "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
+        "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
+        "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
+        "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+      },
+      "fingerprint": "fad645e6f1304ca3c9731ad5ac28d3adb7776906cc399e45f2d129192f54e863"
     }
   ]
 }

@@ -2,13 +2,13 @@ import bb.cascades 1.4
 
 Page {
     id: page
-    property string callContext: ui.model.call_context || ""
+    property string callContext: volteController.model.call_context || ""
     property bool initialized: false
     onCreationCompleted: initialized = true
     onCallContextChanged: {
         if (initialized) { outgoing.checked = false; incoming.checked = false; audio.checked = false; lte.checked = false; }
     }
-    function t(key) { var language = ui.language; return ui.label(key); }
+    function t(key) { var language = volteController.language; return volteController.label(key); }
     titleBar: TitleBar { title: page.t("calls_title") }
     ScrollView {
         scrollViewProperties.scrollMode: ScrollMode.Vertical
@@ -25,12 +25,12 @@ Page {
             Button {
                 text: page.t("confirm-calls")
                 horizontalAlignment: HorizontalAlignment.Fill
-                enabled: page.callContext.length === 32 && outgoing.checked && incoming.checked && audio.checked && lte.checked && !ui.busy && ui.allowed("confirm-calls")
-                onClicked: ui.confirmCalls(outgoing.checked, incoming.checked, audio.checked, lte.checked, page.callContext)
+                enabled: page.callContext.length === 32 && outgoing.checked && incoming.checked && audio.checked && lte.checked && !volteController.busy && volteController.allowed("confirm-calls")
+                onClicked: volteController.confirmCalls(outgoing.checked, incoming.checked, audio.checked, lte.checked, page.callContext)
             }
-            Label { text: ui.statusTitle; multiline: true; textFormat: TextFormat.Plain }
-            Label { text: ui.statusMessage; multiline: true; textFormat: TextFormat.Plain }
-            Label { text: ui.jobText; visible: text.length > 0; multiline: true; textFormat: TextFormat.Plain }
+            Label { text: volteController.statusTitle; multiline: true; textFormat: TextFormat.Plain }
+            Label { text: volteController.statusMessage; multiline: true; textFormat: TextFormat.Plain }
+            Label { text: volteController.jobText; visible: text.length > 0; multiline: true; textFormat: TextFormat.Plain }
         }
     }
 }

@@ -1,6 +1,7 @@
 #include "mobilecontroller.h"
 #include "bundle_identity.h"
 #include "ui_strings.h"
+#include "state_strings.h"
 #include <bb/data/JsonDataAccess>
 #include <QDir>
 #include <QFileInfo>
@@ -51,7 +52,10 @@ bool newerVersion(const QString &candidate, const QString &current)
 }
 
 MobileController::MobileController(QObject *parent)
-    : QObject(parent), m_settings(), m_busy(false), m_timedOut(false), m_runtimeError(false), m_refreshLegacy(false),
+    : QObject(parent), m_settings(), m_busy(false), m_timedOut(false), m_runtimeError(false),
+      m_waitingForRoot(false), m_refreshLegacy(false),
+      m_foreground(true), m_sleeping(false), m_experimentalVisible(false),
+      m_pickerOpen(false), m_pickerClosed(false), m_pickerResultHandled(false), m_refreshPending(true),
       m_network(this), m_reply(0), m_downloadBytes(0), m_redirects(0)
 {
     m_language = m_settings.value("language", QLocale::system().name().startsWith("zh") ? "zh" : "en").toString();
@@ -81,7 +85,73 @@ MobileController::MobileController(QObject *parent)
     connect(&m_networkDeadline, SIGNAL(timeout()), this, SLOT(networkTimeout()));
 }
 
-void MobileController::initialize() { QTimer::singleShot(0, this, SLOT(poll())); }
+void MobileController::initialize()
+{
+    // isFullscreen() is false until the first Navigator event. Keep the first
+    // launch observation, then use the actual application lifecycle signals.
+    connect(parent(), SIGNAL(fullscreen()), this, SLOT(enteredForeground()));
+    connect(parent(), SIGNAL(thumbnail()), this, SLOT(enteredBackground()));
+    connect(parent(), SIGNAL(invisible()), this, SLOT(enteredBackground()));
+    connect(parent(), SIGNAL(asleep()), this, SLOT(screenAsleep()));
+    connect(parent(), SIGNAL(awake()), this, SLOT(screenAwake()));
+    scheduleRefresh();
+}
+
+bool MobileController::refreshBlocked() const
+{
+    return !m_foreground || m_sleeping || m_busy || m_pickerOpen || !m_pendingAction.isEmpty();
+}
+
+void MobileController::scheduleRefresh()
+{
+    m_pollTimer.stop();
+    if (refreshBlocked()) return;
+    if (m_experimentalVisible && m_jobId.isEmpty() && !m_refreshLegacy && !m_waitingForRoot) return;
+    const QString state = m_model.value("state").toString();
+    if (m_refreshPending || m_refreshLegacy) m_pollTimer.start(200);
+    else if (m_waitingForRoot) m_pollTimer.start(10000);
+    else if (m_jobId.isEmpty() && !m_refreshLegacy && (state == "experimental" || state == "exported")) return;
+    else if (!m_error.isEmpty()) return;
+    else if (jobRunning()) m_pollTimer.start(1800);
+    else if (m_model.value("job").toMap().value("state").toString() == "waiting_reboot") m_pollTimer.start(25000);
+    else if (state == "waiting") m_pollTimer.start(10000);
+}
+
+void MobileController::enteredForeground()
+{
+    m_foreground = true;
+    m_refreshPending = true;
+    scheduleRefresh();
+}
+
+void MobileController::enteredBackground()
+{
+    m_foreground = false;
+    m_pollTimer.stop();
+}
+
+void MobileController::screenAsleep()
+{
+    m_sleeping = true;
+    m_pollTimer.stop();
+}
+
+void MobileController::screenAwake()
+{
+    m_sleeping = false;
+    if (m_foreground) m_refreshPending = true;
+    scheduleRefresh();
+}
+
+void MobileController::setExperimentalVisible(bool visible)
+{
+    if (m_experimentalVisible == visible) return;
+    m_experimentalVisible = visible;
+    if (!visible) {
+        m_refreshPending = true;
+    }
+    scheduleRefresh();
+}
 
 QString MobileController::label(const QString &key) const
 {
@@ -96,21 +166,39 @@ void MobileController::setLanguage(const QString &value)
     if ((value != "zh" && value != "en") || value == m_language) return;
     m_language = value;
     m_settings.setValue("language", value);
+    m_settings.sync();
+    // Language is presentation only. In-flight, failed and experimental
+    // results are translated in place without scheduling another operation.
     emit languageChanged();
     emit modelChanged();
-    if (!m_busy) refresh();
+    emit settingsChanged();
 }
 
 QString MobileController::display(const QString &key, const QString &code) const
 {
+    const QString localized = bounded(m_model.value("display_i18n").toMap().value(m_language).toMap().value(key));
+    if (!localized.isEmpty()) return localized;
+    // A response may arrive after the user changes language. Never label that
+    // response using the language selected after its request was sent.
     const QString supplied = bounded(m_model.value("display").toMap().value(key));
-    if (!supplied.isEmpty()) return supplied;
+    if (m_modelLanguage == m_language && !supplied.isEmpty()) return supplied;
+    const int field = key == "title" ? 0 : key == "message" ? 1 : key == "primary_label" ? 2 : -1;
+    const QString state = bounded(m_model.value("state"), 80);
+    if (field >= 0) {
+        for (int i = 0; UI_STATE_STRINGS[i].state; ++i)
+            if (state == QLatin1String(UI_STATE_STRINGS[i].state))
+                return QString::fromUtf8(m_language == "zh" ? UI_STATE_STRINGS[i].zh[field] : UI_STATE_STRINGS[i].en[field]);
+    }
     const QString local = label(bounded(m_model.value(code), 100));
-    return local;
+    if (!local.isEmpty()) return local;
+    if (key == "message" && state != "checking") return label("state_unrecognized_help");
+    if (key == "title" && state != "checking") return label("state_unrecognized");
+    return QString();
 }
 
 QString MobileController::statusTitle() const
 {
+    if (m_waitingForRoot) return label("state_waiting_root");
     if (!m_error.isEmpty()) {
         if (m_runtimeError && !display("title", "title_code").isEmpty()) return display("title", "title_code");
         const QString local = label(m_error);
@@ -124,6 +212,7 @@ QString MobileController::statusTitle() const
 
 QString MobileController::statusMessage() const
 {
+    if (m_waitingForRoot) return label("root_waiting_help");
     if (m_runtimeError && !display("message", "message_code").isEmpty()) return display("message", "message_code");
     if (m_error == "root_not_ready") return label("root_help");
     if (!m_error.isEmpty()) return label("inspect");
@@ -141,6 +230,7 @@ QString MobileController::primaryAction() const
 
 QString MobileController::primaryText() const
 {
+    if (primaryAction() == "resume" || primaryAction() == "poll") return label(primaryAction());
     if (m_error.isEmpty() || (m_runtimeError && primaryAction() == "resume")) {
         const QString supplied = display("primary_label", "primary_action");
         if (!supplied.isEmpty() && !bounded(m_model.value("primary_action")).startsWith("legacy-")) return supplied;
@@ -154,14 +244,14 @@ QString MobileController::deviceText() const
     const QVariantMap details = m_model.value("details").toMap();
     const QVariant device = details.value("device", details.value("variant"));
     const QString value = device.type() == QVariant::Map ? bounded(device.toMap().value("variant"), 120) : bounded(device, 120);
-    return value.isEmpty() ? label("unknown") : value;
+    return value.isEmpty() || value == "unknown" ? label("unknown") : value;
 }
 
 QString MobileController::carrierText() const
 {
     const QString value = bounded(m_model.value("details").toMap().value("carrier"), 120);
     const QString translated = label("carrier_" + value);
-    return value.isEmpty() ? label("unknown") : translated.isEmpty() ? value : translated;
+    return translated.isEmpty() ? label("carrier_unknown") : translated;
 }
 
 QString MobileController::detailText() const
@@ -176,12 +266,19 @@ QString MobileController::detailText() const
             i.value().type() != QVariant::Int && i.value().type() != QVariant::UInt &&
             i.value().type() != QVariant::LongLong && i.value().type() != QVariant::ULongLong) continue;
         const QString name = label(i.key());
+        if (name.isEmpty() || i.key() == "ok") continue;
         QString value = i.value().toString().left(2048);
         if (i.value().type() == QVariant::Bool) value = label(i.value().toBool() ? "yes" : "no");
         else if (i.key() == "carrier") value = carrierText();
-        else if ((i.key() == "support" || i.key() == "hardware_validation" || i.key() == "outcome") &&
-                 !label(value).isEmpty()) value = label(value);
-        rows.append((name.isEmpty() ? i.key().left(80) : name) + ": " + value);
+        else if (value == "unknown") value = label("unknown");
+        else if (i.key() == "phase") value = label("phase_" + value);
+        else if (i.key() == "error_code") {
+            value = label(value);
+            if (value.isEmpty()) value = label("check_unknown");
+        }
+        else if (i.key() == "support" || i.key() == "hardware_validation" || i.key() == "outcome") value = label(value);
+        if (value.isEmpty()) value = label("value_unrecognized");
+        rows.append(name + ": " + value);
     }
     const QVariantList checks = details.value("checks").toList();
     for (int i = 0; i < checks.size() && i < 64; ++i) {
@@ -190,9 +287,12 @@ QString MobileController::detailText() const
         const QString code = bounded(check.value("code"), 80);
         if (!QRegExp("^[a-z0-9_]{1,80}$").exactMatch(code)) continue;
         const QString translated = label("check_" + code);
-        rows.append(label("check_needed") + ": " + (translated.isEmpty() ? code : translated + " [" + code + "]"));
+        rows.append(label("check_needed") + ": " + (translated.isEmpty() ? label("check_unknown") : translated));
     }
-    if (!m_error.isEmpty() && QRegExp("^[a-z0-9_-]{1,80}$").exactMatch(m_error)) rows.append(m_error);
+    if (!m_error.isEmpty()) {
+        const QString reason = label(m_error);
+        rows.append(reason.isEmpty() ? label("check_unknown") : reason);
+    }
     if (!m_lastExportPath.isEmpty() && !details.contains("export_path") && !details.contains("path")) rows.append(label("export_path") + ": " + m_lastExportPath);
     return rows.join("\n\n");
 }
@@ -203,8 +303,6 @@ QString MobileController::jobText() const
     const QString state = bounded(job.value("state"), 80);
     if (state == "interrupted") return label("job_interrupted");
     if (state == "failed") return label("job_failed");
-    const QString message = bounded(job.value("message"));
-    if (!message.isEmpty()) return message;
     const QString phase = label("phase_" + bounded(job.value("phase"), 80));
     if (!phase.isEmpty()) return phase;
     if (jobRunning()) return label("job_running");
@@ -323,6 +421,7 @@ bool MobileController::verifyEntry(QByteArray *bytes, QString *bundlePath)
 void MobileController::fail(const QString &code)
 {
     m_runtimeError = false;
+    m_waitingForRoot = code == "root_not_ready" || code == "root_required";
     m_error = QRegExp("^[a-z0-9_-]{1,80}$").exactMatch(code) ? code : "operation_failed";
     emit modelChanged();
 }
@@ -330,17 +429,24 @@ void MobileController::fail(const QString &code)
 void MobileController::invoke(const QString &action, const QVariantMap &extra)
 {
     if (!allowed(action) || m_process.state() != QProcess::NotRunning) { fail("action_unavailable"); return; }
+    m_pollTimer.stop();
     QByteArray entryBytes;
     QString bundlePath;
     if (!verifyEntry(&entryBytes, &bundlePath)) return;
+    if (!QFileInfo("/bin/__root").isExecutable()) {
+        fail("root_not_ready");
+        scheduleRefresh();
+        return;
+    }
     if (action.startsWith("legacy-") && (!knownProfile(extra.value("profile_id").toString()) ||
         extra.value("profile_id").toString() != m_legacyProfile)) { fail("action_unavailable"); return; }
     QVariantMap request(extra);
     request.insert("schema", 2);
     request.insert("language", m_language);
+    m_requestLanguage = m_language;
     request.insert("backup_location", m_backupLocation);
     if (!m_packagePath.isEmpty() && action == "update") request.insert("package_path", m_packagePath);
-    if (!m_jobId.isEmpty() && (action == "poll" || action == "resume" || action == "inspect")) request.insert("job_id", m_jobId);
+    if (!m_jobId.isEmpty() && (action == "poll" || action == "resume" || action == "inspect" || action == "status")) request.insert("job_id", m_jobId);
     if (!readAction(action)) {
         m_operationId = newOperationId();
         m_settings.setValue("pending_operation", m_operationId);
@@ -418,6 +524,7 @@ void MobileController::processError(QProcess::ProcessError error)
     m_busy = false;
     m_action.clear();
     fail("root_not_ready");
+    scheduleRefresh();
 }
 
 void MobileController::processTimeout()
@@ -451,12 +558,14 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
         acceptResponse(response);
     }
     m_action.clear();
+    scheduleRefresh();
     emit modelChanged();
 }
 
 void MobileController::acceptResponse(const QVariantMap &response)
 {
     m_model = response;
+    m_modelLanguage = m_requestLanguage;
     const QVariantMap error = response.value("error").toMap();
     QVariantMap job = response.value("job").toMap();
     m_runtimeError = response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool();
@@ -464,6 +573,7 @@ void MobileController::acceptResponse(const QVariantMap &response)
         m_error = bounded(error.value("code", job.value("error_code")), 80);
         if (m_error.isEmpty()) m_error = "operation_failed";
     }
+    m_waitingForRoot = m_runtimeError && (m_error == "root_not_ready" || m_error == "root_required");
     if (m_action == "legacy-inspect" && !m_runtimeError) m_checkedLegacyProfile = m_requestedLegacyProfile;
     else m_checkedLegacyProfile.clear();
     const QVariantMap details = response.value("details").toMap();
@@ -487,7 +597,7 @@ void MobileController::acceptResponse(const QVariantMap &response)
     const bool recoverable = response.value("primary_action").toString() == "resume" &&
                              response.value("actions").toList().contains(QVariant("resume"));
     if (!m_jobId.isEmpty() && completed(job.value("state").toString()) && !recoverable) {
-        const bool followUp = m_action != "inspect" && m_action != "status";
+        const bool followUp = m_action != "inspect" && m_action != "status" && !response.value("live_status").toBool();
         m_refreshLegacy = bounded(job.value("action"), 64).startsWith("legacy-");
         if (job.value("state").toString() == "completed" && job.value("action").toString() == "update") {
             m_packagePath.clear();
@@ -497,26 +607,29 @@ void MobileController::acceptResponse(const QVariantMap &response)
         m_operationId.clear();
         m_settings.remove("pending_job");
         m_settings.remove("pending_operation");
-        if (followUp) m_pollTimer.start(200);
+        if (followUp) m_refreshPending = true;
     } else if (id.isEmpty() && !readAction(m_action) && !m_runtimeError) {
         // Call confirmation and read-only exports can return without a job.
         m_operationId.clear();
         m_settings.remove("pending_operation");
     }
     m_settings.sync();
-    if (jobRunning()) m_pollTimer.start(1800);
     emit settingsChanged();
 }
 
 void MobileController::refresh()
 {
-    if (!m_busy) invoke("inspect");
+    if (!m_busy && !m_pickerOpen && m_pendingAction.isEmpty()) {
+        m_refreshPending = false;
+        invoke("inspect");
+    }
 }
 
 void MobileController::poll()
 {
-    if (m_busy) { m_pollTimer.start(1800); return; }
-    if (m_jobId.isEmpty() && m_refreshLegacy) {
+    if (refreshBlocked()) return;
+    m_refreshPending = false;
+    if (m_jobId.isEmpty() && (m_refreshLegacy || (m_waitingForRoot && m_experimentalVisible))) {
         m_refreshLegacy = false;
         legacyAction("legacy-inspect", m_legacyProfile);
         return;
@@ -547,6 +660,7 @@ void MobileController::requestAction(const QString &action)
     if (readAction(action) || action == "export" || action == "compatibility" || action == "resume") { invoke(action); return; }
     m_pendingAction = action;
     m_pendingExtra.clear();
+    m_pollTimer.stop();
     emit confirmationNeeded();
 }
 
@@ -575,7 +689,12 @@ void MobileController::confirmAction()
     invoke(action, extra);
 }
 
-void MobileController::cancelConfirmation() { m_pendingAction.clear(); m_pendingExtra.clear(); }
+void MobileController::cancelConfirmation()
+{
+    m_pendingAction.clear();
+    m_pendingExtra.clear();
+    scheduleRefresh();
+}
 
 void MobileController::confirmCalls(bool outgoing, bool incoming, bool audio, bool lte, const QString &context)
 {
@@ -608,7 +727,38 @@ void MobileController::legacyAction(const QString &action, const QString &profil
     if (!allowed(action)) { fail("action_unavailable"); return; }
     m_pendingAction = action;
     m_pendingExtra = extra;
+    m_pollTimer.stop();
     emit confirmationNeeded();
+}
+
+bool MobileController::beginPackageSelection()
+{
+    if (m_busy || jobRunning() || !m_pendingAction.isEmpty()) return false;
+    m_pickerOpen = true;
+    m_pickerClosed = false;
+    m_pickerResultHandled = false;
+    m_pollTimer.stop();
+    return true;
+}
+
+void MobileController::endPackageSelection()
+{
+    m_pickerResultHandled = true;
+    if (m_pickerClosed) m_pickerOpen = false;
+    scheduleRefresh();
+}
+
+void MobileController::packagePickerClosed()
+{
+    m_pickerClosed = true;
+    if (m_pickerResultHandled) m_pickerOpen = false;
+    scheduleRefresh();
+}
+
+void MobileController::packagePickerError()
+{
+    m_pickerClosed = true;
+    endPackageSelection();
 }
 
 void MobileController::choosePackage(const QString &path)
@@ -665,6 +815,7 @@ void MobileController::downloadUpdate()
     if (!allowed("update")) { fail("action_unavailable"); return; }
     m_pendingAction = "download-update";
     m_pendingExtra.clear();
+    m_pollTimer.stop();
     emit confirmationNeeded();
 }
 
@@ -747,7 +898,7 @@ void MobileController::networkFinished()
         // The preceding user confirmation covers download and installation; the runtime verifies the publisher signature.
         invoke("update"); return;
     }
-    m_transfer.clear(); emit modelChanged();
+    m_transfer.clear(); scheduleRefresh(); emit modelChanged();
 }
 
 void MobileController::finishNetworkError(const QString &code)
