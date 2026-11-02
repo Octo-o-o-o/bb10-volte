@@ -3,11 +3,19 @@ import bb.system 1.2
 
 NavigationPane {
     id: navigation
+    backButtonsVisible: !volteController.operationInProgress
+    peekEnabled: false
     function t(key) { var language = volteController.language; return volteController.label(key); }
+    function syncOperationDialog() {
+        if (volteController.operationInProgress && !operationProgress.opened) operationProgress.open();
+        else if (!volteController.operationInProgress && operationProgress.opened) operationProgress.close();
+    }
     onPopTransitionEnded: { page.destroy(); }
     onTopChanged: { volteController.setExperimentalVisible(top && top.objectName === "experimentalPage"); }
     onCreationCompleted: {
         volteController.confirmationNeeded.connect(function() { confirmation.show(); });
+        volteController.modelChanged.connect(syncOperationDialog);
+        syncOperationDialog();
     }
     Page {
         id: home
@@ -15,6 +23,7 @@ NavigationPane {
         actions: [
             ActionItem {
                 title: navigation.t("advanced")
+                enabled: !volteController.operationInProgress
                 ActionBar.placement: ActionBarPlacement.OnBar
                 onTriggered: {
                     var page = managePage.createObject();
@@ -24,7 +33,7 @@ NavigationPane {
             },
             ActionItem {
                 title: navigation.t("status")
-                enabled: !volteController.busy
+                enabled: !volteController.busy && !volteController.operationInProgress
                 shortcuts: [ Shortcut { key: "R" } ]
                 onTriggered: volteController.refresh()
             }
@@ -132,6 +141,54 @@ NavigationPane {
     attachedObjects: [
         ComponentDefinition { id: managePage; source: "Manage.qml" },
         ComponentDefinition { id: callPage; source: "CallCheck.qml" },
+        Dialog {
+            id: operationProgress
+            onOpened: navigation.syncOperationDialog()
+            onClosed: navigation.syncOperationDialog()
+            Container {
+                horizontalAlignment: HorizontalAlignment.Fill
+                verticalAlignment: VerticalAlignment.Fill
+                background: Color.create("#F2F5F9")
+                layout: DockLayout {}
+                ScrollView {
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    verticalAlignment: VerticalAlignment.Fill
+                    scrollViewProperties.scrollMode: ScrollMode.Vertical
+                    Container {
+                        topPadding: 48
+                        bottomPadding: 32
+                        leftPadding: 32
+                        rightPadding: 32
+                        ActivityIndicator {
+                            running: operationProgress.opened
+                            preferredWidth: 88
+                            preferredHeight: 88
+                            horizontalAlignment: HorizontalAlignment.Center
+                        }
+                        Label {
+                            text: navigation.t("operation_wait")
+                            multiline: true
+                            textStyle.fontSize: FontSize.XLarge
+                            textStyle.color: Color.create("#18273F")
+                            textFormat: TextFormat.Plain
+                        }
+                        Label {
+                            text: volteController.jobText
+                            visible: text.length > 0
+                            multiline: true
+                            textStyle.color: Color.create("#18273F")
+                            textFormat: TextFormat.Plain
+                        }
+                        Label {
+                            text: navigation.t("operation_wait_help")
+                            multiline: true
+                            textStyle.color: Color.create("#18273F")
+                            textFormat: TextFormat.Plain
+                        }
+                    }
+                }
+            }
+        },
         SystemDialog {
             id: confirmation
             title: volteController.confirmationTitle

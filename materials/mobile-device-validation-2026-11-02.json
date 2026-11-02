@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "status": "candidate_voice_and_sms_passed_remaining_acceptance_separate",
+  "status": "passport_v12_r18_accepted_q20_startup_failure_under_validation",
   "target": {
-    "mobile_version": "0.1.0.11",
-    "desktop_version": "0.5.0-r17",
+    "mobile_version": "0.1.0.12",
+    "desktop_version": "0.5.0-r18",
     "management_protocol": 2
   },
   "post_merge_validation": {
@@ -212,14 +212,14 @@
     "owner_unlock_after_migration_reboot": "pending"
   },
   "manual_acceptance_pending": [
-    "bilingual_physical_ui_picker_foreground_and_sleep",
-    "small_square_screens",
-    "r15_to_r17_direct_migration",
-    "new_boot_voice_and_sms_recheck",
-    "sim_change_and_number_display",
-    "higher_version_offline_runtime_update",
-    "restore_rollback_uninstall_reinstall",
-    "simultaneous_desktop_mobile_ui_lock"
+    "q20_native_activation_calls_sms_and_full_lifecycle",
+    "q10_native_workflow",
+    "q20_q10_bilingual_small_screen_full_interaction",
+    "new_native_sim_change_and_number_display",
+    "higher_version_offline_runtime_update_and_rollback",
+    "simultaneous_desktop_mobile_ui_lock",
+    "post_v12_blocking_progress_physical_ui",
+    "desktop_graphical_native_app_install_qnx_disconnect_and_frozen_artifacts"
   ],
   "v6_experimental_scope": {
     "native_options": 23,
@@ -529,5 +529,44 @@
       }
     }
   },
-  "historical_sections_note": "v6 and earlier sections retain their original checkpoint; current_cycle and the final candidate receipt supersede historical pending actions."
+  "historical_sections_note": "Earlier version-specific sections are historical; latest_acceptance defines the current v12/r18 scope. Post-v12 source changes are not covered by old artifact acceptance.",
+  "latest_acceptance": {
+    "scope": "v12_r18_immutable_artifacts_not_post_v12_source_changes",
+    "passport_mobile": {
+      "variant": "SQW100-4",
+      "carrier": "460-00",
+      "full_restore_uninstall_reinstall": true,
+      "fresh_ims_and_lte": true,
+      "three_calls_at_least_two_minutes": true,
+      "bidirectional_audio_continuous_lte": true,
+      "bidirectional_short_long_identical_sms": true,
+      "persisted_owner_acceptance": true,
+      "prior_isolated_wake_reset": "owner_accepted_not_claimed_fixed"
+    },
+    "q20_unicom": {
+      "variant": "SQC100-2",
+      "carrier": "460-01",
+      "native_app": "0.1.0.12",
+      "old_payload_metadata_revision": 13,
+      "old_payload_exact_fingerprint_allowlisted": true,
+      "formal_r14_origin_claimed": false,
+      "restore_and_bundled_update_to_r18": true,
+      "four_original_backups_unchanged": true,
+      "update_reconciled_by_native_ui": true,
+      "enable_reconciled_by_native_ui": true,
+      "service_startup_result": "pidin_io_pkt_memory_query_timeout_before_provider_enable_and_ims_launch",
+      "restoration_verified": true,
+      "autostart_flag_retained": true,
+      "new_kernel_reset_this_enable_boot": false,
+      "new_ims_calls_sms_passed": false,
+      "next_step": "one_normal_menu_reboot_with_read_only_startup_capture"
+    },
+    "q10_native_workflow": "not_run",
+    "new_native_sim_change_matrix": "not_run",
+    "phone_only_first_install": "not_established_on_current_q20",
+    "q20_android_root_click_probe": "retired_after_separate_kernel_loader_reset_not_in_release",
+    "desktop_graphical_app_provisioning": "source_review_and_tests_only_no_hardware_install_acceptance",
+    "post_v12_native_progress_ui": "source_review_and_sdk_compile_only_not_in_v12_bar",
+    "published": false
+  }
 }

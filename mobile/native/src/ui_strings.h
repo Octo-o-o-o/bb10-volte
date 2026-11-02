@@ -10,6 +10,8 @@ static const UiString UI_STRINGS[] = {
     {"cancel", "取消", "Cancel"},
     {"continue", "继续", "Continue"},
     {"checking", "正在检查手机", "Checking your phone"},
+    {"operation_wait", "正在处理，请稍候", "Operation in progress"},
+    {"operation_wait_help", "请等待当前步骤完成，再继续操作。可以把应用切到后台；任务会继续，重开后显示同一任务的进度。出现重启提示后再正常重启。", "Wait for this step to finish before continuing. You can put the app in the background; the task continues and reopening shows the same task. Restart normally only when prompted."},
     {"inspect", "检查手机", "Check phone"},
     {"status", "重新检查", "Check again"},
     {"poll", "查看任务进度", "Check task progress"},

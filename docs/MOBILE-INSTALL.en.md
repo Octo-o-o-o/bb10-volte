@@ -2,7 +2,7 @@
 
 [简体中文](MOBILE-INSTALL.md) | **English**
 
-The native Cascades app (`com.octolab.bb10volte`) coexists with the desktop manager. Current candidate: mobile **0.1.0.12**, desktop **r18**, protocol **2**. After an earlier Passport/Mobile call drop, the owner confirmed three calls of at least two minutes each with two-way audio and continuous LTE using the historical v10/r17 data-centric policy. These results do not establish v12/r18 or fresh-install acceptance. Bidirectional short English, long Chinese and identical independent SMS messages also passed. See the [validation record](MOBILE-VALIDATION.md) for coverage and remaining acceptance. Installing the icon does not activate VoLTE.
+The native Cascades app (`com.octolab.bb10volte`) coexists with the desktop manager. Prepared candidate: mobile **0.1.0.12**, desktop **r18**, protocol **2**. Passport SQW100-4 / Mobile 460-00 passed full restore, uninstall and fresh installation, current-boot IMS, three calls of at least two minutes with two-way audio and continuous LTE, and bidirectional short, long and identical independent SMS. Q20 currently has a startup timeout under investigation; Q10 and new-version SIM changes remain pending. See the [validation record](MOBILE-VALIDATION.md) for exact coverage. Installing the icon does not activate VoLTE.
 
 Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for the current candidate. Existing tasks are preserved. After a normal restart, wait for the system Root success notification, then open the app once for automatic reconciliation; do not submit another enable or update to replace a pending task.
 
@@ -17,6 +17,8 @@ Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for the current candidat
 | AutoRoot v2/v3 or other Root | Validate helper, installer and sandbox behavior separately | Do not inherit v4 bootstrap results |
 
 [AutoRoot v4 documentation](https://bb10.root.sx/blog/autoroot-v4) describes unsigned BAR support and local privilege helpers. A Root label alone does not establish those capabilities. The app does not flash firmware, exploit a stock phone or change global PathTrust.
+
+**Without terminal commands:** use an existing on-phone BAR installer, or a one-time desktop setup. The source now adds **More → Install phone app**: check the rooted phone, select the matching BAR and confirm installation, then manage service from the phone. This new entry is still under acceptance and is absent from the existing r18 desktop artifacts. An Android-to-Root helper experiment caused a Q20 kernel reset; that route was retired and no APK bootstrap is shipped. An ordinary ZIP is not a clickable native installer.
 
 Obtain the target **0.1.0.12** BAR and checksums from the same candidate handoff or official HTTPS Release. Do not guess an unpublished download URL. With an existing BAR installer, open the `.bar` and confirm system prompts normally. With only a Root terminal, download the same-version `-bootstrap.zip` to Downloads and execute the exact command in its `INSTALL.txt`, using the phone's existing `/var/rootdata/installer`.
 

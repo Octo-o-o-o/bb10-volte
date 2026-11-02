@@ -129,9 +129,11 @@ class DesktopPackageTests(unittest.TestCase):
         self.assertFalse(any(name.startswith(('private/', 'downloads/')) for name in names))
         self.assertEqual({name for name in names if name.startswith('tools/')},
                          {'tools/stage_cleanup.py', 'tools/phone_pairing.py', 'tools/root_probe.py',
-                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1', 'tools/q20_manage_probe.py'})
+                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1', 'tools/q20_manage_probe.py',
+                          'tools/mobile_app_device.py'})
         self.assertIn('materials/first-run-tools.json', names)
         self.assertIn('materials/desktop-diagnostics.json', names)
+        self.assertIn('materials/mobile-app-artifact.json', names)
 
     def test_frozen_root_probe_is_hashed_and_staged_from_bundle_resources(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(w.shutil, 'which', return_value='ssh'), \

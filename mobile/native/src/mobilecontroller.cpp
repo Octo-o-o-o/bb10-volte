@@ -114,7 +114,7 @@ void MobileController::scheduleRefresh()
     else if (!m_error.isEmpty()) return;
     else if (jobRunning()) m_pollTimer.start(1800);
     else if (m_model.value("job").toMap().value("state").toString() == "waiting_reboot") m_pollTimer.start(25000);
-    else if (state == "waiting") m_pollTimer.start(10000);
+    else if (state == "waiting" || state == "waiting_ims" || state == "waiting_ims_apn") m_pollTimer.start(10000);
 }
 
 void MobileController::enteredForeground()
@@ -337,6 +337,17 @@ bool MobileController::jobRunning() const
 {
     const QString state = m_model.value("job").toMap().value("state").toString();
     return state == "queued" || state == "running" || state == "pending" || state == "starting";
+}
+
+bool MobileController::operationInProgress() const
+{
+    // A failed observation must reveal its recovery UI rather than leave a
+    // modal spinner over stale job data. Reboot/network waits are not jobs.
+    if (!m_error.isEmpty()) return false;
+    const QStringList changes = QString("install,enable,disable,update,rollback,uninstall,legacy-install,legacy-start,legacy-stop,legacy-update,legacy-uninstall").split(',');
+    const QString jobAction = m_model.value("job").toMap().value("action").toString();
+    return (m_busy && (changes.contains(m_action) || (m_action == "resume" && changes.contains(jobAction)))) ||
+           (jobRunning() && changes.contains(jobAction));
 }
 
 bool MobileController::knownAction(const QString &action)

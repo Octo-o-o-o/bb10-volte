@@ -55,6 +55,7 @@ def runtime_data():
                          'materials/sources.json', 'materials/stock-partitions.json', 'materials/stock-upgrade.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json', 'materials/device-support.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
+    names.update({'materials/mobile-app-artifact.json', 'tools/mobile_app_device.py'})
     from auto_carrier import PAYLOAD_FILES
     names.update(set(PAYLOAD_FILES) | {'materials/unified-payload.json', 'materials/unified-carrier-acceptance.json'})
     names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',
@@ -171,6 +172,7 @@ def main():
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy', 'device_support',
             'variant_trials', 'variant_trial_gui', 'feedback', 'feedback_gui',
+            'mobile_app_gui', 'mobile_app_install',
             'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
     assert 'build_windows' not in archive_modules
     sha = digest(output)

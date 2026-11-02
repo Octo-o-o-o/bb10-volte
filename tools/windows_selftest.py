@@ -58,6 +58,26 @@ def run(output):
     root = tk.Tk()
     root.withdraw()
     app = App(root)
+    from mobile_app_gui import MobileAppInstallWindow
+    from mobile_app_install import release as mobile_app_release
+    app_pin = mobile_app_release()
+    assert app_pin['version'] == json.loads((bundle / 'project.json').read_text(encoding='utf-8'))['mobile_version']
+    class NoPhoneInstaller:
+        def inspect(self):
+            raise AssertionError('No phone action allowed in packaging self-test')
+        install = inspect
+    phone_app = MobileAppInstallWindow(root, 'offline-selftest', '')
+    phone_app.window.attributes('-alpha', 0.0)
+    phone_app.installer = NoPhoneInstaller()
+    assert str(phone_app.install_button.cget('state')) == 'disabled'
+    phone_app.events.put(('result', ('install', {'schema': 1, 'state': 'pending', 'can_install': False})))
+    phone_app.window.after_cancel(phone_app.poll_job)
+    phone_app.poll()
+    assert phone_app.title.cget('text') == tr('正在核对同一安装任务')
+    assert str(phone_app.install_button.cget('state')) == 'disabled'
+    assert phone_app.recheck_job is not None
+    phone_app.close()
+    assert not phone_app.window.winfo_exists()
     import variant_trials
     from variant_trial_gui import VariantTrialDialog
     assert variant_trials.plan('SQC100-3', 'unicom')['route'] == 'manual_candidate'
@@ -334,6 +354,9 @@ def run(output):
         assert (bundle / 'assets/app.ico').is_file()
         assert not private_root().is_relative_to(bundle)
     result = {'passed': True, 'version': manifest['version'], 'frozen': frozen(),
+              'mobile_app_provisioning_ui_and_pending_task_verified': True,
+              'mobile_app_complete_bar_pin_and_helper_verified': True,
+              'mobile_app_target_version': app_pin['version'],
               'candidate_trial_selection_verified': True, 'local_feedback_ui_and_zip_verified': True,
               'download_tls_verification_and_ca_store_verified': True,
               'firmware_upgrade_ui_and_stock_catalog_verified': True,

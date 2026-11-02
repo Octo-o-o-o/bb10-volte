@@ -45,6 +45,12 @@ MESSAGES = {
                      'Phone service update ready', 'The existing service is stopped and restored. Apply the bundled update, keep the originals, then restart normally when prompted.', 'Update phone service'),
     'waiting': ('等待手机网络就绪', '此页面会自动检查。请保持移动网络和正常 LTE 数据可用；若长时间未就绪，可以导出不含身份信息的报告。', '立即检查',
                 'Waiting for the network', 'This page checks automatically. Keep cellular and LTE data available; export a report if this persists.', 'Check now'),
+    'waiting_ims': ('等待 IMS 通话注册', '通话注册与浏览器上网是不同的连接。此页面会自动检查；若持续等待，请导出诊断报告，不用反复点击检查或重新启用。', '立即检查',
+                    'Waiting for IMS voice registration', 'Voice registration is separate from web access. This page checks automatically. If it keeps waiting, export a diagnostic report; repeated checks or enabling again are unnecessary.', 'Check now'),
+    'waiting_ims_apn': ('等待通话专用网络', '正在等待运营商的 IMS 专用连接。浏览器能够上网仍不代表此连接已就绪，页面会自动检查。', '立即检查',
+                        'Waiting for the IMS connection', 'Waiting for the carrier connection used by IMS. Web access alone does not confirm this connection is ready. This page checks automatically.', 'Check now'),
+    'update_requires_stop': ('先停用旧版服务，再更新', '手机已有旧版服务。先停用并恢复配置，按提示正常重启后，首页会提供“更新手机服务”；原始备份会保留。', '停用旧版服务',
+                             'Stop the old service before updating', 'An older service is installed. Stop it and restore its settings, then restart normally when prompted. The home page will offer Update phone service. Original backups are retained.', 'Stop old service'),
     'unsupported': ('需要进一步适配', '可以导出兼容性报告。检测到机型不代表已经验证可用；高级页面保留已有的实验路线。', '导出兼容性报告',
                     'Further adaptation needed', 'Export a compatibility report. Recognizing a model does not establish support. Existing experimental routes are in Advanced.', 'Export compatibility'),
     'sim_unsupported': ('当前 SIM 尚未通过检查', '请检查 SIM、LTE 数据服务及运营商 VoLTE 开通状态，换卡请关机后操作。', '重新检查',
@@ -278,6 +284,10 @@ def inspect(request, folder):
             'reboot_required', 'carrier_reboot_required', 'native_exited'):
         state = 'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required'
         return ui(state, language, details=details, actions=actions)
+    if result.get('update_available') is True and not result.get('can_update'):
+        # A recognized older engine needs restoration before replacement even
+        # when its IMS registration is waiting. Do not hide this behind Check.
+        return ui('update_requires_stop', language, 'disable', details, actions=actions)
     if registered(status):
         context = call_context()
         state = 'verified' if context['calls_verified'] else 'registered'
@@ -285,6 +295,10 @@ def inspect(request, folder):
                   actions=actions + ['confirm-calls'], call_context=context['context'])
     if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
         return ui('recovery_required', language, details=details, actions=actions)
+    if status.get('phase') == 'registering':
+        return ui('waiting_ims', language, details=details, actions=actions)
+    if status.get('phase') == 'waiting_for_ims_apn':
+        return ui('waiting_ims_apn', language, details=details, actions=actions)
     return ui('waiting', language, details=details, actions=actions)
 
 

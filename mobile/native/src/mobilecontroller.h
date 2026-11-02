@@ -34,6 +34,7 @@ class MobileController : public QObject {
     Q_PROPERTY(bool busy READ busy NOTIFY modelChanged)
     Q_PROPERTY(bool waitingForRoot READ waitingForRoot NOTIFY modelChanged)
     Q_PROPERTY(bool jobRunning READ jobRunning NOTIFY modelChanged)
+    Q_PROPERTY(bool operationInProgress READ operationInProgress NOTIFY modelChanged)
     Q_PROPERTY(bool sdAvailable READ sdAvailable NOTIFY settingsChanged)
     Q_PROPERTY(bool hasPackage READ hasPackage NOTIFY settingsChanged)
     Q_PROPERTY(bool hasUpdate READ hasUpdate NOTIFY modelChanged)
@@ -66,6 +67,7 @@ public:
     bool busy() const { return m_busy; }
     bool waitingForRoot() const { return m_waitingForRoot; }
     bool jobRunning() const;
+    bool operationInProgress() const;
     bool sdAvailable() const;
     bool hasPackage() const { return !m_packagePath.isEmpty(); }
     bool hasUpdate() const { return !m_update.isEmpty(); }

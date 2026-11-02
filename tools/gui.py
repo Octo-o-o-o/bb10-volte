@@ -229,6 +229,7 @@ class App:
         self.export_index = self.menu.index('end') + 1
         self.menu.add_command(label=tr('导出检查报告'), command=self.export)
         self.menu.add_command(label=tr('高级连接设置'), command=self.toggle_connection_options)
+        self.menu.add_command(label=tr('安装手机应用'), command=self.mobile_app)
         self.menu.add_command(label=tr('候选机型本地试测'), command=self.variant_trials)
         self.menu.add_separator()
         self.menu.add_command(label=tr('使用与恢复指南'), command=self.guide)
@@ -566,6 +567,17 @@ class App:
             return
         from auto_carrier_gui import AutoCarrierWindow
         AutoCarrierWindow(self.root, self.host.get().strip(), self.config.get().strip())
+
+    def mobile_app(self):
+        if self.busy:
+            return
+        from mobile_app_gui import MobileAppInstallWindow
+        from mobile_app_gui import presentation
+        try:
+            MobileAppInstallWindow(self.root, self.host.get().strip(), self.config.get().strip())
+        except WorkflowError as error:
+            title, detail = presentation({'error': error.code})
+            messagebox.showerror(title, detail, parent=self.root)
 
     def run(self, action):
         if not self.allowed_actions().get(action):

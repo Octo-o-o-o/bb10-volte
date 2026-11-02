@@ -124,6 +124,52 @@ class MobileRuntimeTests(unittest.TestCase):
             self.assertEqual(response['primary_action'], 'update' if ready_update else 'enable')
             self.assertEqual(response['details']['bundled_update_available'], ready_update)
 
+    def test_active_old_engine_offers_restoration_without_waiting_for_registration(self):
+        manager = mock.Mock(BASE='/owned')
+        for phase in ('registering', 'running'):
+            manager.manage.return_value = {'installed': True, 'installed_management_schema': 1,
+                'sim_supported': True, 'can_update': False, 'update_available': True,
+                'status': dict(ready(), phase=phase)}
+            with mock.patch.object(WORKER, 'engine', return_value=manager), \
+                 mock.patch.object(WORKER, 'sanitized_identity', return_value={}), \
+                 mock.patch.object(WORKER, 'load', return_value={'version': '0.1.0.13'}), \
+                 mock.patch.object(WORKER, 'call_context') as context:
+                response = WORKER.inspect({}, '/verified')
+            self.assertEqual(response['state'], 'update_requires_stop')
+            self.assertEqual(response['primary_action'], 'disable')
+            self.assertNotIn('update', response['actions'])
+            self.assertNotIn('confirm-calls', response['actions'])
+            context.assert_not_called()
+            manager.manage.assert_called_with('probe')
+
+    def test_ims_waits_do_not_describe_web_access_as_disconnected(self):
+        manager = mock.Mock(BASE='/owned')
+        for phase, state in (('registering', 'waiting_ims'),
+                             ('waiting_for_ims_apn', 'waiting_ims_apn'),
+                             ('waiting_for_lte_and_usim', 'waiting')):
+            manager.manage.return_value = {'installed': True, 'installed_management_schema': 2,
+                'sim_supported': True, 'can_update': False, 'update_available': False,
+                'status': dict(ready(), phase=phase)}
+            with mock.patch.object(WORKER, 'engine', return_value=manager), \
+                 mock.patch.object(WORKER, 'sanitized_identity', return_value={}), \
+                 mock.patch.object(WORKER, 'load', return_value={'version': '0.1.0.13'}):
+                response = WORKER.inspect({}, '/verified')
+            self.assertEqual(response['state'], state)
+            self.assertEqual(response['primary_action'], 'status')
+            self.assertNotIn('confirm-calls', response['actions'])
+
+    def test_pending_restore_and_restart_remain_ahead_of_upgrade_prompt(self):
+        manager = mock.Mock(BASE='/owned')
+        for phase in ('reboot_required', 'carrier_reboot_required'):
+            manager.manage.return_value = {'installed': True, 'sim_supported': True,
+                'can_update': False, 'update_available': True, 'status': dict(ready(), phase=phase)}
+            with mock.patch.object(WORKER, 'engine', return_value=manager), \
+                 mock.patch.object(WORKER, 'sanitized_identity', return_value={}), \
+                 mock.patch.object(WORKER, 'load', return_value={'version': '0.1.0.13'}):
+                response = WORKER.inspect({}, '/verified')
+            self.assertEqual(response['state'], phase)
+            self.assertEqual(response['primary_action'], 'status')
+
     def test_call_confirmation_rejects_sim_change_even_if_ims_is_ready(self):
         request = dict.fromkeys(('confirmed', 'incoming', 'outgoing', 'audio', 'lte'), True)
         request['call_context'] = 'a' * 32
