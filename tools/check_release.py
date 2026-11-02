@@ -17,6 +17,7 @@ TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md'
        'website/.gitignore', 'website/README.md', 'website/package.json',
        'website/package-lock.json', 'website/playwright.config.mjs',
        'website/src/_headers', 'website/src/robots.txt',
+       'website/src/mobile/latest.json',
        'website/src/assets/app-icon.png', 'website/src/assets/app-status.png',
        'website/src/assets/app-status-en.jpg', 'website/src/assets/icon.png',
        'website/src/assets/carrier-acceptance.png', 'website/src/assets/windows-setup.jpg',
