@@ -19,7 +19,18 @@ NavigationPane {
     }
     Page {
         id: home
-        titleBar: TitleBar { title: "BB10 VoLTE" }
+        titleBar: TitleBar {
+            title: "BB10 VoLTE"
+            acceptAction: ActionItem {
+                title: "OctoLab"
+                enabled: !volteController.operationInProgress
+                onTriggered: {
+                    var page = supportPage.createObject();
+                    page.appNavigation = navigation;
+                    navigation.push(page);
+                }
+            }
+        }
         actions: [
             ActionItem {
                 title: navigation.t("advanced")
@@ -139,6 +150,7 @@ NavigationPane {
         }
     }
     attachedObjects: [
+        ComponentDefinition { id: supportPage; source: "Support.qml" },
         ComponentDefinition { id: managePage; source: "Manage.qml" },
         ComponentDefinition { id: callPage; source: "CallCheck.qml" },
         Dialog {

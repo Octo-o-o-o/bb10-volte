@@ -14,8 +14,8 @@ endif()
 configure_file(src/bundle_identity.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/bundle_identity.h" @ONLY)
 
 include(BB10Qt4)
-qt4_wrap_cpp(MOC_SOURCES src/mobilecontroller.h)
-add_executable(bb10volte src/main.cpp src/mobilecontroller.cpp ${MOC_SOURCES})
+qt4_wrap_cpp(MOC_SOURCES src/mobilecontroller.h src/supportcontroller.h)
+add_executable(bb10volte src/main.cpp src/mobilecontroller.cpp src/supportcontroller.cpp ${MOC_SOURCES})
 target_include_directories(bb10volte PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_link_libraries(bb10volte PRIVATE
     bbcascades bbdata bbsystem bbcascadespickers

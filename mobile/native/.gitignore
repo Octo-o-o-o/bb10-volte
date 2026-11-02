@@ -4,6 +4,7 @@ assets/runtime/
 assets/payload/
 assets/profiles/
 assets/materials/
+assets/support/
 assets/manifest.json
 assets/manifest.sig.json
 bar-descriptor.build.xml

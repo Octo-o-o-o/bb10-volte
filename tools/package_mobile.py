@@ -170,6 +170,8 @@ def write_zip(path, blobs):
 
 
 def prepare_assets(private_key, version=MOBILE_VERSION):
+    from mobile_support import prepare_support_assets
+    prepare_support_assets(ROOT)
     blobs, manifest, signature, key = make_bundle(private_key, version)
     assets = ROOT / 'mobile/native/assets'
     for name, data in dict(blobs, **{'manifest.json': manifest, 'manifest.sig.json': signature}).items():
@@ -190,6 +192,8 @@ def package(private_key, version=MOBILE_VERSION, bar=None):
     if bar is not None:
         bar = Path(bar)
         with zipfile.ZipFile(bar) as parsed:
+            from mobile_support import verify_bar_support
+            verify_bar_support(parsed, ROOT)
             names = parsed.namelist()
             if 'META-INF/MANIFEST.MF' not in names:
                 raise ValueError('BAR is missing platform manifest')
