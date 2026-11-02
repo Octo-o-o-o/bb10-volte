@@ -16,6 +16,8 @@ Install once from Windows or Mac. Then power off, change the SIM and start the p
 
 **More → Local candidate variant trials** offers 13 gated manual combinations and six read-only Passport combinations. **The new variants have no hardware acceptance and are outside the automatic support scope above.** Model, OS, SIM, native-file and restoration blockers are explained before proceeding. See the [local trial guide](docs/VARIANT-LOCAL-TRIALS.en.md) and [14-variant material audit](docs/ALL-VARIANTS-COVERAGE-PLAN.md) (Chinese).
 
+[Copy instructions and feedback forms by exact variant](https://bb10-volte.octoooo.com/en/trials.html) · [Full compatibility and progress table](https://bb10-volte.octoooo.com/en/index.html#variant-matrix)
+
 | Candidate variants | Carriers | r15 route |
 | --- | --- | --- |
 | SQN100-1, SQN100-5 | Telecom 460-11 | Manual candidate; working local LTE B5 data required |

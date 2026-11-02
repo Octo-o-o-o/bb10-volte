@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSITORY_URL, selectRelease } from '../src/site.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const pages = ['index.html', 'guide.html', 'mobile.html', '404.html', 'en/index.html', 'en/guide.html', 'en/mobile.html', 'en/404.html'];
+const pages = ['index.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
 const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15';
 
@@ -158,7 +158,7 @@ test('applying a release updates every download and release link', () => {
 });
 
 test('language pages have reciprocal switches, localized metadata and matching sections', () => {
-  for (const name of ['index.html', 'guide.html', 'mobile.html']) {
+  for (const name of ['index.html', 'guide.html', 'mobile.html', 'trials.html']) {
     const chinese = html[name];
     const english = html[`en/${name}`];
     assert.match(chinese, /<html lang="zh-CN">/);

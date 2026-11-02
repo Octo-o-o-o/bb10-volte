@@ -1,5 +1,7 @@
 # Local trials for additional variants
 
+[Copy or download instructions and feedback forms for each exact variant](https://bb10-volte.octoooo.com/en/trials.html).
+
 [简体中文](VARIANT-LOCAL-TRIALS.md) · [Full research (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md)
 
 This is an experimental route for variants without new hardware acceptance. It reuses the existing manual service and adds exact-model binding, six native-file checks, fixed carrier settings and separate installation/start steps. It does not add candidates to automatic carrier support.
@@ -16,6 +18,8 @@ Use an already rooted phone with working AutoRoot v4 / Root SSH. A report does n
 There are 13 manual candidates and six read-only candidates. Actual checks still require OS 10.3.3.3216, QNX ARM32, Root, matching native files, USIM without ISIM, the selected home PLMN, working LTE data, a verified stock template and a clean baseline. Band overlap does not establish local coverage or voice support.
 
 SQN100-3, SQC100-2 and SQW100-4 keep their existing automatic route. Domestic cases for SQN100-2/-4, SQC100-4/Mobile and the unconfirmed SQW100-2 do not receive trial installation. Other MNCs and ISIM are outside this batch.
+
+SQW100-1/-3 only inspect and export feedback. Skip steps 4–7 below: do not install, start, or disable/restore. The standalone Passport instructions cover the read-only route separately.
 
 1. Use the r15 Windows EXE or macOS DMG and verify its supplied SHA-256. The trial entry does not establish hardware acceptance. Keep the same package throughout the trial. Do not overwrite an active automatic installation or mobile transaction.
 2. Select the full variant from Settings / About and the actual carrier. Choose **Check this phone**; the main window also offers **More / Local candidate variant trials**. This does not automatically consent, install, flash or reboot.

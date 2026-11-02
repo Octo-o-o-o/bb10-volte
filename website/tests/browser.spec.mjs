@@ -20,8 +20,9 @@ test('homepage renders real content, image and downloads without script errors',
 });
 
 test('all pages fit narrow, tablet and desktop viewports', async ({ page }) => {
-  for (const pathname of ['/', '/guide.html', '/mobile.html', '/missing-page', '/en/', '/en/guide.html', '/en/mobile.html', '/en/nested/missing-page']) {
-    for (const width of [320, 390, 768, 1024, 1440]) {
+  test.setTimeout(120000);
+  for (const pathname of ['/', '/guide.html', '/mobile.html', '/trials.html', '/missing-page', '/en/', '/en/guide.html', '/en/mobile.html', '/en/trials.html', '/en/nested/missing-page']) {
+    for (const width of [320, 390, 768, 1024, 1440, 1920, 3840]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(pathname);
       const dimensions = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));

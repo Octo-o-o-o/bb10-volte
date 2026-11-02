@@ -10,7 +10,7 @@
     "preview": "node scripts/serve.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
-    "check": "node --check src/appearance.js && node --check src/site.js && node --check scripts/build.mjs && node --check scripts/serve.mjs"
+    "check": "node --check src/appearance.js && node --check src/site.js && node --check src/trials.js && node --check scripts/compatibility.mjs && node --check scripts/build.mjs && node --check scripts/serve.mjs"
   },
   "engines": {
     "node": ">=20"

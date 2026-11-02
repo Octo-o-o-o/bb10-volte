@@ -12,7 +12,7 @@
   } catch { /* The system language is unavailable; keep Chinese. */ }
   root.dataset.systemLanguage = language;
   // Neutral URLs follow the browser. Explicit language URLs stay shareable.
-  const neutralTarget = { '/': '/en/index.html', '/guide': '/en/guide.html' }[location.pathname];
+  const neutralTarget = { '/': '/en/index.html', '/guide': '/en/guide.html', '/trials': '/en/trials.html' }[location.pathname];
   if (neutralTarget && language === 'en') {
     location.replace(`${neutralTarget}${location.search}${location.hash}`);
   }

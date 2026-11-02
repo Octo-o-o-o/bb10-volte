@@ -15,6 +15,10 @@
   letter-spacing: -0.04em;
 }
 
+.guide-hero .eyebrow { color: var(--on-dark); opacity: .8; }
+.guide-hero .button-secondary { color: var(--on-dark); border-color: #ffffff66; }
+.guide-hero .button-secondary:hover { background: #ffffff15; border-color: var(--on-dark); }
+
 .guide-intro {
   max-width: 760px;
   margin: 1.5rem 0 0;
@@ -251,11 +255,11 @@
 }
 
 .callout-danger {
-  border-left-color: #a63f35;
+  border-left-color: var(--danger);
 }
 
 .callout-danger strong {
-  color: #a63f35;
+  color: var(--danger);
 }
 
 .callout-warning {
