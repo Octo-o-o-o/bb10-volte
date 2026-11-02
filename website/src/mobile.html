@@ -33,19 +33,29 @@
     <section class="mobile-hero" aria-labelledby="mobile-title">
       <div class="mobile-shell">
         <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
-        <h1 id="mobile-title">从手机上，<br>管理 VoLTE。</h1>
-        <p class="mobile-lead">手机原生方案把检查、备份、开启和恢复放进同一个应用。能否第一次就不用电脑，取决于手机上是否已有可用的安装工具和本机 Root 入口。</p>
+        <h1 id="mobile-title">Root 之后，<br>把 VoLTE 装进手机。</h1>
+        <p class="mobile-lead">已 Root 的 BB10，推荐使用原生 BAR 应用：由手机系统安装服务注册，随后在手机里管理 VoLTE。本机 BAR 安装器与电脑辅助首装，是进入同一个原生应用的两种入口。</p>
         <div class="release-status" id="release-status" role="note">
           <strong>候选版仍在验收，尚未公开发布。</strong>
-          <p>本页说明候选方案的前提与流程，不代表首次安装、界面升级和完整恢复已全部实机通过。当前公开桌面版本仍为 <strong>v0.5.0-r15</strong>。</p>
+          <p>Q20／联通、Passport／移动已完成完整恢复、卸载、重装、通话和短信；Q20 换移动卡、Passport 换联通卡也已完成本轮验收。Q10 的原生安装仍在验证。当前公开桌面版本仍为 <strong>v0.5.0-r15</strong>。</p>
           <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">查看正式 Release 页面</a><a class="mobile-button mobile-button-plain" href="index.html#download">继续下载桌面 r15</a></p>
           <p class="small-copy">只有正式 Release 列出手机版文件、校验信息和适用范围后，才按对应版本操作。本页不提供尚不存在的手机包下载地址。</p>
         </div>
-        <nav class="mobile-contents" aria-label="本页目录"><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
+        <nav class="mobile-contents" aria-label="本页目录"><a href="#standard">推荐安装方式</a><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
       </div>
     </section>
 
     <div class="mobile-shell mobile-content">
+      <section class="mobile-section" id="standard" aria-labelledby="standard-title">
+        <p class="mobile-kicker">RECOMMENDED / ROOT → BAR → SYSTEM INSTALLER</p>
+        <h2 id="standard-title">Root 后，优先走原生安装路线</h2>
+        <div class="recommended-route"><p><strong>用原生 BAR，让 BB10 正常注册应用。</strong> 应用沿用固定的应用与作者身份，便于覆盖升级。安装图标与启用无线服务分开；打开应用后，再备份和开启 VoLTE。</p>
+        <ol><li>正常开机、解锁，等到系统的 Root 成功提示。</li><li>从同一可信发行版取得 BAR 与 SHA-256。已有兼容 BAR 安装器就用它打开；没有时，使用对应新版桌面的“更多 → 安装手机应用”辅助首装。</li><li>等系统安装完成，核对实际应用版本，再打开 BB10 VoLTE，按提示备份、开启、正常重启并验收通话。</li></ol>
+        <p class="small-copy">公开桌面 r15 还没有“安装手机应用”新菜单。候选版需按同次交付说明操作；不会因为下载了 ZIP 就自动获得该入口。</p></div>
+        <p>AutoRoot v4 作者明确说明了 Root 成功提示后的未签名 BAR 安装、本机 Root helper 与包格式。本项目沿用这条原生路线。“推荐”是本项目针对已核对环境的选择，不代表 BlackBerry 官方认证，也不代表所有 Root 方案都可直接套用。<a href="https://bb10.root.sx/blog/autoroot-v4" target="_blank" rel="noopener noreferrer">查看 AutoRoot 作者说明</a>。</p>
+        <p>日常脱离电脑与首次完全不用电脑，需要分别判断。Q20、Passport 的安装证据包含经可信 Root SSH 调用手机系统安装器；不能据此把“纯手机点击首装”写成已完成实测。</p>
+      </section>
+
       <section class="mobile-section" id="entry" aria-labelledby="entry-title">
         <p class="mobile-kicker">01 / FIRST INSTALL</p>
         <h2 id="entry-title">先看手机上已有哪种入口</h2>
@@ -66,11 +76,11 @@
             <p class="route-note">候选引导仍在实测。不要拼接其他版本的脚本，也不要把网页内容直接作为 Root 命令执行。</p>
           </article>
           <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
-            <p class="route-index">C / 已 Root，但没有本机入口</p>
-            <h3 id="no-entry-title">没有安装器，也没有可用 Root 终端</h3>
-            <p>浏览器不能凭空获得安装和 Root 执行能力。此时不能承诺第一次安装无需电脑。</p>
-            <p>使用原 Root 方案或已有的可信电脑连接恢复安装入口，再回来选择 A 或 B。已有 Root 不应仅因连接失败就重新刷机。</p>
-            <a href="guide.html#connect">查看桌面连接与恢复说明</a>
+            <p class="route-index">C / 电脑辅助一次</p>
+            <h3 id="no-entry-title">已 Root，但没有本机安装器</h3>
+            <p>使用对应新版桌面的“更多 → 安装手机应用”：连接并解锁一台手机，检查身份，选择同次发行的 BAR，再确认安装。向导会核对完整包、系统回执和实际安装文件。</p>
+            <p>公开 r15 暂无此菜单；新向导仍随 Q10 首装进行验收。安装结果未知时，只检查原任务，不重复提交。</p>
+            <a href="guide.html#connect">查看可信连接与恢复说明</a>
           </article>
           <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
             <p class="route-index">D / 尚未 Root</p>
@@ -119,14 +129,18 @@
         <h3>恢复完成后，再移除应用</h3>
         <p>在管理页选择停用并恢复、回滚或完整卸载，按提示正常重启并继续原任务。卸载可能需要分阶段重启；文件已移除不等于恢复已核对完成。仅删除桌面图标不会恢复服务配置，也不会移除 Root。</p>
         <p>任务中断、未知文件或备份冲突时，保留原任务和原件，先重新检查或导出报告。恢复只使用有所有权与校验证据的内容，不用反复安装来覆盖未知状态。</p>
-        <p class="mobile-callout">手机版与新版桌面使用管理协议 2。r14 / r15 / r16 旧桌面不能完整管理新载荷，需对应 r17 管理端。旧客户端被拒绝时，应升级管理端并按发行说明完成停用、恢复与正常重启后接管。</p>
+        <p class="mobile-callout">手机版与新版桌面使用管理协议 2。r14 / r15 / r16 旧桌面不能完整管理新载荷，需与手机服务协议匹配的新版管理端。旧客户端被拒绝时，应升级管理端并按发行说明完成停用、恢复与正常重启后接管。</p>
       </section>
 
       <section class="mobile-section" id="scope" aria-labelledby="scope-title">
         <p class="mobile-kicker">05 / EVIDENCE &amp; DEVICE SCOPE</p>
-        <h2 id="scope-title">历史通话验收，不等于手机版已验收</h2>
+        <h2 id="scope-title">手机端验收到哪一步，按机型看</h2><div class="mobile-evidence" role="list" aria-label="2026 年 11 月 2 日手机端验收进度">
+          <article role="listitem"><h3>Q20 · SQC100-2</h3><p>应用 v12 / 服务 r18：联通卡已完成恢复、卸载、重装、通话、短信和验收保存。换移动卡后，通话、短信及验收记录保留通过。</p></article>
+          <article role="listitem"><h3>Passport · SQW100-4</h3><p>应用 v12 / 服务 r18：移动卡完整流程通过。换联通卡后，经正常重启完成网络策略切换，机主确认通话、短信和验收保存均正常。</p></article>
+          <article role="listitem"><h3>Q10 · SQN100-3</h3><p>原生应用首装仍在验证，包括 QNX 进程启动、包解压和系统安装回执。旧版语音通过，不能代替本次手机应用安装成功。</p></article>
+        </div><p class="small-copy">核对日期：2026 年 11 月 2 日，Asia/Shanghai。最新界面包、纯手机点击首装仍需各自验收。Passport 此前一次孤立唤醒重启已由机主接受，但其根因不声称已修复；长期稳定性仍需单独观察。</p>
         <p>现有历史范围为 OS <strong>10.3.3.3216</strong> 的 Q10 <strong>SQN100-3</strong>、Q20 / Classic <strong>SQC100-2</strong>、Passport <strong>SQW100-4</strong>。r7 / r8 的三机三网九项语音组合记录继续保留。r14 短信验证覆盖 Q20＋联通、Passport＋移动；其他短信组合不能据此扩写。</p>
-        <p>手机候选版仍需分别完成首次安装、应用到 Root、界面升级、大小屏操作和完整恢复的实机验收。识别到机型、编译成功或看到图标都不能代替这些结果。</p>
+        <p>每个新的手机候选包仍需分别核对首次安装、应用到 Root、界面升级、大小屏操作和恢复；上面的通过结论属于所记录的 v12/r18 组合。识别到机型、编译成功或看到图标都不能代替这些结果。</p>
         <p>其他 Q10 / Classic 可以查看单独的实验路线，但仍要通过原生文件散列、ABI、SIM、网络和恢复检查；手动启动且不自动启用。SQC100-4 和其他未验收变体不标为已支持。未知设备可导出部分兼容性报告，没有“忽略检查继续”入口。</p>
         <p><a href="acceptance.json">查看历史结构化验收记录</a> · <a href="guide.html#acceptance">查看详细通话验收步骤</a></p>
       </section>

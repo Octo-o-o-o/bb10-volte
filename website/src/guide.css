@@ -644,3 +644,5 @@
 .tutorial-help summary { cursor:pointer; font-weight:650; }
 .tutorial-help p { margin-bottom:0; }
 .tutorial-step { scroll-margin-top:7rem; }
+
+.mobile-install-intro { max-width: 1120px; margin: 24px auto; padding: 20px 24px; border-left: 3px solid var(--accent, #2e654d); font-size: 16px; line-height: 1.8; }

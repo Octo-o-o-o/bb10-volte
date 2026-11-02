@@ -49,3 +49,7 @@ No Cloudflare credentials or raw phone evidence belong in this directory. Local 
 The shared [carrier acceptance graphic](src/assets/carrier-acceptance.png) appears above the detailed compatibility cards on both homepages and in both READMEs. It is an illustration, not a photograph of the test session. Its nine cells show current support; exact test revisions remain in `src/acceptance.json`. The accessible HTML matrix and evidence links remain below it. The image opens at full size on small screens. The [Windows illustration](src/assets/windows-setup.jpg) is a real application screenshot with synthetic, identifier-free demonstration state.
 
 Generated with the built-in image_gen tool. The [edit specification](src/assets/carrier-acceptance.prompt.txt) is included. Update the visual and text together if the acceptance scope changes.
+
+## Rooted phone installation
+
+The bilingual homepage leads to `mobile.html`, with the native BAR/system-installer route as the recommended approach. Mobile pages remain static for BB10 WebKit and separate native package installation, phone-only first installation, everyday standalone use and per-device acceptance. The public desktop downloads stay at r15 until matching new artifacts are released. This website update must not upload a candidate BAR or change `mobile/latest.json`.

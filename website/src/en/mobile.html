@@ -33,19 +33,29 @@
     <section class="mobile-hero" aria-labelledby="mobile-title">
       <div class="mobile-shell">
         <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
-        <h1 id="mobile-title">Manage VoLTE.<br>On your phone.</h1>
-        <p class="mobile-lead">The native mobile approach brings checks, backups, activation and restoration into one app. A first installation without a computer depends on having a working installer and local Root entry point already on the phone.</p>
+        <h1 id="mobile-title">After Root.<br>Install on your phone.</h1>
+        <p class="mobile-lead">Our recommended approach for a rooted BB10 phone is the native BAR app. Install it through the phone’s system installer, then manage VoLTE locally. A local BAR installer or one-time desktop assistance are two entry points to the same native app.</p>
         <div class="release-status" id="release-status" role="note">
           <strong>The candidate is still being tested and is not publicly released.</strong>
-          <p>This page describes its requirements and workflow. It does not establish complete hardware acceptance for first installation, app upgrades or restoration. The current public desktop release remains <strong>v0.5.0-r15</strong>.</p>
+          <p>Q20/Unicom and Passport/Mobile have completed restoration, removal, fresh installation, calls and SMS. Q20 switched to Mobile and Passport switched to Unicom have also completed the recorded checks. Q10 native installation is still being verified. The public desktop release remains <strong>v0.5.0-r15</strong>.</p>
           <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Open official Releases</a><a class="mobile-button mobile-button-plain" href="index.html#download">Get desktop r15</a></p>
           <p class="small-copy">Proceed only when an official Release lists mobile files, verification information and supported conditions. This page does not link to nonexistent mobile downloads.</p>
         </div>
-        <nav class="mobile-contents" aria-label="On this page"><a href="#entry">Choose an entry point</a><a href="#steps">From backup to calls</a><a href="#backup">Where backups go</a><a href="#updates">Updates &amp; restoration</a><a href="#scope">What is verified</a></nav>
+        <nav class="mobile-contents" aria-label="On this page"><a href="#standard">Recommended approach</a><a href="#entry">Choose an entry point</a><a href="#steps">From backup to calls</a><a href="#backup">Where backups go</a><a href="#updates">Updates &amp; restoration</a><a href="#scope">What is verified</a></nav>
       </div>
     </section>
 
     <div class="mobile-shell mobile-content">
+      <section class="mobile-section" id="standard" aria-labelledby="standard-title">
+        <p class="mobile-kicker">RECOMMENDED / ROOT → BAR → SYSTEM INSTALLER</p>
+        <h2 id="standard-title">The native installation route after Root</h2>
+        <div class="recommended-route"><p><strong>A native app, registered by BB10.</strong> The BAR keeps a stable application and author identity for upgrades. Installing the icon does not activate or modify the radio service; backups and activation happen separately inside the app.</p>
+        <ol><li>Restart normally, unlock, and wait for the Root success notification.</li><li>Obtain the BAR and SHA-256 from the same trusted release. Use an existing compatible BAR installer, or the matching desktop “More → Install phone app” assistant when that version is released.</li><li>Wait for the system installation result and confirm the installed version. Then open BB10 VoLTE and follow the backup and activation steps.</li></ol>
+        <p class="small-copy">The current public r15 desktop does not contain the new phone-app assistant. Installing a candidate or downloading a ZIP does not add that menu. Use a candidate only with its matching delivery instructions.</p></div>
+        <p>AutoRoot v4 documents unsigned BAR installation after its Root notification, plus local Root helpers and a package format. This app follows that native package approach. “Recommended” is this project’s guidance for the checked environment, not BlackBerry certification or proof that every Root method works. <a href="https://bb10.root.sx/blog/autoroot-v4" target="_blank" rel="noopener noreferrer">AutoRoot author’s documentation</a>.</p>
+        <p>Computer-free daily use is established separately from computer-free first installation. Q20 and Passport installation evidence includes commands sent over trusted Root SSH to the phone’s installer; it does not establish a complete phone-only first-install flow.</p>
+      </section>
+
       <section class="mobile-section" id="entry" aria-labelledby="entry-title">
         <p class="mobile-kicker">01 / FIRST INSTALL</p>
         <h2 id="entry-title">Which entry point is already on your phone?</h2>
@@ -66,11 +76,11 @@
             <p class="route-note">The candidate bootstrap is still under hardware testing. Do not combine scripts from different releases or execute web content directly as Root commands.</p>
           </article>
           <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
-            <p class="route-index">C / ROOTED, WITHOUT A LOCAL ENTRY POINT</p>
-            <h3 id="no-entry-title">No installer or working Root terminal</h3>
-            <p>A browser cannot create installation or Root execution privileges. A first installation without a computer cannot be promised in this state.</p>
-            <p>Restore an installation entry point through your original Root method or an existing trusted computer connection, then choose A or B. A connection failure alone is not a reason to flash an already rooted phone again.</p>
-            <a href="guide.html#connect">Read desktop connection and recovery guidance</a>
+            <p class="route-index">C / ONE-TIME DESKTOP ASSISTANCE</p>
+            <h3 id="no-entry-title">Rooted, without a local installer</h3>
+            <p>Use the matching new desktop “More → Install phone app” assistant: connect and unlock one phone, check its identity, select the exact BAR, then confirm installation. The assistant verifies the complete package, system receipt and installed files.</p>
+            <p>Public r15 does not have this menu. The new assistant remains a candidate while Q10 installation is tested. If a result is unknown, inspect the same task instead of submitting it again.</p>
+            <a href="guide.html#connect">Trusted desktop connection and recovery</a>
           </article>
           <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
             <p class="route-index">D / NOT ROOTED YET</p>
@@ -119,14 +129,18 @@
         <h3>Finish restoration before removing the app</h3>
         <p>Use disable and restore, rollback or full uninstall from management. Restart normally and continue the same task when prompted. Uninstall can require staged restarts; removed files do not prove restoration has been verified. Deleting the home-screen icon alone does not restore service configuration or remove Root.</p>
         <p>If a task is interrupted, files are unknown or backups conflict, keep the original task and files. Recheck or export a report first. Restoration requires ownership and verification evidence; repeated installation is not a way to overwrite unknown state.</p>
-        <p class="mobile-callout">Mobile and the new desktop manager use management protocol 2. Old r14 / r15 / r16 desktop clients cannot fully manage the new payload; use the corresponding r17 manager. If an older client is rejected, upgrade it and follow the release's disable, restore and normal-restart adoption steps.</p>
+        <p class="mobile-callout">Mobile and the new desktop manager use management protocol 2. Old r14 / r15 / r16 desktop clients cannot fully manage the new payload; use a newer manager matching the phone service protocol. If an older client is rejected, upgrade it and follow the release's disable, restore and normal-restart adoption steps.</p>
       </section>
 
       <section class="mobile-section" id="scope" aria-labelledby="scope-title">
         <p class="mobile-kicker">05 / EVIDENCE &amp; DEVICE SCOPE</p>
-        <h2 id="scope-title">Historical call results do not validate the mobile app</h2>
+        <h2 id="scope-title">Mobile app checks, by device</h2><div class="mobile-evidence" role="list" aria-label="Native mobile evidence as of 2 November 2026">
+          <article role="listitem"><h3>Q20 · SQC100-2</h3><p>App v12 / service r18: Unicom restoration, removal, fresh installation, calls, SMS and saved checks passed. Switching to Mobile: calls, SMS and retained checks passed.</p></article>
+          <article role="listitem"><h3>Passport · SQW100-4</h3><p>App v12 / service r18: Mobile full cycle passed. Switching to Unicom completed after a normal restart for the network policy; calls, SMS and retained checks were confirmed by the owner.</p></article>
+          <article role="listitem"><h3>Q10 · SQN100-3</h3><p>Native app installation is still being verified, including QNX process launch, package extraction and the system installation receipt. Earlier voice results do not establish that this mobile app is installed.</p></article>
+        </div><p class="small-copy">Checked on 2 November 2026, Asia/Shanghai. The latest UI build and the phone-only first-install experience need their own acceptance. An earlier isolated Passport wake/restart was accepted by the owner; its underlying cause is not claimed fixed. Long-term stability remains separate.</p>
         <p>The historical scope is OS <strong>10.3.3.3216</strong> on Q10 <strong>SQN100-3</strong>, Q20 / Classic <strong>SQC100-2</strong> and Passport <strong>SQW100-4</strong>. The nine model/carrier voice combinations recorded on r7 / r8 remain documented. r14 SMS validation covers Q20 with Unicom and Passport with Mobile; it does not extend to other SMS combinations.</p>
-        <p>The mobile candidate still needs separate hardware acceptance for first installation, app-to-Root access, BAR upgrades, small and large screens, and full restoration. Recognizing a model, compiling successfully or seeing an icon cannot establish those results.</p>
+        <p>Each new mobile build needs its own checks for installation, app-to-Root access, BAR upgrades, small and large screens, and restoration; the results above belong to their recorded v12/r18 combinations. Recognizing a model, compiling successfully or seeing an icon cannot establish those results.</p>
         <p>Other Q10 / Classic variants can inspect the separate experimental route. Native hashes, ABI, SIM, network and restoration checks still apply; startup is manual and autostart stays off. SQC100-4 and other unvalidated variants are not listed as supported. Unknown devices can export a partial compatibility report. There is no control to ignore failed checks.</p>
         <p><a href="../acceptance.json">Read historical structured acceptance records</a> · <a href="guide.html#acceptance">Read the detailed call checklist</a></p>
       </section>

@@ -81,3 +81,7 @@ code { padding: 1px 3px; background: #e4ebe1; font: 14px/1.8 Consolas, monospace
   .route-card { margin-bottom: 20px; }
   a { color: #000; }
 }
+
+.recommended-route { padding: 26px; background: #fffdf7; border: 1px solid #c9d2c3; border-left: 4px solid #2e654d; }
+.mobile-evidence article { padding: 22px 0 8px; border-bottom: 1px solid #d7ddd4; }
+.mobile-evidence + .small-copy { margin-top: 20px; }
