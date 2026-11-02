@@ -89,6 +89,7 @@ class UpgradeTests(unittest.TestCase):
     def test_prepare_does_not_contact_or_flash_phone(self):
         (self.folder / u.JOURNAL).unlink()
         with patch.object(r, 'prepare_root_kit', return_value=str(self.folder)) as prepare, \
+                patch.object(u.shutil, 'disk_usage', return_value=SimpleNamespace(free=32 * 1024 ** 3)), \
                 patch.object(r, 'prepared_images', return_value=({'variant': 'SQW100-4'}, [])), \
                 patch.object(r, 'local_usb_state') as probe, patch.object(flash, 'launch_stage') as run:
             result = u.prepare_upgrade('SQW100-4', print, 'proxy', 'cache', True)
@@ -97,6 +98,16 @@ class UpgradeTests(unittest.TestCase):
         probe.assert_not_called()
         run.assert_not_called()
         self.assertEqual(u.read_state(self.folder)['stage'], 'prepared')
+
+    def test_insufficient_disk_stops_before_preparation_or_phone_access(self):
+        with patch.object(u.shutil, 'disk_usage', return_value=SimpleNamespace(free=24 * 1024 ** 3 - 1)), \
+                patch.object(r, 'prepare_root_kit') as prepare, \
+                patch.object(r, 'local_usb_state') as probe, patch.object(flash, 'launch_stage') as launch:
+            with self.assertRaisesRegex(r.SetupError, 'upgrade_insufficient_disk'):
+                u.prepare_upgrade('SQW100-4', lambda _: None, offline=True)
+        prepare.assert_not_called()
+        probe.assert_not_called()
+        launch.assert_not_called()
 
     def test_unsupported_platform_never_downloads_or_prepares(self):
         with patch.object(u.sys, 'platform', 'linux'), patch.object(r, 'prepare_root_kit') as prepare:
@@ -251,6 +262,7 @@ class MacUpgradeTests(UpgradeTests):
                 (output / name).write_bytes(data)
             return SimpleNamespace(returncode=0)
         with patch.object(r, 'prepare_root_kit', return_value=str(self.folder)), \
+                patch.object(u.shutil, 'disk_usage', return_value=SimpleNamespace(free=32 * 1024 ** 3)), \
                 patch.object(r, 'prepared_images', return_value=({'variant': 'SQW100-4'}, [])), \
                 patch.object(macos_root, 'verified_tools', return_value={'bb10mt': self.folder / 'bb10mt'}), \
                 patch.object(macos_root, 'native_environment', return_value={}), \
