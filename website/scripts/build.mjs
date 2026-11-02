@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderCompatibility } from './compatibility.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const source = path.join(root, 'src');
@@ -10,6 +11,7 @@ if (path.resolve(output) !== path.join(path.resolve(root), 'dist')) throw new Er
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await cp(source, output, { recursive: true });
+await renderCompatibility(source, output);
 
 const files = [];
 async function collect(directory) {

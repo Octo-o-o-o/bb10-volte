@@ -4,8 +4,8 @@ A static, bilingual website. The website explains the tool; it does not change t
 
 ## Pages and languages
 
-- Chinese: `/index.html`, `/guide.html`, `/404.html`
-- English: `/en/index.html`, `/en/guide.html`, `/en/404.html`
+- Chinese: `/index.html`, `/guide.html`, `/trials.html`, `/404.html`
+- English: `/en/index.html`, `/en/guide.html`, `/en/trials.html`, `/en/404.html`
 - Opening `/` chooses Chinese or English from the first browser language. Unsupported browser languages fall back to English. Explicit language URLs are never automatically redirected.
 - The language link preserves query parameters and the current section. Switching also works if storage is blocked.
 - Pages, downloads and language links remain available without JavaScript. Appearance preferences use local storage when available.
@@ -27,6 +27,14 @@ npm run dev
 `npm test` builds the site and checks static references, section links, release selection, language metadata and safety copy. Browser tests use Microsoft Edge and check both languages, narrow layouts, language preferences, deep links, themes, offline API fallbacks and no-JavaScript content. They start an isolated preview on port 4174 so an already-running development server cannot serve stale routing code. Override that port with `BB10_TEST_PORT` if needed.
 
 `npm run dev` serves the built `dist` directory at `http://127.0.0.1:4173`; run `npm run build` again after source edits. A different local port can be selected with `PORT`.
+
+## Exact-variant progress and tester instructions
+
+`src/compatibility.json` records the published r15 routes and dated progress for all 14 catalog suffixes. `tests/test_website_variant_matrix.py` compares its 42 carrier decisions with the actual desktop gates. Voice, SMS and first-Root acceptance remain distinct; never mark a manual candidate as hardware-accepted based on offline checks.
+
+`scripts/compatibility.mjs` renders the static homepage matrix and both trial pages during the build. It also creates eight standalone instructions per language, plus two aggregate TXT downloads, under `dist/trials/`. Each copy button uses the same text as its download; no backend or automatic feedback upload is involved. Edit the source data/renderer, not generated `dist` files. The table and downloads work without JavaScript.
+
+Browser checks cover 320–3840 px, both themes, containment of the SMS evidence note, keyboard table scrolling, copy/download equivalence, clipboard denial and no-script forwarding. Windows clipboard line endings are normalized for comparison.
 
 ## Publishing
 

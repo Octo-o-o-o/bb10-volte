@@ -14,6 +14,8 @@
 
 “更多 → 候选机型本地试测”提供 13 组受检查约束的手动候选、6 组 Passport 只读检查，**新增后缀尚未实机验收，不属于上面的自动适配范围**。完整型号、系统、SIM、原生文件或恢复条件不满足时提前说明原因。详见[本地试测指南](docs/VARIANT-LOCAL-TRIALS.md)及[14 个后缀的材料与覆盖研究](docs/ALL-VARIANTS-COVERAGE-PLAN.md)。
 
+[按型号复制测试说明与反馈表](https://bb10-volte.octoooo.com/trials.html) · [完整兼容性与进度表](https://bb10-volte.octoooo.com/index.html#variant-matrix)
+
 | 候选后缀 | 运营商 | r15 提供的流程 |
 | --- | --- | --- |
 | SQN100-1、SQN100-5 | 电信 460-11 | 手动候选；需当地已有 LTE B5 数据 |

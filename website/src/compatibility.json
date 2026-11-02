@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "release": "v0.5.0-r15",
+  "as_of": "2026-11-02",
+  "models": [
+    {
+      "variant": "SQN100-1",
+      "family": "q10",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "blocked",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "仅电信 460-11；须当地已可用 LTE B5 数据。移动、联通本批不开放。",
+        "en": "Telecom 460-11 only, with working local LTE B5 data. Mobile and Unicom are closed in this batch."
+      }
+    },
+    {
+      "variant": "SQN100-2",
+      "family": "q10",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "blocked",
+        "telecom": "blocked"
+      },
+      "progress": {
+        "zh": "当前国内频段筛查未找到适用交集；本批不开放。",
+        "en": "No applicable overlap in the current China band screening; this batch is closed."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQN100-3",
+      "family": "q10",
+      "routes": {
+        "mobile": "automatic_supported",
+        "unicom": "automatic_supported",
+        "telecom": "automatic_supported"
+      },
+      "progress": {
+        "zh": "三网历史语音验收通过。三网短信均待专项实测。",
+        "en": "Historical voice acceptance on all three carriers. Dedicated SMS acceptance remains pending for all three carriers."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQN100-4",
+      "family": "q10",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "blocked",
+        "telecom": "blocked"
+      },
+      "progress": {
+        "zh": "当前国内频段筛查未找到适用交集；本批不开放。",
+        "en": "No applicable overlap in the current China band screening; this batch is closed."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQN100-5",
+      "family": "q10",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "blocked",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "仅电信 460-11；须当地已可用 LTE B5 数据。移动、联通本批不开放。",
+        "en": "Telecom 460-11 only, with working local LTE B5 data. Mobile and Unicom are closed in this batch."
+      }
+    },
+    {
+      "variant": "SQC100-1",
+      "family": "classic",
+      "routes": {
+        "mobile": "manual_candidate",
+        "unicom": "manual_candidate",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQC100-2",
+      "family": "classic",
+      "routes": {
+        "mobile": "automatic_supported",
+        "unicom": "automatic_supported",
+        "telecom": "automatic_supported"
+      },
+      "progress": {
+        "zh": "三网历史语音验收通过。联通短信已实测；移动、电信短信待测。",
+        "en": "Historical voice acceptance on all three carriers. SMS tested on Unicom; Mobile and Telecom SMS remain untested."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQC100-3",
+      "family": "classic",
+      "routes": {
+        "mobile": "manual_candidate",
+        "unicom": "manual_candidate",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQC100-4",
+      "family": "classic",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "manual_candidate",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "仅联通 460-01、电信 460-11。移动本批不开放。",
+        "en": "Unicom 460-01 and Telecom 460-11 only. Mobile is closed in this batch."
+      }
+    },
+    {
+      "variant": "SQC100-5",
+      "family": "classic",
+      "routes": {
+        "mobile": "manual_candidate",
+        "unicom": "manual_candidate",
+        "telecom": "manual_candidate"
+      },
+      "progress": {
+        "zh": "手动试测入口已就绪；通话、短信、停用恢复均待真机验证。",
+        "en": "Manual trial ready; calls, SMS and restoration still need hardware acceptance."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQW100-1",
+      "family": "passport",
+      "routes": {
+        "mobile": "read_only_lifecycle_pending",
+        "unicom": "read_only_lifecycle_pending",
+        "telecom": "read_only_lifecycle_pending"
+      },
+      "progress": {
+        "zh": "检查与报告已就绪；停止和恢复尚未验证，禁止安装。",
+        "en": "Checks and reports ready. Installation blocked pending stop/restoration validation."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQW100-2",
+      "family": "passport",
+      "routes": {
+        "mobile": "blocked",
+        "unicom": "blocked",
+        "telecom": "blocked"
+      },
+      "progress": {
+        "zh": "完整型号身份及材料待核实；不开放试装。",
+        "en": "Exact model identity and materials unconfirmed; no trial installation."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQW100-3",
+      "family": "passport",
+      "routes": {
+        "mobile": "read_only_lifecycle_pending",
+        "unicom": "read_only_lifecycle_pending",
+        "telecom": "read_only_lifecycle_pending"
+      },
+      "progress": {
+        "zh": "检查与报告已就绪；停止和恢复尚未验证，禁止安装。",
+        "en": "Checks and reports ready. Installation blocked pending stop/restoration validation."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    },
+    {
+      "variant": "SQW100-4",
+      "family": "passport",
+      "routes": {
+        "mobile": "automatic_supported",
+        "unicom": "automatic_supported",
+        "telecom": "automatic_supported"
+      },
+      "progress": {
+        "zh": "三网历史语音验收通过。移动短信已实测；联通、电信短信待测。",
+        "en": "Historical voice acceptance on all three carriers. SMS tested on Mobile; Unicom and Telecom SMS remain untested."
+      },
+      "note": {
+        "zh": "",
+        "en": ""
+      }
+    }
+  ]
+}
