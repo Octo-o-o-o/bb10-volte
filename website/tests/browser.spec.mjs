@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -21,7 +21,7 @@ test('homepage renders real content, image and downloads without script errors',
 
 test('all pages fit narrow, tablet and desktop viewports', async ({ page }) => {
   test.setTimeout(120000);
-  for (const pathname of ['/', '/guide.html', '/mobile.html', '/trials.html', '/missing-page', '/en/', '/en/guide.html', '/en/mobile.html', '/en/trials.html', '/en/nested/missing-page']) {
+  for (const pathname of ['/', '/guides.html', '/mobile-installer.html', '/mobile-manual.html', '/guide.html', '/mobile.html', '/trials.html', '/missing-page', '/en/', '/en/guides.html', '/en/mobile-installer.html', '/en/mobile-manual.html', '/en/guide.html', '/en/mobile.html', '/en/trials.html', '/en/nested/missing-page']) {
     for (const width of [320, 390, 768, 1024, 1440, 1920, 3840]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(pathname);
@@ -37,11 +37,11 @@ test('mobile installation guide works without JavaScript on small square screens
   for (const pathname of ['/mobile.html', '/en/mobile.html']) {
     await page.goto(pathname);
     await expect(page.locator('.mobile-nav')).toBeVisible();
-    await expect(page.locator('#release-status')).toContainText('r15');
+    await expect(page.locator('#release-status')).toContainText('r20');
     await page.locator('.mobile-contents a[href="#entry"]').click();
     await expect(page).toHaveURL(/#entry$/);
     await expect(page.locator('#entry-title')).toBeInViewport();
-    await expect(page.locator('.entry-routes .route-card')).toHaveCount(4);
+    await expect(page.locator('.entry-routes .route-card')).toHaveCount(2);
     await expect(page.locator('#install-result')).toContainText('SUD success');
     const dimensions = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
@@ -97,8 +97,9 @@ test('mobile menu opens, closes with Escape and navigates to the guide', async (
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();
   await toggle.click();
-  await page.locator('#site-nav a[href="guide.html"]').click();
-  await expect(page).toHaveURL(/\/guide\.html$/);
+  await page.locator('#site-nav a[href="guides.html"]').click();
+  await expect(page).toHaveURL(/\/guides\.html$/);
+  await page.locator('a.mobile-button[href="guide.html"]').click();
   await expect(page.locator('h1')).toContainText('真实通话验收');
 });
 
@@ -121,8 +122,8 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r15';
-  const basename = 'bb10-volte-0.5.0-r15';
+  const tag = 'v0.5.0-r20';
+  const basename = 'bb10-volte-0.5.0-r20';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
     `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,
@@ -184,7 +185,7 @@ test('core content and downloads work with JavaScript disabled', async ({ browse
   await expect(page.locator('h1')).toContainText('Bring VoLTE');
   await page.setViewportSize({ width: 320, height: 844 });
   await expect(page.locator('#site-nav')).toBeVisible();
-  await expect(page.locator('#site-nav a[href="guide.html"]')).toBeVisible();
+  await expect(page.locator('#site-nav a[href="guides.html"]')).toBeVisible();
   await context.close();
 });
 

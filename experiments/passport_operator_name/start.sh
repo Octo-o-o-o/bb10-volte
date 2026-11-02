@@ -1,0 +1,19 @@
+#!/bin/sh
+BASE=/var/rootdata/passport_operator_name
+test -f "$BASE/enabled" || exit 0
+attempt=0
+while [ ! -f /tmp/root.done ] && [ "$attempt" -lt 60 ]; do
+    sleep 2
+    attempt=$((attempt + 1))
+done
+test -f /tmp/root.done || exit 1
+case "$(cat /pps/services/deviceproperties)" in
+    *"modelnumber::SQW100-4"*) ;;
+    *) exit 93 ;;
+esac
+for file in native.py device_info.py name.py; do
+    /proc/boot/pathtrust "!$BASE/$file" || exit 1
+done
+LD_LIBRARY_PATH=/base/usr/lib:/base/lib:/base/lib/dll:/radio/lib:/radio/lib/dll:/radio/usr/lib:/proc/boot \
+PYTHONDONTWRITEBYTECODE=1 PYTHONHOME=/usr PYTHONPATH=/usr/lib/python32.zip:/usr/lib/python3.2/lib-dynload \
+/usr/bin/python3.2 "$BASE/name.py" start

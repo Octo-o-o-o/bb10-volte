@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>手机原生版安装说明 — BB10 VoLTE</title>
-  <meta name="description" content="BB10 VoLTE 手机原生候选版的安装前提、四种首次入口、备份、正常重启与通话验收说明。候选版尚未公开发布，桌面 r15 下载继续提供。">
+  <meta name="description" content="BB10 VoLTE 手机原生版的安装前提、两种安装入口、备份、正常重启与通话验收说明。提供安装器和手动 BAR 两种入口。">
   <meta name="theme-color" content="#f4f5f0">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <link rel="canonical" href="https://bb10-volte.octoooo.com/mobile.html">
@@ -12,7 +12,7 @@
   <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/mobile.html">
   <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/mobile.html">
   <meta property="og:title" content="手机原生版安装说明 — BB10 VoLTE">
-  <meta property="og:description" content="先确认本机安装入口，再备份、开启、正常重启和验收通话。手机候选版尚未公开发布。">
+  <meta property="og:description" content="先确认本机安装入口，再备份、开启、正常重启和验收通话。Q20 与 Passport 实验发行。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bb10-volte.octoooo.com/mobile.html">
   <meta property="og:locale" content="zh_CN">
@@ -35,12 +35,7 @@
         <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
         <h1 id="mobile-title">Root 之后，<br>把 VoLTE 装进手机。</h1>
         <p class="mobile-lead">已 Root 的 BB10，推荐使用原生 BAR 应用：由手机系统安装服务注册，随后在手机里管理 VoLTE。本机 BAR 安装器与电脑辅助首装，是进入同一个原生应用的两种入口。</p>
-        <div class="release-status" id="release-status" role="note">
-          <strong>候选版仍在验收，尚未公开发布。</strong>
-          <p>Q20／联通、Passport／移动已完成完整恢复、卸载、重装、通话和短信；Q20 换移动卡、Passport 换联通卡也已完成本轮验收。Q10 的原生安装仍在验证。当前公开桌面版本仍为 <strong>v0.5.0-r15</strong>。</p>
-          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">查看正式 Release 页面</a><a class="mobile-button mobile-button-plain" href="index.html#download">继续下载桌面 r15</a></p>
-          <p class="small-copy">只有正式 Release 列出手机版文件、校验信息和适用范围后，才按对应版本操作。本页不提供尚不存在的手机包下载地址。</p>
-        </div>
+        <div class="release-status" id="release-status" role="note"><strong>手机版 0.1.0.15 · 桌面版 v0.5.0-r20</strong><p>本次实验发行面向 Q20 SQC100-2、Passport SQW100-4。两款手机的 v12 / 服务 r18 使用与恢复验收已有记录，本次保留相同 r18 无线载荷。Q10 原生安装仍在测试。</p><p class="mobile-actions"><a class="mobile-button" href="mobile-installer.html">使用安装器安装</a><a class="mobile-button mobile-button-plain" href="mobile-manual.html">下载 BAR 手动安装</a></p><p class="small-copy">两种入口使用同一版本，直链下载不需要访问 GitHub。 <a href="https://github.com/Octo-o-o-o/bb10-volte/releases">发行记录</a></p></div>
         <nav class="mobile-contents" aria-label="本页目录"><a href="#standard">推荐安装方式</a><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
       </div>
     </section>
@@ -51,50 +46,16 @@
         <h2 id="standard-title">Root 后，优先走原生安装路线</h2>
         <div class="recommended-route"><p><strong>用原生 BAR，让 BB10 正常注册应用。</strong> 应用沿用固定的应用与作者身份，便于覆盖升级。安装图标与启用无线服务分开；打开应用后，再备份和开启 VoLTE。</p>
         <ol><li>正常开机、解锁，等到系统的 Root 成功提示。</li><li>从同一可信发行版取得 BAR 与 SHA-256。已有兼容 BAR 安装器就用它打开；没有时，使用对应新版桌面的“更多 → 安装手机应用”辅助首装。</li><li>等系统安装完成，核对实际应用版本，再打开 BB10 VoLTE，按提示备份、开启、正常重启并验收通话。</li></ol>
-        <p class="small-copy">公开桌面 r15 还没有“安装手机应用”新菜单。候选版需按同次交付说明操作；不会因为下载了 ZIP 就自动获得该入口。</p></div>
+        </div>
         <p>AutoRoot v4 作者明确说明了 Root 成功提示后的未签名 BAR 安装、本机 Root helper 与包格式。本项目沿用这条原生路线。“推荐”是本项目针对已核对环境的选择，不代表 BlackBerry 官方认证，也不代表所有 Root 方案都可直接套用。<a href="https://bb10.root.sx/blog/autoroot-v4" target="_blank" rel="noopener noreferrer">查看 AutoRoot 作者说明</a>。</p>
         <p>日常脱离电脑与首次完全不用电脑，需要分别判断。Q20、Passport 的安装证据包含经可信 Root SSH 调用手机系统安装器；不能据此把“纯手机点击首装”写成已完成实测。</p>
       </section>
 
       <section class="mobile-section" id="entry" aria-labelledby="entry-title">
         <p class="mobile-kicker">01 / FIRST INSTALL</p>
-        <h2 id="entry-title">先看手机上已有哪种入口</h2>
+        <h2 id="entry-title">选择一种安装方式</h2>
         <p>Root 是系统管理员权限。Root 标记、SSH 可连接、终端图标和能够安装 BAR，是不同条件；不能互相替代。首次出现系统安装或存储权限提示时，需要你在手机上正常确认。</p>
-        <div class="entry-routes">
-          <article class="route-card" id="barinstaller" aria-labelledby="barinstaller-title">
-            <p class="route-index">A / 已有安装器</p>
-            <h3 id="barinstaller-title">已经装好 BARinstaller</h3>
-            <p>先确认它在当前 Root 方案下确实能安装原生 BAR，且手机有可用的本机 Root 执行入口。满足这两个条件，才可能全程在手机上安装与管理。</p>
-            <ol><li>等手机版正式发布后，从项目 Release 获取该版本的 BAR 和校验信息。</li><li>按发行说明核对来源与完整 SHA-256，再用已有 BARinstaller 打开 BAR，正常确认系统提示。</li><li>核对实际安装版本，再打开 BB10 VoLTE 检查本机 Root 和设备条件。</li></ol>
-            <p class="route-note">如果 BARinstaller 还没装好，它自己也需要首次安装入口；下载一个 BAR 文件不会自动补齐这个前提。</p>
-          </article>
-          <article class="route-card" id="root-terminal" aria-labelledby="root-terminal-title">
-            <p class="route-index">B / 只有本机终端</p>
-            <h3 id="root-terminal-title">有可用的 Root 终端</h3>
-            <p>需要能在手机上实际执行 Root 命令的终端，以及发行版支持的 Python 和系统安装接口。普通终端或只有电脑能连的 SSH 不等于已具备这条路线。</p>
-            <ol><li>等正式 Release 提供适用于当前 Root 方案的手机引导包。</li><li>把同一版本的引导包与 BAR 存到手机，核对来源和校验信息。</li><li>严格使用该发行版给出的本机命令，查看同一安装任务的结果与实际应用版本。</li></ol>
-            <p class="route-note">候选引导仍在实测。不要拼接其他版本的脚本，也不要把网页内容直接作为 Root 命令执行。</p>
-          </article>
-          <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
-            <p class="route-index">C / 电脑辅助一次</p>
-            <h3 id="no-entry-title">已 Root，但没有本机安装器</h3>
-            <p>使用对应新版桌面的“更多 → 安装手机应用”：连接并解锁一台手机，检查身份，选择同次发行的 BAR，再确认安装。向导会核对完整包、系统回执和实际安装文件。</p>
-            <p>公开 r15 暂无此菜单；新向导仍随 Q10 首装进行验收。安装结果未知时，只检查原任务，不重复提交。</p>
-            <a href="guide.html#connect">查看可信连接与恢复说明</a>
-          </article>
-          <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
-            <p class="route-index">D / 尚未 Root</p>
-            <h3 id="not-rooted-title">先完成单独的 Root 准备</h3>
-            <p>手机版不是 Root 工具，不能把未 Root 的手机直接变成可安装、可修改系统的设备。</p>
-            <p>先备份个人数据，按准确硬件型号选择桌面首次 Root 路线。涉及刷写时会清空数据，需要单独明确确认；不能跨机型使用固件。</p>
-            <a href="guide.html#connect">查看首次 Root 的条件与已测范围</a>
-          </article>
-        </div>
-        <aside class="mobile-callout" id="install-result" aria-labelledby="install-result-title">
-          <h3 id="install-result-title">安装成功，要看实际版本</h3>
-          <p>候选实测中，AutoRoot installer 在 <strong>120 秒超时</strong>后仍可能打印 <code>completed</code>。如果没有对应任务的 <code>SUD success</code>，而且应用注册版本没有变化，就不能记为安装成功。</p>
-          <p>保留原任务，检查系统安装结果和应用的实际版本是否与目标一致。仅有结束字样、图标或旧版能打开，都不足以证明新版本已安装；结果未知时不要反复提交安装。</p>
-        </aside>
+<div class="entry-routes"><article class="route-card" id="no-entry"><p class="route-index">01 / 推荐首次使用</p><h3>使用安装器安装</h3><p>Windows 或 Mac，已内置并核对匹配的 BAR。检查手机，再确认安装，不必另外找包。</p><a class="mobile-button" href="mobile-installer.html">使用桌面安装器</a></article><article class="route-card" id="barinstaller"><p class="route-index">02 / 已有本机入口</p><h3>下载 BAR 手动安装</h3><p>适合已有兼容 BARinstaller 的用户。通过 R2 直链获取同一应用与校验码。</p><a class="mobile-button mobile-button-plain" href="mobile-manual.html">下载 BAR 与查看步骤</a></article></div><p id="root-terminal"><a href="mobile-manual.html#root-terminal">高级方式：AutoRoot v4 本机终端引导</a></p><p id="not-rooted"><a href="guide.html#prepare">尚未 Root？先看桌面准备指南。</a></p><p class="mobile-callout" id="install-result">同一任务的 SUD success 与实际安装版本都正确，才算成功。120 秒超时后的 completed 文本不代表完成；结果未知时保留原任务。</p>
       </section>
 
       <section class="mobile-section" id="steps" aria-labelledby="steps-title">
@@ -124,7 +85,7 @@
         <p class="mobile-kicker">04 / UPDATES &amp; RESTORATION</p>
         <h2 id="updates-title">更新、停用与恢复</h2>
         <h3>适配载荷更新与应用 BAR 升级是两件事</h3>
-        <p>候选应用中的“检查更新”和离线 ZIP 入口用于运行组件与适配载荷。程序会核验发布者签名；在线检查失败时可以使用同一发行版的可信离线包。已内置的安装载荷和离线包不需要联网下载，注册和通话仍需要运营商网络。</p>
+        <p>应用中的“检查更新”和离线 ZIP 入口用于运行组件与适配载荷。程序会核验发布者签名；在线检查失败时可以使用同一发行版的可信离线包。已内置的安装载荷和离线包不需要联网下载，注册和通话仍需要运营商网络。</p>
         <p>界面应用自身升级使用新的 BAR，沿用同一应用身份。按 Release 的版本要求，通过已有安装入口替换，再核对实际应用版本。不能把 ZIP 更新完成当作 BAR 已升级。</p>
         <h3>恢复完成后，再移除应用</h3>
         <p>在管理页选择停用并恢复、回滚或完整卸载，按提示正常重启并继续原任务。卸载可能需要分阶段重启；文件已移除不等于恢复已核对完成。仅删除桌面图标不会恢复服务配置，也不会移除 Root。</p>

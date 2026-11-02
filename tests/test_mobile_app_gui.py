@@ -83,6 +83,7 @@ class MobileAppGuiTests(unittest.TestCase):
 
     def test_repeated_pending_observation_preserves_explanation_scroll_position(self):
         self.app.window.geometry('680x500')
+        tk.Label(self.app.body, text='Additional diagnostic detail\n' * 12).pack()
         pending = {'schema': 1, 'state': 'pending', 'can_install': False}
         self.app.events.put(('result', ('inspect', pending)))
         self.drain(); self.root.update()
@@ -96,6 +97,7 @@ class MobileAppGuiTests(unittest.TestCase):
         self.assertEqual(self.app.canvas.yview(), position)
 
     def test_initial_check_never_installs_and_close_waits_for_inflight_result(self):
+        self.assertEqual(str(self.app.install_button.cget('state')), 'disabled')
         manager = self.app.installer = Mock()
         manager.inspect.return_value = {'schema': 1, 'state': 'absent', 'can_install': True,
                                         'device_id': 'a' * 32, 'variant': 'SQC100-2'}
@@ -106,9 +108,7 @@ class MobileAppGuiTests(unittest.TestCase):
         self.drain()
         manager.inspect.assert_called_once_with()
         manager.install.assert_not_called()
-        self.assertEqual(str(self.app.install_button.cget('state')), 'disabled')
-        self.app.bar = '/reviewed.bar'
-        self.app.refresh()
+        self.assertEqual(Path(self.app.bar), gui.bundled_bar(self.app.pin))
         self.assertEqual(str(self.app.install_button.cget('state')), 'normal')
 
     def test_controls_fit_minimum_window_in_both_languages(self):

@@ -8,7 +8,12 @@ def phone_commands(name):
     if not re.fullmatch(r'bb10-pair-[a-f0-9]{12}\.py', name):
         raise ValueError('pairing_result_invalid')
     return ('bb10_pair_file=/accounts/1000/shared/downloads/' + name + '\n'
-            'if [ "$(id -u)" != 0 ]; then\n'
+            'bb10_pair_uid_status=0\n'
+            'bb10_pair_uid=$(id -u) || bb10_pair_uid_status=$?\n'
+            'case "$bb10_pair_uid" in \'\'|*[!0-9]*) bb10_pair_uid_status=1 ;; esac\n'
+            'if [ "$bb10_pair_uid_status" != 0 ]; then\n'
+            '  echo "ROOT_CHECK_FAILED: id -u did not confirm a UID; keep its error for diagnosis"\n'
+            'elif [ "$bb10_pair_uid" != 0 ]; then\n'
             '  echo "ROOT_REQUIRED: enter your existing Root shell first"\n'
             'elif [ ! -f "$bb10_pair_file" ]; then\n'
             '  echo "PAIR_FILE_NOT_FOUND: $bb10_pair_file"\n'
@@ -23,9 +28,9 @@ def public_instructions(name):
     return (tr('手机授权操作说明') + '\n\n' +
             tr('将同名 .py 文件复制到手机内部存储 Downloads，保持文件名不变。') + '\n' +
             tr('先按原 Root 工具说明进入 Root 终端。__root 前有两个下划线；有些工具使用 u_root。找不到入口时，先恢复原 Root 访问。') + '\n' +
-            tr('执行 id -u，输出必须是 0。然后复制并执行下面整个命令块；不要抄写终端的 $ 或 # 提示符。') + '\n\n' +
+            tr('执行 id -u，命令应成功并输出 0；报错或没有有效数字时，当前权限尚未确认。再复制执行下面整个命令块，不要抄写 $ 或 # 提示符。') + '\n\n' +
             commands + '\n\n' +
-            tr('ROOT_REQUIRED 表示当前权限不足；PAIR_FILE_NOT_FOUND 表示该路径没有授权文件。出现 Permission denied 时停止，先核对 Root 权限。') + '\n' +
+            tr('ROOT_CHECK_FAILED 表示权限检查未完成，请保留 id -u 的报错；ROOT_REQUIRED 表示读到的 UID 不是 0；PAIR_FILE_NOT_FOUND 表示该路径没有授权文件。出现 Permission denied 时停止，核对当前 Root 终端与命令路径。') + '\n' +
             tr('仅在脚本提示后输入大写 PAIR；它不是 shell 命令。只有确需临时启动 SSH 时才在脚本提示后输入 START。') + '\n' +
             tr('将同编号的 result.json 带回原来生成请求的电脑。保留电脑私钥；不要换用其他请求或电脑的结果。') + '\n')
 

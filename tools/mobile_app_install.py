@@ -14,6 +14,7 @@ from workflow import ENV, WorkflowError
 ROOT = resource_root()
 PIN = 'materials/mobile-app-artifact.json'
 HELPER = 'tools/mobile_app_device.py'
+BUNDLED_BAR = 'assets/mobile/bb10-volte.bar'
 
 
 def release():
@@ -43,6 +44,13 @@ def verify_bar(path, pin=None):
         return blob
     except (OSError, ValueError):
         raise WorkflowError('mobile_app_bar_mismatch') from None
+
+
+def bundled_bar(pin=None):
+    """Use the same verified artifact offline in both desktop packages."""
+    path = ROOT / BUNDLED_BAR
+    verify_bar(path, pin)
+    return path
 
 
 def make_release_pin(bar, destination):

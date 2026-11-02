@@ -8,7 +8,7 @@ from connection import resolve_connection
 from connection_flow import guidance
 from feedback import FeedbackQueue
 from i18n import tr
-from mobile_app_install import MobileAppInstaller, release, verify_bar
+from mobile_app_install import MobileAppInstaller, release, verify_bar, bundled_bar
 from ui_theme import BG
 
 
@@ -18,9 +18,9 @@ def presentation(report):
         return (tr('手机应用已安装，文件校验通过'),
                 tr('现在可以拔掉 USB。在手机上打开 BB10 VoLTE，正常确认权限，再按首页提示管理服务。每次重启后先等 Root 成功提示，再打开应用一次。'))
     if state == 'absent':
-        return tr('可以安装手机应用'), tr('选择本次发行的 BAR 文件，然后点“安装到手机”。不需要在手机终端输入命令。')
+        return tr('可以安装手机应用'), tr('已内置本次发行的 BAR。确认手机后点“安装到手机”，无需输入终端命令。')
     if state == 'upgrade_available':
-        return tr('可以更新手机应用'), tr('先关闭手机上的 BB10 VoLTE，再选择本次发行的 BAR 文件。此次只更新应用，后台服务仍由手机界面管理。')
+        return tr('可以更新手机应用'), tr('先关闭手机上的 BB10 VoLTE，再点“安装到手机”。已内置匹配的 BAR；后台服务仍由手机界面管理。')
     if state == 'newer_installed':
         return tr('手机已安装较新版本'), tr('当前桌面不会降级手机应用。请使用与手机版本对应的新版桌面。')
     if state == 'pending':
@@ -44,6 +44,8 @@ def presentation(report):
         return tr('桌面安装资源校验失败'), tr('请重新获取完整的桌面发行包，不要自行替换校验清单。')
     if code == 'mobile_app_result_unconfirmed':
         return tr('连接中断，安装结果待确认'), tr('请恢复同一台手机的连接，再点“检查手机”。程序会读取原任务，不能把连接超时当作安装失败而重新提交。')
+    if code == 'app_install_check_failed':
+        return tr('安装结果需要检查'), tr('已保留安装回执。请保留手机当前状态，不要重复覆盖或降级；可以重新检查连接并导出已有诊断。')
     view = guidance(error=code)
     return view.title, view.detail
 
@@ -60,7 +62,7 @@ class MobileAppInstallWindow:
         self.window.grab_set()
         self.events = FeedbackQueue(self.window, 'install')
         self.busy, self.report, self.installer = False, {}, None
-        self.bar, self.recheck_job, self.connection_dialog = None, None, None
+        self.bar, self.recheck_job, self.connection_dialog = str(bundled_bar(self.pin)), None, None
         box = ttk.Frame(self.window, padding=24)
         box.pack(fill='both', expand=True)
         # Reserve all actions/status first. Long translated explanations scroll
@@ -90,14 +92,14 @@ class MobileAppInstallWindow:
         ttk.Label(self.body, text=tr('目标应用版本：{}').format(self.pin['version'])).pack(anchor='w', pady=(10, 0))
         self.device = ttk.Label(self.body, text=tr('等待检查已 Root 的手机'))
         self.device.pack(anchor='w', pady=(5, 14))
-        self.title = ttk.Label(self.body, text=tr('先检查手机，再选择安装包'), font=('', 15, 'bold'), wraplength=680)
+        self.title = ttk.Label(self.body, text=tr('安装包已就绪，先检查手机'), font=('', 15, 'bold'), wraplength=680)
         self.title.pack(fill='x')
         self.detail = ttk.Label(self.body, wraplength=680, justify='left')
         self.detail.pack(fill='x', pady=(8, 16))
         introduction = ttk.Label(self.body, text=tr('没有本机 BAR 安装器时，用电脑引导安装一次；以后在手机里点击管理。此步骤安装应用图标，VoLTE 的配置和启用在手机上完成。'),
                                  wraplength=680, justify='left')
         introduction.pack(fill='x', pady=(0, 6))
-        self.file = ttk.Label(footer, text=self.pin['filename'], wraplength=680)
+        self.file = ttk.Label(footer, text=tr('已内置并核对安装包：{}').format(self.pin['filename']), wraplength=680)
         self.file.pack(fill='x', pady=(0, 10))
         row = ttk.Frame(footer)
         row.pack(fill='x')

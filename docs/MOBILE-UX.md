@@ -1,5 +1,7 @@
 # Native mobile interaction contract
 
+> 当前 r20／mobile 0.1.0.15 的发行范围见 [RELEASE-r20](RELEASE-r20.md)。下文候选阶段的版本、等待与发布授权描述是历史记录，不代表本次发行状态。
+
 The Cascades UI in `mobile/native` uses Qt 4 and C++98. The implementation is a client of protocol 2; it does not infer Root access, carrier readiness or installation eligibility from an icon, network label or an earlier UI step.
 
 Current installed acceptance target: mobile **0.1.0.12 / desktop r18**. Passport full lifecycle and Q20 migration voice/SMS acceptance are scoped in [validation](MOBILE-VALIDATION.md); later source changes have not replaced those artifacts. The owner accepted the isolated Passport wake/reset event without a root-cause claim. v7 fixed Cascades property shadowing, v8 added automatic reboot reconciliation and v9 added foreground waiting for delayed Root startup.

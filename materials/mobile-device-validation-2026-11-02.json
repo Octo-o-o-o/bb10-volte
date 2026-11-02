@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "status": "passport_v12_r18_accepted_q20_migration_accepted_full_lifecycle_pending",
+  "status": "v12_r18_passport_and_q20_two_carriers_accepted_q10_native_workflow_pending",
   "target": {
     "mobile_version": "0.1.0.12",
     "desktop_version": "0.5.0-r18",
@@ -212,14 +212,15 @@
     "owner_unlock_after_migration_reboot": "pending"
   },
   "manual_acceptance_pending": [
-    "q20_full_restore_uninstall_reinstall_and_new_call_save_feedback",
     "q10_native_workflow",
     "q20_q10_bilingual_small_screen_full_interaction",
     "new_native_sim_change_and_number_display",
     "higher_version_offline_runtime_update_and_rollback",
     "simultaneous_desktop_mobile_ui_lock",
     "post_v12_blocking_progress_physical_ui",
-    "desktop_graphical_native_app_install_qnx_disconnect_and_frozen_artifacts"
+    "desktop_graphical_native_app_install_qnx_disconnect_and_frozen_artifacts",
+    "v13_call_save_feedback_physical_ui",
+    "bounded_explicit_passport_policy_restart_ui"
   ],
   "v6_experimental_scope": {
     "native_options": 23,
@@ -558,7 +559,7 @@
       "autostart_flag_retained": true,
       "new_kernel_reset_this_enable_boot": false,
       "new_ims_calls_sms_passed": true,
-      "next_step": "complete_existing_uninstall_then_fresh_native_install",
+      "next_step": "retain_v12_until_new_ui_acceptance",
       "prior_service_startup_result": "pidin_io_pkt_memory_query_timeout_before_provider_enable_and_ims_launch",
       "second_normal_boot_ims_lte": true,
       "prior_timeout_root_cause": "unproven_not_claimed_fixed",
@@ -572,15 +573,82 @@
       "owner_bidirectional_short_long_identical_sms": true,
       "persisted_owner_acceptance": true,
       "call_save_feedback_issue": "saved_true_but_response_unconfirmed_reopen_auto_verified",
-      "post_v12_feedback_fix": "source_only_not_deployed",
-      "full_uninstall_reinstall": "in_progress"
+      "post_v12_feedback_fix": "built_in_v13_package_review_passed_physical_ui_pending",
+      "full_uninstall_reinstall": "passed",
+      "fresh_install_three_complete_sip_calls_seconds": [
+        146.496,
+        157.149,
+        125.569
+      ],
+      "fresh_install_owner_bidirectional_audio_continuous_lte": true,
+      "fresh_install_owner_bidirectional_short_long_identical_sms": true,
+      "fresh_install_persisted_acceptance": true,
+      "initial_extra_dial": "peer_busy_before_connect_not_connected_call_drop"
     },
-    "q10_native_workflow": "not_run",
-    "new_native_sim_change_matrix": "not_run",
+    "q10_native_workflow": "v13_first_app_install_pending_system_receipt_old_telecom_service_unchanged",
+    "new_native_sim_change_matrix": "q20_mobile_and_passport_unicom_passed_telecom_remains_in_q10",
     "phone_only_first_install": "not_established_on_current_q20",
     "q20_android_root_click_probe": "retired_after_separate_kernel_loader_reset_not_in_release",
-    "desktop_graphical_app_provisioning": "qnx_inspect_all_69_installed_files_verified_no_sud_install_or_disconnect_acceptance",
-    "post_v12_native_progress_ui": "source_review_and_sdk_compile_only_not_in_v12_bar",
+    "desktop_graphical_app_provisioning": "q10_actual_gui_submission_exposed_qnx_launch_compatibility_fix_reviewed_system_receipt_pending",
+    "post_v12_native_progress_ui": "built_v13_bar_two_independent_package_reviews_passed_physical_ui_pending",
+    "published": false,
+    "q20_mobile_sim_swap": {
+      "variant": "SQC100-2",
+      "native_app": "0.1.0.12",
+      "service_revision": 18,
+      "automatic_carrier_recognition_and_ims": true,
+      "three_complete_sip_calls_seconds": [
+        124.342,
+        122.05,
+        138.815
+      ],
+      "hangup_reason": "owner_triggered",
+      "same_boot_lte_ims_service_samples": 164,
+      "maximum_sample_gap_seconds": 6.267,
+      "owner_bidirectional_audio_continuous_lte": true,
+      "owner_bidirectional_sms_passed": true,
+      "owner_saved_acceptance_survived_reopen": true,
+      "post_save_backend_readback": false,
+      "other_carriers_inferred": false
+    },
+    "passport_unicom_sim_swap": {
+      "variant": "SQW100-4",
+      "native_app": "0.1.0.12",
+      "service_revision": 18,
+      "state": "accepted_after_one_additional_normal_restart",
+      "error": null,
+      "dca_sources_and_published_usage": "voice_centric",
+      "ue_usage_readback": 0,
+      "voice_domain_preference": 3,
+      "native_ims_count": 1,
+      "backup_and_payload_hashes_verified": true,
+      "calls_tested": true,
+      "normal_reboot_followup": "current_UE0_original_sources_IMS_LTE_verified",
+      "initial_error": "usage_restore_unconfirmed",
+      "three_complete_sip_calls_seconds": [
+        135.244,
+        151.5,
+        121.848
+      ],
+      "same_boot_lte_ims_service_samples": 138,
+      "maximum_sample_gap_seconds": 5.334,
+      "owner_bidirectional_audio_continuous_lte": true,
+      "owner_bidirectional_short_long_identical_sms": true,
+      "owner_saved_acceptance_survived_reopen": true,
+      "post_save_backend_state": "verified",
+      "current_backup_and_payload_hashes_verified": true,
+      "initial_failure_root_cause": "not_fully_established",
+      "explicit_policy_restart_ui": "implementation_pending"
+    }
+  },
+  "candidate": {
+    "mobile_version": "0.1.0.13",
+    "desktop_version": "0.5.0-r19",
+    "service_revision": 18,
+    "bar_sha256": "285f0de539b008456959d49a218accdd2c44546d2eaa2a60a81c0dbff9dbf1f1",
+    "exact_r18_payload_retained": true,
+    "two_independent_bar_reviews_passed": true,
+    "hardware_acceptance_complete": false,
     "published": false
   }
 }

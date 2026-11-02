@@ -56,6 +56,9 @@ def runtime_data():
                          'materials/usb-drivers.json', 'materials/first-run-tools.json', 'materials/device-support.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
     names.update({'materials/mobile-app-artifact.json', 'tools/mobile_app_device.py'})
+    from mobile_app_install import BUNDLED_BAR, bundled_bar
+    bundled_bar()
+    names.add(BUNDLED_BAR)
     from auto_carrier import PAYLOAD_FILES
     names.update(set(PAYLOAD_FILES) | {'materials/unified-payload.json', 'materials/unified-carrier-acceptance.json'})
     names.update({'tools/q20_manage_probe.py', 'materials/q20-managed-adapter.json',

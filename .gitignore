@@ -31,6 +31,8 @@ known_hosts
 ssh_config
 !driver/devnp-volte_swcrypto_probe.so
 *.bar
+!assets/mobile/bb10-volte.bar
+.wrangler/
 mobile/native/assets/runtime/
 mobile/native/assets/payload/
 mobile/native/assets/profiles/

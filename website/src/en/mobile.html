@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Native mobile installation — BB10 VoLTE</title>
-  <meta name="description" content="Installation requirements, four first-install routes, backups, normal restarts and call checks for the BB10 VoLTE native mobile candidate. Not publicly released; desktop r15 remains available.">
+  <meta name="description" content="Native BB10 VoLTE for Q20 and Passport. Choose the desktop installer or a direct BAR download, then follow backup and call checks.">
   <meta name="theme-color" content="#f4f5f0">
   <link rel="icon" type="image/png" href="../assets/icon.png">
   <link rel="canonical" href="https://bb10-volte.octoooo.com/en/mobile.html">
@@ -12,7 +12,7 @@
   <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/mobile.html">
   <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/mobile.html">
   <meta property="og:title" content="Native mobile installation — BB10 VoLTE">
-  <meta property="og:description" content="Check your local installation entry point, then back up, enable, restart normally and test calls. The mobile candidate is not publicly released.">
+  <meta property="og:description" content="Install with the desktop app or download a BAR directly. Experimental mobile release for Q20 and Passport.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bb10-volte.octoooo.com/en/mobile.html">
   <meta property="og:locale" content="en_US">
@@ -35,12 +35,7 @@
         <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
         <h1 id="mobile-title">After Root.<br>Install on your phone.</h1>
         <p class="mobile-lead">Our recommended approach for a rooted BB10 phone is the native BAR app. Install it through the phone’s system installer, then manage VoLTE locally. A local BAR installer or one-time desktop assistance are two entry points to the same native app.</p>
-        <div class="release-status" id="release-status" role="note">
-          <strong>The candidate is still being tested and is not publicly released.</strong>
-          <p>Q20/Unicom and Passport/Mobile have completed restoration, removal, fresh installation, calls and SMS. Q20 switched to Mobile and Passport switched to Unicom have also completed the recorded checks. Q10 native installation is still being verified. The public desktop release remains <strong>v0.5.0-r15</strong>.</p>
-          <p class="mobile-actions"><a class="mobile-button" href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Open official Releases</a><a class="mobile-button mobile-button-plain" href="index.html#download">Get desktop r15</a></p>
-          <p class="small-copy">Proceed only when an official Release lists mobile files, verification information and supported conditions. This page does not link to nonexistent mobile downloads.</p>
-        </div>
+        <div class="release-status" id="release-status" role="note"><strong>Mobile 0.1.0.15 · desktop v0.5.0-r20</strong><p>This experimental release is offered for Q20 SQC100-2 and Passport SQW100-4. Their recorded v12 / service r18 cycles passed; this package preserves the r18 wireless payload. Q10 native installation remains in testing.</p><p class="mobile-actions"><a class="mobile-button" href="mobile-installer.html">Use the desktop installer</a><a class="mobile-button mobile-button-plain" href="mobile-manual.html">Download a BAR manually</a></p><p class="small-copy">Both routes use the same version. Direct downloads need no GitHub connection. <a href="https://github.com/Octo-o-o-o/bb10-volte/releases">Release history</a></p></div>
         <nav class="mobile-contents" aria-label="On this page"><a href="#standard">Recommended approach</a><a href="#entry">Choose an entry point</a><a href="#steps">From backup to calls</a><a href="#backup">Where backups go</a><a href="#updates">Updates &amp; restoration</a><a href="#scope">What is verified</a></nav>
       </div>
     </section>
@@ -50,51 +45,17 @@
         <p class="mobile-kicker">RECOMMENDED / ROOT → BAR → SYSTEM INSTALLER</p>
         <h2 id="standard-title">The native installation route after Root</h2>
         <div class="recommended-route"><p><strong>A native app, registered by BB10.</strong> The BAR keeps a stable application and author identity for upgrades. Installing the icon does not activate or modify the radio service; backups and activation happen separately inside the app.</p>
-        <ol><li>Restart normally, unlock, and wait for the Root success notification.</li><li>Obtain the BAR and SHA-256 from the same trusted release. Use an existing compatible BAR installer, or the matching desktop “More → Install phone app” assistant when that version is released.</li><li>Wait for the system installation result and confirm the installed version. Then open BB10 VoLTE and follow the backup and activation steps.</li></ol>
-        <p class="small-copy">The current public r15 desktop does not contain the new phone-app assistant. Installing a candidate or downloading a ZIP does not add that menu. Use a candidate only with its matching delivery instructions.</p></div>
+        <ol><li>Restart normally, unlock, and wait for the Root success notification.</li><li>Obtain the BAR and SHA-256 from the same trusted release. Use an existing compatible BAR installer, or the matching desktop “More → Install phone app” assistant .</li><li>Wait for the system installation result and confirm the installed version. Then open BB10 VoLTE and follow the backup and activation steps.</li></ol>
+        <p class="small-copy">Desktop r20 includes the matching BAR under More → Install phone app.</p></div>
         <p>AutoRoot v4 documents unsigned BAR installation after its Root notification, plus local Root helpers and a package format. This app follows that native package approach. “Recommended” is this project’s guidance for the checked environment, not BlackBerry certification or proof that every Root method works. <a href="https://bb10.root.sx/blog/autoroot-v4" target="_blank" rel="noopener noreferrer">AutoRoot author’s documentation</a>.</p>
         <p>Computer-free daily use is established separately from computer-free first installation. Q20 and Passport installation evidence includes commands sent over trusted Root SSH to the phone’s installer; it does not establish a complete phone-only first-install flow.</p>
       </section>
 
       <section class="mobile-section" id="entry" aria-labelledby="entry-title">
         <p class="mobile-kicker">01 / FIRST INSTALL</p>
-        <h2 id="entry-title">Which entry point is already on your phone?</h2>
+        <h2 id="entry-title">Choose your installation route</h2>
         <p>Root means system administrator access. A Root marker, working SSH, a terminal icon and the ability to install a BAR are separate requirements. Confirm any first-use system installation or storage permission prompts normally on the phone.</p>
-        <div class="entry-routes">
-          <article class="route-card" id="barinstaller" aria-labelledby="barinstaller-title">
-            <p class="route-index">A / INSTALLER ALREADY PRESENT</p>
-            <h3 id="barinstaller-title">BARinstaller is already installed</h3>
-            <p>Confirm it can actually install native BAR files with your current Root setup, and that a local Root execution helper works. Both are needed for installation and management entirely on the phone.</p>
-            <ol><li>After an official mobile release is published, obtain its BAR and verification information from the project Release.</li><li>Verify the source and complete SHA-256 as instructed. Open the BAR with your existing BARinstaller and confirm system prompts.</li><li>Check the actual installed version, then open BB10 VoLTE to check local Root access and device requirements.</li></ol>
-            <p class="route-note">If BARinstaller is not installed yet, it needs its own first-install entry point. Downloading a BAR alone does not provide one.</p>
-          </article>
-          <article class="route-card" id="root-terminal" aria-labelledby="root-terminal-title">
-            <p class="route-index">B / LOCAL TERMINAL ONLY</p>
-            <h3 id="root-terminal-title">A working Root terminal is available</h3>
-            <p>The terminal must actually execute Root commands on the phone. The release must also support its Python environment and system installation interface. An ordinary terminal or SSH available only from a computer is insufficient.</p>
-            <ol><li>Wait for an official Release to provide a mobile bootstrap for your Root setup.</li><li>Save the matching bootstrap and BAR on the phone, then verify their source and checksums.</li><li>Use only that release's documented local command. Check the same installation job and the actual app version.</li></ol>
-            <p class="route-note">The candidate bootstrap is still under hardware testing. Do not combine scripts from different releases or execute web content directly as Root commands.</p>
-          </article>
-          <article class="route-card" id="no-entry" aria-labelledby="no-entry-title">
-            <p class="route-index">C / ONE-TIME DESKTOP ASSISTANCE</p>
-            <h3 id="no-entry-title">Rooted, without a local installer</h3>
-            <p>Use the matching new desktop “More → Install phone app” assistant: connect and unlock one phone, check its identity, select the exact BAR, then confirm installation. The assistant verifies the complete package, system receipt and installed files.</p>
-            <p>Public r15 does not have this menu. The new assistant remains a candidate while Q10 installation is tested. If a result is unknown, inspect the same task instead of submitting it again.</p>
-            <a href="guide.html#connect">Trusted desktop connection and recovery</a>
-          </article>
-          <article class="route-card" id="not-rooted" aria-labelledby="not-rooted-title">
-            <p class="route-index">D / NOT ROOTED YET</p>
-            <h3 id="not-rooted-title">Complete separate Root preparation first</h3>
-            <p>The mobile app is not a Root tool. It cannot directly grant an unrooted phone permission to install apps or modify the system.</p>
-            <p>Back up personal data, then choose the desktop first-Root process for the exact hardware variant. Flashing erases data and requires separate explicit confirmation. Never use firmware for a different model.</p>
-            <a href="guide.html#connect">Read first-Root requirements and tested scope</a>
-          </article>
-        </div>
-        <aside class="mobile-callout" id="install-result" aria-labelledby="install-result-title">
-          <h3 id="install-result-title">Verify installation through the actual version</h3>
-          <p>In candidate testing, AutoRoot installer could still print <code>completed</code> after a <strong>120-second timeout</strong>. Without a matching <code>SUD success</code> result, and with the registered app version unchanged, this is not an installation success.</p>
-          <p>Keep the original job and check its system installation result and actual app version against the target. A completion message, icon or working older version alone does not prove the new version is installed. Do not repeatedly submit an installation when its result is unknown.</p>
-        </aside>
+<div class="entry-routes"><article class="route-card" id="no-entry"><p class="route-index">01 / RECOMMENDED</p><h3>Use the desktop installer</h3><p>Windows or macOS, with the matching BAR bundled and verified. Check the phone, then confirm installation.</p><a class="mobile-button" href="mobile-installer.html">Install with the desktop app</a></article><article class="route-card" id="barinstaller"><p class="route-index">02 / MANUAL</p><h3>Download a BAR manually</h3><p>For an existing compatible BARinstaller. Get the same app and checksum directly from R2.</p><a class="mobile-button mobile-button-plain" href="mobile-manual.html">BAR download and instructions</a></article></div><p id="root-terminal"><a href="mobile-manual.html#root-terminal">Advanced: AutoRoot v4 terminal bootstrap</a></p><p id="not-rooted"><a href="guide.html#prepare">Not rooted? Start with desktop preparation.</a></p><p class="mobile-callout" id="install-result">Installation needs final SUD success and the matching installed version. A 120-second timeout or completed message is insufficient; keep an unknown task for inspection.</p>
       </section>
 
       <section class="mobile-section" id="steps" aria-labelledby="steps-title">
@@ -124,7 +85,7 @@
         <p class="mobile-kicker">04 / UPDATES &amp; RESTORATION</p>
         <h2 id="updates-title">Update, disable or restore</h2>
         <h3>Payload updates and app BAR upgrades are separate</h3>
-        <p>The candidate's update check and offline ZIP import update runtime components and adaptation payloads. The publisher's signature is verified. If an online check fails, use a trusted offline package from the corresponding release. Bundled installation payloads and offline packages need no online download; registration and calls still require the carrier network.</p>
+        <p>The app's update check and offline ZIP import update runtime components and adaptation payloads. The publisher's signature is verified. If an online check fails, use a trusted offline package from the corresponding release. Bundled installation payloads and offline packages need no online download; registration and calls still require the carrier network.</p>
         <p>Upgrading the interface app itself uses a new BAR with the same application identity. Follow the Release requirements, replace it through an existing installation entry point and verify the actual app version. A completed ZIP update does not mean the BAR was upgraded.</p>
         <h3>Finish restoration before removing the app</h3>
         <p>Use disable and restore, rollback or full uninstall from management. Restart normally and continue the same task when prompted. Uninstall can require staged restarts; removed files do not prove restoration has been verified. Deleting the home-screen icon alone does not restore service configuration or remove Root.</p>

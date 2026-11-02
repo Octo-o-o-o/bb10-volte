@@ -29,6 +29,9 @@ TUTORIAL_IMAGES = ('home', 'connect', 'root', 'root-import', 'root-prepared',
 TOP.update('website/src/assets/tutorial/' + name + '.png' for name in TUTORIAL_IMAGES)
 TOP.add('website/src/assets/tutorial/first-use.mp4')
 PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
+            'experiments/passport_operator_name/*.py', 'experiments/passport_operator_name/*.sh',
+            'experiments/passport_operator_name/*.md', 'experiments/passport_telecom_recovery/*.py',
+            'experiments/passport_telecom_recovery/*.sh', 'experiments/passport_telecom_recovery/*.md',
             'experiments/q20_autoroot_v2/*.py', 'experiments/q20_autoroot_v2/*.sh',
             'experiments/q20_autoroot_v2/*.md', 'experiments/q20_autoroot_v2/configurations/*.json',
             'experiments/q10_telecom/*.py', 'experiments/q10_telecom/*.md',
@@ -64,6 +67,9 @@ def recording_files():
 
 def selected_files():
     files = {ROOT / name for name in TOP | {HELPER}}
+    from mobile_app_install import BUNDLED_BAR, bundled_bar
+    bundled_bar()
+    files.add(ROOT / BUNDLED_BAR)
     files.update(ROOT / name for name in bundled_receipt_images(ROOT))
     files.update(ROOT / name for name in recording_files())
     for pattern in PATTERNS:
@@ -107,6 +113,8 @@ def check(check_git=False):
         name = path.relative_to(ROOT).as_posix()
         data = path.read_bytes()
         hashes[name] = hashlib.sha256(data).hexdigest()
+        if name == 'assets/mobile/bb10-volte.bar':
+            continue  # Full size and SHA-256 verified by bundled_bar above.
         if name in recordings:
             assert hashes[name] == recordings[name], 'Changed recording input: ' + name
             if path.suffix in ('.png', '.mp4', '.mp3'):

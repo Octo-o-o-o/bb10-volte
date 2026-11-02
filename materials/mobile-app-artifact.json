@@ -1,26 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.0.12",
+  "version": "0.1.0.15",
   "identity": {
     "Package-Name": "com.octolab.bb10volte",
     "Package-Id": "testDev_b_bb10volte7b237e48",
     "Package-Author-Id": "gYAOctoLabBB10VoLTE20261102",
     "Package-Architecture": "armle-v7",
-    "Package-Version": "0.1.0.12",
+    "Package-Version": "0.1.0.15",
     "Application-Id": "testDev_b_bb10volte7b237e48",
-    "Application-Version": "0.1.0.12"
+    "Application-Version": "0.1.0.15"
   },
-  "filename": "bb10-volte-0.1.0.12.bar",
-  "bar_sha256": "16932b357ccbdeb9c40f84237428e5677bce6d6335787a3ee946f743470aec36",
-  "bar_size": 301633,
-  "platform_manifest_sha256": "25c5c0c3f059c78d8289c460045a5eb5ebe8360d0ec320e1825b0da9ba9bcfca",
+  "filename": "bb10-volte-0.1.0.15.bar",
+  "bar_sha256": "3c5dcace3eff6322a0a8b938217e2bffc9a901d53d4cb3abeba98e99bcca5c28",
+  "bar_size": 491144,
+  "platform_manifest_sha256": "09a0dc94f9fb9ead333cbbdb8e2f3acc97855a72b73231055c3880f7c91ae1e2",
   "installed_files": {
     "META-INF/MANIFEST.MF": {
-      "sha256": "25c5c0c3f059c78d8289c460045a5eb5ebe8360d0ec320e1825b0da9ba9bcfca",
-      "size": 13507
+      "sha256": "09a0dc94f9fb9ead333cbbdb8e2f3acc97855a72b73231055c3880f7c91ae1e2",
+      "size": 15267
     },
     "native/bar-descriptor.build.xml": {
-      "sha256": "b16596a8697c003a6dd43e8e842c97fe6868023e20f8dad5fb74d9781d3df6fd",
+      "sha256": "573acb0221b2f5d8094f5d68bf584c79c6c4d42b1628b742d5dae781b8dfc058",
       "size": 1058
     },
     "native/assets/CallCheck.qml": {
@@ -36,19 +36,19 @@
       "size": 6304
     },
     "native/assets/main.qml": {
-      "sha256": "dbece23027b5b24b577c50b9709738f4845eb58e8271751e2e6c4d160b759568",
-      "size": 6776
+      "sha256": "a32bc5d78511aff7b12c54e70e0c28eeaddfa648a08af8e07f4327fa50b77f7f",
+      "size": 10094
     },
     "native/assets/Manage.qml": {
       "sha256": "777878638083409a93fed25f8ee992556bba901a2ba6672d8882b4db290d43bd",
       "size": 7413
     },
     "native/assets/manifest.json": {
-      "sha256": "ecc1f67f0ace6c61d1cf0232385f7fa09da86c5c5e591bae62a36192d0a3c3d8",
+      "sha256": "9359f81a39e7786a07c5cf89e2e3af852704976b5357f57efc37a0a69a3890ee",
       "size": 7551
     },
     "native/assets/manifest.sig.json": {
-      "sha256": "1b4bd7b8a0a0d009960043eacdf225c85b935e42bdf19b4428d6cd11a382b047",
+      "sha256": "431b0f351d72836df9199589626685f2a179e692f0ce42bb889264550547fdce",
       "size": 643
     },
     "native/assets/materials/sms-device-validation-2026-11-01.json": {
@@ -284,14 +284,54 @@
       "size": 8810
     },
     "native/assets/runtime/worker.py": {
-      "sha256": "cd09c35ed31e43c534a84cd2c61f8e35bd82f27d44e3b05b9e69765e408c550f",
-      "size": 49971
+      "sha256": "03df1bf9d5994c0f142f50ae03ea49dc10338a444531df8a63c318f1a1f63add",
+      "size": 52581
+    },
+    "native/assets/support/alipay-19_90.png": {
+      "sha256": "ac61ce94f79108b084d44b6c942c9973b8ce2554414d4cf6df3cf7777ec213bb",
+      "size": 12998
+    },
+    "native/assets/support/alipay-29_90.png": {
+      "sha256": "7530233f4e4d4f3adda502cb24b0048451d2b7ea1cb24a749a944bb5b59d9144",
+      "size": 13864
+    },
+    "native/assets/support/alipay-9_90.png": {
+      "sha256": "4f0b184265ea538ebee60d86cb417ef8c694cebdebebace502eda39be80a7c67",
+      "size": 13829
+    },
+    "native/assets/support/alipay-custom.png": {
+      "sha256": "793ffd07efc7b5a92e97500e04200adf657b2e0c42a911a81f1b48f55e300bfc",
+      "size": 14002
+    },
+    "native/assets/support/octoooo-favicon.png": {
+      "sha256": "9b1394343a3e25e3f320e96a8500ad395e833c55b3038b9f1a5876d54ce874bc",
+      "size": 8848
+    },
+    "native/assets/support/wechat-19_90.png": {
+      "sha256": "68f4197be901c6034a2332326a2ee6a440d2e51ebf062d7724c32de68e3515eb",
+      "size": 25283
+    },
+    "native/assets/support/wechat-29_90.png": {
+      "sha256": "5f046b252fe010a353da11eef459a57f4c08edb63cfbb400421132a050ad9c00",
+      "size": 24995
+    },
+    "native/assets/support/wechat-9_90.png": {
+      "sha256": "67819039f9cc1325a47ed431836227455018eea15f5cf4fbd2f8eaa44f52ae11",
+      "size": 24779
+    },
+    "native/assets/support/wechat-custom.png": {
+      "sha256": "188ff09a1e98a2bf474bb31e870330791fb14b07d57f6200c51eed8471d65da5",
+      "size": 22477
+    },
+    "native/assets/Support.qml": {
+      "sha256": "6fd30aa234c96515a24455419a5f5012015370ba69d88faefe5b30d648ea9b1b",
+      "size": 7485
     },
     "native/bb10volte": {
-      "sha256": "84b364fe7fe553967ed233dc1697bcbd14d1a73e20ccd187b06dc1ac167c486b",
-      "size": 372272
+      "sha256": "7ad84d1d7b7321223c3ac62c74e0575c1a54e1317d2439e76a94126e45bbd4c1",
+      "size": 448460
     }
   },
-  "helper_sha256": "a5fd616661685ce3faa6ea360711ebad8439ed24dac89ecd2e035bd6c394cc9b",
+  "helper_sha256": "61222ac7457467b70e5eb864c1c292d957a9367f99de0ecc6b9d143bc662cd12",
   "installer_sha256": "b5b98e0ad73c944810bd4d9135386f9d83b01a630fcbd077d9c2a2de9b65e740"
 }

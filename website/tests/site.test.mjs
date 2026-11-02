@@ -6,9 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSITORY_URL, selectRelease } from '../src/site.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const pages = ['index.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
+const pages = ['index.html', 'guides.html', 'mobile-installer.html', 'mobile-manual.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guides.html', 'en/mobile-installer.html', 'en/mobile-manual.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r15/bb10-volte-0.5.0-r15';
+const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20';
 
 test('candidate guide is available in both languages without expanding accepted support', () => {
   for (const prefix of ['', 'en/']) {
@@ -228,7 +228,7 @@ test('both translations retain the extra restart and offline SIM-change scope', 
     for (const variant of ['SQN100-3', 'SQC100-2', 'SQW100-4']) assert.ok(source.includes(variant));
     assert.ok(source.includes('acceptance.json'));
     assert.ok(source.includes('data-github-download="windows"'));
-    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r15/'));
+    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r20/'));
     assert.match(source, page.startsWith('en/') ? /extra normal restart|additional normal restart/ : /再正常重启一次|还需一次正常重启/);
   }
 });
@@ -250,7 +250,7 @@ test('published source does not expose workstation paths or the reference brand'
   }
 });
 
-test('mobile installation routes are static and do not invent candidate downloads', async () => {
+test('mobile installation has two static routes and versioned R2 downloads', async () => {
   for (const page of ['mobile.html', 'en/mobile.html']) {
     const source = html[page];
     assert.doesNotMatch(source, /<script\b|onclick=|javascript:/i);
@@ -258,11 +258,11 @@ test('mobile installation routes are static and do not invent candidate download
       assert.ok(idsFor(source).has(id), `${page}: missing ${id}`);
     }
     assert.match(source, /https:\/\/github\.com\/Octo-o-o-o\/bb10-volte\/releases"/);
-    assert.match(source, /v0\.5\.0-r15/);
+    assert.match(source, /v0\.5\.0-r20/);
     assert.match(source, /120/);
     assert.match(source, /SUD success/);
-    assert.match(source, page.startsWith('en/') ? /not publicly released/ : /尚未公开发布/);
-    assert.doesNotMatch(source, /href="[^"]+\.(?:bar|zip|sh|py)(?:[?#][^"]*)?"/i);
+    assert.match(source, /mobile-installer\.html/); assert.match(source, /mobile-manual\.html/); assert.doesNotMatch(source, /尚未公开发布|not publicly released/);
+    assert.ok(html[(page.startsWith('en/') ? 'en/' : '') + 'mobile-manual.html'].includes('https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.15.bar'));
   }
   for (const page of ['index.html', 'guide.html', 'en/index.html', 'en/guide.html']) {
     assert.match(html[page], /href="mobile\.html"/);

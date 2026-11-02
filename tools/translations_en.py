@@ -915,6 +915,9 @@ ENGLISH = {
     'bb10-volte：正在通过 Mac 原生工具刷写 {} Root': 'bb10-volte: Native Mac Root flashing ({})',
     '请保持 USB 连接；仅在原生工具提示时输入设备密码，输入内容不会显示。': 'Keep USB connected. Enter the device password only if the native tool asks; input is hidden.',
     '\n请返回 bb10-volte。状态未知或失败的阶段会保持暂停；不要重复运行。': '\nReturn to bb10-volte. Unknown or failed stages stay paused; do not rerun them.',
+    'ROOT_CHECK_FAILED 表示权限检查未完成，请保留 id -u 的报错；ROOT_REQUIRED 表示读到的 UID 不是 0；PAIR_FILE_NOT_FOUND 表示该路径没有授权文件。出现 Permission denied 时停止，核对当前 Root 终端与命令路径。': 'ROOT_CHECK_FAILED means the privilege check did not finish; keep the id -u error. ROOT_REQUIRED means the reported UID is not 0. PAIR_FILE_NOT_FOUND means the script is missing at that path. Stop on Permission denied and check the current Root shell and command path.',
+    '执行 id -u，命令应成功并输出 0；报错或没有有效数字时，当前权限尚未确认。再复制执行下面整个命令块，不要抄写 $ 或 # 提示符。': 'Run id -u; it must succeed and print 0. An error or invalid output leaves privileges unconfirmed. Then copy and execute the entire block below, without the $ or # prompt.',
+    '已复制完整命令。ROOT_CHECK_FAILED：权限未知，保留 id -u 报错；ROOT_REQUIRED：UID 非 0；PAIR_FILE_NOT_FOUND：核对 Downloads 和文件名。': 'Complete command copied. ROOT_CHECK_FAILED: privilege unknown; keep the id -u error. ROOT_REQUIRED: UID is not 0. PAIR_FILE_NOT_FOUND: check Downloads and the file name.',
 }
 
 # Unified carrier installation
@@ -1097,3 +1100,7 @@ ENGLISH.update({
 })
 
 ENGLISH.update({'遇到问题 / 反馈': 'Need help / Feedback', '查看本步图文教程': 'Illustrated guide for this step', '保存问题反馈': 'Save feedback', '把卡住的步骤和此前记录一起保存': 'Save this step and the preceding history', '只保存在你的电脑，不会自动上传。保存后检查 ZIP 内容，再通过原联系渠道发给开发者。': 'Saved only on your computer. Review the ZIP, then send it to the developer through your usual contact channel.', '包含：当前步骤、版本、近期操作、失败代码和允许的检查结果。\n不包含：私钥、密码、手机号、手机备份或原始通信日志。': 'Includes the current step, version, recent operations, error codes and permitted check results.\nExcludes private keys, passwords, phone numbers, phone backups and raw communications logs.', '保存反馈包…': 'Save feedback ZIP...', '复制反馈摘要': 'Copy feedback summary', '补充说明（可选）：做到了哪一步，原本希望看到什么？请勿填写密码或号码。': 'Optional: what did you do, and what did you expect? Do not enter passwords or phone numbers.', '将要保存的内容（已脱敏）': 'Contents to save (redacted)', '刷新预览': 'Refresh preview', '已包含 {} 条近期记录。只覆盖启用此功能后的最近 5 次启动，每次最多 400 条。': '{} recent entries included. Covers the last 5 sessions with this feature, up to 400 entries each.', '本机历史写入失败；仍可保存本次运行的内存记录。': 'History could not be written to disk. You can still save the in-memory records from this session.', '保存脱敏反馈包': 'Save redacted feedback ZIP', '反馈包已保存，尚未发送。请检查内容后，将 ZIP 发给开发者：octoooo@octoooo.com。': 'Saved, not sent. Review the ZIP, then send it to the developer: octoooo@octoooo.com.', '摘要已复制。完整过程请另存反馈包，一并发送。': 'Summary copied. Save and send the feedback ZIP for the complete history.', '剪贴板暂不可用，请使用“保存反馈包”。': 'Clipboard unavailable. Use Save feedback ZIP.'})
+
+ENGLISH.update({'安装包已就绪，先检查手机': 'Package ready. Check your phone first.', '已内置并核对安装包：{}': 'Bundled and verified: {}'})
+
+ENGLISH.update({'已内置本次发行的 BAR。确认手机后点“安装到手机”，无需输入终端命令。': 'The release BAR is bundled. Confirm the phone and choose Install to phone. No terminal commands are needed.', '先关闭手机上的 BB10 VoLTE，再点“安装到手机”。已内置匹配的 BAR；后台服务仍由手机界面管理。': 'Close BB10 VoLTE on the phone, then choose Install to phone. The matching BAR is bundled; the phone app still manages the background service.'})

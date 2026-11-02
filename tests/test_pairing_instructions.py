@@ -54,12 +54,19 @@ class PairingInstructionTests(unittest.TestCase):
             shell = str(candidate) if candidate.is_file() else None
         if not shell:
             self.skipTest('POSIX shell unavailable')
-        for uid, exists, trust, expected in [('1000', True, 0, ['ROOT_REQUIRED']),
-                                             ('', True, 0, ['ROOT_REQUIRED']),
-                                             ('0', False, 0, ['PAIR_FILE_NOT_FOUND']),
-                                             ('0', True, 1, ['TRUST']),
-                                             ('0', True, 0, ['TRUST', 'PYTHON'])]:
-            with self.subTest(uid=uid, exists=exists, trust=trust):
+        cases = [('1000', 0, True, 0, ['ROOT_REQUIRED']),
+                 ('', 0, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('', 127, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('', 126, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('0', 1, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('root', 0, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('0 extra', 0, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('0\n1000', 0, True, 0, ['ROOT_CHECK_FAILED']),
+                 ('0', 0, False, 0, ['PAIR_FILE_NOT_FOUND']),
+                 ('0', 0, True, 1, ['TRUST']),
+                 ('0', 0, True, 0, ['TRUST', 'PYTHON'])]
+        for uid, uid_status, exists, trust, expected in cases:
+            with self.subTest(uid=uid, uid_status=uid_status, exists=exists, trust=trust):
                 path = self.script if exists else self.folder / 'missing.py'
                 # Substitute only absolute phone endpoints; all behavior is the
                 # same shell block exported to the owner, including && ordering.
@@ -67,12 +74,15 @@ class PairingInstructionTests(unittest.TestCase):
                 block = block.replace('/accounts/1000/shared/downloads/' + self.script.name,
                                       "'" + path.as_posix() + "'")
                 block = block.replace('/proc/boot/pathtrust', 'test_trust').replace('/usr/bin/python3.2', 'test_python')
-                setup = ('id() { printf "%s\\n" "' + uid + '"; };\n'
+                setup = ('id() { printf "%s\\n" "' + uid + '"; '
+                         + ('echo UID_PROBE_ERROR >&2; ' if uid_status else '')
+                         + 'return ' + str(uid_status) + '; };\n'
                          'test_trust() { echo TRUST; return ' + str(trust) + '; };\n'
                          'test_python() { echo PYTHON; };\n')
                 result = subprocess.run([shell, '-s'], input=setup + block, capture_output=True, text=True, timeout=10)
                 observed = [line.split(':', 1)[0] for line in result.stdout.splitlines()]
                 self.assertEqual(observed, expected, result.stdout + result.stderr)
+                self.assertEqual(result.stderr.strip(), 'UID_PROBE_ERROR' if uid_status else '')
 
 
 if __name__ == '__main__':
