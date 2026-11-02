@@ -1,9 +1,11 @@
 """Known-payload upgrades preserve a recoverable, disabled partial state."""
-from contextlib import ExitStack
+from contextlib import ExitStack, nullcontext
 import hashlib
 import json
 from pathlib import Path
+import stat
 import sys
+import types
 import unittest
 from unittest.mock import patch
 
@@ -28,6 +30,8 @@ class InactiveUpdateTests(unittest.TestCase):
         self.fs[self.stage + '/payload.json'] = profiles.canonical(self.after)
         self.fs[self.base + '/enabled'] = b'owner enabled'
         self.writes, self.directories = [], []
+        self.directory_modes = {self.base: 0o755, self.base + '/runtime': 0o700, self.base + '/runtime/carrier': 0o700}
+        self.mode_changes = []
         self.fail_write, self.fail_finish = False, False
         self.manager = False
         self.crypto = {'swcr_id': -1, 'crypto_support': 0}
@@ -44,6 +48,13 @@ class InactiveUpdateTests(unittest.TestCase):
             value = json.loads(self.fs[self.base + '/payload.json'])
             for name, expected in value['files'].items():
                 self.assertEqual(hashlib.sha256(self.fs[self.base + '/' + name]).hexdigest(), expected)
+        def lstat(path):
+            if path in self.directory_modes:
+                return types.SimpleNamespace(st_mode=stat.S_IFDIR | self.directory_modes[path], st_uid=0)
+            return types.SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=0)
+        def chmod(path, mode):
+            self.mode_changes.append((path, mode))
+            self.directory_modes[path] = mode
         stack = ExitStack()
         self.addCleanup(stack.close)
         patches = [patch.object(installer, 'identity', return_value=({'variant': 'SQW100-4'}, 'passport')),
@@ -61,6 +72,8 @@ class InactiveUpdateTests(unittest.TestCase):
             patch.object(installer.os.path, 'isfile', side_effect=lambda path: path in self.fs),
             patch.object(installer.os.path, 'islink', return_value=False),
             patch.object(installer.os.path, 'realpath', side_effect=lambda path: path),
+            patch.object(installer.os, 'lstat', side_effect=lstat),
+            patch.object(installer.os, 'chmod', side_effect=chmod),
             patch.object(installer.os, 'mkdir', side_effect=lambda path, mode: self.directories.append(path)),
             patch.object(installer.os, 'unlink', side_effect=unlink)]
         for item in patches:
@@ -100,6 +113,34 @@ class InactiveUpdateTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, 'installed_payload_changed'):
             installer.update(self.stage)
         self.assertFalse(self.writes)
+        self.assertFalse(self.mode_changes)
+
+    def test_verified_update_repairs_native_runtime_traversal(self):
+        self.assertTrue(installer.update(self.stage)['updated'])
+        self.assertEqual(self.mode_changes, [(self.base + '/runtime', 0o755), (self.base + '/runtime/carrier', 0o755)])
+        self.assertEqual(set(self.directory_modes.values()), {0o755})
+
+    def test_already_committed_update_still_verifies_and_repairs_runtime(self):
+        installer.update(self.stage)
+        self.fs[self.base + '/management.json'] = profiles.canonical({'schema': 2})
+        self.directory_modes[self.base + '/runtime'] = 0o700
+        self.directory_modes[self.base + '/runtime/carrier'] = 0o700
+        self.mode_changes.clear()
+        self.writes.clear()
+        with patch.object(installer, 'management_lock', side_effect=nullcontext), \
+                patch.object(installer, 'management_identity', return_value={'schema': 2}):
+            result = installer.manage('update', stage=self.stage, operation_id='1' * 32)
+        self.assertTrue(result['already_committed'])
+        self.assertEqual(self.mode_changes, [(self.base + '/runtime', 0o755), (self.base + '/runtime/carrier', 0o755)])
+        self.assertEqual(self.writes, [self.base + '/management.json'])
+
+    def test_bad_runtime_child_is_rejected_before_any_permission_change(self):
+        self.directory_modes[self.base + '/runtime/carrier'] = 0o777
+        with self.assertRaisesRegex(AssertionError, 'runtime_directory_permissions_changed'):
+            installer.update(self.stage)
+        self.assertEqual(self.mode_changes, [])
+        self.assertNotIn(self.base + '/enabled', self.fs)
+        self.assertIn(installer.UPDATE_PENDING, self.fs)
 
     def test_sms_policy_service_update_is_backed_up_and_verified(self):
         self.check_backed_up_component('device/service.py')

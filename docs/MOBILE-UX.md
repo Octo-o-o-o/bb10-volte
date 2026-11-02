@@ -2,7 +2,7 @@
 
 The Cascades UI in `mobile/native` uses Qt 4 and C++98. The implementation is a client of protocol 2; it does not infer Root access, carrier readiness or installation eligibility from an icon, network label or an earlier UI step.
 
-Current target: mobile **0.1.0.10 / desktop r17**. v7 fixed Cascades built-in property shadowing; the owner confirmed the home and management pages. v8 automatically reconciled a real reboot and completed a native UI engine update. v9 adds foreground waiting/retry for delayed Root startup. Physical call-drop mitigation and remaining UI gates are tracked in [validation](MOBILE-VALIDATION.md).
+Current target: mobile **0.1.0.12 / desktop r18**. The fresh-install directory repair and unresolved wake/reset issue are tracked in the validation record; previous successful calls are not new-version acceptance. v7 fixed Cascades built-in property shadowing; the owner confirmed the home and management pages. v8 automatically reconciled a real reboot and completed a native UI engine update. v9 adds foreground waiting/retry for delayed Root startup. Physical call-drop mitigation and remaining UI gates are tracked in [validation](MOBILE-VALIDATION.md).
 
 ## Home and tasks
 
@@ -18,7 +18,7 @@ Registration and verified calls remain separate. The call page asks the user to 
 
 The management page provides language, backup destination, offline ZIP selection, update check, diagnostics, compatibility, enable, disable/restore, rollback and full uninstall. The system file picker only supplies a path; the runtime still copies and verifies the package in its private directory before use. Online metadata and downloads use HTTPS with normal certificate verification and an explicit project-domain allowlist. Download size and hash checks do not replace the runtime's publisher signature verification. Update comparison uses the active runtime version when available, because payload updates and BAR replacement have separate identities. No online access is required for the bundled installation or offline update path. Diagnostics and compatibility reports may return synchronously without taking over a pending write job; their exact exported location remains visible on Home and in management details after reopening the app.
 
-When an old r14 or r15 service is stopped, restored and ready to update, the home primary action and management page offer the **bundled update**. It applies the signed payload already in the BAR without choosing an offline ZIP. Ordinary ZIP updates require a newer runtime version; selecting the same-version ZIP is not the old-engine adoption path. Both r14 → r17 and r15 → r17 need their own end-to-end acceptance.
+When an old r14, r15, r16 or r17 service is stopped, restored and ready to update, the home primary action and management page offer the **bundled update**. It applies the signed payload already in the BAR without choosing an offline ZIP. Ordinary ZIP updates require a newer runtime version; selecting the same-version ZIP is not the old-engine adoption path. Each r14/r15/r16/r17 → r18 path needs its own end-to-end acceptance.
 
 Destructive operations use a cancellable system confirmation describing the changes and required restarts. Button eligibility comes from the runtime's action list. While a job is running the UI does not submit another mutation. Full uninstall is a restoration workflow; deleting the app icon alone is not represented as service removal.
 

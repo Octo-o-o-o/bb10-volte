@@ -40,7 +40,8 @@ PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa94042
                      'f0c4a5002dc41b8de7113db680936240d564e87ddae67793b79e27a45e8c9a2f',
                      '7de370bc3b3a9a646714336aa5e45de89026a50012e986f43a0d228d6dc638ff',
                      '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc',
-                     'fad645e6f1304ca3c9731ad5ac28d3adb7776906cc399e45f2d129192f54e863')
+                     'fad645e6f1304ca3c9731ad5ac28d3adb7776906cc399e45f2d129192f54e863',
+                     '523e323bbeb2b1a020995a0db6149c13b136f10b908b47f97fb3c4cf045a3df0')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')
@@ -83,6 +84,35 @@ def safe_id(value):
 def unlinked_path(path):
     return (not os.path.islink(path) and os.path.normcase(os.path.realpath(path)) ==
             os.path.normcase(os.path.abspath(path)))
+
+
+def runtime_directory_permissions(root):
+    """Make verified runtime data traversable by the native radio services.
+
+    mkdir's requested mode is filtered by the mobile worker's private umask.
+    Validate the entire fixed path set before changing any permission; never
+    expose the private payload, state, backup or management directories.
+    Callers must first verify the installation or private preparation content.
+    """
+    assert root == BASE or re.match(r'\A' + re.escape(MANAGEMENT) + r'/prepare-[a-f0-9]{32}\Z', root), 'runtime_directory_changed'
+    paths = (root, root + '/runtime', root + '/runtime/carrier')
+    checked = []
+    for path in paths:
+        assert os.path.realpath(path) == path and not os.path.islink(path), 'runtime_directory_changed'
+        info = os.lstat(path)
+        mode = stat.S_IMODE(info.st_mode)
+        assert stat.S_ISDIR(info.st_mode) and info.st_uid == 0, 'runtime_directory_changed'
+        assert mode & 0o700 == 0o700 and mode & 0o7022 == 0, 'runtime_directory_permissions_changed'
+        checked.append((path, mode))
+    for path, mode in checked:
+        # The work root remains private until the complete tree is published.
+        if path == root and root != BASE:
+            continue
+        if mode != 0o755:
+            os.chmod(path, 0o755)
+        info = os.lstat(path)
+        assert (os.path.realpath(path) == path and not os.path.islink(path) and stat.S_ISDIR(info.st_mode) and
+                info.st_uid == 0 and stat.S_IMODE(info.st_mode) == 0o755), 'runtime_directory_permissions_changed'
 
 
 def private_directory(path):
@@ -408,11 +438,13 @@ def update(stage):
             assert n.digest(n.read(BASE + '/' + name)) == after['files'][name]
         persist(BASE + '/payload.json', profiles.canonical(after))
         u.verify()
+        runtime_directory_permissions(BASE)
         pending['phase'] = 'files_verified'
         persist(UPDATE_PENDING, profiles.canonical(pending))
     else:
         assert s.load(BASE + '/payload.json') == after
         u.verify()
+        runtime_directory_permissions(BASE)
     result = {'owner': policy.OWNER, 'updated': True, 'reboot_required': True, 'automatic_carrier_selection': True,
               'before': before, 'after': after, 'changed': changed, 'was_enabled': pending['was_enabled'],
               'phone_backup': folder, 'backup_files': {'payload.before.json': n.digest(n.read(folder + '/payload.before.json'))}}
@@ -566,7 +598,7 @@ def prepare(stage):
             assert '/' not in name and n.digest(n.read(BASE + '/backup/' + name)) == expected
         identity_value = management_identity(facts, create=True)
         if pending.get('schema') == 2:
-            os.chmod(BASE, 0o755)
+            runtime_directory_permissions(BASE)
         return {'prepared': True, 'installation_id': identity_value['installation_id'],
                 'backup_manifest_sha256': n.digest(n.read(BASE + '/backup/manifest.json')), 'backup_files': backup['files']}
     # Build the complete owned directory before publishing it as BASE. A crash
@@ -641,6 +673,7 @@ def prepare(stage):
         actual.update((folder + '/' + name)[len(work) + 1:] for name in files)
     assert actual == expected, 'prepared_contents_changed'
     assert not os.path.lexists(BASE), 'installation_target_claimed'
+    runtime_directory_permissions(work)
     # The native IMS child runs under UID 453 and must traverse BASE to read its
     # public runtime configuration. Device code, originals and state stay 0700.
     os.rename(work, BASE)
@@ -1093,6 +1126,7 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 previous_result = s.load(BASE + '/last-update.json') if os.path.isfile(BASE + '/last-update.json') else None
                 if previous_result and previous_result.get('after') == candidate and s.load(BASE + '/payload.json') == candidate and not os.path.isfile(UPDATE_PENDING):
                     u.verify()
+                    runtime_directory_permissions(BASE)
                     result = dict(previous_result, already_committed=True)
                 else:
                     result = update(stage)

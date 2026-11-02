@@ -260,6 +260,8 @@ static const UiString UI_STRINGS[] = {
     {"unified_installation_present", "手机已有自动服务，请先使用管理页处理现有安装。", "An automatic service is installed. Manage the existing installation first."},
     {"uninstall_unknown_member", "服务目录包含无法确认归属的文件，已停止卸载并保留文件。", "The service directory contains files with unconfirmed ownership. Removal stopped and files were retained."},
     {"uninstall_unknown_directory", "服务目录包含无法确认归属的目录，已停止卸载并保留文件。", "The service directory contains a folder with unconfirmed ownership. Removal stopped and files were retained."},
+    {"runtime_directory_changed", "服务目录的归属或路径不符合预期，操作已停止，请导出诊断。", "A service directory has an unexpected owner or path. The operation stopped; export diagnostics."},
+    {"runtime_directory_permissions_changed", "服务目录权限不符合预期，操作已停止，请导出诊断。", "A service directory has unexpected permissions. The operation stopped; export diagnostics."},
     {0, 0, 0}
 };
 #endif

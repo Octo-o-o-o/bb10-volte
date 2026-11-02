@@ -2,7 +2,7 @@
 
 [简体中文](MOBILE-INSTALL.md) | **English**
 
-The native Cascades app (`com.octolab.bb10volte`) coexists with the desktop manager. Current candidate: mobile **0.1.0.11**, desktop **r17**, protocol **2**. After an earlier Passport/Mobile call drop, the owner confirmed three calls of at least two minutes each with two-way audio and continuous LTE using the r17 data-centric policy. Bidirectional short English, long Chinese and identical independent SMS messages also passed. See the [validation record](MOBILE-VALIDATION.md) for coverage and remaining acceptance. Installing the icon does not activate VoLTE.
+The native Cascades app (`com.octolab.bb10volte`) coexists with the desktop manager. Current candidate: mobile **0.1.0.12**, desktop **r18**, protocol **2**. After an earlier Passport/Mobile call drop, the owner confirmed three calls of at least two minutes each with two-way audio and continuous LTE using the historical v10/r17 data-centric policy. These results do not establish v12/r18 or fresh-install acceptance. Bidirectional short English, long Chinese and identical independent SMS messages also passed. See the [validation record](MOBILE-VALIDATION.md) for coverage and remaining acceptance. Installing the icon does not activate VoLTE.
 
 Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for the current candidate. Existing tasks are preserved. After a normal restart, wait for the system Root success notification, then open the app once for automatic reconciliation; do not submit another enable or update to replace a pending task.
 
@@ -18,9 +18,9 @@ Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for the current candidat
 
 [AutoRoot v4 documentation](https://bb10.root.sx/blog/autoroot-v4) describes unsigned BAR support and local privilege helpers. A Root label alone does not establish those capabilities. The app does not flash firmware, exploit a stock phone or change global PathTrust.
 
-Obtain the target **0.1.0.11** BAR and checksums from the same candidate handoff or official HTTPS Release. Do not guess an unpublished download URL. With an existing BAR installer, open the `.bar` and confirm system prompts normally. With only a Root terminal, download the same-version `-bootstrap.zip` to Downloads and execute the exact command in its `INSTALL.txt`, using the phone's existing `/var/rootdata/installer`.
+Obtain the target **0.1.0.12** BAR and checksums from the same candidate handoff or official HTTPS Release. Do not guess an unpublished download URL. With an existing BAR installer, open the `.bar` and confirm system prompts normally. With only a Root terminal, download the same-version `-bootstrap.zip` to Downloads and execute the exact command in its `INSTALL.txt`, using the phone's existing `/var/rootdata/installer`.
 
-Installation passes only with **the same job's final SUD success and an actual registered app version of 0.1.0.11**. v6 through v10 installations were confirmed. An earlier v2 attempt printed completed after a timeout while the actual version stayed unchanged. Each new artifact needs its own verification. Keep the input and query the original job. A completed message, extracted files, icon or working older version is insufficient; do not repeatedly resubmit an unknown result.
+Installation passes only with **the same job's final SUD success and an actual registered app version of 0.1.0.12**. v6 through v10 installations were confirmed. An earlier v2 attempt printed completed after a timeout while the actual version stayed unchanged. Each new artifact needs its own verification. Keep the input and query the original job. A completed message, extracted files, icon or working older version is insufficient; do not repeatedly resubmit an unknown result.
 
 Unlock normally, accept the first-use system app permissions and check the actual UI application version. Reaching a permission dialog does not establish that Cascades loaded. Restore an unavailable Root entry through its original method; do not bypass system permissions or the lock screen.
 
@@ -28,7 +28,7 @@ The release page must publish hashes and the pinned publisher key fingerprint. A
 
 ## Enable VoLTE
 
-**Resume an existing recovery task first.** Complete the current waiting_reboot stop/restore task after the restart. Once an r14, r15 or r16 installation is stopped and restored, the primary action can offer a phone-service update; management also provides the bundled-update action. Use the final BAR's included signed payload to migrate to r17. Do not import the same-version ZIP for that step. The first-install steps below apply only when the service is genuinely absent.
+**Resume an existing recovery task first.** Complete the current waiting_reboot stop/restore task after the restart. Once an r14, r15, r16 or r17 installation is stopped and restored, the primary action can offer a phone-service update; management also provides the bundled-update action. Use the final BAR's included signed payload to update to r18. Do not import the same-version ZIP for that step. The first-install steps below apply only when the service is genuinely absent.
 
 1. Open **BB10 VoLTE**. It verifies the entry hash, signed payload, Root environment and actual phone/SIM state.
 2. Choose the backup location. A mounted SD card is preferred; internal Documents is allowed but cannot protect against losing the phone or storage failure.
@@ -43,7 +43,7 @@ Power off before later SIM changes. The automatic engine then selects a supporte
 
 After an old installation is stopped and restored, the bundled-update action applies the current BAR's signed payload without another download. Online update checks and offline signed `-update.zip` import require a newer runtime version; same-version or older ZIPs are not ordinary updates. Downloads enforce HTTPS, domain and size restrictions; the Root verifier independently checks the publisher signature and creates a protected private snapshot. Runtime updates do not replace the native C++/QML app: install a newer same-identity BAR for UI updates.
 
-All r14/r15/r16 → r17 paths adoption require disable, restoration and a normal restart before updating; accept these paths separately. Upgrade the desktop manager to the corresponding r17 version too. Old r14/r15/r16 clients cannot manage the new protocol-2 payload. New desktop and mobile writers share a device lock and persistent transaction records; this cannot stop an old process that already passed its old write checks.
+All r14/r15/r16/r17 → r18 updates require disable, restoration and a normal restart before updating; accept these paths separately. Upgrade the desktop manager to the corresponding r18 version too. Old r14/r15/r16/r17 clients cannot manage the new payload. New desktop and mobile writers share a device lock and persistent transaction records; this cannot stop an old process that already passed its old write checks.
 
 Rollback restores the recorded previous version only after service shutdown and a normal restart. It never invents a desktop backup receipt when only a mobile copy exists. Full service uninstall restores and restarts, verifies/removes owned files and hooks, then requests the final normal restart to verify stock state. Originals and diagnostics remain. Delete the app icon separately afterward; deleting it alone does not remove the service.
 

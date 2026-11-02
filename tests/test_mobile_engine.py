@@ -205,6 +205,10 @@ class PrepareTests(unittest.TestCase):
     def setUp(self):
         self.stage = '/var/bb10_auto_stage_123456789abc'
         self.fs, self.dirs = {}, {'/var', i.MANAGEMENT, self.stage}
+        self.directory_modes = {path: 0o700 for path in self.dirs}
+        self.umask = 0o077
+        self.mode_changes = []
+        self.fail_publish = False
         self.names = ('device/unified_boot.sh', 'device/unified_service.py', 'driver/fixed.so')
         payload = {name: ('payload:' + name).encode() for name in self.names}
         self.manifest = {'owner': i.policy.OWNER, 'schema': 1, 'files': {name: i.n.digest(raw) for name, raw in payload.items()}}
@@ -223,7 +227,20 @@ class PrepareTests(unittest.TestCase):
             if path in self.dirs:
                 raise FileExistsError()
             self.dirs.add(path)
+            self.directory_modes[path] = mode & ~self.umask
+        def private_directory(path):
+            if path not in self.dirs:
+                mkdir(path, 0o700)
+        def chmod(path, mode):
+            self.mode_changes.append((path, mode))
+            self.directory_modes[path] = mode
+        def lstat(path):
+            if path in self.dirs:
+                return types.SimpleNamespace(st_ino=7, st_mode=stat.S_IFDIR | self.directory_modes[path], st_uid=0, st_gid=0)
+            return self.metadata
         def rename(source, destination):
+            if self.fail_publish:
+                raise OSError('power loss before publish')
             self.assertNotIn(destination, self.dirs)
             for key in list(self.fs):
                 if key.startswith(source + '/'):
@@ -232,6 +249,7 @@ class PrepareTests(unittest.TestCase):
                 if key == source or key.startswith(source + '/'):
                     self.dirs.remove(key)
                     self.dirs.add(destination + key[len(source):])
+                    self.directory_modes[destination + key[len(source):]] = self.directory_modes.pop(key)
         def walk(top):
             for folder in sorted(self.dirs):
                 if folder == top or folder.startswith(top + '/'):
@@ -246,7 +264,7 @@ class PrepareTests(unittest.TestCase):
                      patch.object(i, 'original_source', side_effect=lambda name, unused: self.originals[name]),
                      patch.object(i.n, 'voice_policy', return_value=0), patch.object(i.radio, 'ue_usage_policy', return_value=0),
                      patch.object(i.n, 'crypto_policy', return_value={'swcr_id': -1, 'crypto_support': 0}),
-                     patch.object(i, 'private_directory', side_effect=lambda p: self.dirs.add(p)),
+                     patch.object(i, 'private_directory', side_effect=private_directory),
                      patch.object(i, 'device_binding', return_value='d' * 32),
                      patch.object(i.n, 'atomic', side_effect=atomic), patch.object(i.n, 'read', side_effect=lambda p: self.fs[p]),
                      patch.object(i.s, 'load', side_effect=lambda p: json.loads(self.fs[p])),
@@ -255,8 +273,8 @@ class PrepareTests(unittest.TestCase):
                      patch.object(i.os.path, 'lexists', side_effect=lambda p: p in self.fs or p in self.dirs),
                      patch.object(i.os.path, 'isfile', side_effect=lambda p: p in self.fs),
                      patch.object(i.os.path, 'isdir', side_effect=lambda p: p in self.dirs),
-                     patch.object(i.os, 'lstat', return_value=self.metadata), patch.object(i.os, 'mkdir', side_effect=mkdir),
-                     patch.object(i.os, 'chmod'),
+                     patch.object(i.os, 'lstat', side_effect=lstat), patch.object(i.os, 'mkdir', side_effect=mkdir),
+                     patch.object(i.os, 'chmod', side_effect=chmod),
                      patch.object(i.os, 'rename', side_effect=rename), patch.object(i.os, 'walk', side_effect=walk)):
             stack.enter_context(item)
 
@@ -272,6 +290,7 @@ class PrepareTests(unittest.TestCase):
         self.assertEqual(self.fs[i.BASE + '/backup/ims.original'], b'original')
         self.assertEqual(json.loads(self.fs[i.BASE + '/install-pending.json'])['phase'], 'awaiting_backup')
         self.assertEqual(i.prepare(self.stage)['installation_id'], result['installation_id'])
+        self.assertEqual(self.directory_modes[i.BASE + '/runtime/carrier'], 0o755)
 
     def test_unknown_base_is_not_adopted_or_modified(self):
         self.dirs.add(i.BASE)
@@ -280,6 +299,39 @@ class PrepareTests(unittest.TestCase):
             i.prepare(self.stage)
         self.assertEqual(self.writes, [])
         self.assertEqual(self.fs[i.BASE + '/other-owner'], b'keep')
+
+    def test_mobile_umask_keeps_backup_private_and_native_runtime_readable(self):
+        i.prepare(self.stage)
+        for suffix in ('', '/runtime', '/runtime/carrier'):
+            self.assertEqual(self.directory_modes[i.BASE + suffix], 0o755)
+        for suffix in ('/device', '/driver', '/state', '/backup', '/archive'):
+            self.assertEqual(self.directory_modes[i.BASE + suffix], 0o700)
+        self.assertEqual(self.directory_modes[i.MANAGEMENT], 0o700)
+
+    def test_published_pending_prepare_repairs_previously_masked_runtime(self):
+        first = i.prepare(self.stage)
+        originals = dict(self.fs)
+        self.directory_modes[i.BASE + '/runtime'] = 0o700
+        self.directory_modes[i.BASE + '/runtime/carrier'] = 0o700
+        self.mode_changes.clear()
+        second = i.prepare(self.stage)
+        self.assertEqual(first['installation_id'], second['installation_id'])
+        self.assertEqual(self.fs, originals)
+        self.assertEqual(self.mode_changes, [(i.BASE + '/runtime', 0o755), (i.BASE + '/runtime/carrier', 0o755)])
+
+    def test_publish_interruption_keeps_work_private_and_resumes_correct_modes(self):
+        self.fail_publish = True
+        with self.assertRaisesRegex(OSError, 'before publish'):
+            i.prepare(self.stage)
+        intent = json.loads(self.fs[i.MANAGEMENT + '/install-intent.json'])
+        work = i.MANAGEMENT + '/prepare-' + intent['operation_id']
+        self.assertNotIn(i.BASE, self.dirs)
+        self.assertEqual(self.directory_modes[work], 0o700)
+        self.assertEqual(self.directory_modes[work + '/runtime/carrier'], 0o755)
+        self.fail_publish = False
+        self.assertTrue(i.prepare(self.stage)['prepared'])
+        self.assertEqual(self.directory_modes[i.BASE + '/runtime/carrier'], 0o755)
+        self.assertEqual(self.directory_modes[i.BASE + '/backup'], 0o700)
 
 
 class RollbackTests(unittest.TestCase):

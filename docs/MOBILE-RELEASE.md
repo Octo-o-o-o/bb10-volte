@@ -1,6 +1,8 @@
 # 手机构建、签名与发布
 
-此流程生成手机 **0.1.0.11 / 桌面 0.5.0-r17 / 协议 2** 的可审查候选，不会自动上传、创建 Release、修改线上下载或发送通知。r17 保留并合入已有 r15 的机型检查、受控试验、反馈与教程。安装方法见[中文指南](MOBILE-INSTALL.md)和[英文指南](MOBILE-INSTALL.en.md)。
+当前 v12/r18 修复手机新安装时私有 umask 导致 runtime 目录不可遍历的问题。新建与更新路径均先验证归属和内容，再明确设置运行目录权限；备份、状态与管理目录仍为私有。修复的实机 IMS、完整重装与通话/短信验收尚未完成。另有一次完整卸载后、重新安装前的唤醒内核/watchdog 重启，根因未确定；仍阻止发布，不能由短时未复现或权限修复替代解决。
+
+此流程生成手机 **0.1.0.12 / 桌面 0.5.0-r18 / 协议 2** 的可审查候选，不会自动上传、创建 Release、修改线上下载或发送通知。r17 保留并合入已有 r15 的机型检查、受控试验、反馈与教程。安装方法见[中文指南](MOBILE-INSTALL.md)和[英文指南](MOBILE-INSTALL.en.md)。
 
 v11 已通过 Windows 759 项测试（2 项平台专用跳过）、最终 93 项手机专项回归、真实 SDK ARM BAR 构建、59 个签名成员与安装注册版本回读。两位 reviewer 对本次语言、原生界面与组件交互复评通过。r17 的 Passport 原生更新、策略重启、三次至少两分钟通话及短信在 v10 已通过，v11 无线载荷保持一致。网站 18 项静态与 25 项浏览器检查通过；最终 Mac 源码、冻结包、签名公证及其余人工验收按同版候选的独立回执记录，详见[验收记录](MOBILE-VALIDATION.md)。
 
@@ -23,7 +25,7 @@ python -c "import sys; sys.path.insert(0, 'tools'); import auto_carrier; auto_ca
 python -m unittest discover -s tests -q
 python -m compileall -q device tools tests mobile/runtime
 python tools/check_release.py
-python tools/build_mobile.py --key private/mobile-signing/release-private.pem --version 0.1.0.11
+python tools/build_mobile.py --key private/mobile-signing/release-private.pem --version 0.1.0.12
 ```
 
 已有发行私钥时不要运行生成新密钥命令。新项目首次建立发行身份可使用 `tools/package_mobile.py generate-key`，该命令拒绝覆盖已有私钥/公钥。
@@ -49,13 +51,13 @@ v6 还从共享 variant_trials 定义生成并签入 19 个精确后缀 profile 
 
 ## 发布前同一次人工验收
 
-在合并后自动检查通过的**最终同一组哈希**上，执行[一次人工验收清单](MOBILE-MANUAL-ACCEPTANCE.md)，更新[MOBILE-VALIDATION](MOBILE-VALIDATION.md)和[公开设备证据](../materials/mobile-device-validation-2026-11-02.json)。至少覆盖正常安装/权限、现有 waiting_reboot 任务继续、内置更新入口、备份、正常重启/IMS/双向通话/音频/LTE/短信、关闭重开应用、更新/回滚、完整卸载重装及 r17 两端共存。r14 → r17 与 r15 → r17 分别记录。
+在合并后自动检查通过的**最终同一组哈希**上，执行[一次人工验收清单](MOBILE-MANUAL-ACCEPTANCE.md)，更新[MOBILE-VALIDATION](MOBILE-VALIDATION.md)和[公开设备证据](../materials/mobile-device-validation-2026-11-02.json)。至少覆盖正常安装/权限、现有 waiting_reboot 任务继续、内置更新入口、备份、正常重启/IMS/双向通话/音频/LTE/短信、关闭重开应用、更新/回滚、完整卸载重装及 r18 两端共存。r14/r15/r16/r17 → r18 的实际样本分别记录。
 
-安装通过需对应任务的 **SUD 最终 success + 实际注册版本 0.1.0.11**。AutoRoot installer 在 120 秒超时后打印 completed 的样本不能算通过。v1 安装成功、v2 未验证升级、v5 仅复制和首次启动停在系统权限的历史事实均需保留。实际新引擎迁移或通话未完成时，不由探针结果推定成功。缺少某机型或运营商的证据时，不把该组合写成新增硬件已验收。
+安装通过需对应任务的 **SUD 最终 success + 实际注册版本 0.1.0.12**。AutoRoot installer 在 120 秒超时后打印 completed 的样本不能算通过。v1 安装成功、v2 未验证升级、v5 仅复制和首次启动停在系统权限的历史事实均需保留。实际新引擎迁移或通话未完成时，不由探针结果推定成功。缺少某机型或运营商的证据时，不把该组合写成新增硬件已验收。
 
 通过后再发布相同字节的 BAR/ZIP 和 SHA256SUMS，把运行组件 ZIP 上传到 `https://bb10-downloads.octoooo.com/mobile/` 的版本路径，把经核验的 `latest.json` 部署到 `https://bb10-volte.octoooo.com/mobile/latest.json`。必须先上传不可变版本文件，再更新 latest；避免用户下载到半份包。发布前后回读下载字节和签名。当前候选构建不会创建这些线上文件。
 
-同时发布对应 r17 桌面包或明确提供该源码桌面版本，让新管理协议可由两端共同管理。旧 r14/r15 可继续使用其原有安装，但不能负责新协议的写操作。保留既有 r15 发布，不复用其版本号或无声替换旧发行文件。
+同时发布对应 r18 桌面包或明确提供该源码桌面版本，让新管理协议可由两端共同管理。旧 r14/r15 可继续使用其原有安装，但不能负责新协议的写操作。保留既有 r15 发布，不复用其版本号或无声替换旧发行文件。
 
 ## 固定边界
 

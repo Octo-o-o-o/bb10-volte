@@ -77,7 +77,7 @@ class MobileTrialIntegration(unittest.TestCase):
     def test_previous_releases_can_replace_only_reviewed_files(self):
         origins = json.loads((ROOT / 'materials/mobile-upgrade-origins.json').read_text())['origins']
         current = json.loads((ROOT / 'materials/unified-payload.json').read_text())['files']
-        self.assertEqual({o['label'] for o in origins}, {'desktop-r14', 'desktop-r15', 'desktop-r16', 'mobile-v5'})
+        self.assertEqual({o['label'] for o in origins}, {'desktop-r14', 'desktop-r15', 'desktop-r16', 'desktop-r17', 'mobile-v5'})
         for origin in origins:
             fingerprint = unified_install.n.digest(profiles.canonical(origin['files']))
             self.assertEqual(fingerprint, origin['fingerprint'])

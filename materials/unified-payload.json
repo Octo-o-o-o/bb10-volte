@@ -2,7 +2,7 @@
   "schema": 1,
   "owner": "bb10-unified-carriers-v1",
   "version": "0.5.0",
-  "desktop_revision": 17,
+  "desktop_revision": 18,
   "files": {
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
     "device/profiles.py": "c0d67448b46649166bb9434d3c22ffce1636ea2c791318e5751864d4c89b9bba",
@@ -16,7 +16,7 @@
     "device/carrier_policy.py": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
     "device/unified_service.py": "60b7937f95a9fe4ef7d58a8cba3d4161e4048e15f6472eb0387ab7ab84701d5c",
     "device/unified_dca.py": "70f54c5cb003c3021e574fd63bf51f48674645b0a6a0c1dd40f820089fece27c",
-    "device/unified_install.py": "3edd12d26fe26fa15b3fc2e9178a88d99ad7b091582887f7070de54c526a8bfd",
+    "device/unified_install.py": "1e086b440b28b1973d2ace08c497717c069f5518de6cbcfe77a49d2f3991e22e",
     "device/unified_migrate.py": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
     "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
     "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
