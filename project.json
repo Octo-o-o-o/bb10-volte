@@ -1,11 +1,11 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 20,
-  "mobile_version": "0.1.0.15",
+  "desktop_revision": 21,
+  "mobile_version": "0.1.0.19",
   "management_protocol": 2,
-  "state": "experimental_release_q20_passport",
+  "state": "integrated_release_candidate",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Rooted SQC100-2 and SQW100-4 on OS 10.3.3.3216. Q20/Unicom and Passport/Mobile full restore, uninstall, reinstall, calls and SMS accepted with mobile 0.1.0.12 and service r18; Q20/Mobile and Passport/Unicom SIM swaps accepted. This release preserves r18 wireless payload bytes and adds the mobile project/support sheet, progress feedback and bundled desktop BAR provisioning. Version 0.1.0.15 build and package validation do not substitute for new device acceptance. Q10 native installation remains under separate testing and is not admitted by this release. Historical desktop and experimental variant capabilities remain documented separately."
+  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on BB10 10.3.3.3216; specific carrier/SIM and version acceptance is recorded separately. Mobile and desktop management coexist. This candidate combines the r20 desktop and support page with the later mobile lifecycle and cache improvements and the exact-stock-file-bound Telecom CTNET proxy correction. Passport/Telecom was verified after the r21 payload update; Q10/Telecom v18/r18 calls and SMS passed after reflash but its browser remained affected, so this integrated version needs its own Q10 validation. Q10 first Root was observed on Apple Silicon Mac mini using native stages, not the complete GUI. Do not infer untested hardware, operators, long-term stability, or phone-only initial Root support."
 }

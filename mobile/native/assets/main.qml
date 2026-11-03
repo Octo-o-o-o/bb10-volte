@@ -84,12 +84,25 @@ NavigationPane {
                     multiline: true
                     textFormat: TextFormat.Plain
                 }
+                Label {
+                    text: volteController.cachedStatusText
+                    visible: text.length > 0
+                    multiline: true
+                    textStyle.fontSize: FontSize.Small
+                    textFormat: TextFormat.Plain
+                }
                 ActivityIndicator {
-                    visible: volteController.busy || volteController.jobRunning || volteController.waitingForRoot
+                    visible: volteController.activityVisible
                     running: visible
                     preferredWidth: 72
                     preferredHeight: 72
                     horizontalAlignment: HorizontalAlignment.Center
+                }
+                Button {
+                    text: navigation.t("cancel_update_transfer")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    visible: volteController.networkTransferInProgress
+                    onClicked: volteController.cancelUpdateTransfer()
                 }
                 Label {
                     text: volteController.jobText

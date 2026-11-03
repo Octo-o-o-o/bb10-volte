@@ -333,8 +333,18 @@ def provision(release, stage, identifier, expected_device):
                 # QNX Python rejects preexec_fn before spawning. Its native
                 # start_new_session path creates a detached session without
                 # running Python in a forked child and survives SSH closure.
-                process = subprocess.Popen([executable, package], stdin=source, stdout=log, stderr=log,
-                                           close_fds=True, start_new_session=True, env=environment)
+                # The native installer creates its PPS object before chmod.
+                # BB10's existing .all watcher can miss an initially private
+                # object and its later updates even after its mode is fixed.
+                # Let only this child create the 0660 root:upd PPS object with
+                # group access from the outset. This helper is single-threaded;
+                # restore its private mask before writing any more receipts.
+                previous_mask = os.umask(0o007)
+                try:
+                    process = subprocess.Popen([executable, package], stdin=source, stdout=log, stderr=log,
+                                               close_fds=True, start_new_session=True, env=environment)
+                finally:
+                    os.umask(previous_mask)
                 job['installer_pid'] = process.pid
                 save(directory + '/record.json', job)
                 # Do not hold the transaction lock for an unbounded installer

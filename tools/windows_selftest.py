@@ -18,6 +18,24 @@ from connection_dialog import ConnectionDialog
 from i18n import tr
 
 
+def verify_tls_context(context):
+    """Check strict TLS even when Windows uses a native trust adapter."""
+    import ssl
+    assert context.verify_mode == ssl.CERT_REQUIRED and context.check_hostname
+    try:
+        assert context.cert_store_stats()['x509_ca'] > 0
+    except NotImplementedError:
+        # Some Windows native-store adapters cannot expose OpenSSL statistics.
+        # Check the OS root store instead; do not disable hostname verification
+        # or accept an empty/non-server-auth certificate store.
+        if sys.platform != 'win32' or not hasattr(ssl, 'enum_certificates'):
+            raise
+        server_auth = '1.3.6.1.5.5.7.3.1'
+        assert any(encoded and kind == 'x509_asn' and
+                   (trust is True or isinstance(trust, (set, frozenset)) and server_auth in trust)
+                   for encoded, kind, trust in ssl.enum_certificates('ROOT'))
+
+
 def run(output):
     def no_python_network(event, args):
         if event in ('socket.connect', 'socket.getaddrinfo', 'socket.bind'):
@@ -27,8 +45,7 @@ def run(output):
     import ssl
     from fetch_materials import download_ssl_context
     tls = download_ssl_context()
-    assert tls.verify_mode == ssl.CERT_REQUIRED and tls.check_hostname
-    assert tls.cert_store_stats()['x509_ca'] > 0
+    verify_tls_context(tls)
     import i18n
     assert i18n.language_from_tag('zh-Hant') == 'zh'
     assert i18n.language_from_tag('ja-JP') == 'en'

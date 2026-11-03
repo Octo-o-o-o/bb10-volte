@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -110,7 +111,9 @@ def trial_inputs():
     return blobs
 
 
-def bundle_inputs(key):
+def bundle_inputs(key, version=MOBILE_VERSION):
+    if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', version):
+        raise ValueError('Invalid mobile bundle version')
     blobs = {}
     launcher = ROOT / 'mobile/native/build/job-launcher'
     if not launcher.is_file() or launcher.is_symlink():
@@ -129,6 +132,10 @@ def bundle_inputs(key):
             if blob.count(needle) != 1:
                 raise ValueError('Unexpected entry point key placeholder')
             blob = blob.replace(needle, b'RELEASE_KEY = ' + repr(key).encode('ascii'))
+            version_needle = b'RELEASE_VERSION = None  # substituted by tools/package_mobile.py'
+            if blob.count(version_needle) != 1:
+                raise ValueError('Unexpected entry point version placeholder')
+            blob = blob.replace(version_needle, b'RELEASE_VERSION = ' + repr(version).encode('ascii'))
         blobs['runtime/' + source.name] = blob
     for source in sorted((ROOT / 'device').glob('*')):
         if source.suffix in ('.py', '.sh'):
@@ -141,6 +148,17 @@ def bundle_inputs(key):
     blobs.update(trial_inputs())
     for name in ('unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json'):
         blobs['materials/' + name] = (ROOT / 'materials' / name).read_bytes()
+    # Bind the pinned entry to every other signed member and manifest field,
+    # without a self-referential hash of the entry itself.
+    core = {'schema': 2, 'kind': 'bb10-volte-mobile', 'protocol': 2, 'version': version,
+            'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1'],
+            'files': {name: {'sha256': sha(data), 'size': len(data)} for name, data in blobs.items()
+                      if name != 'runtime/entry.py'}}
+    needle = b'RELEASE_CORE_SHA256 = None  # substituted by tools/package_mobile.py'
+    entry = blobs['runtime/entry.py']
+    if entry.count(needle) != 1:
+        raise ValueError('Unexpected entry point bundle identity placeholder')
+    blobs['runtime/entry.py'] = entry.replace(needle, b'RELEASE_CORE_SHA256 = ' + repr(sha(canonical(core))).encode('ascii'))
     return blobs
 
 
@@ -149,8 +167,9 @@ def make_bundle(private_key, version=MOBILE_VERSION):
     expected = json.loads((ROOT / 'materials/mobile-release-key.json').read_text(encoding='ascii'))
     if key != expected:
         raise ValueError('Signing key does not match the pinned release public key')
-    blobs = bundle_inputs(key)
+    blobs = bundle_inputs(key, version)
     manifest = {'schema': 2, 'kind': 'bb10-volte-mobile', 'protocol': 2, 'version': version,
+                'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1'],
                 'files': {name: {'sha256': sha(data), 'size': len(data)} for name, data in blobs.items()}}
     raw = canonical(manifest)
     signature = canonical({'algorithm': 'RSASSA-PKCS1-v1_5-SHA256', 'key_id': key['key_id'],

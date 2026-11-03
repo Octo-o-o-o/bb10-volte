@@ -20,6 +20,7 @@ i18n.LANGUAGE = 'zh'  # Progress-message assertions below use Chinese.
 import fetch_materials as f
 import macos_root
 import setup_wizard
+import windows_selftest
 from feedback import Journal
 
 
@@ -77,6 +78,38 @@ class DownloadTrustTests(unittest.TestCase):
                 f.download_ssl_context()
         self.assertEqual(self.context.verify_mode, ssl.CERT_REQUIRED)
         self.assertTrue(self.context.check_hostname)
+
+
+class DesktopSelftestTrustTests(unittest.TestCase):
+    def context(self):
+        value = MagicMock()
+        value.verify_mode = ssl.CERT_REQUIRED
+        value.check_hostname = True
+        value.cert_store_stats.side_effect = NotImplementedError
+        return value
+
+    def test_windows_native_trust_adapter_checks_server_auth_roots(self):
+        context = self.context()
+        roots = [(b'certificate', 'x509_asn', {'1.3.6.1.5.5.7.3.1'})]
+        with patch.object(windows_selftest.sys, 'platform', 'win32'), \
+             patch.object(ssl, 'enum_certificates', return_value=roots, create=True) as enumerate_roots:
+            windows_selftest.verify_tls_context(context)
+            enumerate_roots.assert_called_once_with('ROOT')
+        for invalid in ([], [(b'certificate', 'x509_asn', set())], [(b'certificate', 'pkcs_7_asn', True)]):
+            with self.subTest(invalid=invalid), patch.object(windows_selftest.sys, 'platform', 'win32'), \
+                 patch.object(ssl, 'enum_certificates', return_value=invalid, create=True):
+                with self.assertRaises(AssertionError):
+                    windows_selftest.verify_tls_context(context)
+
+    def test_adapter_does_not_relax_tls_or_hide_unsupported_other_platforms(self):
+        context = self.context()
+        context.check_hostname = False
+        with self.assertRaises(AssertionError):
+            windows_selftest.verify_tls_context(context)
+        context.check_hostname = True
+        with patch.object(windows_selftest.sys, 'platform', 'linux'):
+            with self.assertRaises(NotImplementedError):
+                windows_selftest.verify_tls_context(context)
 
 
 class DownloadTests(unittest.TestCase):

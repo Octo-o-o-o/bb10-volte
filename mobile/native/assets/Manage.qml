@@ -15,11 +15,15 @@ Page {
             bottomPadding: 32
             Label { text: volteController.statusTitle; multiline: true; textStyle.fontSize: FontSize.Large; textFormat: TextFormat.Plain }
             Label { text: volteController.statusMessage; multiline: true; visible: text.length > 0; textFormat: TextFormat.Plain }
+            Label { text: volteController.cachedStatusText; multiline: true; visible: text.length > 0; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Label { text: volteController.jobText; multiline: true; visible: text.length > 0; textFormat: TextFormat.Plain }
-            ActivityIndicator { visible: volteController.busy || volteController.jobRunning || volteController.waitingForRoot; running: visible; preferredHeight: 60; preferredWidth: 60 }
+            ActivityIndicator { visible: volteController.activityVisible; running: visible; preferredHeight: 60; preferredWidth: 60 }
+            Button { text: page.t("status"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && !volteController.operationInProgress; onClicked: volteController.refresh() }
             Label { text: page.t("details"); textStyle.fontWeight: FontWeight.W500 }
             Label { text: volteController.detailText; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
-            Label { text: page.t("version") + ": " + volteController.version; textStyle.fontSize: FontSize.Small }
+            Label { text: page.t("app_version") + ": " + volteController.version; textStyle.fontSize: FontSize.Small }
+            Label { text: page.t("runtime_version") + ": " + volteController.runtimeVersionText; textStyle.fontSize: FontSize.Small }
+            Label { text: page.t("phone_service") + ": " + volteController.phoneServiceText; textStyle.fontSize: FontSize.Small }
             Divider {}
             DropDown {
                 title: page.t("language")
@@ -74,9 +78,16 @@ Page {
                 enabled: !volteController.busy && volteController.allowed("update")
                 onClicked: volteController.downloadUpdate()
             }
-            Label { text: volteController.notice; visible: text.length > 0; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
+            Button {
+                text: page.t("cancel_update_transfer")
+                horizontalAlignment: HorizontalAlignment.Fill
+                visible: volteController.networkTransferInProgress
+                onClicked: volteController.cancelUpdateTransfer()
+            }
+            Label { text: volteController.updateBlockMessage; visible: text.length > 0; multiline: true; textFormat: TextFormat.Plain }
+            Label { text: volteController.updateFeedback; visible: text.length > 0; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Divider {}
-            Button { text: page.t("export_backup"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("export"); onClicked: volteController.exportBackup() }
+            Button { text: page.t("export_backup"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.canExportBackup; onClicked: volteController.exportBackup() }
             Button { text: page.t("export"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("export"); onClicked: volteController.requestAction("export") }
             Button { text: page.t("compatibility"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("compatibility"); onClicked: volteController.requestAction("compatibility") }
             Button { text: page.t("enable"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("enable"); onClicked: volteController.requestAction("enable") }

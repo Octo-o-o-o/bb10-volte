@@ -21,10 +21,16 @@ import subprocess
 import zipfile
 
 RELEASE_KEY = None  # substituted by tools/package_mobile.py
+RELEASE_VERSION = None  # substituted by tools/package_mobile.py
+RELEASE_CORE_SHA256 = None  # substituted by tools/package_mobile.py
 ROOT = '/var/bb10_volte-mobile'
 MAX_TOTAL = 32 * 1024 * 1024
 MAX_FILE = 16 * 1024 * 1024
 MAX_MEMBERS = 160
+BRIDGE_PROGRESS = False
+FOREGROUND_ACTIVE_POINTER = None
+SAFE_JOB_GUARD = 'safe_job_outcome_v1'
+SELECTION_GUARD = 'active_selection_guard_v1'
 ALGORITHM = 'RSASSA-PKCS1-v1_5-SHA256'
 SAFE_NAME = re.compile(r'\A(?:runtime|payload|profiles|materials)/[a-zA-Z0-9_.\-/]+\Z')
 ACTIONS = ('inspect', 'status', 'poll', 'resume', 'install', 'enable', 'disable',
@@ -49,6 +55,30 @@ def canonical(value):
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def bridge_progress():
+    # Only the foreground bridge emits these markers; detached jobs retain
+    # their existing output protocol and never expose file or device data.
+    global BRIDGE_PROGRESS
+    if BRIDGE_PROGRESS:
+        try:
+            sys.stdout.write('BB10_PROGRESS:1\n')
+            sys.stdout.flush()
+        except (IOError, OSError, ValueError):
+            # Progress is observational. A closed UI pipe cannot cancel or
+            # change a task that may already have entered a transaction.
+            BRIDGE_PROGRESS = False
+
+
+def supports_job_guard(manifest):
+    capabilities = manifest.get('capabilities') if isinstance(manifest, dict) else None
+    return isinstance(capabilities, list) and SAFE_JOB_GUARD in capabilities
+
+
+def supports_selection_guard(manifest):
+    capabilities = manifest.get('capabilities') if isinstance(manifest, dict) else None
+    return isinstance(capabilities, list) and SELECTION_GUARD in capabilities
 
 
 def decode64(value):
@@ -141,11 +171,16 @@ def regular(path, maximum=MAX_FILE):
     return data
 
 
-def read_bundle(folder, key=None):
+def read_bundle_manifest(folder, key=None):
     require(os.path.realpath(folder) == folder and os.path.isdir(folder), 'unsafe_bundle_path')
     raw = regular(folder + '/manifest.json', 131072)
     signature = regular(folder + '/manifest.sig.json', 4096)
     manifest = validate_manifest(raw, signature, key)
+    return manifest, raw, signature
+
+
+def read_bundle(folder, key=None):
+    manifest, raw, signature = read_bundle_manifest(folder, key)
     blobs = {}
     for name, item in manifest['files'].items():
         path = folder + '/' + name
@@ -153,14 +188,19 @@ def read_bundle(folder, key=None):
         blob = regular(path)
         require(len(blob) == item['size'] and digest(blob) == item['sha256'], 'package_changed')
         blobs[name] = blob
+        bridge_progress()
     return manifest, raw, signature, blobs
 
 
-def read_archive(path, key=None):
+def read_archive(path, key=None, expected_sha256=None):
     require(os.path.realpath(path) == path, 'unsafe_package_path')
     # Parse one bounded immutable byte string, never a changing shared file.
     data = regular(path, MAX_TOTAL)
     require(data, 'package_too_large')
+    if expected_sha256 is not None:
+        require(isinstance(expected_sha256, str) and re.match(r'\A[a-f0-9]{64}\Z', expected_sha256),
+                'invalid_update_expectation')
+        require(digest(data) == expected_sha256, 'package_changed')
     bounded_directory(data)
     with io.BytesIO(data) as stream:
         with zipfile.ZipFile(stream) as archive:
@@ -188,6 +228,7 @@ def read_archive(path, key=None):
                 blob = bounded_member(archive, name, item['size'])
                 require(len(blob) == item['size'] and digest(blob) == item['sha256'], 'package_changed')
                 blobs[name] = blob
+                bridge_progress()
     return manifest, raw, signature, blobs
 
 
@@ -213,12 +254,16 @@ def bounded_directory(data):
     require(end < 20 or data[end - 20:end - 16] != b'PK\x06\x07', 'zip64_not_supported')
 
 
-def private_directory(path):
-    if not os.path.lexists(path):
-        os.mkdir(path, 0o700)
+def verify_private_directory(path):
     info = os.lstat(path)
     require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.geteuid() and
             info.st_mode & 0o077 == 0 and os.path.realpath(path) == path, 'unsafe_private_directory')
+
+
+def private_directory(path):
+    if not os.path.lexists(path):
+        os.mkdir(path, 0o700)
+    verify_private_directory(path)
 
 
 def write_new(path, blob, mode=0o600):
@@ -229,15 +274,84 @@ def write_new(path, blob, mode=0o600):
         os.fsync(output.fileno())
 
 
-def snapshot(bundle):
+class _SnapshotProof(object):
+    """Evidence for one verified private snapshot in this process only."""
+    def __init__(self, folder, manifest, raw, identity):
+        self.folder = folder
+        self.manifest = manifest
+        self.raw = raw
+        self.identity = identity
+        self.pid = os.getpid()
+
+
+def _snapshot_layout(folder, manifest):
+    # Only signed modules may be imported from a snapshot. In particular,
+    # stale .pyc files or extra modules cannot become an alternate import path.
+    expected_files = set(manifest['files']) | set(('manifest.json', 'manifest.sig.json'))
+    expected_dirs = set()
+    for name in manifest['files']:
+        parts = name.split('/')[:-1]
+        for count in range(1, len(parts) + 1):
+            expected_dirs.add('/'.join(parts[:count]))
+    files, directories = set(), set()
+    def walk_error(error):
+        raise MobileError('unsafe_snapshot_member')
+    for parent, names, members in os.walk(folder, onerror=walk_error, followlinks=False):
+        for name in names + members:
+            path = parent + '/' + name
+            relative = path[len(folder) + 1:]
+            info = os.lstat(path)
+            require(info.st_uid == os.geteuid() and info.st_mode & 0o077 == 0 and
+                    os.path.realpath(path) == path, 'unsafe_snapshot_member')
+            if name in names:
+                require(stat.S_ISDIR(info.st_mode), 'unsafe_snapshot_member')
+                directories.add(relative)
+            else:
+                require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1, 'unsafe_snapshot_member')
+                files.add(relative)
+    require(files == expected_files and directories == expected_dirs, 'unexpected_snapshot_member')
+
+
+def _snapshot_identity(folder):
+    name = os.path.basename(folder)
+    require(os.path.dirname(folder) == ROOT + '/snapshots' and
+            re.match(r'\A[a-f0-9]{64}\Z', name) and os.path.lexists(folder), 'unsafe_bundle_path')
+    verify_private_directory(ROOT)
+    verify_private_directory(ROOT + '/snapshots')
+    verify_private_directory(folder)
+    identities = []
+    for path in (ROOT, ROOT + '/snapshots', folder):
+        info = os.lstat(path)
+        identities.append((info.st_dev, info.st_ino))
+    return tuple(identities)
+
+
+def _verified_snapshot(folder, expected_raw=None):
+    identity = _snapshot_identity(folder)
+    name = os.path.basename(folder)
+    manifest, raw, signature, blobs = read_bundle(folder)
+    require(digest(raw) == name and (expected_raw is None or raw == expected_raw), 'snapshot_changed')
+    _snapshot_layout(folder, manifest)
+    require(_snapshot_identity(folder) == identity, 'snapshot_changed')
+    # Do not retain the verified file bodies alongside the source bundle.
+    del signature, blobs
+    return _SnapshotProof(folder, manifest, raw, identity)
+
+
+def _check_snapshot_proof(folder, proof):
+    require(isinstance(proof, _SnapshotProof) and proof.pid == os.getpid() and
+            proof.folder == folder and digest(proof.raw) == os.path.basename(folder), 'snapshot_changed')
+    require(_snapshot_identity(folder) == proof.identity, 'snapshot_changed')
+
+
+def snapshot(bundle, _return_proof=False):
     manifest, raw, signature, blobs = bundle
     private_directory(ROOT)
     private_directory(ROOT + '/snapshots')
     folder = ROOT + '/snapshots/' + digest(raw)
     if os.path.lexists(folder):
-        private_directory(folder)
-        read_bundle(folder)
-        return folder
+        proof = _verified_snapshot(folder, raw)
+        return (folder, proof) if _return_proof else folder
     temporary = folder + '.stage-' + binascii.hexlify(os.urandom(6)).decode('ascii')
     private_directory(temporary)
     for name, blob in sorted(blobs.items()):
@@ -246,6 +360,7 @@ def snapshot(bundle):
             parent += '/' + part
             private_directory(parent)
         write_new(temporary + '/' + name, blob)
+        bridge_progress()
     write_new(temporary + '/manifest.json', raw)
     write_new(temporary + '/manifest.sig.json', signature)
     read_bundle(temporary)
@@ -254,42 +369,103 @@ def snapshot(bundle):
     except OSError:
         if not os.path.isdir(folder):
             raise
-        read_bundle(folder)
         # A concurrent successful copy is usable; the uniquely owned staging
         # directory is retained for diagnosis rather than recursively deleted.
-    return folder
+    proof = _verified_snapshot(folder, raw)
+    return (folder, proof) if _return_proof else folder
 
 
-def trusted_python(folder):
+def source_snapshot(folder, entry_bytes):
+    # The app's source copy is data, not the code we execute. When its signed
+    # identity is already materialized as a private snapshot, verify that
+    # entire snapshot instead of rereading the unused source file bodies.
+    manifest, raw, signature = read_bundle_manifest(folder)
+    verify_bridge_bundle((manifest, raw, signature), entry_bytes)
+    target = ROOT + '/snapshots/' + digest(raw)
+    if os.path.lexists(target):
+        proof = _verified_snapshot(target, raw)
+        return target, proof
+    # A first installation must verify every source byte before creating the
+    # private snapshot. Re-read and bind the signed header to the one above.
     bundle = read_bundle(folder)
+    require(bundle[1] == raw, 'source_manifest_changed')
+    verify_bridge_bundle(bundle, entry_bytes)
+    return snapshot(bundle, _return_proof=True)
+
+
+def trusted_python(folder, _proof=None):
+    if _proof is None:
+        _proof = _verified_snapshot(folder)
+    _check_snapshot_proof(folder, _proof)
+    manifest = _proof.manifest
     with open(os.devnull, 'wb') as sink:
-        for name in sorted(bundle[0]['files']):
+        for name in sorted(manifest['files']):
             if name == 'runtime/job-launcher':
                 os.chmod(folder + '/' + name, 0o700)
             if name.endswith('.py') or name.endswith('.sh') or name == 'runtime/job-launcher':
                 require(subprocess.call(['/proc/boot/pathtrust', '!' + folder + '/' + name],
                                         stdout=sink, stderr=sink) == 0, 'pathtrust_failed')
+                bridge_progress()
+    return manifest
 
 
-def active_bundle(fallback):
+def active_pointer_observation():
     pointer = ROOT + '/active.json'
     if not os.path.lexists(pointer):
-        return fallback
-    value = json_bytes(regular(pointer, 4096))
+        return (False, b'')
+    return (True, regular(pointer, 4096))
+
+
+def active_bundle(fallback, _fallback_proof=None, _return_proof=False):
+    if _fallback_proof is not None:
+        _check_snapshot_proof(fallback, _fallback_proof)
+    present, pointer_raw = active_pointer_observation()
+    if _fallback_proof is not None:
+        global FOREGROUND_ACTIVE_POINTER
+        FOREGROUND_ACTIVE_POINTER = (present, pointer_raw)
+    if not present:
+        return (fallback, _fallback_proof) if _return_proof else fallback
+    value = json_bytes(pointer_raw)
     require(isinstance(value, dict) and set(value) in ({'manifest_sha256'}, {'manifest_sha256', 'for_bundle'}) and
             re.match(r'\A[a-f0-9]{64}\Z', value['manifest_sha256']), 'active_bundle_changed')
     if 'for_bundle' in value:
         require(isinstance(value['for_bundle'], str) and re.match(r'\A[a-f0-9]{64}\Z', value['for_bundle']), 'active_bundle_changed')
     folder = ROOT + '/snapshots/' + value['manifest_sha256']
-    private_directory(folder)
-    bundle = read_bundle(folder)
-    require(digest(bundle[1]) == value['manifest_sha256'], 'active_bundle_changed')
-    fallback_bundle = read_bundle(fallback)
-    fallback_version = fallback_bundle[0]['version']
-    if (numeric_version(fallback_version) > numeric_version(bundle[0]['version']) and
-            value.get('for_bundle') != digest(fallback_bundle[1])):
-        return fallback
-    return folder
+    verify_private_directory(folder)
+    if _fallback_proof is not None:
+        if folder == fallback:
+            proof = _fallback_proof
+            manifest, raw = proof.manifest, proof.raw
+        else:
+            # Verify the signed identity first. If its version/capabilities
+            # force fallback, none of this snapshot's files are executed.
+            # A selected candidate is still completely verified below.
+            identity = _snapshot_identity(folder)
+            manifest, raw, unused_signature = read_bundle_manifest(folder)
+            _snapshot_layout(folder, manifest)
+            require(_snapshot_identity(folder) == identity, 'snapshot_changed')
+            proof = None
+        fallback_manifest, fallback_raw = _fallback_proof.manifest, _fallback_proof.raw
+    else:
+        bundle = read_bundle(folder)
+        manifest, raw = bundle[0], bundle[1]
+        fallback_bundle = read_bundle(fallback)
+        fallback_manifest, fallback_raw = fallback_bundle[0], fallback_bundle[1]
+        proof = None
+    require(digest(raw) == value['manifest_sha256'], 'active_bundle_changed')
+    # A service rollback may point to a historically signed worker that does
+    # not understand unknown outcomes. Never route a guarded BAR back to it.
+    if supports_job_guard(fallback_manifest) and not supports_job_guard(manifest):
+        return (fallback, _fallback_proof) if _return_proof else fallback
+    if supports_selection_guard(fallback_manifest) and not supports_selection_guard(manifest):
+        return (fallback, _fallback_proof) if _return_proof else fallback
+    fallback_version = fallback_manifest['version']
+    if (numeric_version(fallback_version) > numeric_version(manifest['version']) and
+            value.get('for_bundle') != digest(fallback_raw)):
+        return (fallback, _fallback_proof) if _return_proof else fallback
+    if _fallback_proof is not None and proof is None:
+        proof = _verified_snapshot(folder, raw)
+    return (folder, proof) if _return_proof else folder
 
 
 def numeric_version(value):
@@ -313,6 +489,33 @@ def cleanup_entry():
     os.rmdir(folder)
 
 
+def bridge_entry_bytes():
+    """Read the same root-private bridge copy the native app hash-pinned."""
+    path = os.path.abspath(__file__)
+    folder = os.path.dirname(path)
+    require(os.path.basename(path) == 'entry.py' and
+            re.match(r'\A/var/bb10_mobile_entry_[a-f0-9]{32}\Z', folder) and
+            os.path.realpath(path) == path, 'unsafe_bridge_entry')
+    private_directory(folder)
+    info = os.lstat(path)
+    require(stat.S_ISREG(info.st_mode) and info.st_uid == 0 and
+            info.st_mode & 0o077 == 0 and info.st_nlink == 1 and
+            os.listdir(folder) == ['entry.py'], 'unsafe_bridge_entry')
+    return regular(path)
+
+
+def verify_bridge_bundle(bundle, entry_bytes):
+    manifest = bundle[0]
+    core = dict(manifest)
+    core['files'] = dict((name, item) for name, item in manifest['files'].items()
+                         if name != 'runtime/entry.py')
+    require(isinstance(RELEASE_VERSION, str) and manifest['version'] == RELEASE_VERSION and
+            supports_job_guard(manifest) and supports_selection_guard(manifest) and
+            isinstance(RELEASE_CORE_SHA256, str) and digest(canonical(core)) == RELEASE_CORE_SHA256 and
+            digest(entry_bytes) == manifest['files']['runtime/entry.py']['sha256'],
+            'bridge_bundle_changed')
+
+
 def main():
     require(sys.flags.optimize == 0, 'optimized_python_not_supported')
     require(os.geteuid() == 0 and os.uname()[0] == 'QNX', 'root_required')
@@ -321,16 +524,30 @@ def main():
     require(isinstance(request, dict) and request.get('schema') == 2, 'invalid_request')
     require(set(request) <= {'schema', 'language', 'backup_location', 'package_path', 'job_id',
             'operation_id', 'experimental', 'profile_id', 'confirmed', 'incoming', 'outgoing',
-            'audio', 'lte', 'call_context', 'export_kind'}, 'invalid_request_field')
+            'audio', 'lte', 'call_context', 'export_kind', 'expected_version', 'expected_sha256'}, 'invalid_request_field')
+    global BRIDGE_PROGRESS
+    BRIDGE_PROGRESS = True
+    bridge_progress()
+    expects_update = 'expected_version' in request or 'expected_sha256' in request
+    if expects_update:
+        require(sys.argv[1] == 'update' and isinstance(request.get('package_path'), str) and
+                isinstance(request.get('expected_version'), str) and
+                re.match(r'\A[0-9]{1,5}(?:\.[0-9]{1,5}){3}\Z', request['expected_version']) and
+                isinstance(request.get('expected_sha256'), str) and
+                re.match(r'\A[a-f0-9]{64}\Z', request['expected_sha256']), 'invalid_update_expectation')
     # The native bridge runs a root-private copy of the already hash-pinned
     # entry bytes. The source bundle is data until signature verification.
     folder = (os.path.realpath(sys.argv[3]) if len(sys.argv) == 4 else
               os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    fallback = snapshot(read_bundle(folder))
+    fallback, fallback_proof = source_snapshot(folder, bridge_entry_bytes())
     global FALLBACK_MANIFEST_SHA
     FALLBACK_MANIFEST_SHA = os.path.basename(fallback)
-    verified = active_bundle(fallback)
-    trusted_python(verified)
+    verified, proof = active_bundle(fallback, fallback_proof, _return_proof=True)
+    verified_manifest = trusted_python(verified, proof)
+    if expects_update:
+        capabilities = verified_manifest.get('capabilities')
+        require(isinstance(capabilities, list) and 'expected_update_version_v1' in capabilities,
+                'update_runtime_upgrade_required')
     sys.path.insert(0, verified + '/payload/device')
     sys.path.insert(0, verified + '/runtime')
     sys.modules['entry'] = sys.modules[__name__]
