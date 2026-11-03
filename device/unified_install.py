@@ -41,7 +41,9 @@ PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa94042
                      '7de370bc3b3a9a646714336aa5e45de89026a50012e986f43a0d228d6dc638ff',
                      '40b98d3bab3f36d1e550b42db3f45185b0a179e64da96f8cc870af4a561cd9cc',
                      'fad645e6f1304ca3c9731ad5ac28d3adb7776906cc399e45f2d129192f54e863',
-                     '523e323bbeb2b1a020995a0db6149c13b136f10b908b47f97fb3c4cf045a3df0')
+                     '523e323bbeb2b1a020995a0db6149c13b136f10b908b47f97fb3c4cf045a3df0',
+                     # The r18 phone payload shipped unchanged in desktop r20.
+                     'b975409427c96fee16f10f7a271c53ebf181d37522b64e1b858cd1aeda3db777')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')

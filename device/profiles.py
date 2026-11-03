@@ -25,6 +25,11 @@ CONFIG_RE = r'/etc/carrier/config/([0-9]{1,6})\.xml'
 TRIAL_PREFIX = 'variant-trial-'
 TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
                    'telecom': ('11', ['ctnet', 'ctlte'])}
+# This original BB10 carrier file assigns the legacy CTWAP proxy to the
+# ordinary CTNET internet service. Keep this workaround bound to the exact
+# stock file observed on the affected device, not to arbitrary carrier files.
+TELECOM_446_BAD_PROXY_SHA256 = 'd94f9b7eaa664a9ac496475e706bb837c364635400dd1af9a79608337d57f407'
+TELECOM_446_BAD_PROXY = b'<HttpProxyV4>10.0.0.200:80</HttpProxyV4>'
 
 
 def trial_target(profile):
@@ -197,6 +202,30 @@ def patch_carrier(stock, profile):
     return result
 
 
+def fix_known_telecom_internet_proxy(data, path, stock_sha256, mcc, mnc):
+    """Remove the known CTNET proxy from the generated copy, never stock/MMS."""
+    if (mcc, mnc, path, stock_sha256) != (
+            '460', '11', '/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256):
+        return data
+    spans = []
+    for found in re.finditer(br'<ServiceConfiguration>.*?</ServiceConfiguration>', data, re.S):
+        block = found.group(0)
+        node = ET.fromstring(block)
+        apns = [entry.text for entry in node.iter('APN')]
+        proxy = node.findall('HttpProxyV4')
+        if (node.findtext('Name') == 'internet' and apns == ['ctnet'] and
+                len(proxy) == 1 and proxy[0].text == '10.0.0.200:80'):
+            spans.append((found.start(), found.end(), block))
+    if len(spans) != 1:
+        raise ValueError('Known Telecom internet proxy layout changed')
+    start, end, block = spans[0]
+    if block.count(TELECOM_446_BAD_PROXY) != 1:
+        raise ValueError('Known Telecom internet proxy bytes changed')
+    result = data[:start] + block.replace(TELECOM_446_BAD_PROXY, b'', 1) + data[end:]
+    ET.fromstring(result)
+    return result
+
+
 def carrier_template(profile, mcc, mnc):
     """Read only the SIM's stock carrier file, never a downloaded override."""
     p = validate(profile)
@@ -223,4 +252,5 @@ def carrier_template(profile, mcc, mnc):
     if not apns.intersection(p['carrier']['data_apns']):
         raise ValueError('Stock data APN does not match selected profile')
     changed = patch_carrier(stock, p)
+    changed = fix_known_telecom_internet_proxy(changed, path, digest, mcc, mnc)
     return {'path': path, 'sha256': digest}, changed

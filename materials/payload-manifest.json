@@ -11,7 +11,7 @@
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
     "device/operator-name-start.sh": "f70a9dbeb4103872da5d3ebe48be9ab66f0205e60d829e413f35e226b310f672",
     "device/operator_name.py": "cb4bcc38ac94b4df5861328373f53ec19a537826c036196f55985153ebc281c3",
-    "device/profiles.py": "c0d67448b46649166bb9434d3c22ffce1636ea2c791318e5751864d4c89b9bba",
+    "device/profiles.py": "d863e5f097b184b7443dbd96f35f5d894c9487e951128e3b9b85550e86de37a0",
     "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
     "device/run.sh": "3af90e97913804e78e9f65c3807698f875d8e83a8a8a83ae59f5d3a79f3587a1",
     "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
