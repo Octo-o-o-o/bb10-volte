@@ -271,7 +271,10 @@ class MobileRuntimeTests(unittest.TestCase):
         with mock.patch.dict(sys.modules, {'entry': ENTRY}):
             child = module('test_mobile_job_entry', ROOT / 'mobile/runtime/job_entry.py')
         raw = b'signed manifest fixture'
-        folder = '/var/test/snapshots/' + ENTRY.digest(raw)
+        # macOS resolves /var through /private/var; model the canonical QNX
+        # snapshot root so this isolation test remains portable on both hosts.
+        fake_root = posixpath.realpath('/var/test')
+        folder = fake_root + '/snapshots/' + ENTRY.digest(raw)
         request = {'action': 'engine-update', 'operation_id': 'a' * 32}
         encoded = base64.b64encode(ENTRY.canonical(request)).decode('ascii')
         fake_worker = types.SimpleNamespace(stage_payload=mock.Mock(return_value='/stage'))
@@ -283,7 +286,7 @@ class MobileRuntimeTests(unittest.TestCase):
                 manager.management_lock.side_effect = RuntimeError('management_busy')
             with self.subTest(entered=entered), \
                  mock.patch.object(child, '__file__', folder + '/runtime/job_entry.py'), \
-                 mock.patch.object(ENTRY, 'ROOT', '/var/test'), mock.patch.object(ENTRY.os, 'path', posixpath), \
+                 mock.patch.object(ENTRY, 'ROOT', fake_root), mock.patch.object(ENTRY.os, 'path', posixpath), \
                  mock.patch.object(ENTRY.os, 'geteuid', return_value=0, create=True), \
                  mock.patch.object(ENTRY.os, 'uname', return_value=('QNX',), create=True), \
                  mock.patch.object(ENTRY, 'private_directory'), \
