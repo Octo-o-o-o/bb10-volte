@@ -98,7 +98,8 @@ MobileController::MobileController(QObject *parent)
       m_waitingForRoot(false), m_refreshLegacy(false),
       m_foreground(true), m_sleeping(false), m_experimentalVisible(false),
       m_pickerOpen(false), m_pickerClosed(false), m_pickerResultHandled(false), m_refreshPending(false), m_reconcilingCalls(false),
-      m_cachedStatus(false), m_allowAutoPoll(false), m_preservePendingForRequest(false), m_newPendingForRequest(false),
+      m_cachedStatus(false), m_allowAutoPoll(false), m_invalidPendingIdentity(false), m_oneShotActive(false),
+      m_preservePendingForRequest(false), m_newPendingForRequest(false),
       m_network(this), m_reply(0), m_downloadBytes(0), m_redirects(0)
 {
     m_language = m_settings.value("language", QLocale::system().name().startsWith("zh") ? "zh" : "en").toString();
@@ -107,10 +108,20 @@ MobileController::MobileController(QObject *parent)
     if (m_backupLocation != "sdcard" || !sdAvailable()) m_backupLocation = "internal";
     m_legacyProfile = m_settings.value("legacy_profile", "china-mobile").toString();
     if (!knownProfile(m_legacyProfile)) m_legacyProfile = "china-mobile";
-    m_jobId = m_settings.value("pending_job").toString();
-    if (!safeId(m_jobId)) m_jobId.clear();
-    m_operationId = m_settings.value("pending_operation").toString();
-    if (!QRegExp("^[a-f0-9]{32}$").exactMatch(m_operationId)) m_operationId.clear();
+    const QVariant rawJob = m_settings.value("pending_job");
+    const QVariant rawOperation = m_settings.value("pending_operation");
+    m_jobId = rawJob.toString();
+    m_operationId = rawOperation.toString();
+    const QRegExp operationId("^[a-f0-9]{32}$");
+    // Do not silently discard malformed or conflicting durable identities.
+    // A later observation must never erase the original on-disk record.
+    m_invalidPendingIdentity = m_settings.status() != QSettings::NoError ||
+        (m_settings.contains("pending_job") && rawJob.type() != QVariant::String) ||
+        (m_settings.contains("pending_operation") && rawOperation.type() != QVariant::String) ||
+        (!m_jobId.isEmpty() && !operationId.exactMatch(m_jobId)) ||
+        (!m_operationId.isEmpty() && !operationId.exactMatch(m_operationId)) ||
+        (!m_jobId.isEmpty() && !m_operationId.isEmpty() && m_jobId != m_operationId);
+    if (m_invalidPendingIdentity) { m_jobId.clear(); m_operationId.clear(); }
     m_operationAction = m_settings.value("pending_operation_action").toString();
     m_pendingCallContext = m_settings.value("pending_call_context").toString();
     if (m_operationId.isEmpty()) {
@@ -128,9 +139,9 @@ MobileController::MobileController(QObject *parent)
         !m_lastExportPath.startsWith("/accounts/1000/removable/sdcard/")) m_lastExportPath.clear();
     // Unknown work must be checked explicitly; never present an older success
     // or allow its call confirmation while a previous operation is unresolved.
-    if (!m_jobId.isEmpty() || !m_operationId.isEmpty()) {
+    if (m_invalidPendingIdentity || !m_jobId.isEmpty() || !m_operationId.isEmpty()) {
         m_model.insert("state", "recovery_required");
-        m_model.insert("primary_action", m_jobId.isEmpty() ? "inspect" : "poll");
+        m_model.insert("primary_action", m_invalidPendingIdentity ? "compatibility" : m_jobId.isEmpty() ? "inspect" : "poll");
         m_cachedStatus = true;
     } else if (cachedModel(&m_model)) {
         m_cachedStatus = true;
@@ -141,6 +152,9 @@ MobileController::MobileController(QObject *parent)
         m_model.insert("state", "not_checked");
         m_model.insert("primary_action", "inspect");
     }
+    if (!m_invalidPendingIdentity && !m_jobId.isEmpty() &&
+        (m_operationId.isEmpty() || m_operationId == m_jobId) && m_operationAction != "confirm-calls")
+        m_coldPollJobId = m_jobId;
     connect(&m_process, SIGNAL(started()), this, SLOT(processStarted()));
     connect(&m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(processOutput()));
     connect(&m_process, SIGNAL(readyReadStandardError()), this, SLOT(processErrorOutput()));
@@ -174,7 +188,9 @@ bool MobileController::refreshBlocked() const
 void MobileController::scheduleRefresh()
 {
     m_pollTimer.stop();
-    if (refreshBlocked() || !m_allowAutoPoll) return;
+    if (refreshBlocked()) return;
+    if (!m_coldPollJobId.isEmpty()) { m_pollTimer.start(200); return; }
+    if (!m_allowAutoPoll) return;
     if (m_experimentalVisible && m_jobId.isEmpty() && !m_refreshLegacy && !m_waitingForRoot) return;
     if (m_refreshPending || m_refreshLegacy) m_pollTimer.start(200);
     else if (!m_error.isEmpty()) return;
@@ -274,6 +290,7 @@ QString MobileController::display(const QString &key, const QString &code) const
 
 QString MobileController::statusTitle() const
 {
+    if (m_invalidPendingIdentity) return label(reportInProgress() ? "report_exporting" : "pending_identity_title");
     const QString completedJobState = m_model.value("job").toMap().value("state").toString();
     if (!m_busy && m_runtimeError && m_model.value("live_status").toBool() &&
         (completedJobState == "completed" || completedJobState == "complete" ||
@@ -291,23 +308,32 @@ QString MobileController::statusTitle() const
         const QString local = label(m_error);
         return local.isEmpty() ? label("operation_failed") : local;
     }
+    if (m_cachedStatus && jobRunning() && !m_jobId.isEmpty()) return label("job_last_running");
     if (m_cachedStatus && (!m_operationId.isEmpty() || !m_jobId.isEmpty())) return label("job_pending");
     if (m_model.value("state").toString() == "not_checked") return label("state_not_checked");
     QString title = display("title", "title_code");
     if (title.isEmpty()) title = label("state_" + bounded(m_model.value("state"), 80));
     if (title.isEmpty()) title = label("checking");
+    if (m_model.value("state").toString() == "task_complete_status_unchecked") return title;
     return m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty()
         ? label("cached_title_prefix") + title : title;
 }
 
 QString MobileController::statusMessage() const
 {
+    if (m_invalidPendingIdentity) {
+        if (reportInProgress()) return label("report_exporting_help");
+        QString reason = label(m_error);
+        if (!m_error.isEmpty() && reason.isEmpty()) reason = label("operation_failed");
+        return label("pending_identity_unreadable") + (reason.isEmpty() ? QString() : "\n\n" + reason);
+    }
     if (m_waitingForRoot && !m_busy) return label("root_waiting_help");
     if (callConfirmationInProgress()) return label(m_reconcilingCalls ? "calls_rechecking_help" : "calls_saving_help");
     if (m_busy && !m_timedOut && readAction(m_action)) return label(m_action == "poll" ? "checking_task_help" : "checking_help");
     if (reportInProgress()) return label("report_exporting_help");
     if (m_busy && !m_transfer.isEmpty()) return label("network_wait_help");
     if (m_runtimeError) {
+        if (m_error == "management_busy" && !display("message", "message_code").isEmpty()) return display("message", "message_code");
         const QString reason = label(m_error);
         if (!reason.isEmpty()) return reason;
         if (!display("message", "message_code").isEmpty()) return display("message", "message_code");
@@ -315,10 +341,12 @@ QString MobileController::statusMessage() const
     if (m_error == "root_not_ready") return label("root_help");
     if (m_error == "operation_unknown") return label("operation_unknown");
     if (!m_error.isEmpty()) return label("inspect");
+    if (m_cachedStatus && jobRunning() && !m_jobId.isEmpty()) return label("job_last_running_help");
     if (!m_busy && ((!m_operationId.isEmpty() && m_jobId.isEmpty()) ||
                     (m_cachedStatus && !m_jobId.isEmpty()))) return label("operation_unknown");
     if (m_model.value("state").toString() == "not_checked") return label("state_not_checked_help");
     const QString state = m_model.value("state").toString();
+    if (state == "task_complete_status_unchecked") return display("message", "message_code");
     if (m_cachedStatus && state == "registered") return label("cached_registered_help");
     if (m_cachedStatus && state == "verified") return label("cached_verified_help");
     if (m_cachedStatus && (state == "waiting" || state == "waiting_sim" ||
@@ -336,6 +364,7 @@ bool MobileController::reportInProgress() const
 
 QString MobileController::primaryAction() const
 {
+    if (m_invalidPendingIdentity) return "compatibility";
     const QString action = bounded(m_model.value("primary_action"), 64);
     if (!m_error.isEmpty() && !(m_runtimeError && action == "resume" && !m_jobId.isEmpty() && allowed(action))) return "inspect";
     if (m_model.value("state").toString() == "job_outcome_unknown" && action == "export" && allowed(action)) return action;
@@ -348,6 +377,7 @@ QString MobileController::primaryAction() const
 
 QString MobileController::primaryText() const
 {
+    if (m_invalidPendingIdentity) return label("compatibility");
     if (primaryAction() == "resume" || primaryAction() == "poll") return label(primaryAction());
     if (m_cachedStatus && primaryAction() != "confirm-calls") return label("status");
     if (m_error.isEmpty() || (m_runtimeError && primaryAction() == "resume")) {
@@ -418,6 +448,7 @@ QString MobileController::detailText() const
 
 QString MobileController::jobText() const
 {
+    if (m_cachedStatus && jobRunning()) return QString();
     const QString view = m_model.value("state").toString();
     if (!m_error.isEmpty() || view == "export_interrupted" || view == "job_outcome_unknown") return QString();
     const QVariantMap job = m_model.value("job").toMap();
@@ -445,6 +476,8 @@ QString MobileController::updateFeedback() const
 }
 QString MobileController::cachedStatusText() const
 {
+    if (m_invalidPendingIdentity) return QString();
+    if (m_model.value("state").toString() == "task_complete_status_unchecked") return QString();
     if (m_busy && readAction(m_action) && m_operationId.isEmpty() && m_jobId.isEmpty() &&
         m_model.value("state").toString() != "not_checked") return label("previous_status_refreshing");
     return m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty() &&
@@ -453,6 +486,7 @@ QString MobileController::cachedStatusText() const
 QString MobileController::updateBlockMessage() const
 {
     if (m_busy || (!hasUpdate() && !hasPackage()) || allowed("update")) return QString();
+    if (m_invalidPendingIdentity) return label("pending_identity_unreadable");
     if (!m_operationId.isEmpty() || !m_jobId.isEmpty()) return label("update_blocked_pending");
     if (m_cachedStatus) return label("update_blocked_cached");
     return label("update_blocked_state");
@@ -513,9 +547,9 @@ bool MobileController::operationInProgress() const
     const QString jobAction = m_model.value("job").toMap().value("action").toString();
     return callConfirmationInProgress() ||
            (m_busy && m_action == "export" && m_operationAction == "backup-export" && !m_preservePendingForRequest) ||
-           (jobRunning() && jobAction == "export") ||
+           (jobRunning() && m_allowAutoPoll && jobAction == "export") ||
            (m_busy && (changes.contains(m_action) || (m_action == "resume" && changes.contains(jobAction)))) ||
-           (jobRunning() && changes.contains(jobAction));
+           (jobRunning() && m_allowAutoPoll && changes.contains(jobAction));
 }
 
 bool MobileController::callConfirmationInProgress() const
@@ -564,6 +598,7 @@ bool MobileController::knownProfile(const QString &value)
 bool MobileController::allowed(const QString &action) const
 {
     if (!knownAction(action) || m_busy) return false;
+    if (m_invalidPendingIdentity) return action == "compatibility" || action == "export";
     if (readAction(action)) return true;
     // An accepted observation already covers this context. A manual check
     // can discover a changed SIM or boot before another confirmation.
@@ -628,7 +663,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
     const QString state = bounded(cache.value("state"), 80);
     // Only informational states can be cached. In particular, never replay a
     // stale restart instruction, recovery decision, job or write authorization.
-    const QStringList states = QString("ready_to_install,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (cache.value("schema").toInt() != 1 || !states.contains(state)) return false;
     QVariantMap details;
     QVariantMap device;
@@ -671,7 +706,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
 void MobileController::saveCachedModel(const QVariantMap &response)
 {
     const QString state = bounded(response.value("state"), 80);
-    const QStringList states = QString("ready_to_install,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (!states.contains(state)) {
         m_settings.remove("last_observation_v1");
         return;
@@ -700,7 +735,7 @@ void MobileController::saveCachedModel(const QVariantMap &response)
 
 bool MobileController::restoreCachedAfterReadFailure(const QString &notice)
 {
-    if (!m_jobId.isEmpty() || !m_operationId.isEmpty()) return false;
+    if (m_invalidPendingIdentity || !m_jobId.isEmpty() || !m_operationId.isEmpty()) return false;
     QVariantMap cached;
     if (!cachedModel(&cached)) return false;
     m_model = cached;
@@ -737,12 +772,15 @@ void MobileController::fail(const QString &code)
 
 void MobileController::invoke(const QString &action, const QVariantMap &extra)
 {
+    // A manual read addresses the saved job. A separate diagnostic report
+    // does not, and must leave the one-shot intent queued until it finishes.
+    if (!m_oneShotActive && (action == "inspect" || action == "status" || action == "poll")) m_coldPollJobId.clear();
     if (!allowed(action) || m_process.state() != QProcess::NotRunning) { fail("action_unavailable"); return; }
     m_preservePendingForRequest = false;
     m_newPendingForRequest = false;
     m_reportOperationId.clear();
     m_pollTimer.stop();
-    m_allowAutoPoll = true; // This invocation was explicitly requested or tracks its task.
+    m_allowAutoPoll = !m_oneShotActive; // A cold-start check addresses the saved task exactly once.
     QByteArray entryBytes;
     QString bundlePath;
     if (!verifyEntry(&entryBytes, &bundlePath)) return;
@@ -773,7 +811,7 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     if (!readAction(action) && report) {
         // Reports are synchronous, independently named exports. A lost report
         // reply must not create or overwrite a durable management transaction.
-        m_preservePendingForRequest = !m_operationId.isEmpty() || !m_jobId.isEmpty();
+        m_preservePendingForRequest = m_invalidPendingIdentity || !m_operationId.isEmpty() || !m_jobId.isEmpty();
         m_reportOperationId = newOperationId();
         request.insert("operation_id", m_reportOperationId);
         if (!m_jobId.isEmpty() || !m_operationId.isEmpty()) {
@@ -840,7 +878,7 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     m_runtimeError = false;
     m_waitingForRoot = false;
     m_error.clear();
-    m_notice.clear();
+    if (!m_oneShotActive) m_notice.clear();
     m_busy = true;
     // The app-writable source is never reopened for Root execution. The bytes
     // checked above are copied through a literal heredoc into an exclusive,
@@ -924,6 +962,7 @@ void MobileController::processError(QProcess::ProcessError error)
     const bool restored = readAction(m_action) && restoreCachedAfterReadFailure("root_not_ready");
     m_action.clear();
     m_preservePendingForRequest = false;
+    if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; }
     if (restored) { emit modelChanged(); return; }
     fail("root_not_ready");
     scheduleRefresh();
@@ -946,6 +985,7 @@ void MobileController::processTimeout()
 
 void MobileController::clearPendingOperation()
 {
+    if (m_invalidPendingIdentity) return;
     m_operationId.clear();
     m_operationAction.clear();
     m_pendingCallContext.clear();
@@ -1025,6 +1065,7 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
         m_action.clear();
         m_preservePendingForRequest = false;
         m_newPendingForRequest = false;
+        if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; m_refreshLegacy = false; }
         scheduleRefresh();
         emit modelChanged();
         return;
@@ -1060,6 +1101,7 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
     m_action.clear();
     m_preservePendingForRequest = false;
     m_newPendingForRequest = false;
+    if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; m_refreshLegacy = false; }
     scheduleRefresh();
     emit modelChanged();
 }
@@ -1093,6 +1135,15 @@ bool MobileController::acceptResponse(const QVariantMap &response)
     const QString topId = bounded(response.value("job_id"), 96);
     const QString responseId = response.contains("job_id") ? topId : nestedId;
     const bool pending = !m_jobId.isEmpty() || !m_operationId.isEmpty();
+    const QString observationError = bounded(response.value("error").toMap().value("code"), 80);
+    if (pending && readAction(m_action) && response.value("schema").toInt() == 2 &&
+        response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool() &&
+        response.value("state").toString() == "error" && !response.contains("job") && !response.contains("job_id") &&
+        (observationError == "root_required" || observationError == "root_not_ready")) {
+        // Root readiness is an observation failure, never a transaction result.
+        fail(observationError);
+        return false;
+    }
     if (pending && m_model.value("state").toString() == "job_outcome_unknown" &&
         (response.value("state").toString() != "job_outcome_unknown" || responseJob.isEmpty() || responseId.isEmpty() ||
          (response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool()))) {
@@ -1148,10 +1199,11 @@ bool MobileController::acceptResponse(const QVariantMap &response)
         return false;
     }
     if (readAction(m_action) && !hasJobMetadata && response.value("ok").type() == QVariant::Bool &&
-        !response.value("ok").toBool() && restoreCachedAfterReadFailure("inspection_unavailable")) return false;
+        !response.value("ok").toBool() && !response.value("details").toMap().value("mobile_network_off").toBool() &&
+        restoreCachedAfterReadFailure("inspection_unavailable")) return false;
     if (m_action == "confirm-calls" && confirmedCallResponse(response)) m_notice = "calls_saved_notice";
     m_model = response;
-    m_cachedStatus = false;
+    m_cachedStatus = m_oneShotActive && jobRunning();
     m_modelLanguage = m_requestLanguage;
     const QVariantMap error = response.value("error").toMap();
     QVariantMap job = response.value("job").toMap();
@@ -1228,7 +1280,16 @@ bool MobileController::acceptResponse(const QVariantMap &response)
         m_jobId.clear();
         if (m_operationAction != "confirm-calls" || confirmedCallResponse(response) || currentCallObservation(response)) clearPendingOperation();
         m_settings.remove("pending_job");
-        if (followUp) m_refreshPending = true;
+        if (followUp && m_oneShotActive) {
+            // This observation proved only the original task's completion.
+            // A different client may now own the active task; never display
+            // an unobserved network state or authorize a new write.
+            m_settings.remove("last_observation_v1");
+            m_model.clear(); m_model.insert("state", "task_complete_status_unchecked");
+            m_model.insert("primary_action", "inspect");
+            m_model.insert("actions", QVariantList() << QVariant("status") << QVariant("compatibility"));
+            m_cachedStatus = true;
+        } else if (followUp) m_refreshPending = true;
     } else if (!m_preservePendingForRequest && id.isEmpty() && m_action == "confirm-calls" &&
                !m_runtimeError && confirmedCallResponse(response)) {
         // Call confirmation is synchronous; management writes require jobs.
@@ -1249,6 +1310,7 @@ bool MobileController::acceptResponse(const QVariantMap &response)
     }
     if (response.value("ok").type() == QVariant::Bool && response.value("ok").toBool() &&
         !interruptedExport && !m_preservePendingForRequest && !m_runtimeError && m_jobId.isEmpty() && m_operationId.isEmpty() &&
+        m_model.value("state").toString() != "task_complete_status_unchecked" &&
         ((readAction(m_action) && m_action != "legacy-inspect") || m_action == "confirm-calls" ||
          response.value("live_status").toBool())) saveCachedModel(response);
     if (response.value("ok").type() == QVariant::Bool && response.value("ok").toBool() &&
@@ -1275,6 +1337,26 @@ void MobileController::refresh()
 void MobileController::poll()
 {
     if (refreshBlocked()) return;
+    if (!m_coldPollJobId.isEmpty()) {
+        const QString expected = m_coldPollJobId;
+        m_coldPollJobId.clear();
+        const QVariant rawJob = m_settings.value("pending_job");
+        const QVariant rawOperation = m_settings.value("pending_operation");
+        if (m_settings.status() != QSettings::NoError || rawJob.type() != QVariant::String ||
+            rawJob.toString() != expected || m_jobId != expected ||
+            (m_settings.contains("pending_operation") && rawOperation.type() != QVariant::String) ||
+            (!rawOperation.toString().isEmpty() && rawOperation.toString() != expected) ||
+            m_settings.value("pending_operation_action").toString() == "confirm-calls") {
+            m_invalidPendingIdentity = true; m_jobId.clear(); m_operationId.clear();
+            m_model.clear(); m_model.insert("state", "recovery_required");
+            m_model.insert("primary_action", "compatibility");
+            m_cachedStatus = true; m_allowAutoPoll = false; emit modelChanged(); return;
+        }
+        m_oneShotActive = true;
+        invoke("poll");
+        if (!m_busy) { m_oneShotActive = false; m_allowAutoPoll = false; }
+        return;
+    }
     m_refreshPending = false;
     if (m_jobId.isEmpty() && (m_refreshLegacy || (m_waitingForRoot && m_experimentalVisible))) {
         m_refreshLegacy = false;

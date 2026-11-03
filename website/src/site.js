@@ -1,7 +1,7 @@
 export const REPOSITORY_URL = 'https://github.com/Octo-o-o-o/bb10-volte';
 export const RELEASE_KEYS = ['windows', 'windows-sha', 'mac', 'mac-sha', 'source', 'source-sha'];
 // Update these together with the static HTML only after both copies are verified.
-export const RELEASE_TAG = 'v0.5.0-r20';
+export const RELEASE_TAG = 'v0.5.0-r21';
 export const MIRROR_BASE = 'https://bb10-downloads.octoooo.com';
 
 export function selectRelease(releases) {

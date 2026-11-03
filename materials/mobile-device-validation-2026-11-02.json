@@ -914,5 +914,22 @@
       "mac_native_menu_popup_without_user": "watchdog_timeout_not_accepted"
     },
     "desktop_preview_source_evidence_note": "build_snapshot_precedes_this_receipt_update_only"
+  },
+  "candidate_v19_r21": {
+    "mobile_version": "0.1.0.19",
+    "desktop_revision": 21,
+    "service_revision": 21,
+    "scope": "integrated_experimental_release_version_specific_device_evidence",
+    "owner_waived_additional_phone_retest": true,
+    "q10_v19_r21_hardware_acceptance": "not_tested",
+    "q10_v18_r18_reflashed_telecom": "owner_reported_calls_and_sms_passed_but_lte_browser_failed",
+    "q10_mobile_browser_r21_fix": "not_retested_on_q10",
+    "passport_telecom_r21_payload": "owner_confirmed_after_normal_reboot_http_https_browsing_call_and_sms",
+    "q20_and_passport_prior_results": "version_and_carrier_specific_v12_r18_recorded_separately",
+    "first_root_q10_mac_mini": "native_flash_sequence_observed_full_gui_not_established",
+    "phone_only_initial_root": "not_provided",
+    "phone_only_first_install": "not_accepted",
+    "call_audio_and_duration": "owner_reported_not_independently_measured",
+    "private_operation_ids_paths_keys_sim_identifiers_included": false
   }
 }

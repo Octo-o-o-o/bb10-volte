@@ -5,18 +5,18 @@
 [简体中文](README.md) | **English**
 
 
-**Current release: desktop v0.5.0-r20 + native mobile 0.1.0.15.** This experimental mobile release is offered for rooted **Q20 SQC100-2** and **Passport SQW100-4**, OS **10.3.3.3216**. Q10 native installation is being tested separately and is not admitted by this release.
+**Current experimental release: desktop v0.5.0-r21 + native mobile 0.1.0.19.** The automatic workflow targets rooted **Q10 SQN100-3, Q20 SQC100-2 and Passport SQW100-4** on **OS 10.3.3.3216**. Device evidence is version-specific; the new 0.1.0.19 / r21 package has not completed full Q10 device acceptance.
 
 [Choose a guide](https://bb10-volte.octoooo.com/en/guides.html) · [Desktop guide](https://bb10-volte.octoooo.com/en/guide.html) · [Mobile guide](https://bb10-volte.octoooo.com/en/mobile.html)
 
 - **Recommended: [use the desktop installer](https://bb10-volte.octoooo.com/en/mobile-installer.html).** Windows and macOS packages contain the matching verified BAR. Open “More → Install phone app”, check the connected phone and confirm installation. No additional BAR download is needed.
-- **[Download a BAR manually](https://bb10-volte.octoooo.com/en/mobile-manual.html)** if your rooted phone already has a compatible installer. [BAR](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.15.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.15.bar.sha256).
+- **[Download a BAR manually](https://bb10-volte.octoooo.com/en/mobile-manual.html)** if your rooted phone already has a compatible installer. [BAR](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar.sha256).
 
 Native BAR installation registers the app with BB10's system service; backup and activation happen afterward. A phone-only first installation needs an existing local installation entry. The app's top-right **OctoLab** entry offers project information, GitHub Star and optional coffee support; payments do not unlock features and there are no prompts or tracking.
 
 Downloads use Cloudflare R2 direct links and work without JavaScript or GitHub. Firmware stays on [Baidu Netdisk](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r) (code `fp4r`) and [ZSpace](https://t3.znas.cn/9jkbxczhAK4). Connectivity varies by network; the release's probe exited in the US, so it is not a mainland-China acceptance result.
 
-Q20/Unicom and Passport/Mobile completed restoration, removal, reinstall, calls and SMS on mobile v12/service r18; Q20/Mobile and Passport/Unicom SIM swaps also passed. This package preserves those r18 wireless bytes. New UI and installer package checks are separate from real-device acceptance. See [release scope and integration record](docs/RELEASE-r20.md).
+Q20/Unicom and Passport/Mobile completed their recorded v12/r18 cycles and SIM-swap checks. After reflashing, Q10/Telecom passed calls and SMS with v18/r18 but mobile browsing failed. The r21 Telecom proxy correction was tested on Passport/Telecom; the integrated new package has not been retested on Q10. See [release scope and integration record](docs/RELEASE-r21.md).
 
 ## Historical features and compatibility
 
@@ -60,10 +60,10 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r20/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r21/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

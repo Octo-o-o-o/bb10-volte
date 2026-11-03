@@ -5,18 +5,18 @@
 **简体中文** | [English](README.en.md)
 
 
-**当前发行：桌面版 v0.5.0-r20 + 手机原生版 0.1.0.15。** 本次实验手机版面向已 Root 的 **Q20 SQC100-2**、**Passport SQW100-4**，系统 **10.3.3.3216**。Q10 原生安装在独立会话继续调试，不列入本次手机版支持范围。
+**当前实验发行：桌面版 v0.5.0-r21 + 手机原生版 0.1.0.19。** 自动流程面向已 Root、系统 **10.3.3.3216** 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**。各版本的实机结果不同；新版 0.1.0.19 / r21 尚未在 Q10 上完成整包实机验收。
 
 [选择使用指南](https://bb10-volte.octoooo.com/guides.html) · [桌面版指南](https://bb10-volte.octoooo.com/guide.html) · [手机版指南](https://bb10-volte.octoooo.com/mobile.html)
 
 - **推荐：[使用桌面安装器安装](https://bb10-volte.octoooo.com/mobile-installer.html)**。Windows 和 Mac 包内置相同、已核验的 BAR，打开“更多 → 安装手机应用”，检查手机后确认安装，无需另找安装包。
-- **[下载 BAR 手动安装](https://bb10-volte.octoooo.com/mobile-manual.html)**：适合已有兼容本机安装器的 Root 手机。[BAR 直链](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.15.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.15.bar.sha256)。
+- **[下载 BAR 手动安装](https://bb10-volte.octoooo.com/mobile-manual.html)**：适合已有兼容本机安装器的 Root 手机。[BAR 直链](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar.sha256)。
 
 推荐原生 BAR，经 BB10 系统安装服务注册应用，再在手机内备份和启用。首次完全不用电脑需要已有本机安装入口。手机右上角 **OctoLab** 提供出品信息、GitHub Star 和可展开的咖啡支持；不弹窗催促，不以付款解锁功能，不采集付款行为。
 
 应用安装包使用 Cloudflare R2 直链，无需 JavaScript 或 GitHub 即可下载。固件继续放在[百度网盘](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r)（提取码 `fp4r`）与[极空间](https://t3.znas.cn/9jkbxczhAK4)。不同网络可达性仍有差异；本轮探测出口为美国，不冒充中国大陆实测。
 
-Q20／联通、Passport／移动的完整恢复、卸载、重装、通话与短信，以及 Q20 换移动、Passport 换联通后的验收记录属于 v12／服务 r18。本包保留相同 r18 无线载荷；新界面和安装器的构建检查不替代实机验收。详见[本次发行范围与整合记录](docs/RELEASE-r20.md)。
+Q20／联通与 Passport／移动的完整流程、换卡测试属于 v12／服务 r18。重刷后的 Q10／电信在 v18／r18 通过通话和短信，但移动数据浏览失败；电信代理修复的 r21 载荷已在 Passport／电信实测，新版整包尚未在 Q10 复验。详见[发行范围与整合记录](docs/RELEASE-r21.md)。
 
 ## 历史功能与兼容性
 
@@ -59,10 +59,10 @@ Q20／联通、Passport／移动的完整恢复、卸载、重装、通话与短
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r20/bb10-volte-0.5.0-r20-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/bb10-volte-0.5.0-r20-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r20/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r20/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r21/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

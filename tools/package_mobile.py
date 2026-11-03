@@ -151,7 +151,7 @@ def bundle_inputs(key, version=MOBILE_VERSION):
     # Bind the pinned entry to every other signed member and manifest field,
     # without a self-referential hash of the entry itself.
     core = {'schema': 2, 'kind': 'bb10-volte-mobile', 'protocol': 2, 'version': version,
-            'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1'],
+            'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1', 'prelock_update_busy_v1'],
             'files': {name: {'sha256': sha(data), 'size': len(data)} for name, data in blobs.items()
                       if name != 'runtime/entry.py'}}
     needle = b'RELEASE_CORE_SHA256 = None  # substituted by tools/package_mobile.py'
@@ -169,7 +169,7 @@ def make_bundle(private_key, version=MOBILE_VERSION):
         raise ValueError('Signing key does not match the pinned release public key')
     blobs = bundle_inputs(key, version)
     manifest = {'schema': 2, 'kind': 'bb10-volte-mobile', 'protocol': 2, 'version': version,
-                'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1'],
+                'capabilities': ['expected_update_version_v1', 'safe_job_outcome_v1', 'active_selection_guard_v1', 'prelock_update_busy_v1'],
                 'files': {name: {'sha256': sha(data), 'size': len(data)} for name, data in blobs.items()}}
     raw = canonical(manifest)
     signature = canonical({'algorithm': 'RSASSA-PKCS1-v1_5-SHA256', 'key_id': key['key_id'],

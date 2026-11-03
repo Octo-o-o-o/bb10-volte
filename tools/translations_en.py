@@ -918,6 +918,7 @@ ENGLISH = {
     'ROOT_CHECK_FAILED 表示权限检查未完成，请保留 id -u 的报错；ROOT_REQUIRED 表示读到的 UID 不是 0；PAIR_FILE_NOT_FOUND 表示该路径没有授权文件。出现 Permission denied 时停止，核对当前 Root 终端与命令路径。': 'ROOT_CHECK_FAILED means the privilege check did not finish; keep the id -u error. ROOT_REQUIRED means the reported UID is not 0. PAIR_FILE_NOT_FOUND means the script is missing at that path. Stop on Permission denied and check the current Root shell and command path.',
     '执行 id -u，命令应成功并输出 0；报错或没有有效数字时，当前权限尚未确认。再复制执行下面整个命令块，不要抄写 $ 或 # 提示符。': 'Run id -u; it must succeed and print 0. An error or invalid output leaves privileges unconfirmed. Then copy and execute the entire block below, without the $ or # prompt.',
     '已复制完整命令。ROOT_CHECK_FAILED：权限未知，保留 id -u 报错；ROOT_REQUIRED：UID 非 0；PAIR_FILE_NOT_FOUND：核对 Downloads 和文件名。': 'Complete command copied. ROOT_CHECK_FAILED: privilege unknown; keep the id -u error. ROOT_REQUIRED: UID is not 0. PAIR_FILE_NOT_FOUND: check Downloads and the file name.',
+    '先进入已有 Root 终端：__root 前有两个下划线，部分工具使用 u_root。id -u 应成功输出 0；报错不能据此判断 Root。\n复制执行下方完整命令；仅在脚本提示后输入大写 PAIR。': 'Enter the existing Root shell: __root has two leading underscores; some tools use u_root. id -u must succeed and print 0; an error leaves Root unconfirmed.\nCopy the whole block below. Type uppercase PAIR only at the script prompt.',
 }
 
 # Unified carrier installation

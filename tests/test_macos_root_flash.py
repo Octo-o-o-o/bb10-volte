@@ -47,6 +47,21 @@ class NativeFlashTests(unittest.TestCase):
             with self.subTest(failure=failure):
                 self.assertFalse(self.evidence(TRANSCRIPT + [failure])['completed'])
 
+    def test_unexpected_completion_response_is_sticky_for_each_mac_phase(self):
+        for phase in ('os', 'radio', 'stock_os', 'stock_radio'):
+            for failure in ('Complete returned unexpected response',
+                            '\x1b[31mCOMPLETE   returned\tunexpected response\x1b[0m\r\n'):
+                for index in (3, len(TRANSCRIPT)):
+                    for exit_code in (0, 1):
+                        with self.subTest(phase=phase, failure=failure, index=index, code=exit_code):
+                            evidence = m.NativeFlashEvidence('Q10_os.unsigned')
+                            lines = TRANSCRIPT[:index] + [failure] + TRANSCRIPT[index:]
+                            for line in lines:
+                                evidence.line(line)
+                            result = evidence.result(phase, exit_code)
+                            self.assertTrue(result['error_seen'])
+                            self.assertFalse(result['completed'])
+
     def test_unrelated_file_or_loader_progress_never_counts_as_payload_completion(self):
         self.assertFalse(self.evidence(['100%'] + [line for line in TRANSCRIPT if '100%' not in line])['completed'])
         self.assertFalse(self.evidence([line.replace('Q10_os.unsigned', 'other.unsigned') for line in TRANSCRIPT])['completed'])

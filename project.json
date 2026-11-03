@@ -4,8 +4,8 @@
   "desktop_revision": 21,
   "mobile_version": "0.1.0.19",
   "management_protocol": 2,
-  "state": "integrated_release_candidate",
+  "state": "experimental_release",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on BB10 10.3.3.3216; specific carrier/SIM and version acceptance is recorded separately. Mobile and desktop management coexist. This candidate combines the r20 desktop and support page with the later mobile lifecycle and cache improvements and the exact-stock-file-bound Telecom CTNET proxy correction. Passport/Telecom was verified after the r21 payload update; Q10/Telecom v18/r18 calls and SMS passed after reflash but its browser remained affected, so this integrated version needs its own Q10 validation. Q10 first Root was observed on Apple Silicon Mac mini using native stages, not the complete GUI. Do not infer untested hardware, operators, long-term stability, or phone-only initial Root support."
+  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on BB10 10.3.3.3216; specific carrier/SIM and version acceptance is recorded separately. Mobile and desktop management coexist. This release combines the r20 desktop and support page with later mobile lifecycle and cache improvements and the exact-stock-file-bound Telecom CTNET proxy correction. Passport/Telecom was verified after the r21 payload update; Q10/Telecom v18/r18 calls and SMS passed after reflash but its browser remained affected. The owner waived additional phone retesting; the integrated v19/r21 package has not been validated on Q10. Q10 first Root was observed on Apple Silicon Mac mini using native stages, not the complete GUI. Do not infer untested hardware, operators, long-term stability, or phone-only initial Root support."
 }

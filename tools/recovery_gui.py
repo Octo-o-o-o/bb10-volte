@@ -165,7 +165,7 @@ class RecoveryDialog(tk.Toplevel):
         self.step_label.configure(text=tr('第 {} / 3 步 · {}').format(step, titles[step]))
         descriptions = {
             1: tr('保存授权脚本和同编号的操作说明，将 .py 文件复制到手机内部存储 Downloads。\n电脑私钥保留在本机；已有结果可直接导入。'),
-            2: tr('先进入已有 Root 终端：__root 前有两个下划线，部分工具使用 u_root。执行 id -u，必须输出 0。\n再复制执行下方整个命令块。仅在脚本提示后输入大写 PAIR；不要在 $ 后直接输入 pair。'),
+            2: tr('先进入已有 Root 终端：__root 前有两个下划线，部分工具使用 u_root。id -u 应成功输出 0；报错不能据此判断 Root。\n复制执行下方完整命令；仅在脚本提示后输入大写 PAIR。'),
             3: tr('将手机内部 Downloads 中同编号的 result.json 复制回本电脑，再选择它并确认来源。\n应用会核对请求编号、本机密钥、手机身份与实际 Root 权限。'),
         }
         self.missing_steps.configure(text=descriptions[step])
@@ -193,7 +193,7 @@ class RecoveryDialog(tk.Toplevel):
         if self.pair_script and self.pair_step == 2 and not self.busy:
             self.clipboard_clear()
             self.clipboard_append(phone_commands(self.pair_script.name))
-            self.status.configure(text=tr('已复制完整命令。ROOT_REQUIRED：先取得 Root；PAIR_FILE_NOT_FOUND：核对内部 Downloads 和文件名。'))
+            self.status.configure(text=tr('已复制完整命令。ROOT_CHECK_FAILED：权限未知，保留 id -u 报错；ROOT_REQUIRED：UID 非 0；PAIR_FILE_NOT_FOUND：核对 Downloads 和文件名。'))
 
     def set_commands(self, text):
         self.commands.configure(state='normal')

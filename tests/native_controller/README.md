@@ -34,3 +34,7 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --entrypoint python3 bb10-controller-qt-harness \
   /work/tests/native_controller/context_race.py --after
 ```
+
+Run `tests/native_controller/job_observation_race.py` in the same UID 0
+container to check completed-job and reboot-transition observations against a
+concurrent submit using the actual POSIX job lock and temporary journals.

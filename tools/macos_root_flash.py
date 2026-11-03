@@ -32,7 +32,8 @@ class NativeFlashEvidence:
         self.done |= self.signature_seen and lower == 'done'
         self.success_seen |= self.done and lower == 'flash completed successfully!'
         self.error_seen |= (re.search(r'\b(?:error|failed|failure|exception|warning|aborted|cancelled|canceled)\b', lower) is not None or
-                            re.search(r'\bk\s*=\s*-\d+', lower) is not None or 'wrong password' in lower)
+                            re.search(r'\bk\s*=\s*-\d+', lower) is not None or 'wrong password' in lower or
+                            re.search(r'\bcomplete\s+returned\s+unexpected\s+response\b', lower) is not None)
 
     def result(self, phase, exit_code):
         completed = (exit_code == 0 and self.input_seen and self.writing_complete and

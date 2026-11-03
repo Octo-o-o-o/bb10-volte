@@ -7,7 +7,7 @@ phones still need the desktop first-Root workflow. Other Root methods require
 their own validation.
 
 从可信的同次候选交付或项目正式 HTTPS Release 获取文件，核对公布的完整 SHA-256。
-包内公钥不能自行证明首次下载的来源。官网提供 R2 直链及同版校验信息。
+包内公钥不能自行证明首次下载的来源；正式发布后请核对官网同版校验信息。
 已有 BARinstaller：使用同版 BAR。只有 Root 终端：把本 ZIP 保存到 Downloads，
 确认实际文件名与下方命令完全相同，然后在原有 Root 终端执行：
 
@@ -38,7 +38,7 @@ SUD success，实际仍是 v1 注册版本，因此 completed、旧图标或旧�
 以启动时 PPS journal 恢复，不冒充自动原件导出回执；实验卸载只移除启动入口、
 保留私有载荷和备份，没有新增实验回滚。只读 Passport 试测不提供写操作。
 
-Obtain the archive from a official HTTPS website or Release.
+Obtain the archive from the same trusted candidate delivery or an official HTTPS website or Release.
 Verify its complete published SHA-256 before running it; the bundled public key
 does not authenticate a first download by itself. Use the version-specific
 command above only when its filename matches the actual download.

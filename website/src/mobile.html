@@ -35,7 +35,7 @@
         <p class="mobile-kicker">BLACKBERRY 10 / NATIVE MOBILE</p>
         <h1 id="mobile-title">Root 之后，<br>把 VoLTE 装进手机。</h1>
         <p class="mobile-lead">已 Root 的 BB10，推荐使用原生 BAR 应用：由手机系统安装服务注册，随后在手机里管理 VoLTE。本机 BAR 安装器与电脑辅助首装，是进入同一个原生应用的两种入口。</p>
-        <div class="release-status" id="release-status" role="note"><strong>手机版 0.1.0.15 · 桌面版 v0.5.0-r20</strong><p>本次实验发行面向 Q20 SQC100-2、Passport SQW100-4。两款手机的 v12 / 服务 r18 使用与恢复验收已有记录，本次保留相同 r18 无线载荷。Q10 原生安装仍在测试。</p><p class="mobile-actions"><a class="mobile-button" href="mobile-installer.html">使用安装器安装</a><a class="mobile-button mobile-button-plain" href="mobile-manual.html">下载 BAR 手动安装</a></p><p class="small-copy">两种入口使用同一版本，直链下载不需要访问 GitHub。 <a href="https://github.com/Octo-o-o-o/bb10-volte/releases">发行记录</a></p></div>
+        <div class="release-status" id="release-status" role="note"><strong>手机版 0.1.0.19 · 桌面版 v0.5.0-r21</strong><p>本次实验发行面向已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4。已有实机结果对应各自旧版本；电信代理修复的 r21 载荷已在 Passport 实测。新版 0.1.0.19 / r21 整包尚未在 Q10 上复验。</p><p class="mobile-actions"><a class="mobile-button" href="mobile-installer.html">使用安装器安装</a><a class="mobile-button mobile-button-plain" href="mobile-manual.html">下载 BAR 手动安装</a></p><p class="small-copy">两种入口使用同一版本，直链下载不需要访问 GitHub。 <a href="https://github.com/Octo-o-o-o/bb10-volte/releases">发行记录</a></p></div>
         <nav class="mobile-contents" aria-label="本页目录"><a href="#standard">推荐安装方式</a><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
       </div>
     </section>
@@ -98,8 +98,8 @@
         <h2 id="scope-title">手机端验收到哪一步，按机型看</h2><div class="mobile-evidence" role="list" aria-label="2026 年 11 月 2 日手机端验收进度">
           <article role="listitem"><h3>Q20 · SQC100-2</h3><p>应用 v12 / 服务 r18：联通卡已完成恢复、卸载、重装、通话、短信和验收保存。换移动卡后，通话、短信及验收记录保留通过。</p></article>
           <article role="listitem"><h3>Passport · SQW100-4</h3><p>应用 v12 / 服务 r18：移动卡完整流程通过。换联通卡后，经正常重启完成网络策略切换，机主确认通话、短信和验收保存均正常。</p></article>
-          <article role="listitem"><h3>Q10 · SQN100-3</h3><p>原生应用首装仍在验证，包括 QNX 进程启动、包解压和系统安装回执。旧版语音通过，不能代替本次手机应用安装成功。</p></article>
-        </div><p class="small-copy">核对日期：2026 年 11 月 2 日，Asia/Shanghai。最新界面包、纯手机点击首装仍需各自验收。Passport 此前一次孤立唤醒重启已由机主接受，但其根因不声称已修复；长期稳定性仍需单独观察。</p>
+          <article role="listitem"><h3>Q10 · SQN100-3</h3><p>重刷后，v18 / 服务 r18 的桌面安装、通话和短信通过；电信 4G 浏览失败。r21 电信代理修复已在 Passport 实测，但尚未在这台 Q10 复验。</p></article>
+        </div><p class="small-copy">核对日期：2026 年 11 月 3 日，Asia/Shanghai。最新界面包、纯手机点击首装仍需各自验收。Passport 此前一次孤立唤醒重启已由机主接受，但其根因不声称已修复；长期稳定性仍需单独观察。</p>
         <p>现有历史范围为 OS <strong>10.3.3.3216</strong> 的 Q10 <strong>SQN100-3</strong>、Q20 / Classic <strong>SQC100-2</strong>、Passport <strong>SQW100-4</strong>。r7 / r8 的三机三网九项语音组合记录继续保留。r14 短信验证覆盖 Q20＋联通、Passport＋移动；其他短信组合不能据此扩写。</p>
         <p>每个新的手机候选包仍需分别核对首次安装、应用到 Root、界面升级、大小屏操作和恢复；上面的通过结论属于所记录的 v12/r18 组合。识别到机型、编译成功或看到图标都不能代替这些结果。</p>
         <p>其他 Q10 / Classic 可以查看单独的实验路线，但仍要通过原生文件散列、ABI、SIM、网络和恢复检查；手动启动且不自动启用。SQC100-4 和其他未验收变体不标为已支持。未知设备可导出部分兼容性报告，没有“忽略检查继续”入口。</p>

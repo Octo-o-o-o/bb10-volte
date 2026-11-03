@@ -195,15 +195,16 @@ int main(int argc, char **argv)
             settings.setValue("pending_operation", OPERATION); settings.setValue("pending_operation_action", "enable"); settings.sync();
             MobileController c(&parent); c.initialize();
             CHECK(c.model().value("state").toString() == "recovery_required");
-            CHECK(c.primaryAction() == "poll" && !c.operationInProgress());
+            CHECK(c.primaryAction() == "compatibility" && !c.operationInProgress());
             CHECK(!c.allowed("confirm-calls")); spin(350); CHECK(calls() == 1);
             QVariantMap job; job.insert("id", JOB); job.insert("state", "waiting_reboot"); job.insert("action", "enable");
             QVariantMap r; r.insert("schema", 2); r.insert("ok", true); r.insert("state", "reboot_required");
             r.insert("primary_action", "resume"); r.insert("actions", QVariantList() << "resume" << "compatibility");
             r.insert("job_id", JOB); r.insert("job", job); response(r);
             c.primary(); finish(c); CHECK(calls() == 2);
-            CHECK(requestFromCommand("poll").value("job_id").toString() == JOB);
-            CHECK(c.m_jobId == JOB && c.m_operationId == OPERATION);
+            CHECK(!requestFromCommand("compatibility").contains("job_id"));
+            CHECK(QSettings().value("pending_job").toString() == JOB);
+            CHECK(QSettings().value("pending_operation").toString() == OPERATION);
             CHECK(!c.m_pollTimer.isActive());
         }
         {
@@ -522,7 +523,8 @@ int main(int argc, char **argv)
             QVariantMap r; r.insert("schema", 2); r.insert("ok", false); r.insert("state", "error"); r.insert("error", error);
             response(r); c.requestAction("export"); finish(c);
             CHECK(!requestFromCommand("export").contains("job_id"));
-            CHECK(c.m_jobId == JOB && c.m_operationId == OPERATION); settingsClearPending();
+            CHECK(QSettings().value("pending_job").toString() == JOB);
+            CHECK(QSettings().value("pending_operation").toString() == OPERATION); settingsClearPending();
         }
         {
             // An interrupted backup is no longer a pending device write. Its
@@ -586,7 +588,9 @@ int main(int argc, char **argv)
             c.m_preservePendingForRequest = true; CHECK(!c.operationInProgress());
             c.m_busy = false; c.m_preservePendingForRequest = false;
             QVariantMap job; job.insert("action", "export"); job.insert("state", "running");
-            c.m_model.insert("job", job); CHECK(c.operationInProgress());
+            c.m_model.insert("job", job); c.m_allowAutoPoll = true; CHECK(c.operationInProgress());
+            c.m_allowAutoPoll = false; CHECK(!c.operationInProgress());
+            c.m_allowAutoPoll = true;
             c.m_error = "request_timeout"; CHECK(!c.operationInProgress());
         }
         {
@@ -917,6 +921,139 @@ int main(int argc, char **argv)
             r.insert("actions", QVariantList() << "status" << "compatibility"); r.remove("call_context"); response(r);
             const int before = calls(); c.refresh(); finish(c); CHECK(calls() == before + 1);
             CHECK(!c.m_pollTimer.isActive()); spin(300); CHECK(calls() == before + 1);
+        }
+        {
+            // Only a matching durable task receives one foreground check;
+            // backgrounding preserves the intent without polling repeatedly.
+            for (int mode = 0; mode < 3; ++mode) {
+                settingsClearPending(); QSettings settings;
+                settings.setValue("pending_job", OPERATION);
+                if (mode != 0) settings.setValue("pending_operation", OPERATION);
+                settings.setValue("pending_operation_action", "enable"); settings.sync();
+                QVariantMap job; job.insert("id", OPERATION); job.insert("action", "enable");
+                job.insert("state", mode == 2 ? "running" : "waiting_reboot");
+                QVariantMap r; r.insert("schema", 2); r.insert("ok", true);
+                r.insert("state", mode == 2 ? "working" : "reboot_required");
+                r.insert("job_id", OPERATION); r.insert("job", job); r.insert("primary_action", "poll");
+                r.insert("actions", QVariantList() << "poll" << "compatibility"); response(r);
+                const int before = calls();
+                MobileController c(&parent); c.initialize(); c.enteredBackground();
+                spin(350); CHECK(calls() == before);
+                c.enteredForeground(); spin(400); finish(c); spin(2000);
+                CHECK(calls() == before + 1 && !c.m_pollTimer.isActive());
+                CHECK(requestFromCommand("poll").value("job_id").toString() == OPERATION);
+                CHECK(c.m_jobId == OPERATION && !c.allowed("enable"));
+                if (mode == 2) {
+                    CHECK(c.jobRunning() && !c.operationInProgress() && c.allowed("poll"));
+                    c.setLanguage("zh"); CHECK(c.statusTitle() == c.label("job_last_running"));
+                    CHECK(c.statusMessage() == c.label("job_last_running_help") && c.jobText().isEmpty());
+                    c.setLanguage("en"); CHECK(c.statusTitle() == "Task was still running at the last check");
+                }
+            }
+            settingsClearPending();
+        }
+        {
+            // A diagnostic before the scheduled cold check retains that
+            // check, and its success notice remains visible afterward.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION);
+            settings.setValue("pending_operation_action", "enable"); settings.sync();
+            write(ROOT + "/report-wait", "1"); QFile::remove(ROOT + "/report-ready");
+            const int before = calls(); MobileController c(&parent); c.initialize();
+            c.requestAction("compatibility");
+            QElapsedTimer wait; wait.start(); while (calls() == before && wait.elapsed() < 5000) spin(20);
+            CHECK(calls() == before + 1);
+            const QString report = requestFromCommand("compatibility").value("operation_id").toString();
+            QVariantMap details; details.insert("path", "/accounts/1000/shared/documents/BB10-VoLTE/" + report);
+            QVariantMap saved; saved.insert("schema", 2); saved.insert("ok", true); saved.insert("state", "exported");
+            saved.insert("details", details); response(saved);
+            QFile::remove(ROOT + "/report-wait"); write(ROOT + "/report-ready", "1"); finish(c);
+            QVariantMap job; job.insert("id", OPERATION); job.insert("action", "enable"); job.insert("state", "waiting_reboot");
+            QVariantMap pending; pending.insert("schema", 2); pending.insert("ok", true); pending.insert("state", "reboot_required");
+            pending.insert("job_id", OPERATION); pending.insert("job", job); pending.insert("primary_action", "poll");
+            pending.insert("actions", QVariantList() << "poll" << "compatibility"); response(pending);
+            spin(400); finish(c); spin(300); QFile::remove(ROOT + "/report-ready");
+            CHECK(calls() == before + 2 && c.m_jobId == OPERATION);
+            CHECK(c.m_notice == "report_exported" && c.exportPath() == details.value("path").toString());
+            settingsClearPending();
+        }
+        {
+            // An explicit check wins the race with the delayed cold check.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION);
+            settings.setValue("pending_operation_action", "enable"); settings.sync();
+            QVariantMap job; job.insert("id", OPERATION); job.insert("action", "enable"); job.insert("state", "waiting_reboot");
+            QVariantMap r; r.insert("schema", 2); r.insert("ok", true); r.insert("state", "reboot_required");
+            r.insert("job_id", OPERATION); r.insert("job", job); r.insert("primary_action", "poll");
+            r.insert("actions", QVariantList() << "poll" << "compatibility"); response(r);
+            const int before = calls(); MobileController c(&parent); c.initialize(); c.primary(); finish(c); spin(500);
+            CHECK(calls() == before + 1 && !c.m_pollTimer.isActive());
+            settingsClearPending();
+        }
+        {
+            // A changed raw identity before the timer fires is not polled.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION); settings.sync();
+            const int before = calls(); MobileController c(&parent); c.initialize();
+            settings.setValue("pending_job", JOB); settings.sync(); spin(400);
+            CHECK(calls() == before && c.m_invalidPendingIdentity);
+            CHECK(QSettings().value("pending_job").toString() == JOB);
+            settingsClearPending();
+        }
+        {
+            // A completed original task without a live observation cannot
+            // masquerade as an observed network state or enable a new write.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION);
+            settings.setValue("pending_operation_action", "enable");
+            settings.setValue("last_observation_v1", QVariantMap()); settings.sync();
+            QVariantMap job; job.insert("id", OPERATION); job.insert("action", "enable"); job.insert("state", "completed");
+            QVariantMap r; r.insert("schema", 2); r.insert("ok", true); r.insert("state", "waiting");
+            r.insert("job_id", OPERATION); r.insert("job", job); r.insert("primary_action", "status");
+            r.insert("actions", QVariantList() << "status" << "export" << "compatibility"); response(r);
+            const int before = calls(); MobileController c(&parent); c.initialize(); spin(400); finish(c); spin(2000);
+            CHECK(calls() == before + 1 && !c.m_pollTimer.isActive());
+            CHECK(c.model().value("state").toString() == "task_complete_status_unchecked");
+            CHECK(c.primaryAction() == "inspect" && !c.canExportBackup() && !c.allowed("enable"));
+            CHECK(c.cachedStatusText().isEmpty() && !QSettings().contains("last_observation_v1"));
+            job.insert("id", JOB); job.insert("state", "waiting_reboot");
+            r.insert("job_id", JOB); r.insert("job", job); r.insert("state", "reboot_required");
+            r.insert("primary_action", "poll"); r.insert("actions", QVariantList() << "poll" << "compatibility");
+            response(r); c.refresh(); finish(c);
+            CHECK(c.m_jobId == JOB && requestFromCommand("inspect").value("job_id").toString().isEmpty());
+            settingsClearPending();
+        }
+        {
+            // A structured Root error is an observation failure; never clear
+            // the saved identity, retry automatically, or claim completion.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION);
+            settings.setValue("pending_operation_action", "enable"); settings.sync();
+            QVariantMap error; error.insert("code", "root_required");
+            QVariantMap r; r.insert("schema", 2); r.insert("ok", false); r.insert("state", "error"); r.insert("error", error);
+            response(r); const int before = calls();
+            MobileController c(&parent); c.initialize(); spin(400); finish(c); spin(2000);
+            CHECK(calls() == before + 1 && c.m_waitingForRoot && c.m_jobId == OPERATION);
+            CHECK(QSettings().value("pending_operation").toString() == OPERATION && !c.m_pollTimer.isActive());
+            settingsClearPending();
+        }
+        {
+            // A malformed saved ID is not discarded or replaced by a cached
+            // success, even after an identity-free diagnostic response.
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", "bad-id"); settings.sync();
+            MobileController c(&parent); c.initialize(); const int before = calls(); spin(350);
+            CHECK(calls() == before && c.m_invalidPendingIdentity && c.primaryAction() == "compatibility");
+            CHECK(c.statusTitle() == c.label("pending_identity_title") && c.cachedStatusText().isEmpty());
+            CHECK(!c.allowed("install") && !c.allowed("enable") && !c.allowed("confirm-calls") && !c.allowed("poll"));
+            QVariantMap error; error.insert("code", "unlisted_safe_failure");
+            QVariantMap r; r.insert("schema", 2); r.insert("ok", false); r.insert("state", "error"); r.insert("error", error); response(r);
+            c.requestAction("compatibility"); finish(c);
+            CHECK(!requestFromCommand("compatibility").contains("job_id"));
+            CHECK(c.statusMessage().contains(c.label("operation_failed")));
+            CHECK(QSettings().value("pending_job").toString() == OPERATION);
+            CHECK(QSettings().value("pending_operation").toString() == "bad-id");
+            settingsClearPending();
         }
         {
             // A changed boot/SIM is enforced by the real worker tests; here the

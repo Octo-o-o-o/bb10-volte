@@ -91,7 +91,7 @@ public:
     bool hasPackage() const { return !m_packagePath.isEmpty(); }
     bool hasUpdate() const { return !m_update.isEmpty(); }
     bool canApplyBundledUpdate() const { return m_model.value("details").toMap().value("bundled_update_available").toBool(); }
-    bool canExportBackup() const { return !m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty() && allowed("export"); }
+    bool canExportBackup() const { return !m_invalidPendingIdentity && !m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty() && allowed("export"); }
 
     Q_INVOKABLE QString label(const QString &key) const;
     Q_INVOKABLE bool allowed(const QString &action) const;
@@ -187,6 +187,7 @@ private:
     QString m_lastExportPath;
     QString m_jobId;
     QString m_operationId;
+    QString m_coldPollJobId;
     QString m_reportOperationId;
     QString m_operationAction;
     QString m_pendingCallContext;
@@ -215,6 +216,8 @@ private:
     bool m_reconcilingCalls;
     bool m_cachedStatus;
     bool m_allowAutoPoll;
+    bool m_invalidPendingIdentity;
+    bool m_oneShotActive;
     bool m_preservePendingForRequest;
     bool m_newPendingForRequest;
     QNetworkAccessManager m_network;

@@ -312,6 +312,26 @@ class MacUpgradeTests(UpgradeTests):
         self.assertEqual(u.read_state(self.folder)['stage'], 'uncertain')
         self.assertTrue(self.lock.exists())
 
+    def test_unexpected_mac_completion_stops_stock_upgrade_before_radio(self):
+        import macos_root_flash as native
+        calls = []
+        def terminal(command, **kwargs):
+            calls.append(command)
+            evidence = native.NativeFlashEvidence('phone.0.signed')
+            for line in ('Flashing: phone.0.signed', '100%', 'Send signature',
+                         'Complete returned unexpected response 0x1234',
+                         'Done', 'Flash completed successfully!'):
+                evidence.line(line)
+            (self.folder / 'upgrade-stock_os.json').write_text(json.dumps(evidence.result('stock_os', 0)))
+            return SimpleNamespace(returncode=0)
+        with patch.object(flash.subprocess, 'run', side_effect=terminal):
+            with self.assertRaisesRegex(r.SetupError, 'flash_state_unknown'):
+                self.run_upgrade()
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(u.read_state(self.folder)['stage'], 'uncertain')
+        self.assertTrue(self.lock.exists())
+        self.assertFalse((self.folder / 'upgrade-stock_radio.command').exists())
+
     def test_missing_usb_source_address_blocks_before_console(self):
         self.usb['usb_address_ready'] = False
         with patch.object(flash, 'launch_stage') as run:

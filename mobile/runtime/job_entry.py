@@ -18,14 +18,22 @@ def main():
     import worker
     import unified_install as m
     stage = worker.stage_payload(folder, request['operation_id'])
-    with m.management_lock():
-        current = m.s.load(m.BASE + '/payload.json')
-        candidate = m.s.load(stage + '/payload.json')
-        if current == candidate and m.installed_management_schema() == 2 and not os.path.isfile(m.UPDATE_PENDING):
-            m.u.verify()
-            result = {'updated': True, 'runtime_only': True, 'reboot_required': False}
-        else:
-            result = m.manage('update', stage=stage, operation_id=request['operation_id'])
+    entered = False
+    try:
+        with m.management_lock():
+            entered = True
+            current = m.s.load(m.BASE + '/payload.json')
+            candidate = m.s.load(stage + '/payload.json')
+            if current == candidate and m.installed_management_schema() == 2 and not os.path.isfile(m.UPDATE_PENDING):
+                m.u.verify()
+                result = {'updated': True, 'runtime_only': True, 'reboot_required': False}
+            else:
+                result = m.manage('update', stage=stage, operation_id=request['operation_id'])
+    except Exception as error:
+        if not entered and str(error) == 'management_busy':
+            return {'ok': False, 'error_code': 'management_busy',
+                    'operation_id': request['operation_id'], 'not_dispatched': True}
+        raise
     result['ok'] = True
     return result
 

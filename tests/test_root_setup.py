@@ -154,6 +154,28 @@ class RootSetupTests(unittest.TestCase):
         self.assertEqual(json.loads(self.state.read_text())['stage'], 'os_uncertain')
         self.assertTrue(r.root_lock_path().is_file())
 
+    def test_mac_unexpected_completion_response_stops_before_radio(self):
+        import macos_root_flash as native
+        usb = self.mac_kit()
+        launches = []
+        def terminal(args, **_):
+            launches.append(args)
+            evidence = native.NativeFlashEvidence('Q10_os.unsigned')
+            for line in ('Flashing: Q10_os.unsigned', '100%', 'Send signature',
+                         'Complete returned unexpected response', 'Done', 'Flash completed successfully!'):
+                evidence.line(line)
+            (self.kit / 'flash-os.json').write_text(json.dumps(evidence.result('os', 0)))
+            return SimpleNamespace(returncode=0)
+        with patch.object(r.sys, 'platform', 'darwin'), patch.object(r, 'local_usb_state', return_value=usb), \
+                patch.object(r, 'verify_root', side_effect=WorkflowError('connection_refused')), \
+                patch.object(native.subprocess, 'run', side_effect=terminal):
+            with self.assertRaisesRegex(r.SetupError, 'flash_state_unknown'):
+                r.flash_root(self.kit, True, lambda _: None)
+        self.assertEqual(len(launches), 1)
+        self.assertEqual(json.loads(self.state.read_text())['stage'], 'os_uncertain')
+        self.assertTrue(r.root_lock_path().is_file())
+        self.assertFalse((self.kit / 'flash-radio.command').exists())
+
     def test_mac_complete_pair_still_requires_postboot_root_verification(self):
         usb = self.mac_kit()
         with patch.object(r.sys, 'platform', 'darwin'), patch.object(r, 'local_usb_state', return_value=usb), \
