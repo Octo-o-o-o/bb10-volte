@@ -111,7 +111,7 @@ class NativeDeliveryContracts(unittest.TestCase):
     def test_recoverable_failure_preserves_job_and_runtime_resume_action(self):
         source = (NATIVE / "src/mobilecontroller.cpp").read_text(encoding="utf-8")
         self.assertIn('m_runtimeError && action == "resume" && !m_jobId.isEmpty() && allowed(action)', source)
-        self.assertIn('completed(job.value("state").toString()) && !recoverable', source)
+        self.assertIn('!recoverable && !unknownOutcome', source)
         self.assertIn('response.value("actions").toList().contains(QVariant("resume"))', source)
 
     def test_bundled_service_upgrade_does_not_require_same_version_zip(self):
@@ -121,8 +121,8 @@ class NativeDeliveryContracts(unittest.TestCase):
         self.assertIn('!hasPackage() && !canApplyBundledUpdate()', source)
         start = source.index('void MobileController::applyBundledUpdate()')
         end = source.index('void MobileController::requestAction', start)
-        self.assertIn('m_packagePath.clear()', source[start:end])
-        self.assertIn('requestAction("update")', source[start:end])
+        self.assertNotIn('m_packagePath.clear()', source[start:end])
+        self.assertIn('m_pendingAction = "bundled-update"', source[start:end])
         self.assertIn('visible: volteController.canApplyBundledUpdate', manage)
         self.assertIn('onClicked: volteController.applyBundledUpdate()', manage)
 

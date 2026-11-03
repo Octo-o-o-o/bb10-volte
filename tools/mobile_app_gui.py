@@ -44,6 +44,8 @@ def presentation(report):
         return tr('桌面安装资源校验失败'), tr('请重新获取完整的桌面发行包，不要自行替换校验清单。')
     if code == 'mobile_app_result_unconfirmed':
         return tr('连接中断，安装结果待确认'), tr('请恢复同一台手机的连接，再点“检查手机”。程序会读取原任务，不能把连接超时当作安装失败而重新提交。')
+    if code == 'app_install_check_failed':
+        return tr('安装结果需要检查'), tr('已保留安装回执。请保留手机当前状态，不要重复覆盖或降级；可以重新检查连接并导出已有诊断。')
     view = guidance(error=code)
     return view.title, view.detail
 

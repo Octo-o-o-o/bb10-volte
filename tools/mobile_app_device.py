@@ -39,6 +39,26 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def write_package(path, package_id, target_version, bar):
+    manifest = ('Package-Id: ' + package_id + '\nPackage-Name: BB10 VoLTE\nPackage-Version: ' + target_version + '\n').encode('ascii')
+    # Match the accepted bootstrap ZIP contract. Python's default 0600 ZIP
+    # attributes omit S_IFREG: BB10's libarchive treats those entries as
+    # non-regular and can produce correctly sized files containing only zeros.
+    with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, data in (('MANIFEST', manifest), ('pkg.bar', bar)):
+            info = zipfile.ZipInfo(name, date_time=(2026, 11, 2, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = 0o100600 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, data)
+    os.chmod(path, 0o600)
+    descriptor = os.open(path, os.O_WRONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def regular(path, limit=16777216, private=False, allow_hardlinks=False):
     info = os.lstat(path)
     single_link = info.st_nlink == 1 or (allow_hardlinks and not private and info.st_nlink > 0)
@@ -294,11 +314,7 @@ def provision(release, stage, identifier, expected_device):
         package = directory + '/package.zip'
         # Only these two members are ever fed to the generic AutoRoot installer.
         # No addon, patch, permissions or startup script is accepted from a file.
-        manifest = ('Package-Id: ' + package_id + '\nPackage-Name: BB10 VoLTE\nPackage-Version: ' + release['version'] + '\n').encode('ascii')
-        with zipfile.ZipFile(package, 'w', zipfile.ZIP_STORED) as archive:
-            archive.writestr('MANIFEST', manifest)
-            archive.writestr('pkg.bar', bar)
-        os.chmod(package, 0o600)
+        write_package(package, package_id, release['version'], bar)
         job = {'schema': 1, 'owner': 'bb10-volte-app-installer-v1', 'id': identifier,
                'device_id': device, 'bar_sha256': release['bar_sha256'], 'target_version': release['version'],
                'sud_job': PPS + '/job.' + package_id, 'state': 'submitted', 'created': int(time.time()),
@@ -314,8 +330,21 @@ def provision(release, stage, identifier, expected_device):
             try:
                 environment = {'PATH': '/proc/boot:/bin:/usr/bin:/base/bin:/base/usr/bin',
                                'LD_LIBRARY_PATH': '/base/usr/lib:/base/lib:/base/lib/dll:/radio/lib:/radio/lib/dll:/radio/usr/lib:/proc/boot'}
-                process = subprocess.Popen([executable, package], stdin=source, stdout=log, stderr=log,
-                                           close_fds=True, preexec_fn=os.setsid, env=environment)
+                # QNX Python rejects preexec_fn before spawning. Its native
+                # start_new_session path creates a detached session without
+                # running Python in a forked child and survives SSH closure.
+                # The native installer creates its PPS object before chmod.
+                # BB10's existing .all watcher can miss an initially private
+                # object and its later updates even after its mode is fixed.
+                # Let only this child create the 0660 root:upd PPS object with
+                # group access from the outset. This helper is single-threaded;
+                # restore its private mask before writing any more receipts.
+                previous_mask = os.umask(0o007)
+                try:
+                    process = subprocess.Popen([executable, package], stdin=source, stdout=log, stderr=log,
+                                               close_fds=True, start_new_session=True, env=environment)
+                finally:
+                    os.umask(previous_mask)
                 job['installer_pid'] = process.pid
                 save(directory + '/record.json', job)
                 # Do not hold the transaction lock for an unbounded installer
@@ -327,7 +356,7 @@ def provision(release, stage, identifier, expected_device):
                         break
                     time.sleep(0.25)
                 job['installer_exit'] = process.poll()
-            except OSError:
+            except (OSError, ValueError):
                 job['error'] = 'installer_start_unknown'
             save(directory + '/record.json', job)
         return summary(release, device, reconcile(job, release))

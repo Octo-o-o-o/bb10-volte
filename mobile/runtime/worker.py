@@ -24,6 +24,18 @@ JOB_ACTIONS = ('install', 'enable', 'disable', 'update', 'rollback', 'uninstall'
                'export', 'compatibility', 'legacy-install', 'legacy-start', 'legacy-stop',
                'legacy-update', 'legacy-uninstall')
 TERMINAL = ('completed', 'failed', 'interrupted')
+SAFE_JOB_GUARD = 'safe_job_outcome_v1'
+SELECTION_GUARD = 'active_selection_guard_v1'
+
+
+def supports_job_guard(manifest):
+    capabilities = manifest.get('capabilities') if isinstance(manifest, dict) else None
+    return isinstance(capabilities, list) and SAFE_JOB_GUARD in capabilities
+
+
+def supports_selection_guard(manifest):
+    capabilities = manifest.get('capabilities') if isinstance(manifest, dict) else None
+    return isinstance(capabilities, list) and SELECTION_GUARD in capabilities
 
 # Text is selected by state, never by a free-form native exception or modem log.
 MESSAGES = {
@@ -31,10 +43,10 @@ MESSAGES = {
                          'Ready to enable VoLTE', 'Device checks passed. Original files will be backed up and verified first.', 'Enable VoLTE'),
     'working': ('正在处理', '可以离开此应用；任务在手机后台继续。请保持电量充足。', '查看进度',
                 'Working', 'The task continues on the phone if you leave this app. Keep the battery charged.', 'Check progress'),
-    'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁，等系统出现 Root 成功提示后，再打开应用一次。未打开时不要连续点图标。进入应用后会自动检查，网络可能需要约 3–5 分钟。', '立即检查',
-                        'Restart your phone normally', 'Restart from the power menu and unlock. Wait for the system Root success notification, then open the app once. Do not tap repeatedly if it does not open. Checks run automatically inside the app; the network may take 3–5 minutes.', 'Check now'),
-    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需一次正常重启。解锁后先等系统 Root 成功提示，再打开应用一次；进入后会自动检查。不要连续点图标。', '立即检查',
-                                'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. Unlock, wait for the system Root success notification, then open the app once for automatic checking. Do not tap repeatedly.', 'Check now'),
+    'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁，等系统出现 Root 成功提示后，再打开应用一次并点检查。未打开时不要连续点图标。网络可能需要约 3–5 分钟。', '立即检查',
+                        'Restart your phone normally', 'Restart from the power menu and unlock. Wait for the system Root success notification, open the app once, then check the status. Do not tap repeatedly if it does not open. The network may take 3–5 minutes.', 'Check now'),
+    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需一次正常重启。解锁后先等系统 Root 成功提示，再打开应用一次并点检查。不要连续点图标。', '立即检查',
+                                'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. Unlock, wait for the system Root success notification, open the app once and check the status. Do not tap repeatedly.', 'Check now'),
     'registered': ('IMS 已连接，待通话验收', '请完成一次呼出和一次呼入，确认双方有声音且通话保持 LTE。', '验收通话',
                    'IMS connected; check calls', 'Make and receive a call. Confirm audio in both directions and LTE during the call.', 'Check calls'),
     'verified': ('当前 SIM 已完成通话验收', '本次开机、当前 SIM 和当前版本的双向通话已由你确认。短信能力请另外实测。', '刷新状态',
@@ -43,20 +55,36 @@ MESSAGES = {
                  'Automatic service disabled', 'Enable the service when needed, restart when the task asks, then check IMS and calls.', 'Enable service'),
     'update_ready': ('手机服务可以更新', '现有服务已完成停用与恢复。使用应用内置版本更新，原始备份会保留，完成后按提示正常重启。', '更新手机服务',
                      'Phone service update ready', 'The existing service is stopped and restored. Apply the bundled update, keep the originals, then restart normally when prompted.', 'Update phone service'),
-    'waiting': ('等待手机网络就绪', '此页面会自动检查。请保持移动网络和正常 LTE 数据可用；若长时间未就绪，可以导出不含身份信息的报告。', '立即检查',
-                'Waiting for the network', 'This page checks automatically. Keep cellular and LTE data available; export a report if this persists.', 'Check now'),
-    'waiting_ims': ('等待 IMS 通话注册', '通话注册与浏览器上网是不同的连接。此页面会自动检查；若持续等待，请导出诊断报告，不用反复点击检查或重新启用。', '立即检查',
-                    'Waiting for IMS voice registration', 'Voice registration is separate from web access. This page checks automatically. If it keeps waiting, export a diagnostic report; repeated checks or enabling again are unnecessary.', 'Check now'),
-    'waiting_ims_apn': ('等待通话专用网络', '正在等待运营商的 IMS 专用连接。浏览器能够上网仍不代表此连接已就绪，页面会自动检查。', '立即检查',
-                        'Waiting for the IMS connection', 'Waiting for the carrier connection used by IMS. Web access alone does not confirm this connection is ready. This page checks automatically.', 'Check now'),
+    'waiting': ('等待手机网络就绪', '请保持移动网络和正常 LTE 数据可用。稍后可点“立即检查”更新状态；若长时间未就绪，可以导出不含身份信息的报告。', '立即检查',
+                'Waiting for the network', 'Keep cellular and LTE data available. Select Check now later to update the status; export a report if this persists.', 'Check now'),
+    'waiting_ims': ('等待 IMS 通话注册', '通话注册与浏览器上网是不同的连接。稍后可点“立即检查”更新状态；若持续等待，请导出诊断报告，不用重新启用。', '立即检查',
+                    'Waiting for IMS voice registration', 'Voice registration is separate from web access. Select Check now later to update the status; export a report if it keeps waiting. Re-enabling is unnecessary.', 'Check now'),
+    'waiting_ims_apn': ('等待通话专用网络', '正在等待运营商的 IMS 专用连接。浏览器能够上网仍不代表此连接已就绪；稍后可点“立即检查”更新状态。', '立即检查',
+                        'Waiting for the IMS connection', 'Waiting for the carrier connection used by IMS. Web access alone does not confirm this connection is ready. Select Check now later to update the status.', 'Check now'),
     'update_requires_stop': ('先停用旧版服务，再更新', '手机已有旧版服务。先停用并恢复配置，按提示正常重启后，首页会提供“更新手机服务”；原始备份会保留。', '停用旧版服务',
                              'Stop the old service before updating', 'An older service is installed. Stop it and restore its settings, then restart normally when prompted. The home page will offer Update phone service. Original backups are retained.', 'Stop old service'),
     'unsupported': ('需要进一步适配', '可以导出兼容性报告。检测到机型不代表已经验证可用；高级页面保留已有的实验路线。', '导出兼容性报告',
                     'Further adaptation needed', 'Export a compatibility report. Recognizing a model does not establish support. Existing experimental routes are in Advanced.', 'Export compatibility'),
     'sim_unsupported': ('当前 SIM 尚未通过检查', '请检查 SIM、LTE 数据服务及运营商 VoLTE 开通状态，换卡请关机后操作。', '重新检查',
                         'SIM checks incomplete', 'Check the SIM, LTE data and carrier VoLTE provisioning. Power off before changing SIMs.', 'Check again'),
-    'recovery_required': ('需要检查上次操作', '已保留备份和任务记录。仅可继续已记录的可恢复步骤；请勿反复安装或删除文件。', '继续检查',
-                          'Previous operation needs attention', 'Backups and the task journal are retained. Only recorded recoverable steps can resume.', 'Check recovery'),
+    'waiting_sim': ('等待 SIM 就绪', '手机正在读取 SIM 和运营商信息，稍后可点“立即检查”更新状态。如系统要求 SIM 密码，请先解锁；持续等待时请检查系统的移动网络设置。', '立即检查',
+                    'Waiting for SIM readiness', 'The phone is reading the SIM and carrier details. Select Check now later to update the status. Unlock the SIM if prompted; if waiting persists, check the system mobile network settings.', 'Check now'),
+    'recovery_required': ('需要检查上次操作', '请检查原任务；如已有原件备份，请保留。不要重复提交操作或删除文件。', '继续检查',
+                          'Previous operation needs attention', 'Check the original task and keep any existing backups. Do not resubmit the operation or delete files.', 'Check recovery'),
+    'uninstall_recovery_required': ('卸载尚未完成', '检测到未完成的卸载记录。请在“管理与恢复”中选择“完整停用并卸载”并确认，已有原件备份请保留。', '重新检查',
+                                    'Uninstall is incomplete', 'An unfinished uninstall record was found. In Manage & restore, select Restore & uninstall and confirm. Keep any existing original backups.', 'Check again'),
+    'reboot_unconfirmed': ('无法确认重启状态', '请按系统电源菜单正常重启，再检查原任务；如仍无法确认，请导出诊断报告。', '检查任务',
+                           'Restart state could not be confirmed', 'Restart normally from the system power menu, then check the original task. Export diagnostics if it remains unconfirmed.', 'Check task'),
+    'continue_after_reboot': ('检测到开机状态变化', '如果刚才已使用系统电源菜单正常重启，请继续上次任务；否则请先正常重启。', '继续当前任务',
+                              'Startup state changed', 'If you restarted normally from the system power menu, continue the previous task. Otherwise restart normally first.', 'Continue task'),
+    'job_outcome_unknown': ('上次操作结果尚未确认', '目前无法自动确认结果。请保留现状，导出诊断报告寻求帮助；无需反复检查或重新提交。', '导出诊断报告',
+                            'Previous operation outcome is unknown', 'The result cannot currently be confirmed automatically. Keep the current state and export diagnostics for help; do not repeatedly check or resubmit.', 'Export diagnostics'),
+    'export_interrupted': ('备份导出未确认', '请检查手机上的原件备份和导出目录；如有需要，可重新导出备份。', '检查手机状态',
+                           'Backup export not confirmed', 'Check the original backup on the phone and the export folder. Export the backup again if needed.', 'Check phone status'),
+    'policy_restart_once': ('网络策略待确认，请正常重启一次', '已核验联通策略提交后的恢复状态，尚未确认策略生效。请用电源菜单重启一次，解锁并等 Root 成功后再检查；若仍失败，请导出报告，不要重复重启。', '检查状态',
+                            'Restart once to check the network policy', 'The restored state after submitting the Unicom policy was verified, but the policy is not yet confirmed. Restart once from the power menu, unlock and wait for Root. If it still fails, export a report instead of restarting repeatedly.', 'Check status'),
+    'policy_restart_unconfirmed': ('重启后仍未确认网络策略', '已保留原件和记录。请导出诊断报告，不要继续重复重启或重新安装。', '检查状态',
+                                   'Network policy still unconfirmed after restart', 'Originals and records are retained. Export a diagnostic report; do not keep restarting or reinstalling.', 'Check status'),
     'uninstalled': ('已移除本项目服务', '原始备份和诊断记录仍保留。应用图标可在系统中单独卸载。', '刷新状态',
                     'Project service removed', 'Original backups and diagnostics are retained. Remove the app icon separately in the OS.', 'Refresh'),
     'ready_after_uninstall': ('恢复完成，可重新开启', '原始备份和旧记录仍保留。重新开启会建立新事务并再次校验备份。', '重新开启 VoLTE',
@@ -209,6 +237,15 @@ def registered(status):
 
 
 def call_context(create=True):
+    # Inspection and confirmation share the same lock for the entire
+    # read/create operation. A delayed inspection must not overwrite a call
+    # confirmation that another process has already saved. The engine lock
+    # is reentrant in the process that already holds it during confirmation.
+    with engine().management_lock():
+        return locked_call_context(create)
+
+
+def locked_call_context(create=True):
     import unified_service as u
     import carrier_policy as policy
     import device_info
@@ -238,8 +275,9 @@ def inspect(request, folder):
         result = engine().manage('probe')
     except Exception as error:
         details['error_code'] = safe_error(error)
-        return ui('unsupported', request.get('language', 'zh'), 'compatibility', details,
-                  actions=['status', 'compatibility', 'legacy-inspect'])
+        # A failed probe does not establish that the device is unsupported.
+        return ui('error', request.get('language', 'zh'), 'status', details, ok=False,
+                  actions=['status', 'compatibility'], error={'code': details['error_code']})
     return inspection_response(request, result, details)
 
 
@@ -250,6 +288,16 @@ def inspection_response(request, result, details, confirmed_context=None):
     language = request.get('language', 'zh')
     details['carrier'] = result.get('operator', 'unknown')
     details['installed'] = bool(result.get('installed'))
+    details['service_state'] = 'unknown'
+    if not result.get('scope_error'):
+        if result.get('installed_stage') == 'pending' or result.get('installation_pending') or result.get('update_pending'):
+            details['service_state'] = 'pending'
+        elif result.get('installed') is True:
+            details['service_state'] = 'installed'
+        elif result.get('legacy_detected') is True:
+            details['service_state'] = 'legacy'
+        elif result.get('installed_stage') == 'uninstalled' or result.get('legacy_detected') is False:
+            details['service_state'] = 'absent'
     if result.get('scope_error'):
         details['error_code'] = result['scope_error']
         return ui('unsupported', language, 'compatibility', details,
@@ -257,15 +305,18 @@ def inspection_response(request, result, details, confirmed_context=None):
     if result.get('installed_stage') == 'pending' and result.get('phase') in (
             'stop_requested', 'awaiting_reboot', 'awaiting_final_reboot', 'removing_hook', 'removing_payload'):
         details['phase'] = result['phase']
-        return ui('reboot_required' if result.get('reboot_required') else 'recovery_required',
-                  language, 'uninstall', details, actions=['uninstall', 'compatibility', 'status'])
+        if result.get('reboot_required'):
+            return ui('reboot_required', language, 'status', details, actions=['status', 'compatibility'])
+        return ui('uninstall_recovery_required', language, 'status', details,
+                  actions=['uninstall', 'compatibility', 'status'])
     if not result.get('installed'):
         if result.get('installed_stage') == 'uninstalled':
             if result.get('can_install'):
                 return ui('ready_after_uninstall', language, 'install', details, actions=['install', 'export', 'compatibility', 'status'])
             return ui('uninstalled', language, details=details, actions=['export', 'compatibility', 'status'])
         if not result.get('sim_supported'):
-            return ui('sim_unsupported', language, details=details)
+            state = 'waiting_sim' if result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable') else 'sim_unsupported'
+            return ui(state, language, details=details)
         if result.get('can_install'):
             return ui('ready_to_install', language, 'install', details, actions=['install', 'compatibility'])
         return ui('waiting', language, details=details)
@@ -283,7 +334,18 @@ def inspection_response(request, result, details, confirmed_context=None):
     if rollback_available:
         actions.append('rollback')
     if not result.get('sim_supported'):
-        return ui('sim_unsupported', language, details=details, actions=actions)
+        temporary = result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable')
+        # A transient SIM read must not obscure a previously established
+        # reboot or restoration failure: neither can heal through polling.
+        if temporary and status.get('enabled'):
+            if status.get('current_sim_matches') is False or status.get('phase') in (
+                    'reboot_required', 'carrier_reboot_required', 'native_exited'):
+                state = 'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required'
+                return ui(state, language, details=details, actions=actions)
+            if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
+                return ui('recovery_required', language, details=details, actions=actions)
+        state = 'waiting_sim' if temporary else 'sim_unsupported'
+        return ui(state, language, details=details, actions=actions)
     if not status.get('enabled'):
         actions = ['enable', 'update', 'export', 'compatibility', 'uninstall', 'status']
         if rollback_available:
@@ -301,10 +363,20 @@ def inspection_response(request, result, details, confirmed_context=None):
         return ui('update_requires_stop', language, 'disable', details, actions=actions)
     if registered(status):
         context = confirmed_context if confirmed_context is not None else call_context()
+        if result.get('family') == 'passport' and result.get('operator') == 'unicom':
+            import policy_hint
+            policy_hint.resolve(result, context, engine(), ROOT)
         state = 'verified' if context['calls_verified'] else 'registered'
         return ui(state, language, 'status' if context['calls_verified'] else 'confirm-calls', details,
                   actions=actions + ['confirm-calls'], call_context=context['context'])
     if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
+        if (status.get('phase') == 'error_restored' and result.get('family') == 'passport' and
+                result.get('operator') == 'unicom'):
+            import policy_hint
+            hint = policy_hint.suggestion(result, engine(), ROOT)
+            if hint:
+                details['policy_restart_suggestion_used'] = True
+                return ui(hint, language, details=details, actions=['status', 'export', 'compatibility'])
         return ui('recovery_required', language, details=details, actions=actions)
     if status.get('phase') == 'registering':
         return ui('waiting_ims', language, details=details, actions=actions)
@@ -503,6 +575,24 @@ def resumable_job(job):
     return job['action'] in ('install', 'update', 'rollback', 'uninstall', 'enable', 'disable', 'legacy-install')
 
 
+def unknown_job_outcome(job):
+    # Historical workers could fail after changing the device without a
+    # corresponding result or pending marker. A missing classification does
+    # not establish that a write was avoided. Export jobs only create copies
+    # or reports and must not block subsequent device operations.
+    action = job.get('action', '')
+    device_write = action in ('install', 'enable', 'disable', 'update', 'rollback', 'uninstall') or action.startswith('legacy-')
+    if job.get('state') not in ('failed', 'interrupted') or not device_write:
+        return False
+    return (job.get('worker_safety') != SAFE_JOB_GUARD or
+            job.get('commit_outcome_unknown') is not False or
+            (isinstance(job.get('result'), dict) and bool(job['result'])))
+
+
+def protected_job(job):
+    return resumable_job(job) or unknown_job_outcome(job)
+
+
 def job_path(job_id):
     return JOBS + '/' + checked_id(job_id) + '.json'
 
@@ -519,12 +609,52 @@ def active_job():
     return load(job_path(load(pointer)['id']))
 
 
+def diagnostic_job_summary(expected_job=None):
+    # A report describes only a bounded snapshot, never an authorization to
+    # infer completion or repeat a device operation. Do not export identifiers,
+    # requests, paths, raw messages, SIM bindings or detailed journals.
+    if expected_job is None:
+        # A general report must not accidentally describe another client's
+        # active task when the UI has no identity to match.
+        return {'availability': 'not_requested'}
+    try:
+        with job_lock():
+            job = active_job()
+            if job is None:
+                return {'availability': 'unavailable'}
+            checked_id(expected_job)
+            if job.get('id') != expected_job:
+                return {'availability': 'different_active_task'}
+            action = job.get('action')
+            state = job.get('state')
+            if action not in JOB_ACTIONS or state not in ('queued', 'running', 'waiting_reboot', 'interrupted', 'failed', 'completed'):
+                return {'availability': 'unavailable'}
+            summary = {'availability': 'matching_snapshot_only', 'action': action, 'state': state}
+            phases = ('checking', 'verifying_original_backup', 'legacy_installing', 'checking_and_preparing',
+                      'exporting_original_backup', 'activating', 'verifying_update', 'update_verified',
+                      'updating_payload', 'rollback', 'enable', 'disable', 'uninstall', 'restoring',
+                      'complete', 'awaiting_reboot', 'awaiting_final_reboot', 'removing_hook',
+                      'removing_payload', 'stop_requested', 'legacy-start', 'legacy-stop',
+                      'legacy-update', 'legacy-uninstall')
+            errors = ('worker_interrupted', 'background_launch_failed', 'legacy_job_requires_review',
+                      'call_active', 'operation_in_progress', 'state_persistence_unconfirmed',
+                      'update_version_mismatch', 'package_changed', 'rollback_component_too_old', 'backup_location_unavailable',
+                      'backup_readback_failed', 'preflight_or_recovery_check_failed')
+            if job.get('phase') is not None:
+                summary['phase'] = job['phase'] if job['phase'] in phases else 'other'
+            if job.get('error_code'):
+                summary['error_code'] = job['error_code'] if job['error_code'] in errors else 'other'
+            return summary
+    except Exception:
+        return {'availability': 'unavailable'}
+
+
 def boot():
     import unified_service
     return unified_service.boot_token()
 
 
-def recover_job(job):
+def recover_job(job, folder=None):
     if job['state'] in ('queued', 'running'):
         # Success is never inferred from a vanished PID. A different boot or a
         # lock acquired by this caller proves no owned worker is still active.
@@ -533,10 +663,19 @@ def recover_job(job):
                 job = load(job_path(job['id']))
                 # A newly forked child may not have taken the lock yet. Its
                 # unique attempt is invalidated before an interrupted retry.
+                age = time.time() - job.get('updated', job['created'])
                 recent_queue = (job['state'] == 'queued' and job.get('boot') == boot()
-                                and time.time() - job.get('updated', job['created']) < 10)
+                                and 0 <= age < 10)
                 if job['state'] in ('queued', 'running') and not recent_queue:
-                    progress(job, job['phase'], state='interrupted', error_code='worker_interrupted')
+                    if folder is not None:
+                        require_current_selection(folder)
+                    # A vanished worker that had already begun an operation
+                    # may have committed before its result could be saved.
+                    # Queued work, by contrast, has not entered run_operation.
+                    action = job.get('action', '')
+                    device_write = action in ('install', 'enable', 'disable', 'update', 'rollback', 'uninstall') or action.startswith('legacy-')
+                    progress(job, job['phase'], state='interrupted', error_code='worker_interrupted',
+                             commit_outcome_unknown=job['state'] == 'running' and device_write)
         except e.MobileError as error:
             if str(error) != 'operation_in_progress':
                 raise
@@ -544,6 +683,12 @@ def recover_job(job):
 
 
 def job_response(job, request):
+    if unknown_job_outcome(job):
+        return ui('job_outcome_unknown', request.get('language'), 'export',
+                  actions=['poll', 'export', 'compatibility'], job_id=job['id'], job=public_job(job))
+    if job['state'] == 'interrupted' and job['action'] in ('export', 'compatibility'):
+        return ui('export_interrupted', request.get('language'), 'status',
+                  actions=['status', 'compatibility'], job_id=job['id'], job=public_job(job))
     state = ('working' if job['state'] in ('queued', 'running') else
              'reboot_required' if job['state'] == 'waiting_reboot' else
              'recovery_required' if job['state'] == 'interrupted' else
@@ -553,9 +698,9 @@ def job_response(job, request):
     resume = resumable_job(job)
     if resume and job['state'] == 'failed':
         state = 'recovery_required'
-    action = 'poll' if job['state'] in ('queued', 'running') else 'resume' if resume else 'status'
+    action = 'poll' if job['state'] in ('queued', 'running', 'waiting_reboot') else 'resume' if resume else 'status'
     return ui(state, request.get('language'), action, job.get('public_result', {}),
-              ok=job['state'] != 'failed', actions=[action, 'compatibility'],
+              ok=job['state'] != 'failed', actions=[action, 'export', 'compatibility'],
               job_id=job['id'], job=public_job(job))
 
 
@@ -569,32 +714,58 @@ def observed_job_response(job, request, folder):
     """Observe a committed reboot boundary, never retry a device operation."""
     def response(current):
         if current['state'] == 'completed' and current['action'] in ('install', 'update', 'enable', 'disable'):
+            active = active_job()
+            if active is not None and active['id'] != current['id'] and (active['state'] not in TERMINAL or protected_job(active)):
+                # Return this terminal identity first. The client then obtains
+                # the unrelated active task in a separate status observation.
+                return job_response(current, request)
             result = inspect(request, folder)
             result.update(job_id=current['id'], job=public_job(current), live_status=True)
             return result
         return job_response(current, request)
 
-    if job['state'] not in ('waiting_reboot', 'completed') or job['action'] not in ('install', 'update', 'enable', 'disable'):
+    if job['state'] == 'completed':
+        return response(job)
+    if job['state'] != 'waiting_reboot':
         return response(job)
     try:
         with job_lock():
             # Another client may have completed this job and submitted a new
             # one while we waited. Never write our earlier copy over its state.
             current = active_job()
-            if current is None:
-                return response(load(job_path(job['id'])))
-            if current['id'] != job['id'] or current['state'] != 'waiting_reboot':
+            if current is None or current['id'] != job['id']:
+                # The pointer can be absent between journal and pointer writes,
+                # or another client can have moved it. Never substitute that
+                # other job, or offer to resume a non-active transaction.
+                return ui('recovery_required', request.get('language'), 'poll',
+                          actions=['poll', 'compatibility'], job_id=job['id'], job=public_job(job))
+            if current['state'] != 'waiting_reboot':
                 return response(current)
             old_boot = current.get('boot')
             if not valid_boot(old_boot):
-                return response(current)
+                return ui('reboot_unconfirmed', request.get('language'), 'poll',
+                          actions=['poll', 'compatibility'], job_id=current['id'], job=public_job(current))
             # A disabled boot hook does not create the volatile boot marker.
             # The existing engine creates it on the first observation; this
             # changes only its shmem nonce, never modem or service settings.
-            new_boot = boot()
-            if not valid_boot(new_boot) or old_boot[0] != new_boot[0] or old_boot == new_boot:
+            try:
+                new_boot = boot()
+            except Exception:
+                new_boot = None
+            if not valid_boot(new_boot) or old_boot[0] != new_boot[0]:
+                return ui('reboot_unconfirmed', request.get('language'), 'poll',
+                          actions=['poll', 'compatibility'], job_id=current['id'], job=public_job(current))
+            if old_boot == new_boot:
                 return response(current)
             action = current['action']
+            if action not in ('install', 'update', 'enable', 'disable'):
+                if resumable_job(current):
+                    if current.get('worker_safety') != SAFE_JOB_GUARD:
+                        return ui('job_outcome_unknown', request.get('language'), 'export',
+                                  actions=['poll', 'export', 'compatibility'], job_id=current['id'], job=public_job(current))
+                    return ui('continue_after_reboot', request.get('language'), 'resume',
+                              actions=['resume', 'compatibility', 'poll'], job_id=current['id'], job=public_job(current))
+                return response(current)
             if action in ('enable', 'disable'):
                 state = engine().manage('status')
                 if state.get('enabled') is not (action == 'enable'):
@@ -606,6 +777,7 @@ def observed_job_response(job, request, folder):
                 keys = ('installed', 'activated') if action == 'install' else ('updated',)
                 if not any(committed.get(key) is True for key in keys):
                     return response(current)
+            require_current_selection(folder)
             progress(current, 'complete', state='completed')
             return response(current)
     except e.MobileError as error:
@@ -690,6 +862,7 @@ def run_operation(job):
             e.require(not os.path.lexists(m.BASE + '/payload.json'), 'unified_installation_present')
             stage = stage_payload(folder, job['id'], True, profile) if action in ('legacy-install', 'legacy-update') else None
             progress(job, 'legacy_installing' if action == 'legacy-install' else action)
+            job['commit_outcome_unknown'] = True
             return legacy_command(action, request, folder, stage)
     if action == 'install':
         progress(job, 'checking_and_preparing')
@@ -701,11 +874,17 @@ def run_operation(job):
             if (os.path.isfile(activation) and os.path.isfile(m.BASE + '/payload.json')
                     and not os.path.isfile(m.BASE + '/uninstalled.json')
                     and not os.path.isfile(m.BASE + '/install-pending.json')):
+                job['commit_outcome_unknown'] = True
                 return m.manage('activate', operation_id=job['id'])
+            job['commit_outcome_unknown'] = True
             prepared = m.manage('prepare', stage=stage, operation_id=job['id'])
+            # The prepared transaction has returned a verified receipt. A
+            # backup-export failure can safely resume this same preparation.
+            job['commit_outcome_unknown'] = False
             progress(job, 'exporting_original_backup')
             path = backup_originals(request, prepared)
             progress(job, 'activating')
+            job['commit_outcome_unknown'] = True
             result = m.manage('activate', operation_id=job['id'])
         result['path'] = path
         return result
@@ -717,7 +896,16 @@ def run_operation(job):
             if path:
                 e.require(isinstance(path, str) and len(path) <= 1024 and path.startswith('/accounts/1000/'),
                           'choose_update_package')
-                bundle = e.read_archive(path)
+                expected_version = request.get('expected_version')
+                expected_hash = request.get('expected_sha256')
+                if expected_version is not None or expected_hash is not None:
+                    e.require(isinstance(expected_version, str) and isinstance(expected_hash, str),
+                              'invalid_update_expectation')
+                    e.numeric_version(expected_version)
+                    bundle = e.read_archive(path, expected_sha256=expected_hash)
+                    e.require(bundle[0]['version'] == expected_version, 'update_version_mismatch')
+                else:
+                    bundle = e.read_archive(path)
                 e.require(e.numeric_version(bundle[0]['version']) > e.numeric_version(load(folder + '/manifest.json')['version']),
                           'update_version_not_newer')
                 candidate = e.snapshot(bundle)
@@ -740,9 +928,17 @@ def run_operation(job):
             prior = {'operation_id': job['id'], 'before_bundle': folder, 'after_bundle': candidate}
             save(transition, prior)
         progress(job, 'updating_payload')
-        output = n.command(['/usr/bin/python3.2', candidate + '/runtime/job_entry.py',
-                            base64.b64encode(e.canonical(message)).decode('ascii')], 600)
-        result = e.json_bytes(output)
+        job['commit_outcome_unknown'] = True
+        try:
+            output = n.command(['/usr/bin/python3.2', candidate + '/runtime/job_entry.py',
+                                base64.b64encode(e.canonical(message)).decode('ascii')], 600)
+            result = e.json_bytes(output)
+            e.require(isinstance(result, dict), 'invalid_update_response')
+        except Exception:
+            # The child may have committed before its reply was lost or timed
+            # out. A later user action must inspect, never blindly rerun it.
+            job['commit_outcome_unknown'] = True
+            raise
         if result.get('ok') is not True:
             job['resumable_failure'] = os.path.isfile(m.BASE + '/update-pending.json')
         e.require(result.get('ok') is True, result.get('error_code', 'update_failed'))
@@ -757,21 +953,34 @@ def run_operation(job):
         previous = load(pointer) if os.path.isfile(pointer) else None
         try:
             if previous and previous['before_bundle'] != previous['after_bundle']:
-                e.read_bundle(previous['before_bundle'])
+                previous_bundle = e.read_bundle(previous['before_bundle'])
+                guarded_previous = supports_job_guard(previous_bundle[0]) and supports_selection_guard(previous_bundle[0])
+                if previous['engine_result'].get('runtime_only'):
+                    e.require(guarded_previous, 'rollback_component_too_old')
+                job['commit_outcome_unknown'] = True
                 result = ({'rolled_back': True, 'runtime_only': True} if previous['engine_result'].get('runtime_only')
                           else m.manage('rollback', operation_id=job['id']))
-                if result.get('rolled_back'):
+                if result.get('rolled_back') and guarded_previous:
                     save(ROOT + '/active.json', {'manifest_sha256': os.path.basename(previous['before_bundle']),
                          'for_bundle': getattr(e, 'FALLBACK_MANIFEST_SHA', os.path.basename(folder))})
+                elif result.get('rolled_back'):
+                    result['management_component_retained'] = True
                 return result
+            job['commit_outcome_unknown'] = True
             return m.manage('rollback', operation_id=job['id'])
         except Exception:
             job['resumable_failure'] = os.path.isfile(m.BASE + '/rollback-pending.json')
             raise
     if action in ('enable', 'disable', 'uninstall'):
         progress(job, action)
+        if action in ('enable', 'disable'):
+            # Check before entering the service transaction so the common
+            # in-call rejection is known to have made no service changes.
+            # The service still performs its own check under its lock.
+            e.require(m.s.phone_idle(), 'call_active')
         before_enabled = os.path.isfile(m.BASE + '/enabled')
         try:
+            job['commit_outcome_unknown'] = True
             result = m.manage(action, operation_id=job['id'])
         except Exception:
             job['resumable_failure'] = ((os.path.isfile(m.BASE + '/uninstall-pending.json') or
@@ -803,12 +1012,18 @@ def run_job(job_id, attempt):
         progress(job, job.get('phase', 'checking'), state='running', pid=os.getpid())
         try:
             result = run_operation(job)
-            public = dict((key, result[key]) for key in ('path', 'reboot_required', 'uninstalled', 'exported') if key in result)
-            progress(job, result.get('phase', 'awaiting_reboot') if result.get('reboot_required') else 'complete',
-                     state='waiting_reboot' if result.get('reboot_required') else 'completed',
-                     result=result, public_result=public)
         except Exception as error:
-            progress(job, job['phase'], state='failed', error_code=safe_error(error))
+            uncertain = str(error) == 'state_persistence_unconfirmed' or job.get('commit_outcome_unknown') is True
+            progress(job, job['phase'], state='interrupted' if uncertain else 'failed',
+                     error_code=safe_error(error), commit_outcome_unknown=uncertain)
+            return
+        public = dict((key, result[key]) for key in ('path', 'reboot_required', 'uninstalled', 'exported') if key in result)
+        # If this final save is uncertain, do not overwrite an already
+        # committed result with a retryable failure. A remaining running
+        # journal is recovered as an unknown outcome, never blindly retried.
+        progress(job, result.get('phase', 'awaiting_reboot') if result.get('reboot_required') else 'complete',
+                 state='waiting_reboot' if result.get('reboot_required') else 'completed',
+                 result=result, public_result=public, commit_outcome_unknown=False)
 
 
 def spawn(job):
@@ -817,12 +1032,34 @@ def spawn(job):
         # setsid alone still inherits BB10's application ID. Use the signed
         # QNX launcher so navigator closing the UI cannot kill its transaction.
         import native as n
+        manifest = e.read_bundle(job['bundle'])[0]
+        e.require(job.get('worker_safety') == SAFE_JOB_GUARD and supports_job_guard(manifest),
+                  'legacy_job_requires_review')
         e.trusted_python(job['bundle'])
         output = n.command([job['bundle'] + '/runtime/job-launcher', job_id, attempt], 30)
         e.require(re.match(br'\A[1-9][0-9]{0,11}\s*\Z', output), 'background_launch_failed')
         progress(job, job['phase'], worker_pid=int(output))
-    except Exception:
-        progress(job, job['phase'], state='interrupted', error_code='background_launch_failed')
+    except Exception as error:
+        if str(error) == 'legacy_job_requires_review':
+            progress(job, job['phase'], state='interrupted', error_code='legacy_job_requires_review',
+                     commit_outcome_unknown=True)
+        else:
+            progress(job, job['phase'], state='interrupted', error_code='background_launch_failed')
+
+
+def require_current_selection(folder):
+    # Called only while the existing job lock is held. A concurrent update may
+    # have switched active.json between entry selection and this transaction.
+    observation = getattr(e, 'FOREGROUND_ACTIVE_POINTER', None)
+    if observation is not None:
+        e.require(e.active_pointer_observation() == observation, 'runtime_selection_changed')
+        return
+    # Older entry versions cannot capture the pointer. Recompute their choice
+    # under this same lock, without weakening their full signature validation.
+    fallback = getattr(e, 'FALLBACK_MANIFEST_SHA', None)
+    e.require(isinstance(fallback, str) and re.match(r'\A[a-f0-9]{64}\Z', fallback),
+              'runtime_selection_changed')
+    e.require(e.active_bundle(ROOT + '/snapshots/' + fallback) == folder, 'runtime_selection_changed')
 
 
 def submit(action, request, folder):
@@ -834,25 +1071,65 @@ def submit(action, request, folder):
             prior = load(path)
             e.require(prior['action'] == action and prior['request'] == request, 'operation_id_reused')
             return job_response(prior, request)
+        require_current_selection(folder)
         current = active_job()
-        e.require(current is None or current['state'] in TERMINAL, 'operation_in_progress')
+        # A failed or interrupted task may still own a recoverable device
+        # transaction. Never replace its pointer with a different operation.
+        e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
+                  'operation_in_progress')
         if action.startswith('legacy-'):
             profile_for(request, folder)
         job = {'schema': 2, 'id': operation, 'action': action, 'request': request, 'bundle': folder,
                'state': 'queued', 'phase': 'checking', 'boot': boot(), 'created': int(time.time()),
                'fallback_manifest_sha': getattr(e, 'FALLBACK_MANIFEST_SHA', os.path.basename(folder)),
-               'attempt': nonce()}
+               'attempt': nonce(), 'commit_outcome_unknown': False, 'worker_safety': SAFE_JOB_GUARD}
         save(path, job)
         save(JOBS + '/active.json', {'id': operation})
         spawn(job)
     return job_response(job, request)
 
 
-def resume(request):
+def resume(request, folder=None):
     with job_lock():
-        job = load(job_path(request.get('job_id')))
+        if folder is not None:
+            require_current_selection(folder)
+        requested_id = checked_id(request.get('job_id'))
+        job = load(job_path(requested_id))
+        e.require(job.get('id') == requested_id, 'operation_id_reused')
+        current = active_job()
+        e.require(current is not None and current['id'] == job['id'], 'operation_in_progress')
+        e.require(not unknown_job_outcome(job), 'operation_unknown')
         e.require(job['action'] in ('install', 'update', 'rollback', 'uninstall', 'enable', 'disable', 'legacy-install'), 'manual_recovery_required')
         e.require(resumable_job(job), 'job_not_resumable')
+        if job['state'] == 'waiting_reboot':
+            old_boot = job.get('boot')
+            e.require(valid_boot(old_boot), 'reboot_state_unconfirmed')
+            try:
+                new_boot = boot()
+            except Exception:
+                new_boot = None
+            e.require(valid_boot(new_boot) and old_boot[0] == new_boot[0], 'reboot_state_unconfirmed')
+            e.require(old_boot != new_boot, 'normal_reboot_required')
+            if job['action'] in ('enable', 'disable'):
+                state = engine().manage('status')
+                enabled = job['action'] == 'enable'
+                e.require(state.get('enabled') is enabled, 'service_state_changed')
+                if not enabled:
+                    e.require(state.get('manager_alive') is False, 'restoration_still_pending')
+                progress(job, 'complete', state='completed')
+                return job_response(job, request)
+            # Successful install/update finishes after reboot; other actions
+            # may still have a recorded second transaction phase.
+            if job['action'] in ('install', 'update'):
+                result = job.get('result') or {}
+                keys = ('installed', 'activated') if job['action'] == 'install' else ('updated',)
+                e.require(any(result.get(key) is True for key in keys), 'operation_unknown')
+                progress(job, 'complete', state='completed')
+                return job_response(job, request)
+        # Already committed single-phase reboot jobs were settled above.
+        # Any path that can spawn must use a signed, guarded job snapshot.
+        e.require(job.get('worker_safety') == SAFE_JOB_GUARD, 'legacy_job_requires_review')
+        e.require(supports_job_guard(e.read_bundle(job['bundle'])[0]), 'legacy_job_requires_review')
         if ((job['action'] == 'install' and job['phase'] == 'exporting_original_backup') or
                 (job['action'] == 'legacy-install' and job['phase'] == 'legacy_installing')):
             location = request.get('backup_location', job['request'].get('backup_location', 'internal'))
@@ -860,22 +1137,10 @@ def resume(request):
             # This explicit retry rechecks the same originals and readback. Only
             # the user-selected export destination may change before activation.
             job['request']['backup_location'] = location
-        if job['action'] in ('enable', 'disable') and job['boot'] != boot():
-            state = engine().manage('status')
-            enabled = job['action'] == 'enable'
-            e.require(state.get('enabled') is enabled, 'service_state_changed')
-            if not enabled:
-                e.require(state.get('manager_alive') is False, 'restoration_still_pending')
-            progress(job, 'complete', state='completed')
-            return job_response(job, request)
-        if job['state'] == 'waiting_reboot':
-            e.require(job['boot'] != boot(), 'normal_reboot_required')
-            # Successful install/enable/update finishes after a reboot; only
-            # uninstall/rollback may have a recorded second transaction phase.
-            if job['action'] in ('install', 'update') and job.get('result', {}).get('installed',
-                    job.get('result', {}).get('activated', job.get('result', {}).get('updated', False))):
-                progress(job, 'complete', state='completed')
-                return job_response(job, request)
+        job.pop('result', None)
+        job.pop('public_result', None)
+        job.pop('resumable_failure', None)
+        job['commit_outcome_unknown'] = False
         progress(job, job['phase'], state='queued', boot=boot(), attempt=nonce())
         spawn(job)
     return job_response(job, request)
@@ -887,24 +1152,42 @@ def dispatch(action, request, folder):
     language = request.get('language', 'zh')
     e.require(language in ('zh', 'en'), 'unsupported_language')
     if action == 'resume':
-        return resume(request)
-    if action == 'poll':
-        job = recover_job(load(job_path(request.get('job_id'))))
-        return observed_job_response(job, request, folder)
+        return resume(request, folder)
+    if action == 'poll' or (action in ('inspect', 'status') and request.get('job_id')):
+        # An explicit identity addresses its own durable journal, even if the
+        # active pointer now names another operation. Missing is still unknown:
+        # a delayed original submit may not have written its journal yet.
+        job_id = checked_id(request.get('job_id'))
+        if request.get('operation_id'):
+            e.require(checked_id(request['operation_id']) == job_id, 'operation_id_reused')
+        path = job_path(job_id)
+        if not os.path.isfile(path):
+            return ui('recovery_required', language, 'status', actions=['status', 'compatibility'])
+        job = load(path)
+        e.require(job.get('id') == job_id, 'operation_id_reused')
+        return observed_job_response(recover_job(job, folder), request, folder)
     if action in ('inspect', 'status'):
         job = active_job()
         if job:
-            job = recover_job(job)
-            if job['state'] not in TERMINAL or resumable_job(job):
+            job = recover_job(job, folder)
+            if job['state'] not in TERMINAL or protected_job(job):
                 return observed_job_response(job, request, folder)
             if job['state'] == 'completed' and request.get('job_id') == job['id']:
                 return observed_job_response(job, request, folder)
         return inspect(request, folder)
     if action == 'confirm-calls':
-        with engine().management_lock():
-            details = inspection_details(folder)
-            result, context = check_confirmation(request)
-            return inspection_response(request, result, details, context)
+        # The UI may be showing a cached observation or may have lost its
+        # local pending record. Protect the active transaction at the Root
+        # boundary, using the existing job -> management lock order.
+        with job_lock():
+            require_current_selection(folder)
+            current = active_job()
+            e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
+                      'operation_in_progress')
+            with engine().management_lock():
+                details = inspection_details(folder)
+                result, context = check_confirmation(request)
+                return inspection_response(request, result, details, context)
     if action == 'compatibility' or (action == 'export' and request.get('export_kind', 'diagnostics') == 'diagnostics'):
         # Reports remain available while another transaction awaits a reboot;
         # they never replace that transaction's active-job pointer.
@@ -914,6 +1197,7 @@ def dispatch(action, request, folder):
         if action == 'export':
             state = inspect(request, folder)
             report['status'] = {'state': state['state'], 'details': state['details']}
+            report['task'] = diagnostic_job_summary(request.get('job_id'))
             name = 'diagnostics.json'
         blobs = {name: e.canonical(report)}
         if os.path.isfile(ROOT + '/last-trial-report.json'):

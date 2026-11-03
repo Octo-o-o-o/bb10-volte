@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import stat
 import sys
 import subprocess
 import tempfile
@@ -41,6 +42,25 @@ def fixture(folder, version='0.1.0.12', author='gYAOctoLabBB10VoLTE20261102'):
 
 
 class AppArtifactTests(unittest.TestCase):
+    def test_install_zip_uses_regular_file_metadata_for_bb10_libarchive(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'package.zip'
+            blob = b'BAR bytes with embedded NUL\0' * 1024
+            identifier = 'bb10-volte-app-' + 'c' * 32
+            device.write_package(str(path), identifier, '0.1.0.13', blob)
+            with zipfile.ZipFile(path) as archive:
+                self.assertIsNone(archive.testzip())
+                self.assertEqual(set(archive.namelist()), {'MANIFEST', 'pkg.bar'})
+                self.assertEqual(archive.read('pkg.bar'), blob)
+                manifest = device.headers(archive.read('MANIFEST'))
+                self.assertEqual(manifest['Package-Id'], identifier)
+                self.assertEqual(manifest['Package-Version'], '0.1.0.13')
+                for entry in archive.infolist():
+                    self.assertEqual(entry.create_system, 3)
+                    self.assertTrue(stat.S_ISREG(entry.external_attr >> 16))
+                    self.assertEqual((entry.external_attr >> 16) & 0o777, 0o600)
+                    self.assertEqual(entry.compress_type, zipfile.ZIP_DEFLATED)
+
     def test_fixed_bb10_system_etc_alias_is_supported(self):
         for target in ('/etc/os.version', '/base/etc/os.version'):
             with patch.object(device.os.path, 'realpath', return_value=target), \
@@ -283,6 +303,7 @@ class InstalledAppFilesystemTests(unittest.TestCase):
         self.assertEqual(result.returncode, 22, result.stderr.decode())
 
     def test_installer_executes_private_verified_bytes_even_if_original_changes(self):
+        real_popen = subprocess.Popen
         base = self.folder / 'manager'; base.mkdir(mode=0o700)
         (base / 'jobs').mkdir(mode=0o700)
         device_file = base / 'device.json'; device_file.write_text(json.dumps({'id': 'a' * 32})); device_file.chmod(0o600)
@@ -292,14 +313,26 @@ class InstalledAppFilesystemTests(unittest.TestCase):
         self.pin['installer_sha256'] = hashlib.sha256(original.read_bytes()).hexdigest()
         called = []
         def start(argv, **kwargs):
+            self.assertNotIn('preexec_fn', kwargs)  # QNX Python rejects this API.
+            self.assertTrue(kwargs['start_new_session'])
+            self.assertTrue(kwargs['close_fds'])
             original.write_bytes(b'changed shared path')
             self.assertNotEqual(argv[0], str(original))
             self.assertEqual(Path(argv[0]).read_bytes(), b'verified native installer')
             self.assertEqual(Path(argv[0]).stat().st_mode & 0o777, 0o700)
             self.assertNotIn('LD_PRELOAD', kwargs['env'])
+            # Exercise a real child's inherited mask. A final chmod cannot
+            # repair the creation event missed by BB10's live PPS watcher.
+            creation = self.folder / 'native-created-pps'
+            child = real_popen([sys.executable, '-c',
+                'import os,sys; fd=os.open(sys.argv[1],os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o660); os.close(fd)',
+                str(creation)])
+            self.assertEqual(child.wait(timeout=10), 0)
+            self.assertEqual(creation.stat().st_mode & 0o777, 0o660)
             with zipfile.ZipFile(argv[1]) as archive:
                 self.assertEqual(set(archive.namelist()), {'MANIFEST', 'pkg.bar'})
                 self.assertEqual(archive.read('pkg.bar'), self.bar.read_bytes())
+                self.assertTrue(all(stat.S_ISREG(entry.external_attr >> 16) for entry in archive.infolist()))
             self.write_files()
             called.append(argv)
             return Mock(pid=123, returncode=0, poll=Mock(return_value=0))
@@ -312,7 +345,16 @@ class InstalledAppFilesystemTests(unittest.TestCase):
              patch.object(device.subprocess, 'Popen', side_effect=start), \
              patch.object(device, 'pps', return_value=result), \
              patch.object(device, 'read_pps', return_value='@device\nmodelnumber::SQC100-2\n'):
-            observed = device.provision(self.pin, str(stage), 'c' * 32, 'a' * 32)
+            previous_mask = os.umask(0o077)
+            try:
+                observed = device.provision(self.pin, str(stage), 'c' * 32, 'a' * 32)
+                self.assertEqual(os.umask(0o077), 0o077)
+                job_dir = base / 'jobs' / ('c' * 32)
+                for name in ('native-installer', 'package.zip', 'record.json', 'installer.log'):
+                    self.assertEqual((job_dir / name).stat().st_mode & 0o077, 0)
+                self.assertEqual(job_dir.stat().st_mode & 0o777, 0o700)
+            finally:
+                os.umask(previous_mask)
         self.assertEqual(observed['state'], 'installed')
         self.assertEqual(observed['job']['state'], 'completed')
         self.assertEqual(len(called), 1)
@@ -360,6 +402,42 @@ class InstalledAppFilesystemTests(unittest.TestCase):
                 job = device.reconcile(device.current_job(), self.pin)
             self.assertEqual(job['state'], 'completed')
             self.assertEqual(job['id'], 'c' * 32)
+            self.assertEqual(start.call_count, 1)
+
+    def test_launch_api_error_keeps_original_job_and_never_retries(self):
+        self.assert_failed_launch(ValueError('unsupported process API'))
+
+    def test_os_launch_error_restores_private_mask_and_keeps_original_job(self):
+        self.assert_failed_launch(OSError('launch response unavailable'))
+
+    def assert_failed_launch(self, failure):
+        base = self.folder / 'manager'; base.mkdir(mode=0o700)
+        (base / 'jobs').mkdir(mode=0o700)
+        stage = self.folder / 'stage'; stage.mkdir(mode=0o700)
+        staged = stage / 'application.bar'; staged.write_bytes(self.bar.read_bytes()); staged.chmod(0o600)
+        original = self.folder / 'installer'; original.write_bytes(b'verified native installer')
+        self.pin['installer_sha256'] = hashlib.sha256(original.read_bytes()).hexdigest()
+        with patch.object(device, 'BASE', str(base)), patch.object(device, 'INSTALLER', str(original)), \
+             patch.object(device, 'PPS', str(self.folder / 'pps')), \
+             patch.object(device.subprocess, 'call', return_value=0), \
+             patch.object(device.subprocess, 'Popen', side_effect=failure) as start, \
+             patch.object(device, 'pps', return_value={}), \
+             patch.object(device, 'read_pps', return_value='@device\nmodelnumber::SQN100-3\n'):
+            device.save(str(base / 'device.json'), {'id': 'a' * 32})
+            previous_mask = os.umask(0o077)
+            try:
+                observed = device.provision(self.pin, str(stage), 'c' * 32, 'a' * 32)
+                self.assertEqual(os.umask(0o077), 0o077)
+            finally:
+                os.umask(previous_mask)
+            self.assertEqual(observed['state'], 'pending')
+            job = device.current_job()
+            self.assertEqual(job['id'], 'c' * 32)
+            self.assertEqual(job['state'], 'submitted')
+            self.assertEqual(job['error'], 'installer_start_unknown')
+            self.assertTrue((base / 'jobs' / ('c' * 32) / 'package.zip').is_file())
+            with self.assertRaisesRegex(device.InstallError, 'app_install_unresolved'):
+                device.provision(self.pin, str(stage), 'd' * 32, 'a' * 32)
             self.assertEqual(start.call_count, 1)
 
     def test_missing_active_pointer_retains_unresolved_job_and_blocks_resubmit(self):

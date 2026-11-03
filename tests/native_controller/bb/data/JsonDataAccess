@@ -1,0 +1,26 @@
+#ifndef TEST_BB_JSON_DATA_ACCESS
+#define TEST_BB_JSON_DATA_ACCESS
+#include <QByteArray>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QVariant>
+namespace bb { namespace data {
+class JsonDataAccess {
+    bool error_;
+public:
+    JsonDataAccess() : error_(false) {}
+    QVariant loadFromBuffer(const QByteArray &input) {
+        QJsonParseError error;
+        const QJsonDocument doc = QJsonDocument::fromJson(input, &error);
+        error_ = error.error != QJsonParseError::NoError;
+        return doc.toVariant();
+    }
+    void saveToBuffer(const QVariant &input, QByteArray *output) {
+        const QJsonDocument doc = QJsonDocument::fromVariant(input);
+        error_ = doc.isNull();
+        *output = doc.toJson(QJsonDocument::Compact);
+    }
+    bool hasError() const { return error_; }
+};
+}}
+#endif
