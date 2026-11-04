@@ -1,0 +1,11 @@
+#ifndef TEST_BB_CASCADES_SCREEN_IDLE_MODE
+#define TEST_BB_CASCADES_SCREEN_IDLE_MODE
+
+namespace bb { namespace cascades {
+class ScreenIdleMode {
+public:
+    enum Type { Normal, KeepAwake };
+};
+} }
+
+#endif

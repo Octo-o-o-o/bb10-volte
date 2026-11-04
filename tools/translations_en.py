@@ -9,7 +9,7 @@ ENGLISH = {
     '已有安装任务需要核对': 'An existing installation needs inspection',
     '请保持同一台手机连接并检查原任务。程序不会开始第二次安装，也不需要重新 Root。': 'Keep the same phone connected and check its original task. The app will not start a second installation. Root does not need to be repeated.',
     '手机应用已安装，文件校验通过': 'Phone app installed and files verified',
-    '现在可以拔掉 USB。在手机上打开 BB10 VoLTE，正常确认权限，再按首页提示管理服务。每次重启后先等 Root 成功提示，再打开应用一次。': 'You can disconnect USB now. Open BB10 VoLTE on the phone, accept its permissions, then follow the home page. After each restart, wait for the Root success notification before opening the app once.',
+    '现在可以拔掉 USB。在手机上打开 BB10 VoLTE，正常确认权限，按首页提示备份并启用服务。自动服务启用后会随手机开机启动；需要查看状态或管理时再打开应用，并先等 Root 成功提示。未完成的任务仍须按提示继续。': 'You can disconnect USB now. Open BB10 VoLTE on the phone, accept its permissions, and follow the home page to back up and enable the service. Once enabled, the automatic service starts with the phone. Open the app when you need status or management, after the Root success notification. Continue unfinished tasks as prompted.',
     '可以安装手机应用': 'Ready to install the phone app',
     '选择本次发行的 BAR 文件，然后点“安装到手机”。不需要在手机终端输入命令。': 'Select the BAR from this release, then choose Install on phone. No phone terminal commands are needed.',
     '可以更新手机应用': 'Phone app update available',

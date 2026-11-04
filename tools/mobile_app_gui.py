@@ -16,7 +16,7 @@ def presentation(report):
     state = report.get('state')
     if state == 'installed':
         return (tr('手机应用已安装，文件校验通过'),
-                tr('现在可以拔掉 USB。在手机上打开 BB10 VoLTE，正常确认权限，再按首页提示管理服务。每次重启后先等 Root 成功提示，再打开应用一次。'))
+                tr('现在可以拔掉 USB。在手机上打开 BB10 VoLTE，正常确认权限，按首页提示备份并启用服务。自动服务启用后会随手机开机启动；需要查看状态或管理时再打开应用，并先等 Root 成功提示。未完成的任务仍须按提示继续。'))
     if state == 'absent':
         return tr('可以安装手机应用'), tr('已内置本次发行的 BAR。确认手机后点“安装到手机”，无需输入终端命令。')
     if state == 'upgrade_available':

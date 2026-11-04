@@ -1,0 +1,17 @@
+#ifndef TEST_BB_CASCADES_WINDOW
+#define TEST_BB_CASCADES_WINDOW
+
+#include <bb/cascades/ScreenIdleMode>
+
+namespace bb { namespace cascades {
+class Window {
+public:
+    Window() : m_mode(ScreenIdleMode::Normal) {}
+    void setScreenIdleMode(ScreenIdleMode::Type mode) { m_mode = mode; }
+    ScreenIdleMode::Type screenIdleMode() const { return m_mode; }
+private:
+    ScreenIdleMode::Type m_mode;
+};
+} }
+
+#endif

@@ -273,3 +273,14 @@ test('mobile installation has two static routes and versioned R2 downloads', asy
   assert.match(baseline, /word-wrap: break-word/);
   assert.doesNotMatch(baseline, /var\(|clamp\(|display:\s*(?:grid|flex)/);
 });
+
+test('mobile guides describe optional call records and unfinished tasks', () => {
+  const chinese = html['mobile.html'];
+  assert.match(chinese, /记录结果是可选/);
+  assert.match(chinese, /自动服务会随手机开机启动/);
+  assert.match(chinese, /未完成任务时仍须检查并按提示继续/);
+  const english = html['en/mobile.html'];
+  assert.match(english, /recording the result in the app is optional/);
+  assert.match(english, /automatic service starts with the phone/);
+  assert.match(english, /when a task is unfinished, check and continue it/);
+});

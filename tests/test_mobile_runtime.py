@@ -607,6 +607,26 @@ class MobileRuntimeTests(unittest.TestCase):
             state['current'][field] = value
             self.assertFalse(WORKER.registered(state), field)
 
+    def test_connected_service_does_not_require_a_call_check(self):
+        result = {'installed': True, 'sim_supported': True, 'installed_management_schema': 2,
+                  'can_update': False, 'status': ready()}
+        manager = mock.Mock(BASE='/not-a-real-installation')
+        for confirmed in (False, True):
+            context = {'context': 'a' * 32, 'binding': {}, 'calls_verified': confirmed}
+            with self.subTest(confirmed=confirmed), \
+                 mock.patch.object(WORKER, 'engine', return_value=manager), \
+                 mock.patch.object(WORKER, 'call_context', return_value=context), \
+                 mock.patch.object(WORKER, 'check_confirmation') as confirm:
+                response = WORKER.inspection_response({'language': 'zh'}, result, {})
+            self.assertEqual(response['state'], 'verified' if confirmed else 'registered')
+            self.assertEqual(response['primary_action'], 'status')
+            self.assertIn('confirm-calls', response['actions'])
+            self.assertEqual(response['call_context'], context['context'])
+            confirm.assert_not_called()
+            if not confirmed:
+                self.assertIn('可选', response['display_i18n']['zh']['message'])
+                self.assertIn('optional', response['display_i18n']['en']['message'])
+
     def test_old_desktop_install_promotes_only_a_ready_bundled_update(self):
         manager = mock.Mock(BASE='/owned')
         manager.management_lock.return_value = contextlib.nullcontext()

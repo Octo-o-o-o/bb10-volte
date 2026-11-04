@@ -6,7 +6,7 @@ Current source candidate: desktop r21 / mobile 0.1.0.19, management protocol 2. 
 
 **Recommended approach: Root ready → native BAR → BB10 system registration → backup and activation on the phone.** A local installer and desktop assistance are alternative first-install routes. Installing the icon does not enable the service. This candidate includes the Telecom CTNET proxy correction; see the [validation record](MOBILE-VALIDATION.md) for exact version and device coverage.
 
-Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for the current candidate. Existing tasks are preserved. After a normal restart, wait for the system Root success notification, open the app once; an unambiguous saved task is checked once, and you can check it manually if needed; do not submit another enable or update to replace it.
+Use the [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md) for formal device acceptance. Existing tasks are preserved. To check or continue a task after a normal restart, wait for the system Root success notification before opening the app. An unambiguous saved task is checked once and can also be checked manually; do not submit another enable or update to replace it.
 
 ## Installation paths
 
@@ -32,18 +32,20 @@ The release page must publish hashes and the pinned publisher key fingerprint. A
 
 ## Enable VoLTE
 
+The interaction changes below are in later source, not the released 0.1.0.19 BAR. Its prompts still use the previous wording; the automatic service mechanism is unchanged.
+
 **Check an existing recovery task first.** Follow its instructions without replacing it. If an older multi-stage task lacks current safety protections, the app retains it and asks you to export diagnostics instead of resuming it automatically. After a supported old service is stopped, restored and normally restarted, the primary action offers the bundled update to r21. Do not import the same-version ZIP for that step. r21 includes a narrowly scoped Telecom proxy correction. The first-install steps below apply only when the service is genuinely absent.
 
 1. Open **BB10 VoLTE** and tap **Check**. It verifies the entry hash, signed payload, Root environment and actual phone/SIM state.
 2. Choose the backup location. A mounted SD card is preferred; internal Documents is allowed but cannot protect against losing the phone or storage failure.
 3. Tap **Enable VoLTE**. The Root engine repeats device and idle-call checks, saves originals, exports them and verifies every copied hash before activation. A waiting dialog prevents duplicate actions during submission and reconciliation. Background tasks survive closing the UI; after reopening, the app checks an unambiguous saved task once, and you may check it manually.
-4. Restart normally from the power menu when asked. Unlock, wait for the system Root success notification, then open the app once and tap **Check**. Before Root, the OS may reject launch before the waiting page can run; do not tap an unresponsive icon repeatedly. Network readiness may take 3–5 minutes; check again manually when needed. Passport may require another normal restart when its network policy changes; the app explains this separately.
-5. Once IMS is connected, make and receive a call, each connected for at least two minutes, followed by one more outgoing call. Confirm audio in both directions and LTE during the call. Then save the four manual checks and wait for the result. A delayed reply triggers a check of the saved record without another save or radio changes. Acceptance should remain after closing and reopening. The app does not place calls, and registration alone is not calling acceptance.
-6. Test SMS separately: incoming/outgoing, short/long, Chinese/English and notifications. The manual call record is bound to the current boot, SIM and payload; changes require revalidation.
+4. Restart normally when prompted. The enabled automatic service starts with the phone; network readiness may take 3–5 minutes. Open the app to check and continue any unfinished task. When opening it, wait for the system Root success notification first; do not repeatedly tap an unresponsive icon. Passport may require another normal restart when its network policy changes.
+5. Once the service is connected, use the system dialer for calls. Checking and recording outgoing calls, incoming calls, both audio directions and LTE is **optional**. The app does not place calls, and IMS registration alone does not establish that real calls have been verified. Formal device acceptance has a separate [manual checklist](MOBILE-MANUAL-ACCEPTANCE.md).
+6. Check SMS separately. A voluntary call record applies to the current boot, SIM and service payload; a changed context no longer has a current confirmation, but normal use does not depend on recording it again.
 
 Power off before later SIM changes. The automatic engine then selects a supported carrier without USB, SSH or a running computer.
 
-The first launch without a cache also requires one manual check. Ordinary later launches, foreground returns and unlocks show the labelled last observation without an automatic status check. A saved, unambiguous pending task receives one automatic foreground check. Check manually after a restart or SIM change, or whenever current status matters. Cached data does not authorize changes: saving a call check revalidates the current SIM, boot and IMS. The app's Root request times out after 150 seconds without actual verification progress, with a 15-minute total limit; independent lower-level deadlines are unchanged.
+The first launch without a cache also requires one manual check. Ordinary later launches, foreground returns and unlocks show the labelled last observation without an automatic status check. A saved, unambiguous pending task receives one automatic foreground check. Ordinary restarts do not require opening the app; open it and check when you need the current status or management. Cached data does not authorize changes: saving an optional call check revalidates the current SIM, boot and IMS. The app's Root request times out after 150 seconds without actual verification progress, with a 15-minute total limit; independent lower-level deadlines are unchanged.
 
 ## Manage and recover
 

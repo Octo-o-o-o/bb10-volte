@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>手机原生版安装说明 — BB10 VoLTE</title>
-  <meta name="description" content="BB10 VoLTE 手机原生版的安装前提、两种安装入口、备份、正常重启与通话验收说明。提供安装器和手动 BAR 两种入口。">
+  <meta name="description" content="BB10 VoLTE 手机原生版的安装前提、两种安装入口、备份、自动启动与可选通话检查说明。提供安装器和手动 BAR 两种入口。">
   <meta name="theme-color" content="#f4f5f0">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <link rel="canonical" href="https://bb10-volte.octoooo.com/mobile.html">
@@ -12,7 +12,7 @@
   <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/mobile.html">
   <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/mobile.html">
   <meta property="og:title" content="手机原生版安装说明 — BB10 VoLTE">
-  <meta property="og:description" content="先确认本机安装入口，再备份、开启、正常重启和验收通话。Q20 与 Passport 实验发行。">
+  <meta property="og:description" content="先确认本机安装入口，再备份、开启并正常重启。通话检查可选。Q20 与 Passport 实验发行。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bb10-volte.octoooo.com/mobile.html">
   <meta property="og:locale" content="zh_CN">
@@ -36,7 +36,7 @@
         <h1 id="mobile-title">Root 之后，<br>把 VoLTE 装进手机。</h1>
         <p class="mobile-lead">已 Root 的 BB10，推荐使用原生 BAR 应用：由手机系统安装服务注册，随后在手机里管理 VoLTE。本机 BAR 安装器与电脑辅助首装，是进入同一个原生应用的两种入口。</p>
         <div class="release-status" id="release-status" role="note"><strong>手机版 0.1.0.19 · 桌面版 v0.5.0-r21</strong><p>本次实验发行面向已 Root 的 Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4。已有实机结果对应各自旧版本；电信代理修复的 r21 载荷已在 Passport 实测。新版 0.1.0.19 / r21 整包尚未在 Q10 上复验。</p><p class="mobile-actions"><a class="mobile-button" href="mobile-installer.html">使用安装器安装</a><a class="mobile-button mobile-button-plain" href="mobile-manual.html">下载 BAR 手动安装</a></p><p class="small-copy">两种入口使用同一版本，直链下载不需要访问 GitHub。 <a href="https://github.com/Octo-o-o-o/bb10-volte/releases">发行记录</a></p></div>
-        <nav class="mobile-contents" aria-label="本页目录"><a href="#standard">推荐安装方式</a><a href="#entry">先选安装入口</a><a href="#steps">备份到通话验收</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
+        <nav class="mobile-contents" aria-label="本页目录"><a href="#standard">推荐安装方式</a><a href="#entry">先选安装入口</a><a href="#steps">备份与开启</a><a href="#backup">备份保存在哪里</a><a href="#updates">更新与恢复</a><a href="#scope">已验证到哪里</a></nav>
       </div>
     </section>
 
@@ -45,7 +45,7 @@
         <p class="mobile-kicker">RECOMMENDED / ROOT → BAR → SYSTEM INSTALLER</p>
         <h2 id="standard-title">Root 后，优先走原生安装路线</h2>
         <div class="recommended-route"><p><strong>用原生 BAR，让 BB10 正常注册应用。</strong> 应用沿用固定的应用与作者身份，便于覆盖升级。安装图标与启用无线服务分开；打开应用后，再备份和开启 VoLTE。</p>
-        <ol><li>正常开机、解锁，等到系统的 Root 成功提示。</li><li>从同一可信发行版取得 BAR 与 SHA-256。已有兼容 BAR 安装器就用它打开；没有时，使用对应新版桌面的“更多 → 安装手机应用”辅助首装。</li><li>等系统安装完成，核对实际应用版本，再打开 BB10 VoLTE，按提示备份、开启、正常重启并验收通话。</li></ol>
+        <ol><li>正常开机、解锁，等到系统的 Root 成功提示。</li><li>从同一可信发行版取得 BAR 与 SHA-256。已有兼容 BAR 安装器就用它打开；没有时，使用对应新版桌面的“更多 → 安装手机应用”辅助首装。</li><li>等系统安装完成，核对实际应用版本，再打开 BB10 VoLTE，按提示备份、开启并正常重启。</li></ol>
         </div>
         <p>AutoRoot v4 作者明确说明了 Root 成功提示后的未签名 BAR 安装、本机 Root helper 与包格式。本项目沿用这条原生路线。“推荐”是本项目针对已核对环境的选择，不代表 BlackBerry 官方认证，也不代表所有 Root 方案都可直接套用。<a href="https://bb10.root.sx/blog/autoroot-v4" target="_blank" rel="noopener noreferrer">查看 AutoRoot 作者说明</a>。</p>
         <p>日常脱离电脑与首次完全不用电脑，需要分别判断。Q20、Passport 的安装证据包含经可信 Root SSH 调用手机系统安装器；不能据此把“纯手机点击首装”写成已完成实测。</p>
@@ -65,10 +65,10 @@
         <ol class="mobile-steps">
           <li><h3>检查手机，选好备份位置</h3><p>打开应用，确认型号、系统、当前 SIM 与检查结果。选择 SD 卡或内部存储；程序先保存原件并读回校验，再允许写入。</p></li>
           <li><h3>点“激活 VoLTE”，等待当前任务</h3><p>阅读并确认操作。任务提交后在手机后台继续；关闭界面不会取消已提交的任务。重新打开只查询原任务，不要重复安装。</p></li>
-          <li><h3>按提示正常重启</h3><p>用电源菜单重启并解锁，先等系统 Root 成功提示，再打开应用一次。未打开时不要连续点图标；系统拒绝启动时，应用内等待页也无法运行。进入后会自动检查。Passport 网络策略变化时可能还需一次正常重启。</p></li>
-          <li><h3>自己验证呼出、呼入、声音和 LTE</h3><p>用系统拨号器呼出一次，再从另一部手机呼入，分别接通至少 2 分钟，再做一次呼出。确认双方有声音、通话全程保持 LTE / 4G，再记录验证。应用不会替你拨号；IMS 已注册也不等于通话已通过。</p></li>
+          <li><h3>按提示正常重启</h3><p>用电源菜单重启并解锁。已启用的自动服务会随手机开机启动，日常需要查看状态或管理时再打开应用；首次激活或有未完成任务时仍须检查并按提示继续。打开前先等 Root 成功提示，图标没反应时不要连续点击。Passport 网络策略变化时可能还需一次正常重启。</p></li>
+          <li><h3>服务连接后即可使用</h3><p>使用系统拨号器接打电话。可以在实际使用中确认呼出、呼入、双方声音和通话时的 LTE / 4G；回到应用记录结果是可选的。应用不会替你拨号；IMS 已注册不等于实际通话已验证。</p></li>
         </ol>
-        <p class="mobile-callout">通话记录只对应当前 SIM、本次开机和当前载荷版本。换卡应先正常关机；换卡、重启或版本变化后重新验收。短信、号码显示和长期待机也应分别实测。</p>
+        <p class="mobile-callout">可选通话记录只对应当前 SIM、本次开机和当前载荷版本；旧记录失效不影响正常使用。旧版界面可能仍显示“待通话验收”，无需勾选才能通话。换卡应先正常关机；短信、号码显示和长期待机另行确认。</p>
       </section>
 
       <section class="mobile-section" id="backup" aria-labelledby="backup-title">

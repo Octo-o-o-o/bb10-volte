@@ -3,7 +3,9 @@
 This test compiles the production controller against Qt and runs its real event
 loop, process handling and settings. It checks cold launch, cached observations,
 pending operations, request failures and call-confirmation reconciliation. It
-does not render Cascades controls or replace QNX and physical-device acceptance.
+also checks foreground/background screen-idle mode transitions using a fake
+Cascades window. It does not render Cascades controls or replace QNX and
+physical-device acceptance.
 
 Build the disposable image from this directory, then run it with this repository
 mounted read-only at `/work` and an executable temporary filesystem:

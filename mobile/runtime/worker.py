@@ -48,12 +48,12 @@ MESSAGES = {
                                 'Mobile network was off', 'Turn on Mobile Network in system settings and turn off Airplane Mode if needed. Then return to continue the original task.', 'Continue task'),
     'working': ('正在处理', '可以离开此应用；任务在手机后台继续。请保持电量充足。', '查看进度',
                 'Working', 'The task continues on the phone if you leave this app. Keep the battery charged.', 'Check progress'),
-    'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁，等系统出现 Root 成功提示后，再打开应用一次并点检查。未打开时不要连续点图标。网络可能需要约 3–5 分钟。', '立即检查',
-                        'Restart your phone normally', 'Restart from the power menu and unlock. Wait for the system Root success notification, open the app once, then check the status. Do not tap repeatedly if it does not open. The network may take 3–5 minutes.', 'Check now'),
-    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需一次正常重启。解锁后先等系统 Root 成功提示，再打开应用一次并点检查。不要连续点图标。', '立即检查',
-                                'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. Unlock, wait for the system Root success notification, open the app once and check the status. Do not tap repeatedly.', 'Check now'),
-    'registered': ('IMS 已连接，待通话验收', '请完成一次呼出和一次呼入，确认双方有声音且通话保持 LTE。', '验收通话',
-                   'IMS connected; check calls', 'Make and receive a call. Confirm audio in both directions and LTE during the call.', 'Check calls'),
+    'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁。已启用的自动服务会随开机启动，网络可能需要约 3–5 分钟。需要查看状态或继续未完成的任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
+                        'Restart your phone normally', 'Restart from the power menu and unlock. An enabled automatic service starts with the phone; the network may take 3–5 minutes. To check the status or continue an unfinished task, wait for the Root success notification before opening the app. Do not repeatedly tap an unresponsive icon.', 'Check now'),
+    'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需正常重启。已启用的自动服务会随开机启动。需要查看状态或继续任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
+                                'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. An enabled automatic service starts with the phone. To check the status or continue a task, wait for the Root success notification before opening the app. Do not repeatedly tap an unresponsive icon.', 'Check now'),
+    'registered': ('VoLTE 服务已连接', '可直接用系统拨号器接打电话。重启后已启用的自动服务会启动；查看状态或管理时再打开应用。通话检查可选，注册不代表通话已验证。', '刷新状态',
+                   'VoLTE service connected', 'Use the system dialer for calls. The enabled automatic service starts after a restart; open the app when you need status or management. Call checks are optional; registration does not verify calls.', 'Refresh'),
     'verified': ('当前 SIM 已完成通话验收', '本次开机、当前 SIM 和当前版本的双向通话已由你确认。短信能力请另外实测。', '刷新状态',
                  'Calls verified for this SIM', 'You confirmed calls for this boot, SIM and version. Test text messages separately.', 'Refresh'),
     'disabled': ('VoLTE 自动服务已停用', '需要使用时可重新启用，按任务提示正常重启，再检查 IMS 和通话。', '启用自动服务',
@@ -447,7 +447,7 @@ def inspection_response(request, result, details, confirmed_context=None):
             import policy_hint
             policy_hint.resolve(result, context, engine(), ROOT)
         state = 'verified' if context['calls_verified'] else 'registered'
-        return ui(state, language, 'status' if context['calls_verified'] else 'confirm-calls', details,
+        return ui(state, language, 'status', details,
                   actions=actions + ['confirm-calls'], call_context=context['context'])
     if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
         if (status.get('phase') == 'error_restored' and result.get('family') == 'passport' and

@@ -17,6 +17,19 @@ from ui_theme import apply_theme
 from workflow import WorkflowError
 
 
+class MobileAppPresentationTests(unittest.TestCase):
+    def test_installed_guidance_distinguishes_first_activation_and_daily_startup(self):
+        for language, activation, automatic, unfinished in (
+                ('zh', '备份并启用', '开机启动', '未完成的任务'),
+                ('en', 'back up and enable', 'starts with the phone', 'unfinished tasks')):
+            with self.subTest(language=language), patch.object(i18n, 'LANGUAGE', language):
+                title, detail = gui.presentation({'state': 'installed'})
+                self.assertTrue(title)
+                self.assertIn(activation, detail)
+                self.assertIn(automatic, detail)
+                self.assertIn(unfinished, detail)
+
+
 class MobileAppGuiTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

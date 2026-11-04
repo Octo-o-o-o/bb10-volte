@@ -13,6 +13,7 @@
 #include "mobilecontroller.h"
 #undef private
 #include <QCoreApplication>
+#include <bb/cascades/Application>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QJsonDocument>
@@ -107,7 +108,8 @@ int main(int argc, char **argv)
         if (argc == 2 && QByteArray(argv[1]) == "cold-read") {
             QObject parent; const int before = calls();
             MobileController c(&parent); c.initialize();
-            CHECK(c.m_cachedStatus && c.primaryAction() == "confirm-calls");
+            CHECK(c.m_cachedStatus && c.primaryAction() == "inspect");
+            CHECK(c.allowed("confirm-calls"));
             spin(350); CHECK(calls() == before);
             std::cout << "PASS: cache survives an actual process restart without a status request" << std::endl;
             return 0;
@@ -117,6 +119,26 @@ int main(int argc, char **argv)
         CHECK(QFile::copy("/work/mobile/runtime/entry.py", ROOT + "/working/app/native/assets/runtime/entry.py"));
         CHECK(QDir::setCurrent(ROOT + "/working"));
         QSettings().clear(); QFile::remove(ROOT + "/calls");
+        {
+            // Exercise the real controller's signal wiring with a fake window;
+            // the actual screen behavior still requires a BlackBerry device.
+            bb::cascades::Application *lifecycle = bb::cascades::Application::instance();
+            bb::cascades::Window *window = lifecycle->mainWindow();
+            MobileController c(lifecycle); c.initialize();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
+            lifecycle->showThumbnail();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            lifecycle->showFullscreen();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
+            lifecycle->hideWindow();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            lifecycle->lockScreen(); lifecycle->unlockScreen();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            lifecycle->showFullscreen();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
+            lifecycle->lockScreen(); lifecycle->unlockScreen();
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
+        }
         QObject parent;
         {
             CHECK(MobileController::requestTimeoutForElapsed(0) == 150000);
@@ -162,13 +184,44 @@ int main(int argc, char **argv)
             c.refresh(); CHECK(c.m_deadline.interval() == 150000);
             finish(c); CHECK(calls() == 1);
             CHECK(c.model().value("state").toString() == "registered");
-            CHECK(!c.m_cachedStatus && c.allowed("confirm-calls"));
+            CHECK(!c.m_cachedStatus && c.primaryAction() == "status" && c.allowed("confirm-calls"));
             CHECK(QSettings().contains("last_observation_v1"));
+        }
+        {
+            // An older signed runtime may still supply a mandatory-check
+            // primary action and old bilingual instructions. The current UI
+            // presents the check as optional without changing its context.
+            MobileController c(&parent); c.m_model = registered(); c.m_cachedStatus = false;
+            QVariantMap oldZh; oldZh.insert("title", QString::fromUtf8("IMS 已连接，待通话验收"));
+            oldZh.insert("message", QString::fromUtf8("请完成通话验收")); oldZh.insert("primary_label", QString::fromUtf8("验收通话"));
+            QVariantMap oldEn; oldEn.insert("title", "IMS connected; check calls");
+            oldEn.insert("message", "Complete the call check"); oldEn.insert("primary_label", "Check calls");
+            QVariantMap translations; translations.insert("zh", oldZh); translations.insert("en", oldEn);
+            c.m_model.insert("display_i18n", translations);
+            c.setLanguage("zh");
+            CHECK(c.primaryAction() == "status" && c.allowed("confirm-calls"));
+            CHECK(c.statusTitle() == QString::fromUtf8("VoLTE 服务已连接"));
+            CHECK(c.statusMessage().contains(QString::fromUtf8("可选")));
+            CHECK(c.primaryText() == QString::fromUtf8("刷新状态"));
+            c.setLanguage("en");
+            CHECK(c.statusTitle() == "VoLTE service connected" && c.statusMessage().contains("optional"));
+            CHECK(c.primaryText() == "Refresh");
+            c.m_jobId = JOB; CHECK(c.primaryAction() == "poll" && !c.allowed("confirm-calls"));
+            c.m_jobId.clear();
+            const QStringList restartStates = QString("reboot_required,carrier_reboot_required").split(',');
+            for (const QString &state : restartStates) {
+                c.m_model.insert("state", state);
+                CHECK(c.display("message", "message_code").contains("unfinished task") ||
+                      c.display("message", "message_code").contains("continue a task"));
+                c.setLanguage("zh");
+                CHECK(c.display("message", "message_code").contains(QString::fromUtf8("开机启动")));
+                c.setLanguage("en");
+            }
         }
         CHECK(QProcess::execute(QCoreApplication::applicationFilePath(), QStringList() << "cold-read") == 0);
         {
             MobileController c(&parent); c.initialize();
-            CHECK(c.m_cachedStatus && c.primaryAction() == "confirm-calls");
+            CHECK(c.m_cachedStatus && c.primaryAction() == "inspect");
             CHECK(c.allowed("confirm-calls") && !c.allowed("disable") && !c.allowed("uninstall"));
             c.setLanguage("zh");
             CHECK(c.cachedStatusText().contains(QString::fromUtf8("上次")));

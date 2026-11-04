@@ -2,6 +2,9 @@
 #include "bundle_identity.h"
 #include "ui_strings.h"
 #include "state_strings.h"
+#include <bb/cascades/Application>
+#include <bb/cascades/ScreenIdleMode>
+#include <bb/cascades/Window>
 #include <bb/data/JsonDataAccess>
 #include <QDir>
 #include <QFileInfo>
@@ -23,6 +26,12 @@ const int NETWORK_IDLE_TIMEOUT = 150000;
 const int METADATA_TOTAL_TIMEOUT = 300000;
 const int PACKAGE_TOTAL_TIMEOUT = 1800000;
 const char *LATEST_URL = "https://bb10-volte.octoooo.com/mobile/latest.json";
+
+void setScreenAwake(bool awake)
+{
+    bb::cascades::Application::instance()->mainWindow()->setScreenIdleMode(
+        awake ? bb::cascades::ScreenIdleMode::KeepAwake : bb::cascades::ScreenIdleMode::Normal);
+}
 
 QVariantMap parseObject(const QByteArray &data)
 {
@@ -177,6 +186,7 @@ void MobileController::initialize()
     connect(parent(), SIGNAL(invisible()), this, SLOT(enteredBackground()));
     connect(parent(), SIGNAL(asleep()), this, SLOT(screenAsleep()));
     connect(parent(), SIGNAL(awake()), this, SLOT(screenAwake()));
+    setScreenAwake(true);
     scheduleRefresh();
 }
 
@@ -201,6 +211,7 @@ void MobileController::enteredForeground()
 {
     const bool wasForeground = m_foreground;
     m_foreground = true;
+    setScreenAwake(true);
     if (!wasForeground && !m_busy) {
         if (m_notice == "calls_saved_notice") m_notice.clear();
         if ((jobRunning() || m_reconcilingCalls) && m_allowAutoPoll) m_refreshPending = true;
@@ -212,6 +223,7 @@ void MobileController::enteredForeground()
 void MobileController::enteredBackground()
 {
     m_foreground = false;
+    setScreenAwake(false);
     m_pollTimer.stop();
 }
 
@@ -268,14 +280,22 @@ void MobileController::setLanguage(const QString &value)
 
 QString MobileController::display(const QString &key, const QString &code) const
 {
+    const int field = key == "title" ? 0 : key == "message" ? 1 : key == "primary_label" ? 2 : -1;
+    const QString state = bounded(m_model.value("state"), 80);
+    // Older signed runtimes still return the previous mandatory-check and
+    // restart wording. These known states have the same protocol meaning, so
+    // the current client supplies its own presentation in either language.
+    if (field >= 0 && (state == "registered" || state == "reboot_required" || state == "carrier_reboot_required")) {
+        for (int i = 0; UI_STATE_STRINGS[i].state; ++i)
+            if (state == QLatin1String(UI_STATE_STRINGS[i].state))
+                return QString::fromUtf8(m_language == "zh" ? UI_STATE_STRINGS[i].zh[field] : UI_STATE_STRINGS[i].en[field]);
+    }
     const QString localized = bounded(m_model.value("display_i18n").toMap().value(m_language).toMap().value(key));
     if (!localized.isEmpty()) return localized;
     // A response may arrive after the user changes language. Never label that
     // response using the language selected after its request was sent.
     const QString supplied = bounded(m_model.value("display").toMap().value(key));
     if (m_modelLanguage == m_language && !supplied.isEmpty()) return supplied;
-    const int field = key == "title" ? 0 : key == "message" ? 1 : key == "primary_label" ? 2 : -1;
-    const QString state = bounded(m_model.value("state"), 80);
     if (field >= 0) {
         for (int i = 0; UI_STATE_STRINGS[i].state; ++i)
             if (state == QLatin1String(UI_STATE_STRINGS[i].state))
@@ -369,6 +389,10 @@ QString MobileController::primaryAction() const
     if (!m_error.isEmpty() && !(m_runtimeError && action == "resume" && !m_jobId.isEmpty() && allowed(action))) return "inspect";
     if (m_model.value("state").toString() == "job_outcome_unknown" && action == "export" && allowed(action)) return action;
     if (!m_operationId.isEmpty() && action != "resume" && action != "poll") return m_jobId.isEmpty() ? "inspect" : "poll";
+    // Older runtimes made call confirmation the primary action; keep it as an
+    // optional secondary action even when the installed runtime predates this UI.
+    if (m_model.value("state").toString() == "registered" && action == "confirm-calls")
+        return !m_jobId.isEmpty() ? "poll" : m_cachedStatus ? "inspect" : "status";
     if (m_cachedStatus && action != "confirm-calls") return !m_jobId.isEmpty() ? "poll" : "inspect";
     // Experimental actions are intentionally never promoted to the home button.
     if (!knownAction(action) || action.startsWith("legacy-") || (action == "poll" && m_jobId.isEmpty())) return "inspect";
@@ -687,11 +711,11 @@ bool MobileController::cachedModel(QVariantMap *model) const
     actions << QVariant("status") << QVariant("compatibility");
     QString action = "inspect";
     const QString context = bounded(cache.value("call_context"), 32);
-    if (state == "registered" && QRegExp("^[a-f0-9]{32}$").exactMatch(context)) {
+    const bool hasCallContext = state == "registered" && QRegExp("^[a-f0-9]{32}$").exactMatch(context);
+    if (hasCallContext) {
         // This token can only prefill the user's screen; the worker's fresh
         // probe and boot/SIM/payload binding are mandatory before saving.
         actions << QVariant("confirm-calls");
-        action = "confirm-calls";
     }
     model->clear();
     model->insert("schema", 2);
@@ -699,7 +723,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
     model->insert("primary_action", action);
     model->insert("actions", actions);
     model->insert("details", details);
-    if (action == "confirm-calls") model->insert("call_context", context);
+    if (hasCallContext) model->insert("call_context", context);
     return true;
 }
 

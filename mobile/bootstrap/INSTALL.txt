@@ -25,14 +25,16 @@ SUD success，实际仍是 v1 注册版本，因此 completed、旧图标或旧�
 升级成功证据。超时保留输入并查询同一任务，不反复提交安装。
 
 正常解锁并自行确认首次系统安装/应用权限。到达权限对话框不代表界面已经加载。
-每次重启后，先等系统出现 Root 成功提示，再打开应用一次。Root 尚未生效时，
-系统可能直接拒绝启动本应用，应用内等待页此时也无法运行。若图标没有反应，
-不要连续点击；本机已观察到反复启动被拒绝后系统桌面卡住。
+已启用的自动服务会随手机开机启动；日常只在需要查看状态或管理时打开应用。
+首次激活、更新或恢复后如有未完成任务，仍需打开应用按提示检查并继续。
+需要打开时，先等系统出现 Root 成功提示。Root 尚未生效时系统可能直接拒绝
+启动应用，等待页此时也无法运行。若图标没有反应，不要连续点击；本机曾观察到
+反复启动被拒绝后系统桌面卡住。
 首次进入请点检查；以后打开显示标明“上次检查”的结果，需要当前状态时手动检查。
 应用会再核验签名载荷和手机条件。若已有 waiting_reboot 任务，先检查原任务；旧多阶段任务缺少安全保护时会要求保留现场并导出诊断；
 旧服务停用、恢复并重启后，用应用的内置更新入口接管，不另选同版本更新 ZIP。
-真正未安装服务的手机才从备份开始激活。按提示正常重启后，自己验证呼出、呼入、
-双方声音和 LTE。安装应用与激活服务、验证通话是不同步骤。
+真正未安装服务的手机才从备份开始激活。服务连接后即可使用系统拨号器；可选地
+检查呼出、呼入、双方声音和 LTE 并记录结果。注册成功不代表实际通话已验证。
 
 上述原件备份和完整恢复指自动协议 2。高级页的旧实验路线范围不同：普通试测
 以启动时 PPS journal 恢复，不冒充自动原件导出回执；实验卸载只移除启动入口、
@@ -52,17 +54,21 @@ input and query that same job rather than resubmitting an unknown result.
 
 Unlock normally and personally accept the system's installation and first-use
 permission prompts. A permission dialog does not establish a loaded app UI.
-After every restart, wait for the system Root success notification, then open
-the app once. Before Root is ready, the OS may reject the app before its waiting
-page can run. Do not repeatedly tap an unresponsive icon: repeated rejected
-launches have been observed to freeze the system home screen on this phone.
+Once enabled, the automatic service starts with the phone. Open the app when
+you need status or management; unfinished activation, update or restoration
+tasks still need to be checked and continued. When opening it, wait for the
+system Root success notification first. Before Root is ready, the OS may reject
+the app before its waiting page can run. Do not repeatedly tap an unresponsive
+icon: repeated rejected launches have been observed to freeze the home screen.
 On the first launch, tap Check. Later launches show the labelled last result;
 check manually when current status is needed. Check an existing waiting_reboot
 task before another change. An older multi-stage task without current safety
 protections is retained for diagnostics instead of automatically resumed. After
 an old service is stopped, restored and normally restarted, use the app's
 bundled-update action; the same-version ZIP is not that adoption path.
-Installation, activation and real call acceptance are separate steps.
+Once connected, use the system dialer. Checking and recording outgoing and
+incoming calls, both audio directions and LTE is optional. Registration does
+not establish that real calls have been verified.
 
 Original-file export and full restoration above refer to automatic protocol 2.
 Ordinary legacy trials restore from their startup PPS journal, not a protocol-2

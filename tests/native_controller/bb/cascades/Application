@@ -1,0 +1,29 @@
+#ifndef TEST_BB_CASCADES_APPLICATION
+#define TEST_BB_CASCADES_APPLICATION
+
+#include <QObject>
+#include <bb/cascades/Window>
+
+namespace bb { namespace cascades {
+class Application : public QObject {
+    Q_OBJECT
+public:
+    static Application *instance() { static Application application; return &application; }
+    Window *mainWindow() { return &m_window; }
+    void showFullscreen() { emit fullscreen(); }
+    void showThumbnail() { emit thumbnail(); }
+    void hideWindow() { emit invisible(); }
+    void lockScreen() { emit asleep(); }
+    void unlockScreen() { emit awake(); }
+signals:
+    void fullscreen();
+    void thumbnail();
+    void invisible();
+    void asleep();
+    void awake();
+private:
+    Window m_window;
+};
+} }
+
+#endif
