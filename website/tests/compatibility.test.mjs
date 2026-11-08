@@ -16,7 +16,9 @@ test('all 48 carrier decisions have distinct progress and accurate route counts'
     for (const model of data.models) {
       const row = page.split(`<tr data-variant="${model.variant}">`)[1].split('</tr>')[0];
       for (const [operator, state] of Object.entries(model.routes)) assert.ok(row.includes(`data-operator="${operator}" data-route="${state}"`));
-      assert.ok(row.includes(model.progress[prefix ? 'en' : 'zh']));
+      const note = model.note[prefix ? 'en' : 'zh'].trim();
+      if (note) assert.ok(row.includes(note), model.variant);
+      assert.equal(row.includes(prefix ? '>Open<' : '>已开放<'), false);
     }
   }
 });

@@ -1,29 +1,24 @@
 # bb10-volte — Q10, Q20, Passport and P’9983
 
-**Desktop r42 · native mobile 0.1.0.43.** Catalog suffixes for Q10, Q20, Passport and P’9983 are open for China Mobile, Unicom and Telecom. Tested-usable, in-testing (open, not yet tested) and known-issue results stay visible, and those labels no longer block activation. Local bands, the SIM and the carrier network still affect the result.
+**Desktop r42 · mobile 0.1.0.43.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
 
-SQC100-1 and P’9983 SQK100-1 have owner-reported passes on all three carriers. SQK100-2 is an officially documented model and is not yet tested here. SQW100-2 has no confirmed production identity, so it is marked “—” rather than described as nonexistent or merely band-limited. Activation still requires working Root, OS 10.3.3.3216, matching native files, the current SIM and a recoverable backup.
+The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Exact-model matrix](docs/COMPATIBILITY.md) · [Per-unit manual progress](docs/INTAKE-MANUAL-PROGRESS.md) · [Release notes](docs/RELEASE-r42.md)
+[Model table](docs/COMPATIBILITY.md) · [Release notes](docs/RELEASE-r42.md)
 
-## This release
+## What changed
 
-1. All four families use one open entry, including P’9983. Progress is recorded by exact suffix. An open entry does not mean every suffix passed every check.
-2. After startup, the app gives a clearer notice when activation is still needed, a SIM change still needs attention, or the connection failed.
-3. Stable connections do less repeated checking and writing. No whole-phone battery percentage was measured, and this does not mean the background uses no resources.
-4. Fixes cover the identified proxy problem that blocked web pages, duplicate incoming SMS tied to acknowledgement handling, and some busy-SMS state left after a SIM change. That does not prove duplicates are gone on every network.
+- All four families can try it, including P’9983. Open does not mean tested.
+- The app tells you the next step when activation, a SIM change or a failure needs you. A stable connection does less repeated checking. Battery savings were not measured.
+- Web pages that would not open, and SMS that arrived twice, are fixed for the cases we found. Not every SIM is guaranteed.
+- A delivered Telecom message may stay on “sending”. Do not resend it. A fix is welcome as a [pull request](https://github.com/Octo-o-o-o/bb10-volte/pulls) or an [issue](https://github.com/Octo-o-o-o/bb10-volte/issues).
 
-One Telecom issue remains: some messages are delivered, while the phone keeps showing them as sending and may queue the next one. Do not resend a message that already arrived. A fix is welcome as a [pull request](https://github.com/Octo-o-o-o/bb10-volte/pulls) or an [issue](https://github.com/Octo-o-o-o/bb10-volte/issues). Accepted work is credited in the project.
+## How to use it
 
-## How to choose
-
-Not rooted yet: use the Windows or Mac app for the full guided preparation. Flashing erases the phone. Back up photos, contacts and files first, and check the firmware and loader identity.
-
-Already rooted: install the phone BAR, then check, back up and enable on the phone. Everyday use does not need a computer after that.
-
-After a restart, unlock, wait until Root is ready, then give registration a few minutes. Restart again only when the app asks; there is no fixed sequence of three restarts. Power off before changing the SIM, then power on. If the app says the new carrier settings need another restart, do that. Passport entering or leaving Telecom may ask for one more normal restart. Reinstallation is not usually required.
-
-Computer setup needs Developer Mode when the app asks for it. Phone-only use needs working Root. Without the one that applies, activation fails. If the computer does not see the phone, try a cable that carries data and another USB port, then check the driver. If an official connection app also fails, the connection itself is the problem; that does not by itself prove this cable is bad.
+- Not rooted: use Windows or Mac. Flashing erases the phone, so back up first.
+- Rooted: install the phone app, then check, back up and turn it on there. You do not need the computer after that.
+- Restart again only when the app asks. Power off before changing the SIM. Passport entering or leaving Telecom may need an extra normal restart.
+- The computer needs Developer Mode. The phone app needs Root. If the computer cannot see the phone, use a cable that carries data.
 
 ## Downloads
 
@@ -35,9 +30,9 @@ Computer setup needs Developer Mode when the app asks for it. Phone-only use nee
 
 **Windows 7, Windows 8 / 8.1 and 32-bit Windows are not supported.** The Universal DMG includes both Apple Silicon and Intel architectures. **Initial Root preparation separately requires macOS 14 or later.**
 
-The Mac minimum versions were checked against the native binaries and libraries in the current release; they are not hardware validation of older macOS versions or Intel Macs. Packaging and startup have been verified on Windows 11 x64; Windows 10 x64 still awaits hardware testing. The Mac app has run on Apple Silicon, but has not been tested on Intel hardware. See the [Windows guide](docs/WINDOWS-EXE.en.md) and [Mac guide](docs/MACOS.en.md).
+Startup has been tried on Windows 11 and Apple silicon. Windows 10 and Intel have not. See the [Windows guide](docs/WINDOWS-EXE.en.md) and [Mac guide](docs/MACOS.en.md).
 
-The website defaults to Cloudflare R2 and does not require GitHub connectivity. Both locations serve identical, version-matched files. Check the full SHA-256 before running. The alternative route does not guarantee reachability on every network.
+If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same file. Check the SHA-256 before you run it.
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
@@ -56,7 +51,7 @@ Actual application UI using sanitized demonstration state, not a hardware accept
 
 ## Quick start
 
-The numbered steps below are the desktop guided installation. A rooted phone can use the BAR path in [How to choose](#how-to-choose) instead.
+These steps are for the computer. A rooted phone can install the phone app instead.
 
 1. Confirm the exact model, OS, VoLTE-enabled USIM without ISIM, Root SSH and trusted connection material. Automatic carrier installation is separate from first-time Root.
 2. Run the Windows EXE or move the Mac app to Applications and launch it. Connect and unlock one phone, then open Automatic carriers.
