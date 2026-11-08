@@ -414,17 +414,21 @@ class FirmwareImportGuiTests(unittest.TestCase):
             self.assertIn('实测未通过',self.wizard.support_notice.cget('text'))
             self.assertEqual(str(self.wizard.download_firmware_button.cget('state')),'normal')
 
-    def test_system_upgrade_does_not_bypass_unsupported_volte_preparation(self):
+    def test_open_variant_upgrade_retains_platform_and_flash_confirmation_guards(self):
         import firmware_gui
         usb={'usb_count':1,'device':{'ModelName':'SQC100-5','PlatformVersion':'10.3.3.2205'}}
-        with patch.object(firmware_gui.upgrade,'pending_upgrades',return_value=[]):
-            dialog=firmware_gui.FirmwareDialog(self.root,lambda *_:None,usb)
-        try:
-            self.assertEqual(str(dialog.prepare_button.cget('state')),'normal')
-            self.assertIn('理论可试',dialog.support_notice.cget('text'))
-            self.assertEqual(str(dialog.upgrade_button.cget('state')),'disabled')
-        finally:
-            dialog.close()
+        for platform in ('win32', 'darwin', 'linux'):
+            with self.subTest(platform=platform), \
+                    patch.object(firmware_gui,'sys',SimpleNamespace(platform=platform)), \
+                    patch.object(firmware_gui.upgrade,'pending_upgrades',return_value=[]):
+                dialog=firmware_gui.FirmwareDialog(self.root,lambda *_:None,usb)
+                try:
+                    expected='normal' if platform in ('win32','darwin') else 'disabled'
+                    self.assertEqual(str(dialog.prepare_button.cget('state')),expected)
+                    self.assertIn('理论可试',dialog.support_notice.cget('text'))
+                    self.assertEqual(str(dialog.upgrade_button.cget('state')),'disabled')
+                finally:
+                    dialog.close()
 
     def test_domestic_share_is_browser_only_and_names_the_selected_firmware(self):
         for variant in ('SQN100-3', 'SQC100-2', 'SQW100-4'):
