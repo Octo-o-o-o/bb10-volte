@@ -1,0 +1,143 @@
+{
+  "at_utc": "2026-11-08T06:08:15.523712+00:00",
+  "unit_case": "SQK100-1/2026-11-08",
+  "variant": "SQK100-1",
+  "board": "KHANE",
+  "os_version": "10.3.3.3216",
+  "hardware_id": "8f00270a",
+  "status": "owner_confirmed_active_ready_for_sim_swap_tests",
+  "native_baseline_pending": false,
+  "Root_verified": true,
+  "installation_completed": true,
+  "candidate_mobile_version": "0.1.0.40",
+  "candidate_desktop_revision": 39,
+  "owner_authorized_trial_home_plmns": [
+    "460-00",
+    "460-01",
+    "460-11"
+  ],
+  "manual_tests_precompleted": false,
+  "password_persisted": false,
+  "evidence": {
+    "001-usb-discovery.json": "6680e6ef77553ececa206014d7dc5c98f4f5a31ddce71551a75b4353f0f9d83e",
+    "003-root-conditions.json": "a6b79947f95f5a843e852cde0cf720339d3832e7b0f78a8ad55d285f7685bb11",
+    "006-offline-preparation.json": "95080991de9738ec74585f7b3db03234a65f11d614c21d0f3ed36a710b0a1891",
+    "007-native-info.json": "0e3e7602a35468985a8eda9747cc6f0e762986f6dc8b0fc3ea80b68663be6faf",
+    "008b-loader-verification.json": "2b0ab8c2ee8fc042c5fb164c37fca5b7ab9282e5a762d0aca532e23859c34322",
+    "010-flash.json": "50c5d2f86003f71cb54d4a72a5620e2cbbe952ff38908422cd5cb58f9bcdf34f",
+    "011-flash.json": "4b384ae884756ca8002358af720e83fbd75630790f854e60242febcb6b4d5a64",
+    "013b-mobile40-build.json": "dfbc48f2ce37ea4bd223cf5e2a05779acd0defbc48fe3bce657e982217cb32d4",
+    "014b-windows39-build.json": "980c942679aae6c016499f21ff52a515dade33d77d2210fb90c10602b9b50b4c",
+    "014c-windows-selftest.json": "4334df12a3cbe2e9b7a16650e0720633c48feb54822e07d17a3f70fc3c4be682",
+    "014d-final-artifact-crosscheck.json": "07bccd9e50c9d7e690c89f3168fadd6cd24bcfed3c2535921712c34e9626617e",
+    "015-boot.json": "a9f3f5c57e021a7d4727bc4d826790b907a3ce1afa32f437749654c2f844d50f",
+    "017b-root-start-observation.json": "3e127273740bb583911e9bbe1649ca7c5df5f7570e4574f5158a1ea679ba401c",
+    "021-shared-source-integration.json": "23c297a6cdc95e843e210b151a6dcebcb9725e3d4b92cec733d64a98965351ba",
+    "012b-candidate-tests.json": "db25ccb8cd56e7194c2dd010a33cac718a2b3e1f5170cbff14f5086c6e3c6344",
+    "012d-website-check.json": "d41cd42ea24d32f0857804fe6036604ea5a072d0da61f80579a7ace6553c3795",
+    "016-posix-fixtures.json": "e3d244738cace3db966e0a4dbf5c90a5c0c5df31cb0d1b397b85a4bbcb2d2374",
+    "017c-root-start-observation.json": "d2c8d2ec3bb1e51f7bdd724b5738c1d0fe73e69a40e0ddd94e48bbfdc78ab49c",
+    "018-root-baseline.json": "9c2f53680a3b6bb51fed78449fd86bcfb987d757c3c6880e3b13c0f6340a01af",
+    "023-shared-public-verification.json": "c893610549d9db24e43bc139b9ace69d828c1aa5eb1a3654481a11b9c5fcac13",
+    "024-mobile40-install.json": "cb2ba3007c8513983a561c962b768cef0452fd733251d07b27a6bb355733eb5b",
+    "025-shared-scope-check.json": "8907f9efffc5d99df8d8b5d37925534cf18b6448150f66f9c81e173a37f367b0",
+    "026-backend39-install.json": "362a940320b4007eb00a14b03adbe53c66bc67a5d7e8de9b51bc2915674cdcb0",
+    "027-final-device-readback.json": "77d0b4538114a7a94c563922b58da992532fb4efe009a287bea05d7a9c644c44",
+    "027b-final-device-readback.json": "0d0f71ce80367fee032b68ca2b9089c6222a40e7b18731afe3979da27db58b97",
+    "030-owner-root-confirmation.json": "c17d5b5c00fa273ff2af7d243f0539d3720369c6117355384c09ee6f8c160d36",
+    "031-owner-reboot-activation-confirmed.json": "e3469fdb5453830230e4086d65d7e994ae1a25eaff0559826401de1d19c09511"
+  },
+  "root_marker_absent_at_intake": true,
+  "root_OS_write_complete": true,
+  "root_radio_write_complete": true,
+  "normal_boot_after_flash_verified": true,
+  "post_flash_developer_mode_enabled": false,
+  "initial_setup_completed": true,
+  "SSH_port_open": true,
+  "source_integrated": true,
+  "windows_selftest_passed": true,
+  "phone_functional_acceptance": false,
+  "next_owner_action": "Continue the planned SIM-swap tests with the existing installed candidate",
+  "next_agent_action": "Record subsequent SIM-swap feedback per unit, carrier and version; do not request the confirmed reboot, Root, network-enable or activation steps again without a relevant regression",
+  "other_connected_phone_modified": false,
+  "native_files_verified": 6,
+  "native_file_evidence": {
+    "/etc/carrier/config/36.xml": {
+      "sha256": "929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4",
+      "expected_match": true,
+      "size": 5236
+    },
+    "/radio/bin/qct_rrm": {
+      "sha256": "71835f701affcb9254eadb4ee299e8f7d07547543b3e0f61519456b8241dcb3b",
+      "expected_match": true,
+      "size": 1608536
+    },
+    "/usr/sbin/dca": {
+      "sha256": "5ebafa9b5b0949090fda37c1b5e6083362bac1007f281d6f1900772aedc1ae06",
+      "expected_match": true,
+      "size": 30536
+    },
+    "/sbin/io-pkt-v6-hc": {
+      "sha256": "17d2bb5b641b3acd1ffac2e98fbd86c881633263598db983db4819702df3d222",
+      "expected_match": true,
+      "size": 945248
+    },
+    "/radio/bin/ims_rrm": {
+      "sha256": "043d38b0f08cf6a9696ef405f3976679e32ff9ad943ec35294c3d3da69a12b67",
+      "expected_match": true,
+      "size": 4787852
+    },
+    "/radio/lib/libradiocontrol.so.0.1": {
+      "sha256": "0d0acc34656c16300db8a1b3341174d3749b8d50fe6081350805e05998d3ee8a",
+      "expected_match": true,
+      "size": 42580
+    }
+  },
+  "effective_uid": 0,
+  "installed_mobile_version": "0.1.0.40",
+  "installed_backend_revision": 39,
+  "installed_mobile_files_verified": 75,
+  "installed_payload_files_verified": 18,
+  "original_backup_files_verified_on_PC_and_phone": 4,
+  "enabled": true,
+  "boot_hook_verified": true,
+  "installation_pending": false,
+  "normal_reboot_required": false,
+  "observed_home_plmn": "460-11",
+  "observed_SIM_kind": 6,
+  "radio_power_at_readback": "OFF",
+  "service_phase_at_readback": "not_started_this_boot",
+  "IMS_at_readback": "disconnected",
+  "service_status_from_current_boot": false,
+  "manual_acceptance_completed": false,
+  "root_success_notification_owner_confirmed": true,
+  "root_notification_owner_feedback_at_utc": "2026-11-08T05:33:31.542818+00:00",
+  "installation_phase_at_last_device_readback": "active_next_boot",
+  "normal_reboot_requirement_satisfied_by_owner_report": true,
+  "owner_readiness_confirmed_at_utc": "2026-11-08T06:08:15.523712+00:00",
+  "owner_confirmed_post_install_readiness": {
+    "post_install_reboot_completed": true,
+    "Root_success": true,
+    "cellular_network_enabled": true,
+    "activation_normal": true
+  },
+  "current_state_basis": "Owner feedback 031; previous radio/IMS/service readback is historical",
+  "last_device_readback_at_utc": "2026-11-08T04:20:21.426033+00:00",
+  "last_device_readback_evidence": "027b-final-device-readback.json",
+  "repeat_confirmed_preparation_required": false,
+  "owner_three_carrier_functional_report": {
+    "at_utc": "2026-11-08T07:02:13.358745+00:00",
+    "owner_quote": "P9983实测三网通过了",
+    "basis": "owner_report",
+    "reference_mobile_version": "0.1.0.40",
+    "reference_backend_revision": 39,
+    "fresh_telemetry": false,
+    "detailed_SMS_counts": null,
+    "lifecycle": null,
+    "operators": [
+      "mobile",
+      "unicom",
+      "telecom"
+    ]
+  }
+}

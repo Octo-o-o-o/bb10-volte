@@ -1,0 +1,1014 @@
+{
+  "recorded_utc": "2026-11-06T06:18:05.160617+00:00",
+  "source": "owner_supplied_third_party_feedback",
+  "reported_variant": "SQC100-1",
+  "reported_board": "CLASSICROW",
+  "reported_os": "10.3.3.3216",
+  "reported_hardware_platform": "MSM8960",
+  "reported_operator": "telecom_46011",
+  "reported_date": "2026-11-03",
+  "private_source_sha256": "99801eb44af01cb278fc64fea9a5395bd7419ba5c7b24e9e1a241cc45b26ce17",
+  "independently_reproduced": false,
+  "identity_fields_excluded_from_public": true,
+  "current_sqw100_1_facts": {
+    "owner_reports_sim_4g_data_works_in_other_phone": true,
+    "data_service_mode": "ON",
+    "configured_rat_mask": 17,
+    "nas_mode_preference_mask": 20,
+    "nas_usage_preference": 2,
+    "nas_usage_meaning": "DATA_CENTRIC",
+    "nas_voice_domain_preference": 0,
+    "nas_voice_meaning": "CS_ONLY",
+    "nas_registration_state": 3,
+    "nas_registration_meaning": "REGISTRATION_DENIED",
+    "lte_reject_cause_available": false,
+    "startup_log_usim_app_state": "UIM_APP_STATE_ILLEGAL",
+    "current_phase": "error_restored",
+    "native_ims_not_started": true
+  },
+  "current_evidence": [
+    "122-telecom-second-boot-network-runtime.json",
+    "123-telecom-network-diagnostics.json",
+    "124-telecom-nas-readonly.json",
+    "125-telecom-after-readiness-window.json"
+  ],
+  "assessment": {
+    "attach_policy": "The owner corrected the test input: the previous card was unusable. Its failed comparisons cannot establish hardware incompatibility or disprove the peer solution. A distinct replacement 460-11 card now has normal LTE and connected ctnet before project IMS startup; continue baseline Passport testing on the new card.",
+    "preconditions": "Conditional incoming-call diagnostic; no universal 1.7-second gateway rule established.",
+    "proxy": "Exact stock 446.xml CTNET proxy correction already implemented; verify actual data and browser behavior after attach succeeds. Ping alone does not identify a proxy failure.",
+    "all_variants": "Share diagnostics and documented hypotheses; require exact-variant/operator evidence before activating mutations."
+  },
+  "primary_references": [
+    "https://www.etsi.org/deliver/etsi_ts/124300_124399/124301/11.10.00_60/ts_124301v111000p.pdf",
+    "https://www.rfc-editor.org/rfc/rfc3312.html",
+    "https://www.rfc-editor.org/rfc/rfc3960.html",
+    "https://raw.githubusercontent.com/linux-mobile-broadband/libqmi/1.34.0/src/libqmi-glib/qmi-enums-nas.h"
+  ],
+  "updated_utc": "2026-11-06T15:42:15.074693+00:00",
+  "local_attach_comparisons": {
+    "early_PS_PREFERRED": {
+      "observed_nv": 3,
+      "ue_usage_data_centric": true,
+      "registration_denied": true,
+      "result": "error_restored",
+      "evidence": [
+        "134-telecom-voice-normal-boot.json",
+        "136-telecom-early-voice-nas.json",
+        "137-telecom-early-voice-network-runtime.json",
+        "139-telecom-early-voice-completion-status.json"
+      ]
+    },
+    "bounded_PS_ONLY": {
+      "observed_nv": 1,
+      "observations": 16,
+      "all_voice_readbacks_target": true,
+      "normal_lte_data_observed": false,
+      "registration_denied": true,
+      "nas_service_domain_preference": 2,
+      "exact_original_voice_and_enabled_restored": true,
+      "evidence": [
+        "140-telecom-ps-only-offline-checks.json",
+        "141-telecom-ps-only-bounded-trial.json",
+        "142-telecom-ps-only-live-nas.json"
+      ]
+    },
+    "cold_PS_ONLY": {
+      "state": "normal_boot_confirmed_registration_denied",
+      "voice_nv": 1,
+      "ue_usage_nv": 1,
+      "autostart_suspended": false,
+      "payload_unchanged": true,
+      "result": false,
+      "evidence": [
+        "148-telecom-ps-cold-nas.json",
+        "149-telecom-ps-cold-runtime.json",
+        "151-telecom-ps-cold-inspection.json",
+        "154-telecom-ps-cold-restoration.json",
+        "155-telecom-final-restored-nas.json",
+        "156-telecom-final-restored-runtime.json"
+      ],
+      "restored": true
+    },
+    "temporary_NAS": {
+      "packet_lte_only": {
+        "samples": 8,
+        "normal_lte_data_observed": false,
+        "registration_states": [
+          3
+        ],
+        "domain_values": [
+          1
+        ],
+        "mode_masks": [
+          16
+        ]
+      },
+      "packet_only": {
+        "samples": 8,
+        "normal_lte_data_observed": false,
+        "registration_states": [
+          3
+        ],
+        "domain_values": [
+          1
+        ],
+        "mode_masks": [
+          20
+        ]
+      }
+    }
+  },
+  "local_comparison_result": {
+    "at_utc": "2026-11-06T07:12:07.146306+00:00",
+    "variant": "SQW100-1",
+    "home_plmn": "460-11",
+    "early_PS_PREFERRED_normal_lte": false,
+    "bounded_PS_ONLY_normal_lte": false,
+    "cold_PS_ONLY_normal_lte": false,
+    "temporary_packet_only_normal_lte": false,
+    "temporary_packet_and_LTE_only_normal_lte": false,
+    "all_tested_settings_read_back": true,
+    "current_registration_state": 3,
+    "specific_reject_cause_still_unknown": true,
+    "cold_boot_log_USIM_ILLEGAL_before_Root": true,
+    "voice_policy_restored": 0,
+    "native_UE_usage_kept_at_before_trial": 1,
+    "nas_usage_preference": 2,
+    "nas_service_domain_restored": 2,
+    "nas_mode_mask_restored": 20,
+    "automatic_selection_preserved": true,
+    "enabled_original_bytes_restored": true,
+    "native_ims_processes": 0,
+    "software_crypto_clear": true,
+    "private_candidate_still_installed": "engine-sqw100-1-46011-voice",
+    "trial_recovery_pending": false,
+    "operator_adaptation_complete": false,
+    "public_telecom_activation_admitted": false,
+    "final_mobile07_packages_unchanged": true,
+    "next_step": "Confirm whether a second Telecom SIM is available for a separate comparison; owner question pending.",
+    "evidence": [
+      "148-telecom-ps-cold-nas.json",
+      "149-telecom-ps-cold-runtime.json",
+      "151-telecom-ps-cold-inspection.json",
+      "152-telecom-packet-trial-checks.json",
+      "153-telecom-packet-domain-trial.json",
+      "154-telecom-ps-cold-restoration.json",
+      "155-telecom-final-restored-nas.json",
+      "156-telecom-final-restored-runtime.json"
+    ]
+  },
+  "latest_card_validity_correction": {
+    "at_utc": "2026-11-06T07:17:24.333670+00:00",
+    "source": "owner_correction_in_current_chat",
+    "owner_statement": "前面一直插错卡了，那张卡确实不能用，现在换了一张电信的。",
+    "old_case": "telecom_46011_card1_unusable",
+    "old_card_validity": "owner_confirmed_unusable",
+    "old_negative_results_valid_for_compatibility_inference": false,
+    "old_results_valid_to_disprove_peer_solution": false,
+    "old_traces_retained": true,
+    "earlier_other_phone_working_report_superseded": true,
+    "new_case": "telecom_46011_card2",
+    "new_card_readback": {
+      "at_utc": "2026-11-06T07:16:01.800758+00:00",
+      "home_mcc": "460",
+      "home_mnc": "11",
+      "sim_kind": 6,
+      "different_from_previous_SIM": true,
+      "sim_state": "READY",
+      "radio": [
+        "lte"
+      ],
+      "network_service": 52429824,
+      "service_flags": {
+        "emergency_service": false,
+        "lte_data_service": true
+      },
+      "data_services_status": "ON",
+      "internet": {
+        "apn": "ctnet",
+        "connected": true,
+        "active": true,
+        "enabled": true
+      },
+      "ims_process_count": 0,
+      "crypto": {
+        "swcr_id": -1,
+        "crypto_support": 0
+      }
+    },
+    "new_ims_or_call_acceptance": null,
+    "next_action": "Return to baseline Passport attach order, then new normal-boot IMS and functional tests."
+  },
+  "active_card_case": {
+    "case": "telecom_46011_card2",
+    "state": "baseline_installed_waiting_normal_boot",
+    "updated_utc": "2026-11-06T07:28:11.889629+00:00",
+    "candidate": "162-telecom-card2-candidate.json",
+    "checks": "163-telecom-card2-offline-checks.json",
+    "preflight": "164-telecom-card2-update-preflight.json",
+    "update": "165-telecom-card2-private-update.json",
+    "readback": "166-telecom-card2-update-readback.json",
+    "payload_map_sha256": "0e96cdee6c699d99d7dc651516b46703d906d6c4a2e0fc82d0e601cea8098465",
+    "passport_original_order_restored": true,
+    "early_voice_experiment_removed": true,
+    "phone_and_desktop_backups_verified": true,
+    "normal_boot_acceptance": null,
+    "ims_registration": null,
+    "real_call_acceptance": null,
+    "sms_acceptance": null,
+    "browser_acceptance": null,
+    "public_activation_admitted": false
+  },
+  "replacement_card_proxy_baseline": {
+    "at_utc": "2026-11-06T07:34:09.096779+00:00",
+    "phone_configuration_changed": false,
+    "case": "telecom_46011_card2",
+    "bad_proxy_present": {
+      "/pps/services/networking/status": true,
+      "/pps/services/networking/proxy": true,
+      "/pps/services/networking/status_public": true
+    },
+    "http": {
+      "published_ctnet_proxy": {
+        "error_type": "error",
+        "errno": 261
+      },
+      "direct_http": {
+        "response_line": "HTTP/1.0 200 OK"
+      }
+    },
+    "route_forced_to_cellular": false,
+    "browser_acceptance": null,
+    "https_acceptance": null,
+    "raw_sha256": "fd75b1e642c756768792d194bb8a50e10b9fcfe15ec6c9672d3f7ff79e5568b3"
+  },
+  "replacement_card_registered": {
+    "at_utc": "2026-11-06T07:44:44.178351+00:00",
+    "case": "telecom_46011_card2",
+    "owner_reported_normal_restart": true,
+    "variant": "SQW100-1",
+    "home_plmn": "460-11",
+    "replacement_card_binding_matches": true,
+    "same_current_boot_all_records": true,
+    "installed_manifest_matches_card2_candidate": true,
+    "phase": "running",
+    "manager_alive": true,
+    "native_alive": true,
+    "ims_connected": true,
+    "register_status": "200 OK",
+    "radio": [
+      "lte"
+    ],
+    "native_ims_processes": 1,
+    "normal_boot_autostart_verified": true,
+    "real_call_acceptance": null,
+    "sms_acceptance": null,
+    "browser_acceptance": null,
+    "private_runtime_sha256": "8c6fdab746f040df51f6e5febb2afbec9b8f69638b208b1bcb21c58c3dd2b4e0"
+  },
+  "replacement_card_proxy_result": {
+    "before": "170-card2-http-proxy-baseline.json",
+    "after": "178-card2-http-proxy-after-start.json",
+    "before_bad_proxy_in_three_system_objects": true,
+    "after_bad_proxy_removed_from_three_system_objects": true,
+    "generated_ctnet_internet_has_no_http_proxy": true,
+    "generated_config_sha256": "dec288b1abbb1f3d6c51fcf365381588d42a0aba2f32e21df40c6c6a8d9e5e58",
+    "direct_HTTP_200_after_start": true,
+    "legacy_proxy_probe_after_start_is_not_current_config": true,
+    "browser_and_HTTPS_acceptance": null
+  },
+  "active_telecom_SMS_issue": {
+    "at_utc": "2026-11-06T08:16:43.709963+00:00",
+    "case": "telecom_46011_card2",
+    "owner_reports": {
+      "initial_calls_internet_and_incoming_sms_normal": true,
+      "first_outgoing_sms_stalled_then_marked_failed": true,
+      "owner_toggled_airplane_once_and_restarted_once": true,
+      "manual_retry_of_failed_sms_reported_sent": true,
+      "subsequent_long_outgoing_sms_did_not_send": true,
+      "owner_suspects_previous_send_remained_pending_locally": true,
+      "call_after_re_registration_normal": true,
+      "incoming_long_and_two_identical_sms_reported_normal": "initial_report_superseded_by_194"
+    },
+    "independent_evidence": {
+      "calls": "183-card2-calls-and-disconnection.json",
+      "same_SIM_new_boot_and_delayed_auto_registration": "187-card2-restart-sms-analysis.json",
+      "re_registration_duration_from_manager_start_seconds": 271.3,
+      "controlled_SMS_capture": "190-card2-controlled-sms-observation.json",
+      "observed_MO_SIP_response": 202,
+      "SIP_acceptance_is_not_delivery_or_queue_completion": true,
+      "later_MT_ACK_correlation_rejection_seen_in_capture": true
+    },
+    "outgoing_sms_acceptance": false,
+    "full_functional_acceptance": false,
+    "public_telecom_activation_admitted": false,
+    "radio_or_IMS_runtime_patches_added": false,
+    "messages_sent_or_retried_by_tools": 0,
+    "next_action": "Investigate SMS send completion and ACK correlation; keep the current registered session."
+  },
+  "active_telecom_MT_duplicate_issue": {
+    "at_utc": "2026-11-06T08:32:23.468652+00:00",
+    "case": "telecom_46011_card2",
+    "source": "owner_confirmation_in_current_chat",
+    "direction": "MT_to_SQW100-1",
+    "intended_messages": 2,
+    "same_content_for_two_distinct_sends": true,
+    "received_messages": 3,
+    "duplicate_free_acceptance": false,
+    "supersedes_initial_impression_in": "191-card2-sms-send-issue.json",
+    "latest_read_only_capture": "193-card2-after-duplicate-receive-diagnostics.json",
+    "causality_not_yet_proven": true,
+    "messages_sent_by_tools": 0,
+    "public_telecom_activation_admitted": false
+  },
+  "active_telecom_SMS_findings": {
+    "at_utc": "2026-11-06T09:19:49.691441+00:00",
+    "case": "telecom_46011_card2",
+    "scope": "SQW100-1 / OS 10.3.3.3216 / pinned native files",
+    "owner_reports": {
+      "short_actually_delivered_but_UI_sending": true,
+      "subsequent_long_waiting": true,
+      "cancel_control_available": false,
+      "new_short_requested_in_197_sent": false,
+      "two_distinct_identical_MT_sends_received_three": true
+    },
+    "MT_evidence": {
+      "completed_reference_reused_by_distinct_PDU": true,
+      "previous_ACK_accepted_before_reuse": true,
+      "cache_kept_completed_entry": true,
+      "ambiguous_entries": 1,
+      "missing_reply_correlation": 1,
+      "corresponding_ACK_SIP_result": "403 Cannot find In-Reply-To",
+      "full_retransmission_to_Hub_causality_proven": false,
+      "evidence": [
+        "193-card2-after-duplicate-receive-diagnostics.json",
+        "195-card2-sms-cache-read.json",
+        "private/196-card2-sms-transactions.json"
+      ]
+    },
+    "MO_evidence": {
+      "native_encoding": "3GPP",
+      "SIP_202_observed": true,
+      "RP_submit_confirmation_observed": false,
+      "TR1M_timeout_seconds": 45,
+      "timeout_log_observed": true,
+      "pinned_timeout_path_resets_without_send_status_notification": true,
+      "QCT_readback_idle_and_stored_SMS_empty": true,
+      "cellular_SMS_service_busy_still_true": true,
+      "missing_network_confirmation_cause": "unresolved",
+      "failure_notification_fix": "not_implemented_or_applied",
+      "evidence": [
+        "204-card2-qct-pending-sms-state.json",
+        "205-card2-sms-service-context.json",
+        "206-card2-sms-transport-chat-context.json",
+        "private/206-qct-timeout-tail.txt"
+      ]
+    },
+    "candidate": {
+      "record": "209-card2-mt-sms-candidate.json",
+      "payload_map_sha256": "7581d9d66fcf5141a4596f435cda08233029c0da3f1f215e0f95e7e942ad32f5",
+      "installed": false,
+      "offline_checks": "203-sms-offline-checks.json",
+      "tests_passed": 45,
+      "QNX_dependency_only_check": "208-sms-candidate-qnx-loader.json",
+      "hardware_SMS_acceptance": false,
+      "behavior": "retire exact unambiguous ACK identity only after native success callback"
+    },
+    "failures_and_limits": [
+      "197: bounded native file log window produced no SIP files; settings restored to original absence",
+      "199: initial ARM/Thumb wrapper prototype failed five native emulation tests; retained, never installed",
+      "201: ELF checker attempted non-admitted MNC combinations; corrected test matrix to existing exact admissions",
+      "202: read-only QNX Python 3.2 bytes.hex incompatibility; preserved failure, fixed with binascii in 204",
+      "210: update preflight refuses replacement while current native service/provider is active"
+    ],
+    "no_tool_SMS_sent": true,
+    "automatic_resends_added": false,
+    "message_body_dedup_added": false,
+    "SMS_format_changed": false,
+    "QCT_code_patched": false,
+    "firmware_flashed": false,
+    "public_Telecom_admitted": false,
+    "desktop_mobile_packages_changed": false,
+    "next": "Stop existing service, read back restore state, normal restart to release provider; then verified private MT candidate upgrade and controlled SMS tests"
+  },
+  "active_telecom_SMS_stop_checkpoint": {
+    "native_overrides_removed": true,
+    "crypto_policy": {
+      "swcr_id": 0,
+      "crypto_support": 0
+    },
+    "voice_policy": 0,
+    "journal_configuration_restored": true,
+    "independent_restore_readback_passed": true,
+    "IMS_process_count": 0,
+    "restored_fields": {
+      "/pps/services/carrier_config/ims/ims": {
+        "IMS_services": true,
+        "Home_network_domain_name": true,
+        "supported_networks": true,
+        "IMS_profilesV2": true,
+        "SMS_Over_IP_Network_Indication": true
+      },
+      "/pps/services/cds/cnice/status_persistent": {
+        "cdsc_xml": true
+      },
+      "/pps/services/carrier_config/radio_common/cellular_protocol_configuration": {
+        "voice_domain_preference_EUTRAN": true
+      }
+    },
+    "payload_files_verified": 18,
+    "phase": "reboot_required",
+    "read_only": true,
+    "at_epoch": 1793956994.49312,
+    "UE_usage_policy": 0,
+    "restored_DCA_sources": {
+      "test": true,
+      "ims": true,
+      "omadm": true,
+      "ims_defaults": true
+    },
+    "enabled": false,
+    "provider_retained_until_reboot": true,
+    "at_utc": "2026-11-06T09:24:09.476149+00:00",
+    "case": "telecom_46011_card2",
+    "readback_raw_sha256": "5cda6f7a491fa3c969ede31673bd9b9406de1398b48c44b6aac097a0ee5f9480",
+    "stop_record": "213-telecom-sms-stop-before-update.json",
+    "status_record": "214-telecom-sms-stopped-status.json",
+    "abandoned_temporary_stages_removed": 4,
+    "candidate_installed": false,
+    "normal_restart_needed_to_release_provider": true,
+    "next_owner_action": "normal_restart_unlock_wait_Root_then_report",
+    "SMS_acceptance": false,
+    "public_Telecom_admitted": false
+  },
+  "active_telecom_SMS_candidate": {
+    "at_utc": "2026-11-06T09:45:36.584820+00:00",
+    "case": "telecom_46011_card2",
+    "variant": "SQW100-1",
+    "OS": "10.3.3.3216",
+    "home_plmn": "460-11",
+    "private_only": true,
+    "candidate": "209-card2-mt-sms-candidate.json",
+    "checks": "203-sms-offline-checks.json",
+    "payload_map_sha256": "7581d9d66fcf5141a4596f435cda08233029c0da3f1f215e0f95e7e942ad32f5",
+    "candidate_installed": true,
+    "update": "219-telecom-sms-private-update.json",
+    "readback": "220-telecom-sms-update-readback.json",
+    "payload_files_verified": 18,
+    "upgrade_backup_files_verified_on_phone_and_PC": 3,
+    "original_backups_unchanged": true,
+    "normal_boot_and_same_SIM_verified": true,
+    "boot_evidence": "225-telecom-sms-policy-readback.json",
+    "boot_evidence_correction": {
+      "217": "Read-only helper import lacked a freshly trusted dependency after reboot; no device configuration mutation; fixed staging dependency in 218",
+      "218_and_220": "Comparing Root inode/mtime with the service nonce cannot prove a new boot. Retain other independent readbacks; use 225 for the new-boot claim",
+      "223": "Read-only helper compared Root marker with service journal nonce and failed; no configuration mutation",
+      "225": "Separately checks unchanged Root marker since upgrade and current unified nonce differing from pre-stop nonce; all five service records match this nonce"
+    },
+    "policy": {
+      "phase": "carrier_reboot_required",
+      "enabled": true,
+      "UE_usage_policy": 1,
+      "voice_policy": 0,
+      "crypto_policy": {
+        "swcr_id": -1,
+        "crypto_support": 0
+      },
+      "IMS_process_count": 0,
+      "policy_changed_this_boot": true,
+      "policy_phase": "ready",
+      "policy_desired": 1,
+      "ready_for_policy_reboot": true
+    },
+    "private_readback_sha256": "ff9f714adca657c8444c43eecacd1e8e718302e56282d32a3c9ac271851b40e2",
+    "failed_preparation_stages_verified_removed": 2,
+    "native_candidate_started": false,
+    "MO_confirmation_issue_fixed": false,
+    "SMS_acceptance": false,
+    "public_Telecom_admitted": false,
+    "public_desktop_and_mobile_packages_changed": false,
+    "next_owner_action": "normal_restart_same_SIM_unlock_wait_Root; no_manual_resend_or_app_activation"
+  },
+  "active_telecom_SMS_candidate_startup": {
+    "at_utc": "2026-11-06T10:12:55.170715+00:00",
+    "case": "telecom_46011_card2",
+    "variant": "SQW100-1",
+    "home_plmn": "460-11",
+    "candidate_record": "209-card2-mt-sms-candidate.json",
+    "candidate_installed": true,
+    "normal_reboot_observed": true,
+    "same_SIM_verified": true,
+    "all_four_runtime_record_boots_current": true,
+    "installed_payload_files_verified": 18,
+    "live_candidate_machine_code_verified": true,
+    "native_process_started_and_alive": true,
+    "IMS_registration_accepted": false,
+    "still_unregistered_at_snapshot_seconds_after_228": 1296,
+    "current_phase": "registering",
+    "enabled": true,
+    "LTE_observed": true,
+    "IMS_APN_connected": true,
+    "IMS_interface_up_with_IPv6": true,
+    "native_route_selection_observed_down": true,
+    "managed_configurations_match_registered_baseline_except_IMS_executable": true,
+    "SIP_REGISTER_requests_observed": 0,
+    "cause": "unresolved; native route selection/startup must be compared before attributing to candidate or network",
+    "SMS_test_started": false,
+    "MT_candidate_callback_exercised": false,
+    "MO_confirmation_issue_fixed": false,
+    "SMS_acceptance": false,
+    "diagnostic_window": {
+      "record": "230-telecom-sms-candidate-capture.json",
+      "seconds": 600,
+      "samples": 99,
+      "raw_sha256": "3846f7286bb6e6a92396c4da9885a1463b11edaa2fb80e4815edcc41410ecd85",
+      "SIP_file_snapshots": 0,
+      "native_file_logger_disabled_for_end_customer_role": true,
+      "role_unchanged": true,
+      "temporary_logging_fields_restored_to_absent": true,
+      "cache_counters": {
+        "correlated": 0,
+        "missing": 0,
+        "lock": 0,
+        "completed": 0,
+        "occupied_slots": 0,
+        "epoch": 0,
+        "full": 0,
+        "captured": 0,
+        "malformed": 0,
+        "stable_and_unlocked": true,
+        "conflict": 0
+      }
+    },
+    "evidence": [
+      "228-telecom-sms-candidate-boot-readback.json",
+      "229-telecom-sms-registration-observation.json",
+      "231-telecom-sms-registration-context.json",
+      "232-telecom-sms-registration-comparison.json",
+      "235-telecom-sms-network-routes.json",
+      "236-telecom-sms-route-summary.json",
+      "239-telecom-sms-registration-final-status.json"
+    ],
+    "next_owner_action": "one_normal_restart_same_payload_same_policy_same_SIM_for_startup_comparison; no_SMS_resend_or_app_activation",
+    "rollback_available": "219 upgrade archive contains verified card2 baseline; if comparison still fails, stop and read back restore, cold reboot to clear provider, then use journaled rollback before further SMS work",
+    "public_Telecom_admitted": false,
+    "public_desktop_mobile_packages_changed": false
+  },
+  "active_telecom_SMS_rollback_preparation": {
+    "at_utc": "2026-11-06T11:12:25.144671+00:00",
+    "case": "telecom_46011_card2",
+    "variant": "SQW100-1",
+    "home_plmn": "460-11",
+    "private_comparison_only": true,
+    "candidate_209_installed_but_paused": true,
+    "two_normal_boots_observed_without_registration": true,
+    "second_boot": {
+      "new_Root_marker_and_unified_nonce": true,
+      "same_SIM_verified": true,
+      "all_four_records_current": true,
+      "payload_files_verified": 18,
+      "live_candidate_code_verified": true,
+      "native_alive": true,
+      "LTE_observed": true,
+      "phase": "registering",
+      "IMS": "idle",
+      "route_down_log_entries": 8
+    },
+    "cause": "Unresolved native network selection; baseline rollback comparison pending. No claim that SMS code caused it.",
+    "pause": {
+      "enabled": false,
+      "manager_lock_absent": true,
+      "IMS_process_count": 0,
+      "native_overrides_removed": true,
+      "voice_policy": 0,
+      "UE_usage_policy": 1,
+      "crypto_policy": {
+        "swcr_id": 0,
+        "crypto_support": 0
+      },
+      "restored_fields": {
+        "/pps/services/carrier_config/ims/ims": {
+          "IMS_services": true,
+          "Home_network_domain_name": true,
+          "supported_networks": true,
+          "IMS_profilesV2": true,
+          "SMS_Over_IP_Network_Indication": true
+        },
+        "/pps/services/cds/cnice/status_persistent": {
+          "cdsc_xml": true
+        },
+        "/pps/services/carrier_config/radio_common/cellular_protocol_configuration": {
+          "voice_domain_preference_EUTRAN": true
+        }
+      },
+      "DCA_sources_unchanged": {
+        "test": true,
+        "ims": true,
+        "omadm": true,
+        "ims_defaults": true
+      },
+      "original_backup_unchanged": true,
+      "rollback_backup_files_verified": 3,
+      "pause_plan_unchanged": true
+    },
+    "UE_policy_1_retained_for_same_policy_comparison": true,
+    "online_provider_unload": false,
+    "normal_reboot_needed_to_release_provider": true,
+    "rollback_archive_verified_on_phone_and_PC": true,
+    "rollback_executed": false,
+    "failed_attempt_245": {
+      "reason": "KeyError manager_pid while constructing pause plan",
+      "occurred_before_plan_or_stop_write": true,
+      "prior_plan_absence_independently_verified": true,
+      "stage_hash_verified_and_removed": true
+    },
+    "evidence": [
+      "243-telecom-sms-second-boot-readback.json",
+      "244-telecom-sms-second-boot-context.json",
+      "245-telecom-sms-pause-for-rollback.json",
+      "246-telecom-sms-pause-for-rollback.json",
+      "247-telecom-sms-pause-readback.json",
+      "248-failed-pause-stage-cleanup.json"
+    ],
+    "independent_readback_raw_sha256": "0de9f54923a8ded5becb844b7c952229b39d3fdbb380049d3ca4f259f03747e1",
+    "SMS_acceptance": false,
+    "MO_confirmation_issue_fixed": false,
+    "MT_retest_completed": false,
+    "public_Telecom_admitted": false,
+    "public_desktop_mobile_packages_changed": false,
+    "next_owner_action": "normal_restart_same_SIM_unlock_wait_Root_to_release_provider; no_app_activation_or_SMS_resend",
+    "next_agent_action": "read back cold boot and retained policy; journaled rollback to verified card2 baseline, then registration comparison"
+  },
+  "active_telecom_SMS_baseline_rollback": {
+    "at_utc": "2026-11-06T14:01:56.710408+00:00",
+    "case": "telecom_46011_card2",
+    "variant": "SQW100-1",
+    "home_plmn": "460-11",
+    "private_trial_only": true,
+    "rollback_committed": true,
+    "payload_files_verified": 18,
+    "original_backup_files_verified_on_phone_and_PC": 5,
+    "upgrade_backup_files_verified_on_phone_and_PC": 3,
+    "baseline_payload_map_sha256": "0e96cdee6c699d99d7dc651516b46703d906d6c4a2e0fc82d0e601cea8098465",
+    "normal_reboot_and_same_SIM_verified": true,
+    "provider_released_before_rollback": true,
+    "stock_process_already_absent_before_rollback": true,
+    "rollback_pending_transaction_absent": true,
+    "rollback_and_enable_returned_general_reboot_hint": true,
+    "explicit_start_allowed_by_existing_fresh_boot_guard": true,
+    "native_restart_guard_bypassed": false,
+    "start_mode": "explicit controlled baseline start after owner normal reboot and verified rollback; not autostart acceptance",
+    "current": {
+      "enabled": true,
+      "phase": "registering",
+      "IMS": "idle",
+      "radio": [
+        "lte"
+      ],
+      "baseline_machine_code_verified": true,
+      "all_four_runtime_records_current": true,
+      "native_IMS_process_count": 1,
+      "voice_policy": 3,
+      "UE_usage_policy": 1,
+      "IMS_registration_accepted": false
+    },
+    "known_boot_source_regeneration": {
+      "omadm_returned_to_original_empty": true,
+      "UE_usage_remained_1": true,
+      "repaired_by_existing_DCA_transaction": true,
+      "source_repair_only": true,
+      "no_policy_change_this_boot": true
+    },
+    "read_only_failure_250": {
+      "stopped_on_unexpected_source_hash": true,
+      "no_configuration_write": true,
+      "cause": "Checker assumed all DCA source bytes and absence of stock IMS survive a normal boot",
+      "followup": "251 observed one IMS process; 252 verified original omadm bytes, UE=1 and zero IMS processes before rollback; existing handoff guard retained",
+      "failed_stage_hash_verified_and_removed": true
+    },
+    "baseline_managed_files_match_previous_registered_baseline": true,
+    "native_interface_enum_now": 6,
+    "native_interface_enum_at_previous_registered_snapshot": 3,
+    "route_down_log_counts_corrected": {
+      "candidate_first_boot": 8,
+      "candidate_second_boot": 8,
+      "rollback_baseline": 8
+    },
+    "route_log_limit": "These logs do not by themselves identify which interface check rejected cellular selection or prove kernel route failure.",
+    "current_IMS_interface_PPS_connected_ip6_ok": true,
+    "cause": "Unresolved pre-registration network selection affects restored baseline too; SMS candidate causation not established",
+    "SMS_acceptance": false,
+    "MO_confirmation_issue_fixed": false,
+    "MT_candidate_accepted": false,
+    "public_Telecom_admitted": false,
+    "public_desktop_mobile_packages_changed": false,
+    "evidence": [
+      "250-telecom-sms-rollback-cold-readback.json",
+      "251-telecom-sms-cold-configuration-context.json",
+      "252-telecom-sms-rollback-preflight.json",
+      "253-telecom-sms-journaled-rollback.json",
+      "254-telecom-sms-rollback-readback.json",
+      "255-failed-cold-readback-stage-cleanup.json",
+      "256-telecom-baseline-enable-after-rollback.json",
+      "257-telecom-baseline-start-after-rollback.json",
+      "258-telecom-baseline-registration-observation.json",
+      "259-telecom-baseline-runtime-readback.json",
+      "260-telecom-baseline-registration-context.json",
+      "261-telecom-rollback-network-comparison.json",
+      "262-telecom-baseline-network-routes.json",
+      "263-telecom-baseline-interface-objects.json"
+    ],
+    "next": "Read-only interface/native selection investigation before further SMS testing or a new candidate"
+  },
+  "active_telecom_SMS_busy_readiness": {
+    "at_utc": "2026-11-06T14:34:34.841269+00:00",
+    "variant": "SQW100-1",
+    "case": "telecom_46011_card2",
+    "owner_report": "现在是由于重新启动，发送中断",
+    "owner_moved_SMS_investigation_to_another_chat": true,
+    "other_chat_identifier_and_phone_usage_not_yet_known": true,
+    "readiness_readback": "279-other-carrier-readiness-sms-status.json",
+    "sms_service_busy_current": true,
+    "native_registration_block": "RoveMgr explicitly waits for SMS service not busy before binding IMS CELL interface",
+    "previous_native_QCT_pending_state": {
+      "rl_state": 0,
+      "stored_sms": 0,
+      "evidence": "271-telecom-baseline-qct-sms-pending.json"
+    },
+    "UI_interrupted_state_does_not_establish_system_idle": true,
+    "cross_carrier_persistence": "Not tested; a shared system busy flag may confound another SIM, so do not interpret a failed registration as carrier incompatibility.",
+    "phone_configuration_changed_for_this_readiness_check": false,
+    "SMS_deleted_or_retried_by_agent": false,
+    "backup": {
+      "receipt": "278-telecom-sms-store-backup.json",
+      "database_count": 18,
+      "database_and_log_file_count": 35,
+      "phone_and_PC_hashes_verified": true,
+      "source_unchanged_during_copy": true,
+      "offline_validation": "280-sms-store-backup-offline-validation.json",
+      "integrity_check_passed_count": 8,
+      "integrity_check_unavailable_count": 10,
+      "unavailable_reason": "Host SQLite lacks the ICU tokenizer; no corruption conclusion and no substitute tokenizer registered.",
+      "preserved_raw_snapshot_unchanged": true
+    },
+    "other_operator_testing": {
+      "current_recommendation": "Keep current card until the other chat no longer needs this live SIM/boot and native SMS busy is verified false.",
+      "full_Telecom_SMS_fix_required_before_other_operator_work": false,
+      "shared_system_idle_and_single_live_operator_required": true,
+      "then": "Test genuine Unicom or ordinary Mobile with exact SIM identity, separate evidence and normal startup acceptance.",
+      "switching_carrier_is_not_a_verified_workaround": true
+    },
+    "public_Telecom_admitted": false,
+    "new_carrier_acceptance": false,
+    "desktop_and_mobile_support_scope_changed": false,
+    "remaining_cleanup": [
+      "265 retained failed read-only diagnostic stage",
+      "274 retained failed read-only inventory stage"
+    ],
+    "evidence": [
+      "266-telecom-baseline-native-interface-memory.json",
+      "270-telecom-baseline-connection-manager-context.json",
+      "271-telecom-baseline-qct-sms-pending.json",
+      "272-telecom-sms-queue-inventory.json",
+      "277-telecom-sms-system-store-inventory.json",
+      "278-telecom-sms-store-backup.json",
+      "279-other-carrier-readiness-sms-status.json",
+      "280-sms-store-backup-offline-validation.json"
+    ]
+  },
+  "other_carrier_switch_preparation": {
+    "at_utc": "2026-11-06T14:42:44.525825+00:00",
+    "variant": "SQW100-1",
+    "outgoing_case": "telecom_46011_card2",
+    "coordination": {
+      "other_chat": "codex://threads/01a1b03d-1cff-7993-bcdc-4000c4ab8159",
+      "other_variant": "SQC100-4",
+      "owner_confirmed_other_chat_uses_a_different_phone": true,
+      "waiting_for_other_chat_not_required": true,
+      "SMS_investigation_on_other_phone_does_not_prove_SQW100_1_fixed": true
+    },
+    "owner_deleted_two_interrupted_test_messages": true,
+    "owner_reply": "删除了",
+    "after_UI_deletion_SMS_busy_still_true": true,
+    "after_UI_deletion_evidence": "284-sms-status-after-owner-deletion.json",
+    "SMS_delivery_automatically_retried_by_agent": false,
+    "normal_disable_action": "285-telecom-stop-before-other-carrier.json",
+    "manager_and_native_stopped": true,
+    "automatic_start_disabled": true,
+    "independent_readback": "287-other-carrier-preparation-restore-readback.json",
+    "independent_restore_readback_passed": true,
+    "restored_PPS_field_count": 7,
+    "restored_DCA_source_count": 4,
+    "voice_policy": 0,
+    "UE_usage_policy": 0,
+    "payload_files_verified": 18,
+    "native_overrides_removed": true,
+    "provider_retained_until_normal_power_cycle": true,
+    "provider_unloaded_online": false,
+    "failed_diagnostic_stages_removed_after_hash_and_inactivity_checks": 2,
+    "backup_evidence": [
+      "278-telecom-sms-store-backup.json",
+      "280-sms-store-backup-offline-validation.json"
+    ],
+    "ready_for_normal_power_off_and_SIM_change": true,
+    "new_SIM_ready_for_VoLTE_acceptance": false,
+    "next_owner_action": "normal_power_off_insert_Unicom_or_ordinary_Mobile_power_on_unlock_wait_Root_report_card",
+    "next_checks": [
+      "exact_device_and_new_SIM_identity",
+      "new_boot_and_provider_released",
+      "native_SMS_service_busy_false",
+      "stock_network_and_carrier_template",
+      "exact_case_private_candidate"
+    ],
+    "readiness_update_from_281": "Owner confirmed separate phone and removed interrupted test messages; current service is now stopped and restored. Normal power-off and a new-SIM boot may now be used as the next readiness observation. Clearing SMS busy after boot is still unverified.",
+    "Telecom_SMS_fixed": false,
+    "Telecom_acceptance_complete": false,
+    "desktop_mobile_carrier_support_scope_changed": false
+  },
+  "unicom_connected_checkpoint": {
+    "at_utc": "2026-11-06T15:24:39.698360+00:00",
+    "case": "unicom_46001",
+    "variant": "SQW100-1",
+    "board": "WINDERMEREEMEA",
+    "os_version": "10.3.3.3216",
+    "home_plmn": "460-01",
+    "SIM_type": "USIM_without_ISIM",
+    "SIM_kind": 2,
+    "owner_reported_new_SIM_and_normal_start": true,
+    "new_boot_and_new_SIM_verified": true,
+    "native_files_verified": 6,
+    "old_crypto_provider_released_at_boot": true,
+    "stock_template": {
+      "path": "/etc/carrier/config/36.xml",
+      "generated_written": false,
+      "sha256": "929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4",
+      "generated_sha256": "5a53350d536c288a78a7f655fc1595516f01bc52fdf9321d7ca6264291ded34e"
+    },
+    "baseline_data_apn": "3gnet",
+    "baseline_cellular_source_bound_HTTP_status": "HTTP/1.0 200 OK",
+    "stale_SMS_busy": {
+      "native_producer_busy": false,
+      "QCT_rl_state": 0,
+      "QCT_stored_sms": 0,
+      "PPS_was_true_after_SIM_change_and_reboot": true,
+      "producer_binary_sha256": "750690d27b75005a579d9573e46fa98f50b2c036f35565a000d272b2d2707655",
+      "native_busy_byte_image_offset": "0x7e40c",
+      "initialization_analysis": "Existing status object path restores three counters then skips rewriting busy; live native state is zero while PPS retains true.",
+      "evidence": [
+        "294-SMS-producer-binary.json",
+        "295-unicom-SMS-native-vs-published-state.json",
+        "private/296-SMS-producer-initialization.txt"
+      ],
+      "recovery": "297-stale-SMS-flag-reconciliation.json",
+      "single_PPS_field_reconciled_to_verified_native_idle": true,
+      "native_memory_or_message_delivery_results_modified": false,
+      "same_boot_SIM_PIDs_and_code_verified": true,
+      "three_stable_idle_observations_after_repair": true,
+      "PPS_still_idle_after_IMS_registered": true,
+      "SMS_send_confirmation_or_duplicate_delivery_bug_fixed": false,
+      "automatic_recovery_for_other_models_admitted": false
+    },
+    "backup_scope_correction": {
+      "at_utc": "2026-11-06T15:24:39.698360+00:00",
+      "record": "278-telecom-sms-store-backup.json",
+      "correct_scope": "PIM startup databases and WAL files; this was not a complete backup of current SMS conversations.",
+      "evidence": "290 local schema inventory and 292 message-table aggregates were empty in both PIM databases with Message tables.",
+      "original_hash_checks_still_valid": true,
+      "supplemental_backup": "297-stale-SMS-flag-reconciliation.json: native SMS service files and before/after PPS, verified on phone and PC.",
+      "full_UI_conversation_backup_or_deleted_message_recovery_verified": false,
+      "owner_informed": true
+    },
+    "private_candidate": "298-unicom-private-candidate.json",
+    "private_payload_map_sha256": "67727c3005fb880abdb96cff09a953bbf8824a0ce0a6421ff5a7decb90c92d1c",
+    "offline_tests": {
+      "record": "300-unicom-offline-checks.json",
+      "passed": 45,
+      "skipped": 0,
+      "first_harness_failure_retained": "299 read a public-tree manifest rather than the private candidate; fixture root corrected, assertions and payload unchanged."
+    },
+    "installed_payload_files_verified": 18,
+    "update_backup_files_verified_on_phone_and_PC": 3,
+    "original_backup_files_verified_on_phone_and_PC": 5,
+    "update_record": "301-unicom-private-update.json",
+    "readback_record": "302-unicom-update-readback.json",
+    "initial_start_mode": "Explicit start after normal owner boot; existing native-start guard allowed this boot. Automatic boot startup remains unverified.",
+    "native_restart_guard_bypassed": false,
+    "phase": "running",
+    "IMS": "connected",
+    "register_status": "200 OK",
+    "radio": [
+      "lte"
+    ],
+    "same_current_boot_and_SIM_all_runtime_records": true,
+    "native_IMS_processes": 1,
+    "functional_observer": "307-unicom-functional-observation.json",
+    "audio_recorded": false,
+    "outgoing_call": null,
+    "incoming_call": null,
+    "two_way_audio": null,
+    "SMS_acceptance": false,
+    "normal_boot_autostart_acceptance": false,
+    "desktop_mobile_GUI_acceptance": false,
+    "public_Unicom_admitted": false,
+    "public_Telecom_admitted": false,
+    "next_owner_action": "outgoing_and_incoming_call_audio_LTE_data_then_one_new_short_SMS_with_sender_completion_and_exact_receipt"
+  },
+  "backup_scope_correction": {
+    "at_utc": "2026-11-06T15:24:39.698360+00:00",
+    "record": "278-telecom-sms-store-backup.json",
+    "correct_scope": "PIM startup databases and WAL files; this was not a complete backup of current SMS conversations.",
+    "evidence": "290 local schema inventory and 292 message-table aggregates were empty in both PIM databases with Message tables.",
+    "original_hash_checks_still_valid": true,
+    "supplemental_backup": "297-stale-SMS-flag-reconciliation.json: native SMS service files and before/after PPS, verified on phone and PC.",
+    "full_UI_conversation_backup_or_deleted_message_recovery_verified": false,
+    "owner_informed": true
+  },
+  "unicom_initial_functional_results": {
+    "at_utc": "2026-11-06T15:33:01.579209+00:00",
+    "case": "unicom_46001",
+    "variant": "SQW100-1",
+    "os_version": "10.3.3.3216",
+    "private_payload_map_sha256": "67727c3005fb880abdb96cff09a953bbf8824a0ce0a6421ff5a7decb90c92d1c",
+    "owner_replies": [
+      {
+        "requested": "Wi-Fi off; outgoing/incoming, two-way audio, LTE and data during calls",
+        "reply": "呼入呼出短信收发和上网都正常"
+      },
+      {
+        "requested": "One new short SMS: sender completes and receiver gets exactly one",
+        "reply": "都正常"
+      },
+      {
+        "requested": "One >70-Chinese-character long SMS each direction, complete and exactly once",
+        "reply": "正常"
+      },
+      {
+        "requested": "Two identical-content short SMS into SQW100-1, exactly two received",
+        "reply": "正常"
+      }
+    ],
+    "outgoing_and_incoming_calls_owner_confirmed": true,
+    "two_way_audio_owner_confirmed": true,
+    "LTE_and_data_during_calls_owner_confirmed": true,
+    "outgoing_short_SMS_completed_and_exactly_once_owner_confirmed": true,
+    "long_SMS_both_directions_complete_and_exactly_once_owner_confirmed": true,
+    "two_identical_short_SMS_received_exactly_twice_owner_confirmed": true,
+    "private_backend_initial_functional_checks_passed": true,
+    "normal_boot_autostart_verified": false,
+    "final_desktop_mobile_GUI_acceptance": false,
+    "calls": {
+      "outgoing": {
+        "connected_samples": 5,
+        "first_epoch": 1793978711.84504,
+        "all_connected_samples_LTE_and_IMS": true,
+        "last_epoch": 1793978735.93804,
+        "observed_connected_span_seconds": 24.1
+      },
+      "incoming": {
+        "connected_samples": 19,
+        "first_epoch": 1793978754.16904,
+        "all_connected_samples_LTE_and_IMS": true,
+        "last_epoch": 1793978861.13804,
+        "observed_connected_span_seconds": 107.0
+      }
+    },
+    "call_duration_note": "Telemetry spans are reported as observed; do not infer a one-minute outgoing call.",
+    "network_samples": 83,
+    "all_network_samples_IMS_connected_and_LTE": true,
+    "native_MO_RP_ACK_event_count": 7,
+    "native_send_status_notification_count": 7,
+    "final_SMS_busy": false,
+    "audio_recorded": false,
+    "messages_sent_by_tool": 0,
+    "observer_finished_and_temporary_stage_removed": true,
+    "raw_observation_sha256": "64a731312aa8ab51b01a9ebc0dcfbce3dc3250ff9e7d6b2c1d4a797b768420ef",
+    "public_Unicom_admitted": false,
+    "Telecom_SMS_issues_remain_unresolved": true,
+    "next_owner_action": "normal_reboot_with_current_Unicom_SIM_unlock_wait_Root_without_opening_app"
+  },
+  "unicom_normal_boot_results": {
+    "at_utc": "2026-11-06T15:42:15.074693+00:00",
+    "case": "unicom_46001",
+    "variant": "SQW100-1",
+    "os_version": "10.3.3.3216",
+    "owner_reply": "已重启+root成功",
+    "normal_boot_autostart_verified": true,
+    "new_boot_and_current_SIM_bindings_verified": true,
+    "payload_files_verified": 18,
+    "phase": "running",
+    "IMS": "connected",
+    "register_status": "200 OK",
+    "RAN": "LTE",
+    "native_IMS_process_count": 1,
+    "SMS_PPS_busy_field": "absent",
+    "native_SMS_producer_and_QCT_idle": true,
+    "native_idle_samples_each": 2,
+    "SMS_status_note": "PPS field absence is recorded literally; independent native producer and QCT state verified idle. No PPS repair during this boot.",
+    "raw_readback_sha256": "291c9d1e9aa03a3bc65938c1bfb6e2a1a76657ed18e7728e217ca4c698250ff2",
+    "native_idle_raw_sha256": "bae612b3cfeca6b08297319be97715818efa94b1afee1aa4c2b763940b2abe04",
+    "private_payload_map_sha256": "67727c3005fb880abdb96cff09a953bbf8824a0ce0a6421ff5a7decb90c92d1c",
+    "new_package_GUI_and_lifecycle_acceptance_complete": false,
+    "Telecom_SMS_issues_remain_unresolved": true,
+    "next_step": "integrate_exact_Unicom_case_into_local_desktop_and_mobile_candidate"
+  }
+}

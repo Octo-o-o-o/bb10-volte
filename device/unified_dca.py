@@ -6,6 +6,7 @@ transition gets its own transaction; no desktop receipt is invented per SIM.
 import errno
 import json
 import os
+import re
 import select
 import sys
 import time
@@ -21,11 +22,85 @@ BACKUP = BASE + '/backup'
 RECORD = BASE + '/state/dca.json'
 MODE_RECORD = BASE + '/state/radio-mode.json'
 RADIO_CONTROL = '/pps/services/cellular/radioctrl/control'
+RADIO_PUBLIC = '/pps/services/cellular/radioctrl/status_public'
 RADIO_STATUS = '/pps/services/cellular/radioctrl/status_persistent'
 MODE_STATUS = '/pps/services/radioctrl/modem0/status_persistent'
 CELLULAR_IMAGE = '/radio/bin/cellular-control'
 CELLULAR_HASH = '1fb9b34d9e4b401ce2e7add1dff20f1c8c08dc926d6f25b0ae6b586f122470ec'
 TECH_BITS = ((1, 'gsm'), (2, 'umts'), (4, 'cdma_1x'), (8, 'evdo'), (16, 'lte'))
+
+
+def mobile_radio_state():
+    """Return ON/OFF only for one complete, unambiguous public PPS value."""
+    try:
+        blob = n.read(RADIO_PUBLIC)
+        if not isinstance(blob, bytes) or len(blob) > 65536 or not blob.endswith(b'\n'):
+            return None
+        rows = []
+        for line in blob.decode('ascii').splitlines():
+            line = re.sub(r'^\[[^]]*\]', '', line)
+            if line.startswith(('-@', '#@', '*@')) or re.match(r'\A-power_status(?:[:\s]|\Z)', line):
+                return None
+            if re.match(r'\Apower_status(?:[:\s]|\Z)', line):
+                rows.append(line)
+        if rows == ['power_status::OFF']:
+            return 'OFF'
+        if rows == ['power_status::ON']:
+            return 'ON'
+    except (OSError, ValueError, TypeError, UnicodeError, AttributeError):
+        pass
+    return None
+
+
+def enable_mobile_network():
+    """One ON request during explicit setup; never cycle or poll-retry power.
+
+    The caller holds the management lock and verifies model/native/SIM scope.
+    Use cellular-control's own power-manager-aware PPS handler, not a modem
+    setter, data-service setting, or persistent-status write.
+    """
+    before = mobile_radio_state()
+    if before == 'ON':
+        return {'before': 'ON', 'after': 'ON', 'changed': False}
+    assert before == 'OFF', 'mobile_network_state_unknown'
+    assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
+    assert s.phone_idle(), 'call_active'
+    # Recheck after verification; an independent ON needs no second command.
+    current = mobile_radio_state()
+    if current == 'ON':
+        return {'before': before, 'after': 'ON', 'changed': False}
+    assert current == 'OFF', 'mobile_network_state_unknown'
+    identifier = 'bb10-auto-power-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
+    request = ('msg::power\nid::' + identifier + '\ndat:json:{"state":"ON"}\n').encode('ascii')
+    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
+    try:
+        assert os.write(fd, request) == len(request), 'mobile_network_write_failed'
+        acknowledged = False
+        for unused in range(20):
+            ready, unused1, unused2 = select.select([fd], [], [], 0.5)
+            if not ready:
+                continue
+            try:
+                reply = n.attrs(os.read(fd, 65536))
+            except OSError as error:
+                if error.errno == errno.EAGAIN:
+                    continue
+                raise
+            if n.value(reply, 'id') != identifier:
+                continue
+            if 'res' in reply or 'err' in reply:
+                assert n.value(reply, 'res') == 'power' and 'err' not in reply, 'mobile_network_rejected'
+                acknowledged = True
+                break
+        assert acknowledged, 'mobile_network_reply_timeout'
+    finally:
+        os.close(fd)
+    for unused in range(31):
+        if mobile_radio_state() == 'ON':
+            return {'before': before, 'after': 'ON', 'changed': True}
+        if unused < 30:
+            time.sleep(0.5)
+    raise RuntimeError('mobile_network_enable_unconfirmed')
 
 
 def idle_resources():
@@ -127,26 +202,36 @@ def request_mode(value):
 
 
 def ensure_lte_mode(selected):
+    """Use LTE only while enabled; retain the exact original for explicit stop."""
     assert_policy_idle()
     current = mode_snapshot()
     previous = s.load(MODE_RECORD) if os.path.isfile(MODE_RECORD) else None
     if previous:
         assert previous['owner'] == policy.OWNER
-        if not previous.get('restored'):
-            assert any(same_mode(current, value) for value in (previous['before'], previous['applied'])), 'network_mode_changed'
-    if current['enabled_technologies'] & 16:
+        if previous.get('restored'):
+            assert same_mode(current, previous['before']), 'network_mode_changed'
+        else:
+            allowed = [previous['before'], previous['applied']]
+            if previous.get('phase') in ('applying', 'restoring') and 'transition_from' in previous:
+                allowed.append(previous['transition_from'])
+            assert any(same_mode(current, value) for value in allowed), 'network_mode_changed'
+    target = {'enabled_technologies': 16, 'preferred_technologies': 0}
+    if same_mode(current, target):
         if previous and not previous.get('restored') and previous.get('phase') != 'ready':
+            assert same_mode(previous['applied'], target), 'network_mode_changed'
             previous['phase'] = 'ready'
             n.atomic(MODE_RECORD, profiles.canonical(previous))
         return
     assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'network_mode_requires_fresh_boot'
     if previous:
-        assert same_mode(current, previous['before']), 'network_mode_changed'
+        if previous.get('restored'):
+            assert same_mode(current, previous['before']), 'network_mode_changed'
         record = dict(previous)
-        record['applied'] = wire_mode(record['applied'])
     else:
-        applied = wire_mode(dict(current, enabled_technologies=current['enabled_technologies'] | 16))
-        record = {'owner': policy.OWNER, 'before': current, 'applied': applied}
+        record = {'owner': policy.OWNER, 'before': current}
+    # Preserve both the original and previous owned target across an upgrade
+    # from the old additive-LTE policy. A lost reply is reconciled, not retried.
+    record.update(applied=target, transition_from=current)
     record.update(boot=s.boot_token(), phase='applying', restored=False,
                   operator=selected['operator'], sim_sha256=selected['sim_sha256'])
     n.atomic(MODE_RECORD, profiles.canonical(record))
@@ -165,7 +250,10 @@ def restore_lte_mode():
         return
     assert_policy_idle()
     current = mode_snapshot()
-    assert any(same_mode(current, value) for value in (record['before'], record['applied'])), 'network_mode_changed'
+    allowed = [record['before'], record['applied']]
+    if record.get('phase') in ('applying', 'restoring') and 'transition_from' in record:
+        allowed.append(record['transition_from'])
+    assert any(same_mode(current, value) for value in allowed), 'network_mode_changed'
     record['phase'] = 'restoring'
     n.atomic(MODE_RECORD, profiles.canonical(record))
     if not same_mode(current, record['before']):
@@ -307,7 +395,7 @@ def prepare(selected):
     # candidate mitigation for Passport; longer real calls remain a release
     # gate. Apply only through the backed-up, idle-before-IMS transaction.
     desired = 1 if (selected['operator'] == 'telecom' or
-                    selected['family'] in ('q10', 'passport') and selected['operator'] == 'mobile') else 0
+                    selected['family'] in ('q10', 'p9983', 'passport') and selected['operator'] == 'mobile') else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))
     if selected['family'] == 'passport' and policy_boot == s.boot_token():

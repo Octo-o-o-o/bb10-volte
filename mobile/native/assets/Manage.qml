@@ -87,11 +87,19 @@ Page {
             Label { text: volteController.updateBlockMessage; visible: text.length > 0; multiline: true; textFormat: TextFormat.Plain }
             Label { text: volteController.updateFeedback; visible: text.length > 0; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Divider {}
+            Button {
+                text: page.t("pair_title")
+                horizontalAlignment: HorizontalAlignment.Fill
+                enabled: !volteController.busy && !volteController.operationInProgress && !pairingController.busy
+                onClicked: page.appNavigation.push(pairingPage.createObject())
+            }
+            Label { text: page.t("pair_optional"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Button { text: page.t("export_backup"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.canExportBackup; onClicked: volteController.exportBackup() }
             Button { text: page.t("export"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("export"); onClicked: volteController.requestAction("export") }
             Button { text: page.t("compatibility"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("compatibility"); onClicked: volteController.requestAction("compatibility") }
             Button { text: page.t("enable"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("enable"); onClicked: volteController.requestAction("enable") }
-            Button { text: page.t("disable"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("disable"); onClicked: volteController.requestAction("disable") }
+            Button { text: page.t("restore_network"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("disable"); onClicked: volteController.requestAction("disable") }
+            Label { text: page.t("restore_network_help"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Button { text: page.t("rollback"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("rollback"); onClicked: volteController.requestAction("rollback") }
             Button { text: page.t("uninstall"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("uninstall"); onClicked: volteController.requestAction("uninstall") }
             Button {
@@ -103,6 +111,7 @@ Page {
         }
     }
     attachedObjects: [
+        ComponentDefinition { id: pairingPage; source: "Pairing.qml" },
         ComponentDefinition { id: experimentalPage; source: "Experimental.qml" },
         FilePicker {
             id: packagePicker

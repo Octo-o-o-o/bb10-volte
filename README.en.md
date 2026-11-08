@@ -1,48 +1,14 @@
-# bb10-volte — Bring VoLTE to BlackBerry Q10, Q20 and Passport
+# bb10-volte — Q10, Q20, Passport and P’9983
 
-<img src="assets/icon.png" width="96" alt="BB10 VoLTE">
+**Desktop r42 · native mobile 0.1.0.43.** All catalog suffixes and three-carrier entries are open. Historical usable, untested, unsuccessful and known-issue results are shown separately, not used as activation vetoes.
 
-[简体中文](README.md) | **English**
+SQC100-1 and P’9983 SQK100-1 now have explicit owner-reported three-carrier passes. SQK100-2 is officially documented but untested. SQW100-2 remains an unconfirmed production identity. Root, OS 10.3.3.3216, matching native files, current SIM identity and recoverable backups remain required.
 
+[Exact-model matrix](docs/COMPATIBILITY.md) · [Per-unit manual progress](docs/INTAKE-MANUAL-PROGRESS.md) · [Release notes](docs/RELEASE-r42.md)
 
-**Current experimental release: desktop v0.5.0-r21 + native mobile 0.1.0.19.** The automatic workflow targets rooted **Q10 SQN100-3, Q20 SQC100-2 and Passport SQW100-4** on **OS 10.3.3.3216**. Device evidence is version-specific; the new 0.1.0.19 / r21 package has not completed full Q10 device acceptance.
+Already rooted: install the native BAR, then check, back up and enable from the phone. Computer pairing is optional for phone-only use. Not rooted: use the Windows or Mac guided preparation; firmware and loader identity must match before flashing. Power off before swapping SIMs, then restart normally. Restart again only when the app requests it.
 
-[Choose a guide](https://bb10-volte.octoooo.com/en/guides.html) · [Desktop guide](https://bb10-volte.octoooo.com/en/guide.html) · [Mobile guide](https://bb10-volte.octoooo.com/en/mobile.html)
-
-- **Recommended: [use the desktop installer](https://bb10-volte.octoooo.com/en/mobile-installer.html).** Windows and macOS packages contain the matching verified BAR. Open “More → Install phone app”, check the connected phone and confirm installation. No additional BAR download is needed.
-- **[Download a BAR manually](https://bb10-volte.octoooo.com/en/mobile-manual.html)** if your rooted phone already has a compatible installer. [BAR](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar.sha256).
-
-Native BAR installation registers the app with BB10's system service; backup and activation happen afterward. A phone-only first installation needs an existing local installation entry. The app's top-right **OctoLab** entry offers project information, GitHub Star and optional coffee support; payments do not unlock features and there are no prompts or tracking.
-
-Downloads use Cloudflare R2 direct links and work without JavaScript or GitHub. Firmware stays on [Baidu Netdisk](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r) (code `fp4r`) and [ZSpace](https://t3.znas.cn/9jkbxczhAK4). Connectivity varies by network; the release's probe exited in the US, so it is not a mainland-China acceptance result.
-
-Q20/Unicom and Passport/Mobile completed their recorded v12/r18 cycles and SIM-swap checks. After reflashing, Q10/Telecom passed calls and SMS with v18/r18 but mobile browsing failed. The r21 Telecom proxy correction was tested on Passport/Telecom; the integrated new package has not been retested on Q10. See [release scope and integration record](docs/RELEASE-r21.md).
-
-## Historical features and compatibility
-
-The following earlier desktop evidence does not establish current Q10 native-app acceptance.
-
-
-Install once from Windows or Mac. Then power off, change the SIM and start the phone: it automatically selects China Mobile, Unicom or Telecom, without reconnecting to a computer or flashing again. Keep your number, plan and native dialer for LTE calls.
-
-**Earlier desktop releases recorded all three models and carriers. These remain experimental features.** Historical exact variants: rooted **Q10 SQN100-3, Q20 SQC100-2, Passport SQW100-4**, on **OS 10.3.3.3216**. Passport may require one additional normal restart when entering or leaving the Telecom attach policy. This historical scope does not establish Q10 native-app acceptance for this release.
-
-[Guide](https://bb10-volte.octoooo.com/en/guide.html) · [Releases](https://github.com/Octo-o-o-o/bb10-volte/releases) · [Changelog](docs/UPDATELOG.en.md)
-
-**New in r15:** exact-variant checks before preparation, a Root-page retry that preserves prepared images, a [nine-step illustrated tutorial with Chinese narration](https://bb10-volte.octoooo.com/en/guide.html#walkthrough), and [redacted feedback ZIPs](docs/FEEDBACK.en.md) at the main steps. Feedback is saved locally for the user to review and send; there is no automatic upload.
-
-**More → Local candidate variant trials** offers 13 gated manual combinations and six read-only Passport combinations. **The new variants have no hardware acceptance and are outside the automatic support scope above.** Model, OS, SIM, native-file and restoration blockers are explained before proceeding. See the [local trial guide](docs/VARIANT-LOCAL-TRIALS.en.md) and [14-variant material audit](docs/ALL-VARIANTS-COVERAGE-PLAN.md) (Chinese).
-
-[Copy instructions and feedback forms by exact variant](https://bb10-volte.octoooo.com/en/trials.html) · [Full compatibility and progress table](https://bb10-volte.octoooo.com/en/index.html#variant-matrix)
-
-| Candidate variants | Carriers | r15 route |
-| --- | --- | --- |
-| SQN100-1, SQN100-5 | Telecom 460-11 | Manual candidate; working local LTE B5 data required |
-| SQC100-1, SQC100-3, SQC100-5 | Mobile 460-00, Unicom 460-01, Telecom 460-11 | Manual candidate; install and start are separate |
-| SQC100-4 | Unicom 460-01, Telecom 460-11 | Manual candidate; install and start are separate |
-| SQW100-1, SQW100-3 | Those three carriers | Read-only; installation blocked pending stop/restore validation |
-
-Candidates need working AutoRoot v4 / Root SSH, OS 10.3.3.3216 and LTE data; autostart remains off. The reviewed domestic combinations for SQN100-2/-4, SQC100-4/Mobile, unconfirmed SQW100-2, other MNCs and ISIM have no trial installation route. A Root recipe does not establish loader or first-flash validation.
+Includes integrated computer pairing, recovery and upgrade improvements, action-needed notices, reduced stable-state polling/writes, the CTNET proxy correction and SMS association fixes. Some Telecom SMS are delivered but remain pending locally; do not resend already delivered messages. Historical per-model limitations remain visible in the matrix. No new integrated-release hardware acceptance or measured battery-saving percentage is claimed.
 
 ## Downloads
 
@@ -60,30 +26,12 @@ The website defaults to Cloudflare R2 and does not require GitHub connectivity. 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r21/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/SHA256SUMS.txt) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-windows-x64.exe) |
+| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-macos-universal.dmg) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r42/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
-
-## Supported phones and carriers
-
-**All nine combinations passed hardware functional acceptance and are supported in the latest release.**
-
-![Q10, Q20 and Passport: all nine China Mobile, Unicom and Telecom combinations passed](website/src/assets/carrier-acceptance.png)
-
-| Device / OS 10.3.3.3216 | China Mobile | China Unicom | China Telecom |
-| --- | --- | --- | --- |
-| Q10 SQN100-3 | Supported | Supported | Supported |
-| Q20 SQC100-2 | Supported | Supported | Supported |
-| Passport SQW100-4 | Supported | Supported | Supported |
-
-Acceptance covers native incoming/outgoing calls, audio in both directions, LTE and SIM changes without a computer. Own-number and carrier display have also been checked. Phones in the image are illustrations. Exact SIM scope: Mobile 460-00, Unicom 460-01 and Telecom 460-11 USIM without ISIM.
-
-**r14 enables native SMS ACK correlation.** Q20 SQC100-2 / Unicom 460-01 and Passport SQW100-4 / Mobile 460-00 passed native SMS in both directions, two-part long messages, two independent messages with identical text, and at least three minutes without duplicate delivery. Short bidirectional calls retained audio and LTE. Other SMS combinations remain untested. See the [hardware record](materials/sms-device-validation-2026-11-01.json) and [fix details](docs/SMS-ACK-NATIVE.en.md).
-
-The [acceptance record](materials/unified-carrier-acceptance.json) retains dates, tested software revisions, initial-card versus SIM-change cases, and the distinction between logs and owner confirmation. Other variants, OS versions, roaming, long standby and emergency calls are not comprehensively validated.
 
 ## Windows interface
 

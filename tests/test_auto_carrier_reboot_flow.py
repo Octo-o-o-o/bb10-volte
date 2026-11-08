@@ -140,17 +140,28 @@ class RebootWindowTests(unittest.TestCase):
                   'sim_supported': False, 'sim_reason': 'carrier_not_validated'}
         self.deliver('probe', report)
         self.assertIn('disabled', self.ui.buttons['install'].state())
-        self.assertIn('归属网络尚未适配', self.ui.status.cget('text'))
+        self.assertIn('归属网络尚无自动配置模板', self.ui.status.cget('text'))
         self.assertNotIn('重新检查连接', self.ui.status.cget('text'))
         self.deliver('probe', dict(report, sim_supported=True, sim_reason=None))
         self.assertNotIn('disabled', self.ui.buttons['install'].state())
         self.assertNotIn('归属网络尚未适配', self.ui.status.cget('text'))
 
+    def test_off_radio_allows_explicit_setup_and_pending_backup_resume(self):
+        for installed in (False, True):
+            self.ui.report = {'installed': installed, 'installation_pending': installed,
+                'can_install': False, 'sim_supported': False, 'sim_reason': 'sim_not_ready',
+                'can_prepare_mobile_network': True}
+            self.ui.refresh()
+            self.assertNotIn('disabled', self.ui.buttons['install'].state())
+            self.ui.report['can_prepare_mobile_network'] = False
+            self.ui.refresh()
+            self.assertIn('disabled', self.ui.buttons['install'].state())
+
     def test_scope_rejection_keeps_recheck_and_explains_the_actual_limit(self):
-        self.deliver('probe', {'installed': False, 'variant': 'SQC100-3',
+        self.deliver('probe', {'installed': False, 'variant': 'SQC100-99',
                               'scope_error': 'unsupported_model_or_os'})
-        self.assertIn('SQC100-3', self.ui.details.get('1.0', 'end'))
-        self.assertIn('尚待适配', self.ui.details.get('1.0', 'end'))
+        self.assertIn('当前硬件后缀', self.ui.details.get('1.0', 'end'))
+        self.assertIn('无法安装', self.ui.details.get('1.0', 'end'))
         for name in ('install', 'enable', 'disable', 'status'):
             self.assertIn('disabled', self.ui.buttons[name].state())
         self.assertNotIn('disabled', self.ui.buttons['probe'].state())

@@ -28,7 +28,8 @@
         "SQN100-2",
         "SQN100-3",
         "SQN100-4",
-        "SQN100-5"
+        "SQN100-5",
+        "SQK100-1"
       ],
       "family": "q10",
       "manual_download_url": "https://t3.znas.cn/9jkbxczhAK4",
@@ -38,7 +39,13 @@
       "backup_manual_download_url": "https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r",
       "backup_manual_download_code": "fp4r",
       "backup_manual_download_kind": "Baidu browser share page; never a raw HTTP mirror",
-      "automatic_root_recipe": true
+      "automatic_root_recipe": true,
+      "compatibility_evidence": {
+        "source": "https://pb-appstore.netlify.app/resources/",
+        "observed_variant": "SQK100-1",
+        "observed_board": "KHANE",
+        "loader_check": "Required separately before flash; shared firmware does not establish VoLTE acceptance"
+      }
     },
     {
       "id": "libusb",

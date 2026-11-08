@@ -13,9 +13,9 @@ KEY = 'SMS_Over_IP_Network_Indication'
 
 
 class SmsPolicyTests(unittest.TestCase):
-    def test_all_nine_supported_combinations_publish_sms_policy(self):
+    def test_supported_combinations_publish_sms_policy(self):
         for variant, (family, board) in carrier_policy.MODELS.items():
-            for mnc in carrier_policy.CARRIERS:
+            for mnc in carrier_policy.VALIDATED_MNCS[variant]:
                 facts = {'variant': variant, 'board_type': board, 'os_version': carrier_policy.OS_VERSION}
                 card = {'state': 'READY', 'kind': 2, 'mcc': '460', 'mnc': mnc,
                         'imsi': '460' + mnc + '0' * 10}

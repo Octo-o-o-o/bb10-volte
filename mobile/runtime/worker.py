@@ -44,6 +44,10 @@ MESSAGES = {
                          'Ready to enable VoLTE', 'Device checks passed. Original files will be backed up and verified first.', 'Enable VoLTE'),
     'mobile_network_off': ('移动网络已关闭', '请在系统设置中打开移动网络；若飞行模式开启，请先关闭。然后返回应用重新检查。', '重新检查',
                            'Mobile network is off', 'Turn on Mobile Network in system settings. If Airplane Mode is on, turn it off first. Then return and check again.', 'Check again'),
+    'mobile_network_auto_enable': ('将自动打开移动网络', '继续开启 VoLTE 时，程序会先打开移动网络，确认已开启并重新检查 SIM 和适配条件。', '继续开启 VoLTE',
+                                   'Mobile network will turn on', 'Continue VoLTE setup to turn on Mobile Network, verify it is on, and recheck the SIM and compatibility.', 'Continue VoLTE setup'),
+    'task_mobile_network_enable_failed': ('移动网络尚未开启', '未能确认自动开启成功。请检查系统移动网络和飞行模式设置，再继续当前任务；已完成的备份会保留。', '继续当前任务',
+                                          'Mobile network is not ready', 'Automatic turn-on could not be confirmed. Check Mobile Network and Airplane Mode in system settings, then continue this task. Completed backups are retained.', 'Continue task'),
     'task_mobile_network_off': ('上次操作时移动网络关闭', '请在系统设置中打开移动网络；若飞行模式开启，请先关闭。然后返回应用继续原任务。', '继续当前任务',
                                 'Mobile network was off', 'Turn on Mobile Network in system settings and turn off Airplane Mode if needed. Then return to continue the original task.', 'Continue task'),
     'working': ('正在处理', '可以离开此应用；任务在手机后台继续。请保持电量充足。', '查看进度',
@@ -52,6 +56,8 @@ MESSAGES = {
                         'Restart your phone normally', 'Restart from the power menu and unlock. An enabled automatic service starts with the phone; the network may take 3–5 minutes. To check the status or continue an unfinished task, wait for the Root success notification before opening the app. Do not repeatedly tap an unresponsive icon.', 'Check now'),
     'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需正常重启。已启用的自动服务会随开机启动。需要查看状态或继续任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
                                 'Carrier settings saved; restart again', 'The Passport network policy changed and needs another normal restart. An enabled automatic service starts with the phone. To check the status or continue a task, wait for the Root success notification before opening the app. Do not repeatedly tap an unresponsive icon.', 'Check now'),
+    'sim_changed': ('SIM 卡已更换，请正常重启', '先用电源菜单正常重启并解锁，再回来点“检查状态”。应用会按新卡状态提示下一步；无需重复安装或启用，只有明确提示时才再次重启。', '检查状态',
+                    'SIM changed; restart normally', 'Restart from the power menu and unlock, then return and select Check status. Follow the next step for the new SIM. Do not reinstall or enable repeatedly; restart again only when explicitly prompted.', 'Check status'),
     'registered': ('VoLTE 服务已连接', '可直接用系统拨号器接打电话。重启后已启用的自动服务会启动；查看状态或管理时再打开应用。通话检查可选，注册不代表通话已验证。', '刷新状态',
                    'VoLTE service connected', 'Use the system dialer for calls. The enabled automatic service starts after a restart; open the app when you need status or management. Call checks are optional; registration does not verify calls.', 'Refresh'),
     'verified': ('当前 SIM 已完成通话验收', '本次开机、当前 SIM 和当前版本的双向通话已由你确认。短信能力请另外实测。', '刷新状态',
@@ -64,6 +70,8 @@ MESSAGES = {
                 'Waiting for the network', 'Keep cellular and LTE data available. Select Check now later to update the status; export a report if this persists.', 'Check now'),
     'waiting_ims': ('等待 IMS 通话注册', '通话注册与浏览器上网是不同的连接。稍后可点“立即检查”更新状态；若持续等待，请导出诊断报告，不用重新启用。', '立即检查',
                     'Waiting for IMS voice registration', 'Voice registration is separate from web access. Select Check now later to update the status; export a report if it keeps waiting. Re-enabling is unnecessary.', 'Check now'),
+    'waiting_sms': ('等待短信服务空闲', '系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。无需重复启用或连续重启。', '立即检查',
+                    'Waiting for the SMS service', 'The system reports SMS busy, which may block voice registration. Do not resend delivered messages. Export a report if this persists; repeated enabling or restarts are unnecessary.', 'Check now'),
     'waiting_ims_apn': ('等待通话专用网络', '正在等待运营商的 IMS 专用连接。浏览器能够上网仍不代表此连接已就绪；稍后可点“立即检查”更新状态。', '立即检查',
                         'Waiting for the IMS connection', 'Waiting for the carrier connection used by IMS. Web access alone does not confirm this connection is ready. Select Check now later to update the status.', 'Check now'),
     'update_requires_stop': ('先停用旧版服务，再更新', '手机已有旧版服务。先停用并恢复配置，按提示正常重启后，首页会提供“更新手机服务”；原始备份会保留。', '停用旧版服务',
@@ -297,28 +305,22 @@ def inspection_details(folder):
 
 
 def mobile_radio_state():
-    """Return ON/OFF only for one unambiguous public PPS value, else None."""
+    """Use the same strict public-state parser as desktop activation."""
     try:
-        import native as n
-        blob = n.read('/pps/services/cellular/radioctrl/status_public')
-        if not isinstance(blob, bytes) or len(blob) > 65536 or not blob.endswith(b'\n'):
-            return None
-        rows = []
-        for line in blob.decode('ascii').splitlines():
-            line = re.sub(r'^\[[^]]*\]', '', line)
-            if line.startswith(('-@', '#@', '*@')) or re.match(r'\A-power_status(?:[:\s]|\Z)', line):
-                return None
-            if re.match(r'\Apower_status(?:[:\s]|\Z)', line):
-                rows.append(line)
-        if len(rows) != 1:
-            return None
-        if rows[0] == 'power_status::OFF':
-            return 'OFF'
-        if rows[0] == 'power_status::ON':
-            return 'ON'
-    except (OSError, ValueError, TypeError, UnicodeError, ImportError, AttributeError):
-        pass
-    return None
+        from unified_dca import mobile_radio_state as read_state
+        return read_state()
+    except ImportError:
+        return None
+
+
+def prepare_activation_network(job, manager):
+    if mobile_radio_state() == 'OFF' or job.get('mobile_network_requested') is True:
+        # Durable intent also covers a lost acknowledgement or worker exit:
+        # retry reads ON and rechecks SIM admission without another ON request.
+        progress(job, 'enabling_mobile_network', mobile_network_requested=True)
+        result = manager.manage('prepare-network', operation_id=job['id'])
+        e.require(mobile_radio_state() == 'ON', 'mobile_network_enable_unconfirmed')
+        progress(job, 'mobile_network_ready', mobile_network=result.get('mobile_network'))
 
 
 def inspect(request, folder):
@@ -377,10 +379,13 @@ def inspection_response(request, result, details, confirmed_context=None):
         return ui('uninstall_recovery_required', language, 'status', details,
                   actions=['uninstall', 'compatibility', 'status'])
     if not result.get('installed'):
+        if result.get('can_prepare_mobile_network') is True:
+            return ui('mobile_network_auto_enable', language, 'install', details,
+                      actions=['install', 'status', 'compatibility'])
         if result.get('installed_stage') == 'uninstalled':
             if result.get('can_install'):
                 if mobile_radio_state() == 'OFF':
-                    return ui('mobile_network_off', language, 'status', details, actions=['status', 'export', 'compatibility'])
+                    return ui('mobile_network_auto_enable', language, 'install', details, actions=['install', 'status', 'export', 'compatibility'])
                 return ui('ready_after_uninstall', language, 'install', details, actions=['install', 'export', 'compatibility', 'status'])
             return ui('uninstalled', language, details=details, actions=['export', 'compatibility', 'status'])
         if not result.get('sim_supported'):
@@ -390,7 +395,7 @@ def inspection_response(request, result, details, confirmed_context=None):
             return ui(state, language, details=details)
         if result.get('can_install'):
             if mobile_radio_state() == 'OFF':
-                return ui('mobile_network_off', language, 'status', details, actions=['status', 'compatibility'])
+                return ui('mobile_network_auto_enable', language, 'install', details, actions=['install', 'status', 'compatibility'])
             return ui('ready_to_install', language, 'install', details, actions=['install', 'compatibility'])
         return ui('waiting', language, details=details)
     details['management_schema'] = result.get('installed_management_schema')
@@ -398,6 +403,8 @@ def inspection_response(request, result, details, confirmed_context=None):
     if result.get('installation_pending') or result.get('update_pending'):
         return ui('recovery_required', language, details=details, actions=['status', 'compatibility'])
     status = result.get('status') or {}
+    sim_changed = (status.get('status_from_current_boot') is True and
+                   status.get('selected_this_boot') is True and status.get('current_sim_matches') is False)
     details['phase'] = status.get('phase', 'unknown')
     actions = ['status', 'disable', 'export', 'compatibility', 'uninstall']
     if result.get('can_update'):
@@ -406,14 +413,17 @@ def inspection_response(request, result, details, confirmed_context=None):
         (os.path.isfile(engine().BASE + '/last-update.json') or os.path.isfile(ROOT + '/last-update.json')))
     if rollback_available:
         actions.append('rollback')
+    if result.get('can_prepare_mobile_network') is True and status.get('enabled') is False:
+        return ui('mobile_network_auto_enable', language, 'enable', details, actions=actions + ['enable'])
     if not result.get('sim_supported'):
         temporary = result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable')
         # A transient SIM read must not obscure a previously established
         # reboot or restoration failure: neither can heal through polling.
         if temporary and status.get('enabled'):
-            if status.get('current_sim_matches') is False or status.get('phase') in (
+            if sim_changed or status.get('phase') in (
                     'reboot_required', 'carrier_reboot_required', 'native_exited'):
-                state = 'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required'
+                state = ('sim_changed' if sim_changed else
+                         'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required')
                 return ui(state, language, details=details, actions=actions)
             if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
                 return ui('recovery_required', language, details=details, actions=actions)
@@ -430,12 +440,12 @@ def inspection_response(request, result, details, confirmed_context=None):
         if result.get('can_update'):
             return ui('update_ready', language, 'update', details, actions=actions)
         if status.get('phase') not in ('error', 'error_restored', 'cleanup_required', 'reboot_required', 'carrier_reboot_required') and mobile_radio_state() == 'OFF':
-            return ui('mobile_network_off', language, 'status', details,
-                      actions=['status', 'export', 'compatibility', 'uninstall'])
+            return ui('mobile_network_auto_enable', language, 'enable', details, actions=actions)
         return ui('disabled', language, 'enable', details, actions=actions)
-    if status.get('current_sim_matches') is False or status.get('phase') in (
+    if sim_changed or status.get('phase') in (
             'reboot_required', 'carrier_reboot_required', 'native_exited'):
-        state = 'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required'
+        state = ('sim_changed' if sim_changed else
+                 'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required')
         return ui(state, language, details=details, actions=actions)
     if result.get('update_available') is True and not result.get('can_update'):
         # A recognized older engine needs restoration before replacement even
@@ -459,6 +469,8 @@ def inspection_response(request, result, details, confirmed_context=None):
                 return ui(hint, language, details=details, actions=['status', 'export', 'compatibility'])
         return ui('recovery_required', language, details=details, actions=actions)
     if status.get('phase') == 'registering':
+        if status.get('sms_service_busy') is True:
+            return ui('waiting_sms', language, details=details, actions=actions)
         return ui('waiting_ims', language, details=details, actions=actions)
     if status.get('phase') == 'waiting_for_ims_apn':
         return ui('waiting_ims_apn', language, details=details, actions=actions)
@@ -710,13 +722,16 @@ def diagnostic_job_summary(expected_job=None):
             if action not in JOB_ACTIONS or state not in ('queued', 'running', 'waiting_reboot', 'interrupted', 'failed', 'completed'):
                 return {'availability': 'unavailable'}
             summary = {'availability': 'matching_snapshot_only', 'action': action, 'state': state}
-            phases = ('checking', 'verifying_original_backup', 'legacy_installing', 'checking_and_preparing',
+            phases = ('checking', 'enabling_mobile_network', 'mobile_network_ready', 'verifying_original_backup', 'legacy_installing', 'checking_and_preparing',
                       'exporting_original_backup', 'activating', 'verifying_update', 'update_verified',
                       'updating_payload', 'rollback', 'enable', 'disable', 'uninstall', 'restoring',
                       'complete', 'awaiting_reboot', 'awaiting_final_reboot', 'removing_hook',
                       'removing_payload', 'stop_requested', 'legacy-start', 'legacy-stop',
                       'legacy-update', 'legacy-uninstall')
             errors = ('worker_interrupted', 'background_launch_failed', 'legacy_job_requires_review',
+                      'mobile_network_off', 'mobile_network_rejected', 'mobile_network_reply_timeout',
+                      'mobile_network_enable_unconfirmed', 'mobile_network_state_unknown',
+                      'mobile_network_enable_blocked', 'mobile_network_write_failed',
                       'call_active', 'operation_in_progress', 'state_persistence_unconfirmed',
                       'update_version_mismatch', 'package_changed', 'rollback_component_too_old', 'backup_location_unavailable',
                       'backup_readback_failed', 'preflight_or_recovery_check_failed')
@@ -780,6 +795,8 @@ def job_response(job, request):
         state = 'recovery_required'
     action = 'poll' if job['state'] in ('queued', 'running', 'waiting_reboot') else 'resume' if resume else 'status'
     display_state = 'task_mobile_network_off' if resume and job['state'] == 'failed' and job.get('error_code') == 'mobile_network_off' else state
+    if resume and job['state'] == 'failed' and job.get('error_code', '').startswith('mobile_network_') and job.get('error_code') != 'mobile_network_off':
+        display_state = 'task_mobile_network_enable_failed'
     result = ui(display_state, request.get('language'), action, job.get('public_result', {}),
                 ok=job['state'] != 'failed', actions=[action, 'export', 'compatibility'],
                 job_id=job['id'], job=public_job(job))
@@ -966,10 +983,6 @@ def run_operation(job):
     e.private_directory(folder)
     e.read_bundle(folder)
     m = engine()
-    if action == 'enable':
-        # The same journal identity is retained on failure. This check is
-        # before service writes, including when resuming a prepared install.
-        e.require(mobile_radio_state() != 'OFF', 'mobile_network_off')
     if action == 'compatibility':
         report = compatibility_report(folder)
         path = export_blobs({'compatibility.json': e.canonical(report)}, request.get('backup_location', 'internal'), job['id'])
@@ -1006,7 +1019,7 @@ def run_operation(job):
                     and not os.path.isfile(m.BASE + '/install-pending.json')):
                 job['commit_outcome_unknown'] = True
                 return m.manage('activate', operation_id=job['id'])
-            e.require(mobile_radio_state() != 'OFF', 'mobile_network_off')
+            prepare_activation_network(job, m)
             progress(job, 'checking_and_preparing')
             stage = stage_payload(folder, job['id'])
             job['commit_outcome_unknown'] = True
@@ -1134,6 +1147,8 @@ def run_operation(job):
             # The service still performs its own check under its lock.
             e.require(m.s.phone_idle(), 'call_active')
         with m.management_lock():
+            if action == 'enable':
+                prepare_activation_network(job, m)
             before_enabled = os.path.isfile(m.BASE + '/enabled')
             try:
                 job['commit_outcome_unknown'] = True
@@ -1160,6 +1175,39 @@ def run_operation(job):
     raise e.MobileError('invalid_action')
 
 
+def notify_finished_job(job):
+    """A completed first setup can need attention even with the UI closed.
+
+    Only saved, known outcomes qualify. This is called by the original worker,
+    never by polling, reboot recovery, or an interrupted/unknown transaction.
+    """
+    try:
+        if (job.get('action') not in ('install', 'update', 'enable', 'rollback', 'uninstall') or
+                job.get('commit_outcome_unknown') is not False):
+            return
+        result = job.get('result') or {}
+        kind = ('restart' if job.get('state') == 'waiting_reboot' and result.get('reboot_required') is True else
+                'task_failed' if job.get('state') == 'failed' and job.get('error_code') in
+                ('backup_export_failed', 'backup_readback_failed') else None)
+        if kind is None:
+            return
+        token = boot()
+        if (not valid_boot(token) or job.get('boot') != token or
+                job.get('notification_attempted_boot') == token):
+            return
+        # The worker still holds its job lock. Verify the same signed snapshot
+        # and durably reserve the attempt before starting bounded UI I/O.
+        e.read_bundle(job['bundle'])
+        job['notification_attempted_boot'] = token
+        save(job_path(job['id']), job)
+        import native as n
+        import unified_service as u
+        item = 'bb10volte_' + e.digest(e.canonical([token, job['id'], 'attention']))[:24]
+        n.command([sys.executable, os.path.abspath(u.__file__), 'notify-attention', item, kind], 5)
+    except Exception:
+        pass  # A notice never changes the committed task or starts a retry.
+
+
 def run_job(job_id, attempt):
     with job_lock(blocking=True):
         job = load(job_path(job_id))
@@ -1172,6 +1220,7 @@ def run_job(job_id, attempt):
             uncertain = str(error) == 'state_persistence_unconfirmed' or job.get('commit_outcome_unknown') is True
             progress(job, job['phase'], state='interrupted' if uncertain else 'failed',
                      error_code=safe_error(error), commit_outcome_unknown=uncertain)
+            notify_finished_job(job)
             return
         public = dict((key, result[key]) for key in ('path', 'reboot_required', 'uninstalled', 'exported') if key in result)
         # If this final save is uncertain, do not overwrite an already
@@ -1180,6 +1229,7 @@ def run_job(job_id, attempt):
         progress(job, result.get('phase', 'awaiting_reboot') if result.get('reboot_required') else 'complete',
                  state='waiting_reboot' if result.get('reboot_required') else 'completed',
                  result=result, public_result=public, commit_outcome_unknown=False)
+        notify_finished_job(job)
 
 
 def spawn(job):

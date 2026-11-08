@@ -1,5 +1,6 @@
 """Public owner instructions; the shell stops before trust or pairing on failure."""
 from pathlib import Path
+import json
 import re
 from i18n import tr
 
@@ -26,6 +27,9 @@ def phone_commands(name):
 def public_instructions(name):
     commands = phone_commands(name)
     return (tr('手机授权操作说明') + '\n\n' +
+            tr('推荐：将同编号的 -request.json 复制到手机 Downloads，在新版 BB10 VoLTE 的“管理与恢复 → 连接电脑”中选择它，核对请求编号后点击“授权这台电脑”。无需输入终端命令。') + '\n' +
+            tr('将生成的 -result.json 复制回原电脑并导入，继续核验手机身份和 Root。仅使用手机版时可以跳过电脑配对。') + '\n\n' +
+            tr('以下终端步骤仅供未安装新版手机应用时使用。') + '\n\n' +
             tr('将同名 .py 文件复制到手机内部存储 Downloads，保持文件名不变。') + '\n' +
             tr('先按原 Root 工具说明进入 Root 终端。__root 前有两个下划线；有些工具使用 u_root。找不到入口时，先恢复原 Root 访问。') + '\n' +
             tr('执行 id -u，命令应成功并输出 0；报错或没有有效数字时，当前权限尚未确认。再复制执行下面整个命令块，不要抄写 $ 或 # 提示符。') + '\n\n' +
@@ -41,6 +45,15 @@ def export_pairing_files(script, directory):
     script, directory = Path(script), Path(directory)
     outputs = {script.name: script.read_bytes(),
                script.stem + '-instructions.txt': public_instructions(script.name).encode('utf-8')}
+    # Read only the sibling public key, never evaluate an exported Python file.
+    from phone_pairing import pairing_request
+    phone_commands(script.name)  # strict filename/request identifier check
+    key_file = script.parent / 'identity.pub'
+    if (not key_file.is_file() or key_file.is_symlink() or key_file.is_junction() or
+            key_file.stat().st_size > 16384):
+        raise RecoveryError('pairing_result_invalid')
+    request = pairing_request(key_file.read_text(encoding='ascii'), script.stem[len('bb10-pair-'):])
+    outputs[script.stem + '-request.json'] = (json.dumps(request, sort_keys=True, indent=2) + '\n').encode('ascii')
     for name, data in outputs.items():
         target = directory / name
         if target.is_symlink() or target.is_junction() or (target.exists() and

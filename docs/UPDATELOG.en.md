@@ -1,4 +1,62 @@
+# r42 / mobile 0.1.0.43
+
+All catalog models open, honest per-model evidence, P’9983 owner feedback, integrated pairing/lifecycle/network improvements. See [release notes](RELEASE-r42.md).
+
 # Update log
+
+Local r41 / mobile 0.1.0.42: explicit VoLTE installation or enablement attempts to turn Mobile Network on when OFF is confirmed, then verifies ON and rechecks SIM compatibility. Status checks and boot monitoring do not change the switch. Failures retain the task and backups. This candidate has not been installed on hardware; device acceptance is pending.
+
+Local r40/mobile 0.1.0.41 adds exact SQC100-1/CLASSICROW/OS3216 three-carrier trial admission with native-image and recovery checks. Owner results remain separately recorded; other models are not broadened.
+
+Local r39/mobile 0.1.0.40 adds exact P’9983 SQK100-1/KHANE three-carrier trial admission and identity/recovery checks. Manual results await owner testing; other model scopes are unchanged.
+
+## Local candidate r36 / mobile 0.1.0.37 · preserving calls and waiting for events
+
+Unknown SIM state and monitoring/log/status-write failures no longer authorize stopping a running IMS process. A real replacement requires repeated consistent identity and idle-call checks. Stable monitoring uses read-only PPS subscriptions, a 30-second stop/SIM guard and five-minute full checks; unsupported event streams fall back to low-frequency observation. Prolonged waiting also ends fast polling, and identical status is no longer rewritten. Both clients guide a manual restart, status check and the next confirmed step after a SIM change.
+
+Native IMS and necessary same-SIM boot initialization remain; the UI can close. This candidate has not been installed on a handset or published. Call continuity, actual event delivery, standby power and reboot after deleting the BAR remain unverified. [Behavior and scope](MOBILE-LIFECYCLE-2026-11-08.md).
+
+## Local candidate r35 / mobile 0.1.0.36 · idle work and conservative notices
+
+Each foreground screen hold is capped at ten minutes; background UI polling stops. Startup retains three-second checks, while a full minute of confirmed connection allows thirty-second monitoring and fewer persistent writes/log scans. The new backend defaults to LTE only; disabling restores the exact original network mode. Only known restart, configuration failure, restoration failure or completed task outcomes may request attention. Unknown, interrupted and waiting states stay silent.
+
+This local candidate has not been installed on the acceptance handset or publicly released. Battery, LTE-only calling/SMS and automatic notices require separate device acceptance. [Behavior and scope](MOBILE-IDLE-NOTICES-2026-11-07.md).
+
+Confirmed SIM changes now request a normal restart within the same boot, or app review after a real reboot. Unknown identity stays silent; the existing checks are reused without another watcher.
+
+## Local candidate r34 / mobile 0.1.0.35 · stale SMS busy state
+
+A Telecom SMS stall left a persisted busy flag after switching the SQW100-4 to Mobile. Native SMS and modem queues were idle. Reconciliation plus a normal boot restored Mobile registration; owner call, audio, LTE/data, short/long and identical-message tests passed. The candidate checks pinned native images and live code, stable SIM/boot and both idle layers before the first Mobile/Unicom IMS launch on exact SQW100-1/SQW100-4 builds. It saves evidence and changes one PPS field only. Unknown builds or active work are preserved. Both clients identify SMS-busy registration waits. Message outcomes and the Telecom SMS completion defect are unchanged. Installation and boot validation remain separate from these source changes.
+
+Installation and final verification are complete on this SQW100-4 / Mobile 460-00 unit: automatic registration after normal boot, mobile 0.1.0.35 status/web use, and Windows r34 handset preflight passed. All 18 backend files, 57 signed management components and backups were verified. The 17-check verdict explicitly reuses this unit’s previous call/SMS and restoration evidence within the unchanged-code scope recorded in 118. The final clean boot did not deliberately recreate the stale-write branch. New Unicom results on this unit remain pending. See the [device record](SQW100-4-RETEST-2026-11-07.md).
+
+## Local r33 / mobile 0.1.0.34 · 2026-11-07
+
+The new SQW100-4 unit passed Telecom calls, two-way audio, LTE/data, HTTP/HTTPS, normal startup and the phone status page. The owner accepts the known defect where SMS reaches its recipient but remains pending locally. Both clients now explain this limitation and retain automatic activation for Mobile 460-00, Unicom 460-01 and Telecom 460-11. Only client guidance and evidence change; backend files remain identical. Mobile and Unicom tests on this physical unit will be reported by the owner separately. See the [device record](SQW100-4-RETEST-2026-11-07.md).
+
+## Local r32 / mobile 0.1.0.33 · 2026-11-07
+
+Correct JSON filtering on the pairing page and add **Load request from Downloads**. A single matching request can be loaded directly; multiple requests still require explicit selection. During mobile 0.1.0.32 handset testing, the picker did not show a request whose transfer and readback were verified, so that version did not pass pairing acceptance. Authorization checks and backend files are unchanged. See the [SQW100-4 retest](SQW100-4-RETEST-2026-11-07.md).
+
+## Local r31 / mobile 0.1.0.32 · 2026-11-07
+
+Add optional **Manage → Connect computer** in the main phone app: select the desktop public-key request, compare fingerprints and authorize without terminal commands. The desktop retains its terminal fallback and verifies the returned material and actual Root connection. Correct the canonical manifest fingerprint for verified r21 payloads so the existing stop, restore and update workflow recognizes them; active or independently modified installations remain blocked. Build and handset evidence is separate in the [SQW100-4 retest](SQW100-4-RETEST-2026-11-07.md). Not publicly released.
+
+## Local r30 / mobile 0.1.0.31 · 2026-11-07
+
+Update the SQC100-4 Mobile field result: the 460-00 SIM is recognized and LTE is enabled in both the system and modem, but no Mobile LTE was found. Activation stays blocked. Carrier admission and native voice/SMS code are unchanged; accepted Telecom scope, the closed Unicom route and other models are preserved. Build and installation evidence is separate in the [SQC100-4 record](SQC100-4-INTAKE-2026-11-06.md).
+
+## Local r28 / mobile 0.1.0.29 · 2026-11-07
+
+Mark SQC100-4 Unicom adaptation unsupported at the owner’s request and remove both trial entries. Shared automatic and manual checks reject this combination, including imported old profiles; restoration remains available. Preserve accepted Telecom scope and its SMS notice; Mobile awaits handset testing. Both candidates were built in isolated directories; signatures and the Windows offline self-test passed. They have not been installed on a phone or published. See the [SQC100-4 record](SQC100-4-INTAKE-2026-11-06.md).
+
+## Local r27 preview / mobile 0.1.0.28 · 2026-11-07
+
+Admit only SQC100-4 / CLASSICNA / 10.3.3.3216 / Telecom 460-11 / USIM without ISIM. The owner explicitly accepts the known outgoing SMS pending-state and subsequent-queue defect; both clients disclose it, and SMS is not marked passed. Other carriers remain restricted. Windows r27 actual preflight, phone v28 installation and connected page, configuration restoration and normal-boot automatic registration were verified. No public release. See the [SQC100-4 intake record](SQC100-4-INTAKE-2026-11-06.md).
+
+## Local r22 preview / mobile 0.1.0.22 · 2026-11-06
+
+Add the exact SQW100-1 / WINDERMEREEMEA / Mobile 460-07 case, including a number ported from Unicom. Shared policy, desktop guidance and phone catalogs agree on this restricted scope. The final phone app passed installation readback, normal-restart registration, incoming/outgoing calls and a current saved four-check record. The frozen Windows executable passed actual-device preflight. Earlier backend SMS, data and full-restoration tests are recorded separately; unperformed GUI operations remain unknown. No public release. See the [intake record](SQW100-1-INTAKE-2026-11-06.md).
 
 ## 0.5.0-r15 — Early variant checks, local trials and first-use help
 

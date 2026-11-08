@@ -173,6 +173,8 @@ MobileController::MobileController(QObject *parent)
     connect(&m_deadline, SIGNAL(timeout()), this, SLOT(processTimeout()));
     m_pollTimer.setSingleShot(true);
     connect(&m_pollTimer, SIGNAL(timeout()), this, SLOT(poll()));
+    m_screenIdleTimer.setSingleShot(true);
+    connect(&m_screenIdleTimer, SIGNAL(timeout()), this, SLOT(releaseScreenAwake()));
     m_networkDeadline.setSingleShot(true);
     connect(&m_networkDeadline, SIGNAL(timeout()), this, SLOT(networkTimeout()));
 }
@@ -186,8 +188,23 @@ void MobileController::initialize()
     connect(parent(), SIGNAL(invisible()), this, SLOT(enteredBackground()));
     connect(parent(), SIGNAL(asleep()), this, SLOT(screenAsleep()));
     connect(parent(), SIGNAL(awake()), this, SLOT(screenAwake()));
-    setScreenAwake(true);
+    startScreenAwakeWindow();
     scheduleRefresh();
+}
+
+void MobileController::startScreenAwakeWindow()
+{
+    // A manual foreground/unlock gets ten minutes. Status polling, jobs and
+    // network responses never renew this window or change the system timeout.
+    if (!m_foreground || m_sleeping) return;
+    setScreenAwake(true);
+    m_screenIdleTimer.start(10 * 60 * 1000);
+}
+
+void MobileController::releaseScreenAwake()
+{
+    m_screenIdleTimer.stop();
+    setScreenAwake(false);
 }
 
 bool MobileController::refreshBlocked() const
@@ -211,7 +228,7 @@ void MobileController::enteredForeground()
 {
     const bool wasForeground = m_foreground;
     m_foreground = true;
-    setScreenAwake(true);
+    if (!wasForeground) startScreenAwakeWindow();
     if (!wasForeground && !m_busy) {
         if (m_notice == "calls_saved_notice") m_notice.clear();
         if ((jobRunning() || m_reconcilingCalls) && m_allowAutoPoll) m_refreshPending = true;
@@ -223,13 +240,14 @@ void MobileController::enteredForeground()
 void MobileController::enteredBackground()
 {
     m_foreground = false;
-    setScreenAwake(false);
+    releaseScreenAwake();
     m_pollTimer.stop();
 }
 
 void MobileController::screenAsleep()
 {
     m_sleeping = true;
+    releaseScreenAwake();
     m_pollTimer.stop();
 }
 
@@ -237,6 +255,7 @@ void MobileController::screenAwake()
 {
     const bool wasSleeping = m_sleeping;
     m_sleeping = false;
+    if (wasSleeping) startScreenAwakeWindow();
     if (wasSleeping && m_foreground && !m_busy) {
         if (m_notice == "calls_saved_notice") m_notice.clear();
         if ((jobRunning() || m_reconcilingCalls) && m_allowAutoPoll) m_refreshPending = true;
@@ -418,6 +437,15 @@ QString MobileController::deviceText() const
     const QVariant device = details.value("device", details.value("variant"));
     const QString value = device.type() == QVariant::Map ? bounded(device.toMap().value("variant"), 120) : bounded(device, 120);
     return value.isEmpty() || value == "unknown" ? label("unknown") : value;
+}
+
+QString MobileController::compatibilityText() const
+{
+    QFile file(QDir::current().absoluteFilePath("app/native/assets/materials/compatibility-matrix.json"));
+    if (!file.open(QIODevice::ReadOnly) || file.size() > 131072) return QString();
+    const QVariantMap data = parseObject(file.readAll());
+    const QVariantMap row = data.value("models").toMap().value(deviceText()).toMap();
+    return row.value("summary").toMap().value(m_language == "en" ? "en" : "zh").toString().left(2048);
 }
 
 QString MobileController::carrierText() const
@@ -687,7 +715,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
     const QString state = bounded(cache.value("state"), 80);
     // Only informational states can be cached. In particular, never replay a
     // stale restart instruction, recovery decision, job or write authorization.
-    const QStringList states = QString("ready_to_install,mobile_network_off,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (cache.value("schema").toInt() != 1 || !states.contains(state)) return false;
     QVariantMap details;
     QVariantMap device;
@@ -730,7 +758,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
 void MobileController::saveCachedModel(const QVariantMap &response)
 {
     const QString state = bounded(response.value("state"), 80);
-    const QStringList states = QString("ready_to_install,mobile_network_off,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (!states.contains(state)) {
         m_settings.remove("last_observation_v1");
         return;

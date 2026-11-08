@@ -1,11 +1,11 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 21,
-  "mobile_version": "0.1.0.19",
+  "desktop_revision": 42,
+  "mobile_version": "0.1.0.43",
   "management_protocol": 2,
-  "state": "experimental_release",
+  "state": "experimental_public_release",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "MIT",
-  "scope": "Rooted SQN100-3, SQC100-2 and SQW100-4 on BB10 10.3.3.3216; specific carrier/SIM and version acceptance is recorded separately. Mobile and desktop management coexist. This release combines the r20 desktop and support page with later mobile lifecycle and cache improvements and the exact-stock-file-bound Telecom CTNET proxy correction. Passport/Telecom was verified after the r21 payload update; Q10/Telecom v18/r18 calls and SMS passed after reflash but its browser remained affected. The owner waived additional phone retesting; the integrated v19/r21 package has not been validated on Q10. Q10 first Root was observed on Apple Silicon Mac mini using native stages, not the complete GUI. Do not infer untested hardware, operators, long-term stability, or phone-only initial Root support."
+  "scope": "All 16 catalog entries (15 officially documented suffixes plus unconfirmed SQW100-2) in Q10, Classic/Q20, Passport and P9983 admit Mobile 460-00/07, Unicom 460-01 and Telecom 460-11 regardless of evidence status or band estimates. Historical tested, untested, known-issue and unsuccessful results are shown separately. Root, OS3216, native ABI hashes, SIM identity, backup and recovery requirements remain. Includes integrated pairing, lifecycle, SMS-busy boot recovery and explicit-activation cellular-ON changes; r42/mobile43 hardware acceptance is not inferred from earlier tests."
 }

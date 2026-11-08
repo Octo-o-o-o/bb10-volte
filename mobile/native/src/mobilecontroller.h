@@ -21,6 +21,7 @@ class MobileController : public QObject {
     Q_PROPERTY(QString primaryText READ primaryText NOTIFY modelChanged)
     Q_PROPERTY(QString primaryAction READ primaryAction NOTIFY modelChanged)
     Q_PROPERTY(QString detailText READ detailText NOTIFY modelChanged)
+    Q_PROPERTY(QString compatibilityText READ compatibilityText NOTIFY modelChanged)
     Q_PROPERTY(QString deviceText READ deviceText NOTIFY modelChanged)
     Q_PROPERTY(QString carrierText READ carrierText NOTIFY modelChanged)
     Q_PROPERTY(QString jobText READ jobText NOTIFY modelChanged)
@@ -61,6 +62,7 @@ public:
     QString primaryText() const;
     QString primaryAction() const;
     QString detailText() const;
+    QString compatibilityText() const;
     QString deviceText() const;
     QString carrierText() const;
     QString jobText() const;
@@ -132,11 +134,13 @@ private slots:
     void enteredBackground();
     void screenAsleep();
     void screenAwake();
+    void releaseScreenAwake();
     void networkReady();
     void networkFinished();
     void networkTimeout();
 
 private:
+    void startScreenAwakeWindow();
     static bool knownAction(const QString &action);
     static bool readAction(const QString &action);
     static bool safeId(const QString &value);
@@ -198,6 +202,7 @@ private:
     QProcess m_process;
     QTimer m_deadline;
     QTimer m_pollTimer;
+    QTimer m_screenIdleTimer;
     QByteArray m_output;
     QElapsedTimer m_requestElapsed;
     int m_progressScanOffset;

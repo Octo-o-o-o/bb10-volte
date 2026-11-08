@@ -20,6 +20,7 @@ def plan(variant, operator):
         route = 'manual_candidate'
     return {'schema': 1, 'variant': variant, 'operator': operator, 'route': route,
             'scope_code': scope['code'], 'hardware_acceptance': 'not_established_by_this_plan',
+            'validated_home_plmns': scope['validated_home_plmns'],
             'autostart': False, 'changes_radio_attach_policy': False,
             'actual_device_checks_required': ['exact_variant', 'os_3216', 'root_v4_qnx_arm32',
                 'six_native_hashes', 'current_usim_without_isim', 'home_plmn', 'lte_data',

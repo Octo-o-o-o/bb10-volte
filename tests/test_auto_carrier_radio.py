@@ -14,14 +14,14 @@ class LteModeTests(unittest.TestCase):
     def setUp(self):
         self.current = {'enabled_technologies': 3, 'preferred_technologies': -1}
         self.files, self.requests = {}, []
-        self.fail = False
+        self.lose_reply = False
         self.selected = {'operator': 'telecom', 'sim_sha256': 'private-test-hash'}
         def request(value):
             record = json.loads(self.files[d.MODE_RECORD])
             self.assertIn(record['phase'], ('applying', 'restoring'))
             self.requests.append(dict(value))
             self.current = d.wire_mode(value)
-            if self.fail:
+            if self.lose_reply:
                 raise OSError('lost response after modem accepted the command')
         stack = ExitStack()
         self.addCleanup(stack.close)
@@ -39,9 +39,9 @@ class LteModeTests(unittest.TestCase):
         ):
             stack.enter_context(item)
 
-    def test_lte_is_added_without_removing_other_technologies_and_disable_restores_original(self):
+    def test_lte_only_is_default_and_disable_restores_the_exact_original(self):
         d.ensure_lte_mode(self.selected)
-        self.assertEqual(self.current, {'enabled_technologies': 19, 'preferred_technologies': 0})
+        self.assertEqual(self.current, {'enabled_technologies': 16, 'preferred_technologies': 0})
         d.ensure_lte_mode(self.selected)
         self.assertEqual(len(self.requests), 1)
         d.restore_lte_mode()
@@ -50,11 +50,11 @@ class LteModeTests(unittest.TestCase):
         self.assertTrue(json.loads(self.files[d.MODE_RECORD])['restored'])
 
     def test_interrupted_ack_is_reconciled_by_readback_without_sending_again(self):
-        self.fail = True
+        self.lose_reply = True
         with self.assertRaises(OSError):
             d.ensure_lte_mode(self.selected)
         self.assertEqual(json.loads(self.files[d.MODE_RECORD])['phase'], 'applying')
-        self.fail = False
+        self.lose_reply = False
         d.ensure_lte_mode(self.selected)
         self.assertEqual(len(self.requests), 1)
         self.assertEqual(json.loads(self.files[d.MODE_RECORD])['phase'], 'ready')
@@ -69,7 +69,7 @@ class LteModeTests(unittest.TestCase):
         self.assertEqual(len(self.requests), 1)
 
     def test_existing_lte_mode_needs_no_write_or_invented_backup(self):
-        self.current['enabled_technologies'] = 19
+        self.current['enabled_technologies'] = 16
         d.ensure_lte_mode(self.selected)
         self.assertFalse(self.files)
         self.assertFalse(self.requests)
@@ -86,7 +86,7 @@ class LteModeTests(unittest.TestCase):
         d.ensure_lte_mode(self.selected)
         d.restore_lte_mode()
         d.ensure_lte_mode(self.selected)
-        self.assertEqual(self.current['enabled_technologies'], 19)
+        self.assertEqual(self.current['enabled_technologies'], 16)
         self.assertEqual(json.loads(self.files[d.MODE_RECORD])['before']['enabled_technologies'], 3)
 
     def test_unset_preference_uses_zero_on_wire_but_is_retained_in_the_original(self):
@@ -96,6 +96,32 @@ class LteModeTests(unittest.TestCase):
                                    {'enabled_technologies': 3, 'preferred_technologies': 0}))
         self.assertFalse(d.same_mode({'enabled_technologies': 3, 'preferred_technologies': 2},
                                     {'enabled_technologies': 3, 'preferred_technologies': 0}))
+
+    def test_automatic_lte_mode_is_backed_up_before_locking_and_is_restorable(self):
+        self.current = {'enabled_technologies': 19, 'preferred_technologies': 16}
+        d.ensure_lte_mode(self.selected)
+        self.assertEqual(self.current, {'enabled_technologies': 16, 'preferred_technologies': 0})
+        d.restore_lte_mode()
+        self.assertEqual(self.current, {'enabled_technologies': 19, 'preferred_technologies': 16})
+
+    def test_upgrade_preserves_original_and_can_restore_after_an_interrupted_transition(self):
+        old = {'owner': d.policy.OWNER, 'before': dict(self.current),
+               'applied': {'enabled_technologies': 19, 'preferred_technologies': 0},
+               'phase': 'ready', 'restored': False}
+        self.files[d.MODE_RECORD] = json.dumps(old).encode('ascii')
+        self.current = dict(old['applied'])
+        with patch.object(d, 'request_mode', side_effect=OSError('before send')):
+            with self.assertRaises(OSError):
+                d.ensure_lte_mode(self.selected)
+        self.assertEqual(json.loads(self.files[d.MODE_RECORD])['before'], old['before'])
+        d.restore_lte_mode()
+        self.assertTrue(d.same_mode(self.current, old['before']))
+
+    def test_live_provider_cannot_change_the_mode(self):
+        with patch.object(d.n, 'crypto_policy', return_value={'swcr_id': 42, 'crypto_support': 1}):
+            with self.assertRaisesRegex(AssertionError, 'network_mode_requires_fresh_boot'):
+                d.ensure_lte_mode(self.selected)
+        self.assertFalse(self.requests)
 
 
 class StartupIdleTests(unittest.TestCase):

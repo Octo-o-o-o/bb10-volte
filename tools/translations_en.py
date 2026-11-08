@@ -4,6 +4,24 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    '请核对完整型号与实际运营商。': 'Check the exact model and actual carrier.',
+    '请更新手机服务：当前版本已开放所有目录型号的三网入口。': 'Update the phone service: this version opens all catalog models on all three carriers.',
+    '当前卡的归属网络尚无自动配置模板；已开放型号不因实测状态或频段说明而限制。': 'No automatic template exists for this home network; test status and band notes do not block listed models.',
+    'SQW100-4 已适配移动 460-00、联通 460-01、电信 460-11。要求 WINDERMERE4ROW、OS 10.3.3.3216、无 ISIM 的 USIM。换卡后正常重启即可自动识别；保存入网策略后可能需要再重启一次。电信短信可能已送达但仍显示“发送中”，此问题不阻止 VoLTE 开启。': 'SQW100-4 supports Mobile 460-00, Unicom 460-01 and Telecom 460-11 on WINDERMERE4ROW, OS 10.3.3.3216 and USIM without ISIM. Change SIM and restart normally for automatic selection; one more restart may be needed after saving attach policy. Telecom SMS may be delivered while remaining pending locally; this does not block VoLTE activation.',
+    'SQW100-4 电信提示：短信可能已送达但仍显示“发送中”，后续短信可能排队。请勿重发已送达短信；VoLTE 仍可正常开启。': 'SQW100-4 Telecom: SMS may be delivered while remaining pending locally and blocking later messages. Do not resend a delivered message. VoLTE can still be enabled.',
+    '推荐：将同编号的 -request.json 复制到手机 Downloads，在新版 BB10 VoLTE 的“管理与恢复 → 连接电脑”中选择它，核对请求编号后点击“授权这台电脑”。无需输入终端命令。': 'Recommended: copy the matching -request.json to the phone Downloads. In the new BB10 VoLTE app, open Manage & restore → Connect a computer, select it, check its request number, and tap Authorize this computer. No terminal commands are needed.',
+    '将生成的 -result.json 复制回原电脑并导入，继续核验手机身份和 Root。仅使用手机版时可以跳过电脑配对。': 'Copy the generated -result.json back to the original computer and import it to verify the phone identity and Root. Pairing is optional for phone-only use.',
+    '以下终端步骤仅供未安装新版手机应用时使用。': 'The terminal steps below are a fallback when the new phone app is not installed.',
+    '手机需要有效 Root。新版 BB10 VoLTE 可点击授权，完成后由电脑验证手机身份和实际 Root 权限。': 'The phone needs working Root. The new BB10 VoLTE app supports tap-to-authorize, after which the desktop verifies phone identity and effective Root.',
+    '显示终端备用步骤': 'Show terminal fallback',
+    '保存授权文件，将 -request.json 复制到手机内部存储 Downloads。\n电脑私钥保留在本机；同编号的 .py 和说明供旧版终端备用。': 'Save the pairing files and copy -request.json to the phone internal Downloads.\nThe private key stays on this computer. The matching .py and instructions are a legacy terminal fallback.',
+    '打开新版 BB10 VoLTE → 管理与恢复 → 连接电脑，选择本次 -request.json。核对下方编号和指纹后，点击“授权这台电脑”。\n无需输入命令；手机需要已有有效 Root。': 'Open the new BB10 VoLTE → Manage & restore → Connect a computer and select this -request.json. Match the number and fingerprint below, then tap Authorize this computer.\nNo commands are needed; the phone must already have working Root.',
+    '电脑公钥指纹：': 'Computer public-key fingerprint:',
+    '本次公钥暂时不可读，请先恢复原授权文件。': 'This public key is currently unreadable. Restore the original pairing files first.',
+    '选择电脑授权请求的导出目录': 'Choose where to export the computer request',
+    '已有 Root 的手机可在新版 BB10 VoLTE 中点击授权。': 'A rooted phone can authorize access with a tap in the new BB10 VoLTE app.',
+    '手机需要已有有效 Root。新版 BB10 VoLTE 的“连接电脑”可点击授权，旧版保留终端备用流程；程序会检查实际权限。': 'The phone must already have working Root. Use Connect a computer in the new BB10 VoLTE app to authorize with a tap. A terminal fallback remains available for older apps; effective privileges are checked.',
+    '手机已 Root，开始授权': 'Phone is rooted; start pairing',
     '先核对上次安装任务': 'Check the previous installation first',
     '手机保留着另一版本的安装任务。请使用对应的桌面发行包查询原任务，不能用当前版本覆盖。': 'The phone retains an installation task for another version. Use the matching desktop release to check that task. This version cannot overwrite it.',
     '已有安装任务需要核对': 'An existing installation needs inspection',
@@ -1105,3 +1123,37 @@ ENGLISH.update({'遇到问题 / 反馈': 'Need help / Feedback', '查看本步�
 ENGLISH.update({'安装包已就绪，先检查手机': 'Package ready. Check your phone first.', '已内置并核对安装包：{}': 'Bundled and verified: {}'})
 
 ENGLISH.update({'已内置本次发行的 BAR。确认手机后点“安装到手机”，无需输入终端命令。': 'The release BAR is bundled. Confirm the phone and choose Install to phone. No terminal commands are needed.', '先关闭手机上的 BB10 VoLTE，再点“安装到手机”。已内置匹配的 BAR；后台服务仍由手机界面管理。': 'Close BB10 VoLTE on the phone, then choose Install to phone. The matching BAR is bundled; the phone app still manages the background service.'})
+
+ENGLISH.update({'SQC100-4 / CLASSICNA：已适配中国电信 460-11，要求 OS 10.3.3.3216、无 ISIM 的 USIM。通话、收短信和上网已验证；已知问题：发短信可能一直显示“发送中”，后续短信可能卡住。不支持中国联通适配；中国移动 460-00 已识别 SIM，但未搜到可用 LTE，暂未适配。': 'SQC100-4 / CLASSICNA: China Telecom 460-11 is enabled on OS 10.3.3.3216 with USIM without ISIM. Calls, incoming SMS and browsing were verified. Known issue: outgoing SMS may remain pending and block later messages. China Unicom adaptation is not supported; China Mobile 460-00 SIM was recognized, but no usable LTE was found; adaptation remains unavailable.'})
+
+ENGLISH.update({'首次 Root：Windows／SQC100-4 已完成原版升级、OS/radio 刷写和有效 UID 0 核验；完整 GUI 首次流程仍待验收。': 'Initial Root: stock upgrade, OS/radio flashing and effective UID 0 are verified on Windows / SQC100-4. The complete first-use GUI flow remains unverified.'})
+
+ENGLISH.update({
+    '等待短信服务空闲': 'Waiting for the SMS service',
+    '系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。无需重复启用或连续重启。': 'The system reports SMS busy, which may block voice registration. Do not resend delivered messages. Export a report if this persists; repeated enabling or restarts are unnecessary.',
+})
+
+ENGLISH.update({
+    '暂时无法确认通话状态，请稍后检查': 'Call status is temporarily unavailable; check again later',
+    'SIM 卡已更换，请正常重启': 'SIM changed; restart normally',
+    '先用电源菜单正常重启并解锁，再回来检查状态。按新卡状态提示的步骤继续；无需重复安装或启用，只有明确提示时才再次重启。': 'Restart from the power menu and unlock, then return to check status. Follow the next step for the new SIM. Do not reinstall or enable repeatedly; restart again only when explicitly prompted.',
+})
+
+# Exact SQW100-1 / 460-07 intake candidate.
+ENGLISH.update({'SQW100-1 已适配联通 460-01、移动 460-00／460-07、电信 460-11。要求 WINDERMEREEMEA、OS 10.3.3.3216、无 ISIM 的 USIM。电信通话和数据已验证；发短信可能停在发送中，收短信可能重复，短信问题仍在修复。其他归属网络待验证。': 'SQW100-1 supports Unicom 460-01, Mobile 460-00 / 460-07 and Telecom 460-11. Requires WINDERMEREEMEA, OS 10.3.3.3216 and USIM without ISIM. Telecom calls and data were verified; sent SMS may remain pending and received SMS may be duplicated. SMS fixes are pending. Other home networks remain unverified.', '这张卡的归属网络与当前硬件后缀尚未共同验证。SQC100-4 仅接纳电信 460-11；SQW100-1 仅接纳联通 460-01、移动 460-00／460-07、电信 460-11；原有 SQN100-3、SQC100-2、SQW100-4 保持 460-00、460-01、460-11。携转卡按当前 SIM 归属网络识别。': 'SQC100-4 admits Telecom 460-11 only. This SIM home network has not been validated with this hardware variant. SQW100-1 admits only Unicom 460-01, Mobile 460-00 / 460-07 and Telecom 460-11; SQN100-3, SQC100-2 and SQW100-4 retain 460-00, 460-01 and 460-11. Ported numbers use the current SIM home network.', '请连接已完成 Root 的手机，程序将检查完整型号、系统和当前 SIM 的适配范围。': 'Connect a rooted phone. The exact variant, system and current SIM support will be checked.', '首次安装后，换卡并正常重启即可在手机上选择运营商。\n支持当前验证范围：SQN100-3、SQC100-2、SQW100-4 / OS 10.3.3.3216。\n移动 460-00、联通 460-01、电信 460-11；其他 SIM 类型待适配。\nSQC100-4 另适配电信 460-11；发短信可能停在发送中并阻塞后续短信。\nSQW100-1 另适配联通 460-01、移动 460-00／460-07、电信 460-11；电信短信仍有发送卡住和重复接收问题。携转卡按当前 SIM 归属网络识别。\nPassport 保存入网策略后可能需要再正常重启一次。': 'After installation, change SIM and restart normally for automatic carrier selection.\nSQN100-3, SQC100-2 and SQW100-4 / OS 10.3.3.3216: Mobile 460-00, Unicom 460-01, Telecom 460-11. Other SIM types require adaptation.\nSQC100-4 supports Telecom 460-11; outgoing SMS may remain pending and block later messages.\nSQW100-1 supports Unicom 460-01, Mobile 460-00 / 460-07 and Telecom 460-11; Telecom SMS may remain pending or be received more than once. Ported numbers use the current SIM home network.\nPassport may need an additional normal restart after saving attach policy.'})
+
+ENGLISH.update({
+    'SQC100-4 不支持中国联通适配，联通激活与试装入口已关闭。中国电信 460-11 已适配；中国移动 460-00 已识别 SIM，但未搜到可用 LTE，暂未适配。': 'SQC100-4 does not support China Unicom adaptation; Unicom activation and trial installation are disabled. Telecom 460-11 is supported; China Mobile 460-00 SIM was recognized, but no usable LTE was found; adaptation remains unavailable.',
+})
+
+ENGLISH.update({'SQC100-4 已识别移动 460-00 SIM，但本次未搜到移动 LTE，VoLTE 未通过。LTE 已启用；本型号缺少已核对的移动 LTE 频段，当前无法开通。': 'SQC100-4 recognized the Mobile 460-00 SIM, but found no Mobile LTE in this test; VoLTE has not passed. LTE is enabled, but this model lacks the documented Mobile LTE bands, so activation is unavailable.'})
+
+ENGLISH['SQC100-3 / CLASSICVZW：已开放联通 460-01、移动 460-00、电信 460-11 按卡测试。要求 OS 10.3.3.3216、无 ISIM 的 USIM；仍会核对原生文件、备份和恢复条件。换卡请正常关机再开机，仅在应用明确提示时再次重启。开放入口不代表本台手动测试已完成；已确认项目另存进度，不重复测试。'] = 'SQC100-3 / CLASSICVZW: independent Unicom 460-01, Mobile 460-00 and Telecom 460-11 trials are enabled on OS 10.3.3.3216 with USIM without ISIM. Native files, backups and recovery conditions remain checked. Shut down normally before swapping SIMs; restart again only when explicitly prompted. Admission does not mark this unit’s manual checks complete; confirmed checks are tracked separately and need not be repeated.'
+
+ENGLISH['P’9983 SQK100-1 / KHANE：已开放移动 460-00、联通 460-01、电信 460-11 按卡测试。要求 Root、OS 10.3.3.3216、无 ISIM 的 USIM；仍会核对原生文件、备份和恢复条件。正常关机换卡后开机即可继续，应用明确提示时再重启。本台通话、声音、短信和上网结果待手动测试。'] = 'P’9983 SQK100-1 / KHANE: Mobile 460-00, Unicom 460-01 and Telecom 460-11 are enabled for independent owner trials. Root, OS 10.3.3.3216 and USIM without ISIM are required; native images, backups and recovery remain checked. Shut down normally before swapping SIMs; restart again only when explicitly prompted. Calls, audio, SMS and data on this unit await manual testing.'
+
+ENGLISH['SQC100-1 / CLASSICROW：已开放移动 460-00、联通 460-01、电信 460-11 按卡测试。要求 Root、OS 10.3.3.3216、无 ISIM 的 USIM；仍会检查原生文件、备份和恢复条件。请正常关机换卡，仅在应用明确提示时再次重启。本台手动测试结果单独记录，已确认项目不重复测试。'] = 'SQC100-1 / CLASSICROW: Mobile 460-00, Unicom 460-01 and Telecom 460-11 are enabled for independent owner trials. Root, OS 10.3.3.3216 and USIM without ISIM are required; native images, backups and recovery remain checked. Shut down normally before swapping SIMs; restart again only when prompted. Manual results are tracked per unit, and confirmed checks need not be repeated.'
+
+ENGLISH.update({
+    '继续安装或启用 VoLTE 时，将自动打开移动网络，确认开启后重新核对 SIM 和适配条件。': 'Continuing VoLTE installation or enablement will turn on Mobile Network, verify it is on, and recheck the SIM and compatibility.',
+})

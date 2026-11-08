@@ -1,4 +1,4 @@
-"""Redacted SQC100-4/Telecom feedback: explain blockers without admitting it."""
+"""Redacted SQC100-4/Telecom feedback: retain network blockers after exact Telecom admission."""
 import copy
 import json
 from pathlib import Path
@@ -19,7 +19,7 @@ from test_preflight import baseline
 def feedback_facts():
     """Only public observations, with no original report or customer identity."""
     facts = baseline()
-    facts.update(model='Classic', variant='SQC100-4', mnc='11', ims_count=1,
+    facts.update(model='Classic', variant='SQC100-4', board_type='CLASSICNA', mnc='11', ims_count=1,
                  data_service_mode='ON', data_services_status='OFF',
                  internet_present=True, internet_enabled=True, internet_connectable=True,
                  internet_active=True, network_service=1, apn_matches=None,
@@ -49,9 +49,7 @@ class FeedbackTests(unittest.TestCase):
                           ('baseline', 'baseline_not_clean')])
         before = copy.deepcopy(report)
         scope = d.adaptation_note(report)
-        self.assertIn('SQC100-2', scope)
-        self.assertIn('SQC100-4 尚未纳入', scope)
-        self.assertIn('模板不包含此型号的入网修复', scope)
+        self.assertEqual(scope, '')  # Exact Telecom model admission does not remove the three live blockers.
         self.assertIn('设置为 ON，实际状态为 OFF', d.data_service_note(report))
         ims = next(row for row in d.baseline_rows(report) if row['id'] == 'ims_count')
         self.assertIn('不能证明安装残留', ims['detail'])
@@ -67,8 +65,9 @@ class FeedbackTests(unittest.TestCase):
         report = feedback_report(facts)
         self.assertEqual([row['id'] for row in report['checks'] if row['status'] != 'pass'], ['lte', 'apn'])
         self.assertFalse(any(report[key] for key in ('can_install', 'can_update', 'can_start')))
-        with self.assertRaisesRegex(ValueError, 'unsupported_model_or_os'):
-            carrier_policy.model(facts)
+        self.assertEqual(carrier_policy.model(facts), 'classic')
+        with self.assertRaisesRegex(ValueError, 'hardware_identity_conflict'):
+            carrier_policy.model(dict(facts, board_type='CLASSICATT'))
 
     def test_actual_status_and_setting_are_explained_separately_in_both_languages(self):
         for language in ('zh', 'en'):

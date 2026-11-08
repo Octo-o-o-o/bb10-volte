@@ -18,6 +18,7 @@ PHASES = {
     'waiting_for_phone_idle': '等待手机和通话服务空闲',
     'waiting_for_ims_apn': '等待 IMS 专用网络',
     'configuring': '准备运营商配置',
+    'monitoring_unknown': '暂时无法确认通话状态，请稍后检查',
 }
 
 
@@ -56,6 +57,12 @@ def status_view(state):
         ready = False
         title = tr('等待本次开机状态')
         guidance = tr('尚未取得本次开机的注册结果。刚安装或启用后请先正常重启；已重启则解锁并等待约 3–5 分钟，再刷新状态。')
+    elif state.get('selected_this_boot') is True and state.get('current_sim_matches') is False:
+        ready = False
+        title = tr('SIM 卡已更换，请正常重启')
+        guidance = tr('先用电源菜单正常重启并解锁，再回来检查状态。按新卡状态提示的步骤继续；无需重复安装或启用，只有明确提示时才再次重启。')
+        button = tr('已重启，重新检查')
+        code = 'unified_sim_changed'
     elif phase == 'carrier_reboot_required':
         title = tr('还需一次正常重启，适配尚未完成')
         guidance = tr('当前 SIM 的入网策略已保存。Passport 的基带需要再正常重启一次才能采用它；此时 4G 图标不代表通话已就绪。\n'
@@ -72,6 +79,10 @@ def status_view(state):
         title = tr('本次开机注册成功，请验收通话')
         guidance = tr('当前 SIM 已自动选择，IMS 注册与 LTE 已确认。请断开 USB，用系统拨号器检查呼出、呼入和双向声音。')
         code = 'unified_running'
+    elif phase == 'registering' and state.get('sms_service_busy') is True:
+        title = tr('等待短信服务空闲')
+        guidance = tr('系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。无需重复启用或连续重启。')
+        code = 'unified_waiting_sms'
     else:
         if phase == 'running':
             phase = 'registering' if state.get('manager_alive') else 'stopped'

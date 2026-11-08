@@ -49,12 +49,13 @@ class RecoveryDialog(tk.Toplevel):
         self.events = FeedbackQueue(self, 'pair')
         self.busy, self.choice, self.verified = False, None, False
         self.pair_script, self.pair_step = None, 1
+        self.terminal_fallback = False
         self.identity, self.host_key = tk.StringVar(), tk.StringVar()
         body = ttk.Frame(self, padding=22)
         body.pack(fill='both', expand=True)
         help_row(body, self, 'pair')
         ttk.Label(body, text=tr('让这台电脑连接手机'), font=(FONT, 16, 'bold')).pack(anchor='w')
-        ttk.Label(body, text=tr('手机授权需要已有有效 Root 终端。完成后验证手机身份和实际 Root 权限。'),
+        ttk.Label(body, text=tr('手机需要有效 Root。新版 BB10 VoLTE 可点击授权，完成后由电脑验证手机身份和实际 Root 权限。'),
                   wraplength=800).pack(anchor='w', pady=(8, 14))
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
@@ -106,6 +107,8 @@ class RecoveryDialog(tk.Toplevel):
                                 font=('Menlo' if sys.platform == 'darwin' else 'Consolas', 10))
         self.copy_commands = ttk.Button(missing, text=tr('复制完整授权命令'), command=self.copy_phone_commands)
         self.buttons.append(self.copy_commands)
+        self.terminal_button = ttk.Button(missing, text=tr('显示终端备用步骤'), command=self.show_terminal_steps)
+        self.buttons.append(self.terminal_button)
         self.pair_hint = ttk.Label(missing, wraplength=740, justify='left')
         self.pair_hint.pack(anchor='w', pady=(12, 0))
         self.mac_transfer_help = None
@@ -164,8 +167,8 @@ class RecoveryDialog(tk.Toplevel):
         titles = {1: tr('把授权文件放到手机'), 2: tr('在手机上允许这台电脑连接'), 3: tr('取回手机授权结果')}
         self.step_label.configure(text=tr('第 {} / 3 步 · {}').format(step, titles[step]))
         descriptions = {
-            1: tr('保存授权脚本和同编号的操作说明，将 .py 文件复制到手机内部存储 Downloads。\n电脑私钥保留在本机；已有结果可直接导入。'),
-            2: tr('先进入已有 Root 终端：__root 前有两个下划线，部分工具使用 u_root。id -u 应成功输出 0；报错不能据此判断 Root。\n复制执行下方完整命令；仅在脚本提示后输入大写 PAIR。'),
+            1: tr('保存授权文件，将 -request.json 复制到手机内部存储 Downloads。\n电脑私钥保留在本机；同编号的 .py 和说明供旧版终端备用。'),
+            2: tr('打开新版 BB10 VoLTE → 管理与恢复 → 连接电脑，选择本次 -request.json。核对下方编号和指纹后，点击“授权这台电脑”。\n无需输入命令；手机需要已有有效 Root。'),
             3: tr('将手机内部 Downloads 中同编号的 result.json 复制回本电脑，再选择它并确认来源。\n应用会核对请求编号、本机密钥、手机身份与实际 Root 权限。'),
         }
         self.missing_steps.configure(text=descriptions[step])
@@ -181,13 +184,31 @@ class RecoveryDialog(tk.Toplevel):
             self.step_next.pack(side='left')
         self.commands.pack_forget()
         self.copy_commands.pack_forget()
+        self.terminal_button.pack_forget()
+        if step != 2:
+            self.terminal_fallback = False
         if step == 2 and self.pair_script:
-            self.set_commands(phone_commands(self.pair_script.name))
-            self.commands.pack(fill='x', before=self.pair_hint)
-            self.copy_commands.pack(anchor='w', before=self.pair_hint, pady=(8, 0))
-        self.pair_hint.configure(text=(tr('当前文件：') + self.pair_script.name if self.pair_script else tr('还没有生成本次授权文件。')) +
+            self.terminal_button.pack(anchor='w', before=self.pair_hint, pady=(8, 0))
+            if self.terminal_fallback:
+                self.set_commands(phone_commands(self.pair_script.name))
+                self.commands.pack(fill='x', before=self.pair_hint)
+                self.copy_commands.pack(anchor='w', before=self.pair_hint, pady=(8, 0))
+        description = tr('还没有生成本次授权文件。')
+        if self.pair_script:
+            description = tr('当前文件：') + self.pair_script.stem + '-request.json'
+            try:
+                description += '\n' + tr('电脑公钥指纹：') + '\n' + fingerprint((self.pair_script.parent / 'identity.pub').read_text(encoding='ascii'))
+            except (OSError, ValueError, UnicodeError):
+                description += '\n' + tr('本次公钥暂时不可读，请先恢复原授权文件。')
+        self.pair_hint.configure(text=description +
                                  tr('\n关闭应用后可继续本次授权，无需重新生成密钥。\n升级应用后，可返回第一步重新保存同编号的授权文件。'))
         self.refresh()
+
+    def show_terminal_steps(self):
+        if self.busy or self.pair_step != 2:
+            return
+        self.terminal_fallback = not self.terminal_fallback
+        self.set_step(2, persist=False)
 
     def copy_phone_commands(self):
         if self.pair_script and self.pair_step == 2 and not self.busy:
@@ -234,7 +255,7 @@ class RecoveryDialog(tk.Toplevel):
             self.show_error(error)
 
     def generate(self):
-        folder = filedialog.askdirectory(parent=self, title=tr('选择公开授权脚本的导出目录'))
+        folder = filedialog.askdirectory(parent=self, title=tr('选择电脑授权请求的导出目录'))
         if not folder:
             return
         existing_script = self.pair_script

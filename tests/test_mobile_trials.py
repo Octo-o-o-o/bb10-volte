@@ -31,8 +31,8 @@ class MobileTrialIntegration(unittest.TestCase):
 
     def test_phone_choices_match_the_exact_desktop_catalog(self):
         cases = self.catalog['cases']
-        self.assertEqual(len(cases), 19)
-        self.assertEqual(sum(c['route'] == 'manual_candidate' for c in cases), 13)
+        self.assertEqual(len(cases), 0)
+        self.assertEqual(sum(c['route'] == 'manual_candidate' for c in cases), 0)
         page = (ROOT / 'mobile/native/assets/Experimental.qml').read_text(encoding='utf-8')
         options = re.findall(r'value: "(variant-trial-[^"]+)"', page)
         self.assertEqual(set(options), {c['profile_id'] for c in cases})
@@ -89,7 +89,9 @@ class MobileTrialIntegration(unittest.TestCase):
             self.assertFalse(any(name.endswith('.so') for name in changed))
 
     def test_start_rechecks_actual_preflight_and_installed_profile(self):
-        profile = self.profile(self.catalog['cases'][0])
+        profile = profiles.default()
+        profile['id'] = 'historical-trial'
+        profile['runtime']['autostart'] = False
         with patch.object(profiles, 'installed_request', return_value=profiles.request(profile, True)), \
                 patch.object(compatibility, 'require', side_effect=RuntimeError('native changed')) as check:
             with self.assertRaisesRegex(RuntimeError, 'native changed'):

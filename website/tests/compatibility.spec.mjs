@@ -5,7 +5,7 @@ for (const prefix of ['', 'en/']) {
     test.setTimeout(60000);
     await page.route('https://api.github.com/**', route => route.abort());
     await page.goto(`/${prefix}index.html#compatibility`);
-    await expect(page.locator('.variant-table tbody tr')).toHaveCount(14);
+    await expect(page.locator('.variant-table tbody tr')).toHaveCount(16);
     await expect(page.locator('#compatibility > :not(.shell)')).toHaveCount(0);
     for (const theme of ['light', 'dark']) {
       await page.locator('#appearance').selectOption(theme);
@@ -52,7 +52,7 @@ for (const prefix of ['', 'en/']) {
       expect(await response.text()).toBe(expected);
     }
     await page.setViewportSize({ width: 390, height: 1000 });
-    await page.locator('#sqw100-3 .trial-card-heading').scrollIntoViewIfNeeded();
+    await page.locator('#sqw100-3 h2').scrollIntoViewIfNeeded();
     await page.screenshot({ path: `.playwright/forwardable-${prefix ? 'en' : 'zh'}-390.png` });
   });
 }
@@ -91,7 +91,7 @@ test('trial language switching preserves the selected model and dark hero links 
   await expect(page.locator('#sqc100-3 details')).toHaveAttribute('open', '');
   for (const theme of ['light', 'dark']) {
     await page.locator('#appearance').selectOption(theme);
-    expect(await page.locator('.guide-hero .button-secondary').evaluate(element => getComputedStyle(element).color)).toBe('rgb(237, 240, 231)');
+    await expect(page.locator('.guide-hero .button-primary')).toHaveCSS('color', 'rgb(255, 255, 255)');
   }
   const context = await browser.newContext({ locale: 'en-US', baseURL });
   const english = await context.newPage();

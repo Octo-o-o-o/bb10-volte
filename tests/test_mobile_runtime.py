@@ -14,6 +14,8 @@ import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'device'))
+import unified_dca as NETWORK
 
 
 def module(name, path):
@@ -55,9 +57,9 @@ class MobileRuntimeTests(unittest.TestCase):
                  (b'power_status::OFF\n-power_status\n', None),
                  (b'power_status::OFF\n\xff', None), (b'x' * 65537, None)]
         for value, expected in cases:
-            with self.subTest(value=value[:80]), mock.patch.dict(sys.modules, {'native': types.SimpleNamespace(read=lambda _: value)}):
+            with self.subTest(value=value[:80]), mock.patch.object(NETWORK.n, 'read', return_value=value):
                 self.assertEqual(WORKER.mobile_radio_state(), expected)
-        with mock.patch.dict(sys.modules, {'native': types.SimpleNamespace(read=mock.Mock(side_effect=OSError()))}):
+        with mock.patch.object(NETWORK.n, 'read', side_effect=OSError()):
             self.assertIsNone(WORKER.mobile_radio_state())
 
     def test_radio_off_only_precedes_ready_install_or_enable_not_recovery(self):
@@ -65,17 +67,19 @@ class MobileRuntimeTests(unittest.TestCase):
         with mock.patch.object(WORKER, 'mobile_radio_state', return_value='OFF'):
             for lang in ('zh', 'en'):
                 result = WORKER.inspection_response({'language': lang}, dict(base), {})
-                self.assertEqual(result['state'], 'mobile_network_off')
-                self.assertNotIn('install', result['actions'])
+                self.assertEqual(result['state'], 'mobile_network_auto_enable')
+                self.assertEqual(result['primary_action'], 'install')
+                self.assertIn('install', result['actions'])
                 self.assertTrue(result['display']['message'])
             restored = dict(base, installed_stage='uninstalled')
-            self.assertEqual(WORKER.inspection_response({}, restored, {})['state'], 'mobile_network_off')
+            self.assertEqual(WORKER.inspection_response({}, restored, {})['state'], 'mobile_network_auto_enable')
             pending = dict(base, installed_stage='pending', phase='awaiting_reboot', reboot_required=True)
             self.assertEqual(WORKER.inspection_response({}, pending, {})['state'], 'reboot_required')
             disabled = {'installed': True, 'sim_supported': True, 'status': {'enabled': False, 'phase': 'disabled'}}
             result = WORKER.inspection_response({}, disabled, {})
-            self.assertEqual(result['state'], 'mobile_network_off')
-            self.assertNotIn('enable', result['actions'])
+            self.assertEqual(result['state'], 'mobile_network_auto_enable')
+            self.assertEqual(result['primary_action'], 'enable')
+            self.assertIn('enable', result['actions'])
             self.assertIn('uninstall', result['actions'])
             disabled['can_update'] = True
             self.assertEqual(WORKER.inspection_response({}, disabled, {})['state'], 'update_ready')
@@ -141,12 +145,12 @@ class MobileRuntimeTests(unittest.TestCase):
                 WORKER.run_job(job['id'], job['attempt'])
             self.assertEqual(job['id'], 'a' * 32)
             self.assertEqual(job['state'], 'failed')
-            self.assertEqual(job['error_code'], 'mobile_network_off')
+            self.assertEqual(job['error_code'], 'mobile_network_enable_unconfirmed')
             self.assertFalse(job['commit_outcome_unknown'])
             self.assertTrue(WORKER.resumable_job(job))
             stage.assert_not_called()
-            engine.manage.assert_not_called()
-            for language, title in (('zh', '上次操作时移动网络关闭'), ('en', 'Mobile network was off')):
+            engine.manage.assert_called_once_with('prepare-network', operation_id=job['id'])
+            for language, title in (('zh', '移动网络尚未开启'), ('en', 'Mobile network is not ready')):
                 response = WORKER.job_response(job, {'language': language})
                 self.assertEqual(response['state'], 'recovery_required')
                 self.assertEqual(response['display']['title'], title)
@@ -154,6 +158,40 @@ class MobileRuntimeTests(unittest.TestCase):
                 self.assertFalse(response['ok'])
                 self.assertEqual(response['job_id'], job['id'])
                 self.assertEqual(response['primary_action'], 'resume')
+
+    def test_off_radio_is_opened_before_install_and_enable_without_a_new_job(self):
+        for action in ('install', 'enable'):
+            job = {'id': 'a' * 32, 'action': action, 'request': {}, 'bundle': '/verified'}
+            manager = mock.Mock(BASE='/owned')
+            manager.management_lock.return_value = contextlib.nullcontext()
+            manager.manage.return_value = {'mobile_network': {'after': 'ON', 'changed': True}, 'installed': True}
+            states = ['OFF', 'ON', 'ON'] if action == 'install' else ['OFF', 'ON']
+            with self.subTest(action=action), mock.patch.object(ENTRY, 'private_directory'), \
+                 mock.patch.object(ENTRY, 'read_bundle'), mock.patch.object(WORKER, 'engine', return_value=manager), \
+                 mock.patch.object(WORKER, 'mobile_radio_state', side_effect=states), \
+                 mock.patch.object(WORKER, 'stage_payload', return_value='/stage'), \
+                 mock.patch.object(WORKER, 'backup_originals', return_value='/backup'), \
+                 mock.patch.object(WORKER, 'progress'), mock.patch.object(WORKER.os.path, 'isfile', return_value=False):
+                WORKER.run_operation(job)
+            operations = [call.args[0] for call in manager.manage.call_args_list]
+            self.assertEqual(operations, ['prepare-network', 'prepare', 'activate'] if action == 'install' else ['prepare-network', 'enable'])
+            self.assertTrue(all(call.kwargs['operation_id'] == job['id'] for call in manager.manage.call_args_list))
+
+    def test_transient_sim_can_offer_opening_network_without_claiming_admission(self):
+        report = {'installed': False, 'sim_supported': False, 'sim_reason': 'sim_not_ready',
+                  'can_install': False, 'can_prepare_mobile_network': True}
+        result = WORKER.inspection_response({}, report, {})
+        self.assertEqual(result['primary_action'], 'install')
+        self.assertEqual(result['state'], 'mobile_network_auto_enable')
+
+    def test_interrupted_radio_request_rechecks_sim_after_on_without_losing_job(self):
+        job = {'id': 'a' * 32, 'mobile_network_requested': True}
+        manager = mock.Mock()
+        manager.manage.side_effect = ValueError('sim_route_unsupported')
+        with mock.patch.object(WORKER, 'mobile_radio_state', return_value='ON'), \
+             mock.patch.object(WORKER, 'progress'), self.assertRaisesRegex(ValueError, 'sim_route_unsupported'):
+            WORKER.prepare_activation_network(job, manager)
+        manager.manage.assert_called_once_with('prepare-network', operation_id=job['id'])
 
     def test_diagnostic_task_summary_is_bounded_and_never_exports_identity(self):
         job = {'id': 'f' * 32, 'action': 'enable', 'state': 'interrupted',
@@ -676,6 +714,20 @@ class MobileRuntimeTests(unittest.TestCase):
             self.assertEqual(response['primary_action'], 'status')
             self.assertNotIn('confirm-calls', response['actions'])
 
+    def test_sms_busy_wait_is_visible_without_marking_calls_ready(self):
+        manager = mock.Mock(BASE='/owned')
+        manager.management_lock.return_value = contextlib.nullcontext()
+        manager.manage.return_value = {'installed': True, 'installed_management_schema': 2,
+            'sim_supported': True, 'can_update': False, 'update_available': False,
+            'status': dict(ready(), phase='registering', sms_service_busy=True)}
+        with mock.patch.object(WORKER, 'engine', return_value=manager), \
+             mock.patch.object(WORKER, 'sanitized_identity', return_value={}), \
+             mock.patch.object(WORKER, 'load', return_value={'version': '0.1.0.35'}):
+            response = WORKER.inspect({}, '/verified')
+        self.assertEqual(response['state'], 'waiting_sms')
+        self.assertEqual(response['primary_action'], 'status')
+        self.assertNotIn('confirm-calls', response['actions'])
+
     def test_sim_startup_wait_differs_from_a_rejected_card_and_cannot_activate(self):
         for installed in (False, True):
             for reason, expected in (('sim_not_ready', 'waiting_sim'),
@@ -715,7 +767,37 @@ class MobileRuntimeTests(unittest.TestCase):
             with mock.patch.object(WORKER, 'engine') as manager:
                 manager.return_value.BASE = '/absent'
                 response = WORKER.inspection_response({'language': 'en'}, result, {})
-            self.assertEqual(response['state'], 'reboot_required')
+            self.assertEqual(response['state'], 'sim_changed')
+            self.assertEqual(response['primary_action'], 'status')
+            self.assertNotIn('enable', response['actions'])
+            self.assertNotIn('install', response['actions'])
+
+    def test_new_sim_has_the_same_manual_restart_guidance_when_supported(self):
+        result = {'installed': True, 'installed_management_schema': 2, 'sim_supported': True,
+                  'status': dict(ready(), current_sim_matches=False)}
+        with mock.patch.object(WORKER, 'engine') as manager:
+            manager.return_value.BASE = '/absent'
+            response = WORKER.inspection_response({'language': 'zh'}, result, {})
+        self.assertEqual(response['state'], 'sim_changed')
+        self.assertEqual(response['primary_action'], 'status')
+        self.assertNotIn('enable', response['actions'])
+        self.assertNotIn('install', response['actions'])
+
+    def test_changed_sim_after_reboot_waits_for_current_boot_selection(self):
+        for phase in ('waiting_for_native_ims', 'waiting_for_phone_idle', 'waiting_for_sim', 'running'):
+            for supported in (True, False):
+                for selected in (False, None):
+                    with self.subTest(phase=phase, supported=supported, selected=selected):
+                        result = {'installed': True, 'installed_management_schema': 2,
+                                  'sim_supported': supported, 'sim_reason': 'sim_not_ready',
+                                  'status': dict(ready(), phase=phase, selected_this_boot=selected,
+                                                 current_sim_matches=False)}
+                        with mock.patch.object(WORKER, 'engine') as manager:
+                            manager.return_value.BASE = '/absent'
+                            response = WORKER.inspection_response({'language': 'zh'}, result, {})
+                        self.assertIn(response['state'], ('waiting', 'waiting_sim'))
+                        self.assertEqual(response['primary_action'], 'status')
+                        self.assertNotIn('enable', response['actions'])
 
     def test_pending_restore_and_restart_remain_ahead_of_upgrade_prompt(self):
         manager = mock.Mock(BASE='/owned')

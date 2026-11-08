@@ -39,7 +39,7 @@ class GuiTests(unittest.TestCase):
         self.app.render_report(value)
         self.assertIn('仅紧急服务', self.app.summary.cget('text'))
         self.assertIn('设置为 ON，实际状态为 OFF', self.app.detail.cget('text'))
-        self.assertIn('SQC100-4 尚未纳入', self.app.detail.cget('text'))
+        self.assertNotIn('SQC100-4 尚未纳入', self.app.detail.cget('text'))
         # macOS only dispatches native Tk selection events for mapped widgets.
         self.root.attributes('-alpha', 0.0)
         self.root.deiconify()

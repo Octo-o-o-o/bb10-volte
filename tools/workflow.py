@@ -92,6 +92,7 @@ def public_status(raw):
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    result['sms_service_busy'] = raw.get('sms_service_busy') if type(raw.get('sms_service_busy')) is bool else None
     if raw.get('management_schema') == 2:
         result['management_schema'] = 2
         value = raw.get('current_sim_matches')
@@ -141,7 +142,7 @@ class Client:
             raise WorkflowError('invalid_profile') from None
         self.profile = self.request['profile']
         self.progress = progress or (lambda phase, state: None)
-        self.options = ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=5',
+        self.options = ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=20',
                         '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=2', '-o', 'ClearAllForwardings=yes',
                         # QNX OpenSSH 6.2 advertises GCM but closes the handshake
                         # when the new client prefers it. CTR is verified on Q10.

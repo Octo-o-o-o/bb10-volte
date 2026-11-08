@@ -26,10 +26,16 @@ def card(mnc='11', suffix='12345'):
 
 
 class CarrierSelectionTests(unittest.TestCase):
-    def test_all_nine_combinations_derive_only_current_sim_configuration(self):
+    def test_admitted_combinations_derive_only_current_sim_configuration(self):
         for variant in p.MODELS:
             for mnc, (operator, unused_label, apns) in p.CARRIERS.items():
                 with self.subTest(variant=variant, mnc=mnc):
+                    if mnc not in p.VALIDATED_MNCS[variant]:
+                        reason = ('operator_not_supported' if (variant, mnc) == ('SQC100-4', '01')
+                                  else 'carrier_not_validated')
+                        with self.assertRaisesRegex(ValueError, reason):
+                            p.select(facts(variant), card(mnc))
+                        continue
                     value = p.select(facts(variant), card(mnc))
                     profile = value['request']['profile']
                     self.assertEqual(profile['carrier']['mncs'], [mnc])

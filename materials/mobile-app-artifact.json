@@ -1,26 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.0.19",
+  "version": "0.1.0.43",
   "identity": {
     "Package-Name": "com.octolab.bb10volte",
     "Package-Id": "testDev_b_bb10volte7b237e48",
     "Package-Author-Id": "gYAOctoLabBB10VoLTE20261102",
     "Package-Architecture": "armle-v7",
-    "Package-Version": "0.1.0.19",
+    "Package-Version": "0.1.0.43",
     "Application-Id": "testDev_b_bb10volte7b237e48",
-    "Application-Version": "0.1.0.19"
+    "Application-Version": "0.1.0.43"
   },
-  "filename": "bb10-volte-0.1.0.19.bar",
-  "bar_sha256": "db9e4dae3e889e71922b9a1174dc802e801f5d3ef379a774d635faec880cb377",
-  "bar_size": 553465,
-  "platform_manifest_sha256": "195786e357f338290f7c5a055df6b2cbdfc7c38cc34123a50c7a9e62689fc54e",
+  "filename": "bb10-volte-0.1.0.43.bar",
+  "bar_sha256": "7745d9db94ffc11657082532fc02ef3a09c30cc888061a8f663d9b9966de22dc",
+  "bar_size": 666877,
+  "platform_manifest_sha256": "f6dc7f2ccc36c2543a92850e8bb114bf7743db9c7cd174c73a7ddc3b2de698f9",
   "installed_files": {
     "META-INF/MANIFEST.MF": {
-      "sha256": "195786e357f338290f7c5a055df6b2cbdfc7c38cc34123a50c7a9e62689fc54e",
-      "size": 15442
+      "sha256": "f6dc7f2ccc36c2543a92850e8bb114bf7743db9c7cd174c73a7ddc3b2de698f9",
+      "size": 15986
     },
     "native/bar-descriptor.build.xml": {
-      "sha256": "0cd8807b598c8a30dbbf371eaf019abf9d99b0d0e57d30680dc3a3804fab8f71",
+      "sha256": "32059f77375b6f62884e57fba3dd3aba9279a6fcbace9bce5b0b183578350569",
       "size": 1058
     },
     "native/assets/CallCheck.qml": {
@@ -28,40 +28,56 @@
       "size": 2865
     },
     "native/assets/Experimental.qml": {
-      "sha256": "c624dc78855ce68e111a570a7019ae4b4599b64177834831420ca6fe525ab202",
-      "size": 7934
+      "sha256": "b9edbc0420388933c285cd3d2f9bc78133cfd36ba80c3d8aaf8961f16326c358",
+      "size": 3971
     },
     "native/assets/icon.png": {
       "sha256": "2de547891d9762cda4f82b495ff388b6f7077e552adf093465e721c5544805e9",
       "size": 6304
     },
     "native/assets/main.qml": {
-      "sha256": "f9752a456bd2081aeaec0b0f3a290938eb7a46e7dc06cb5ec64013e13b55b49e",
-      "size": 10642
+      "sha256": "f22f37149a9b699997a78eb6bd802d137e1e27440361bb67a8e1617514871719",
+      "size": 10956
     },
     "native/assets/Manage.qml": {
-      "sha256": "3e143cd5606b4f69081cfa7d81a737c732ed662b3c87cc143d74f525e8c50bd1",
-      "size": 8428
+      "sha256": "e99322b44b91c55c60593e53813075c566b4f789310a4f2d7bbb46fd5b975f40",
+      "size": 9118
     },
     "native/assets/manifest.json": {
-      "sha256": "98c34e54ec99a06315c52227519308f93c75c98ea684c8249510cbd0bdf35fbb",
-      "size": 7788
+      "sha256": "4055abebadbc02b665cda1ad660e8be3be04b2c19569b60afefd72330b2ce544",
+      "size": 5613
     },
     "native/assets/manifest.sig.json": {
-      "sha256": "39b79027731718d29ce69fcfba1173a48e0ad13e4be19291a4d686398bfe53fe",
+      "sha256": "667cce8a46f5f440618febbc596c3645a2ae7081e65df78854913240e8017774",
       "size": 643
+    },
+    "native/assets/materials/compatibility-matrix.json": {
+      "sha256": "5afe29b6d68f214f0a9b3f96ccdba7c6fcc37a734c1007bbfa85660f844e8050",
+      "size": 20980
     },
     "native/assets/materials/sms-device-validation-2026-11-01.json": {
       "sha256": "6c3386ea290819e72e3242460981e9251888900971eaedfd6964a87659b6f6ed",
       "size": 6175
+    },
+    "native/assets/materials/sqc100-4-intake-2026-11-06.json": {
+      "sha256": "313646c10d18dc0838042704d4fa227d64b695bcd008afd70c32cf659b04c3d5",
+      "size": 41754
+    },
+    "native/assets/materials/sqw100-1-intake-2026-11-06.json": {
+      "sha256": "9e7b91c0e0e9f0532fca0ddcdde05f9398ef4364c63a6a349dca2ee333f055e9",
+      "size": 159045
     },
     "native/assets/materials/unified-carrier-acceptance.json": {
       "sha256": "b9eaf7f6bb0ca84b0a7bf6e73f13ff4dfe723a4a1627d5613085ac501df7b1ab",
       "size": 10547
     },
     "native/assets/materials/variant-trials.json": {
-      "sha256": "8fb1561df85697a867aaf23119e762f5ab228ef5225a13173479d6b3ecf1c928",
-      "size": 2289
+      "sha256": "86bcc9ad09e817364665e1316371ce62439adb4d8f00f6d702c5aaa559dfa141",
+      "size": 23
+    },
+    "native/assets/Pairing.qml": {
+      "sha256": "bc1bdc6425ef338ed732bd8414867463875bcaf8d58748ebcc67d8653270fcc3",
+      "size": 2788
     },
     "native/assets/payload/device/addon-start.sh": {
       "sha256": "3bc35654be9be137e105c693e362396a1b14968abd88e20ee147755ff836bfee",
@@ -72,16 +88,16 @@
       "size": 5255
     },
     "native/assets/payload/device/carrier_policy.py": {
-      "sha256": "a6be30595b5b73c06809ab8d9d7ef848e6af296e752225b8bc916617f18c9789",
-      "size": 3728
+      "sha256": "280ac436f1499b10d1b2f2248982b2f5f6c4b1d1792e12bad546ddfd4c0d0cbf",
+      "size": 4848
     },
     "native/assets/payload/device/compatibility.py": {
-      "sha256": "d9f1bb16af978d7318d65ffa393a6d5f4b237ea98bcda0c0554be05edb2532eb",
-      "size": 32596
+      "sha256": "05954306114986a8da2577417760d540214d0e7f62a0fc02f791b77f472344bc",
+      "size": 33033
     },
     "native/assets/payload/device/device_info.py": {
-      "sha256": "acd6f8c04bca0f2d24a8a8dbf7417a8bf5a70852208761bbc6a76ad07a07a847",
-      "size": 3388
+      "sha256": "2789dd392fed99ff70413c8d819908d05032f99865851b55a1a3612cec436cef",
+      "size": 3625
     },
     "native/assets/payload/device/ims_image.py": {
       "sha256": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
@@ -104,8 +120,8 @@
       "size": 11761
     },
     "native/assets/payload/device/profiles.py": {
-      "sha256": "d863e5f097b184b7443dbd96f35f5d894c9487e951128e3b9b85550e86de37a0",
-      "size": 11917
+      "sha256": "270df729ec060e002e6bf86ce0245601d5ab95d105c142c4eef7f1f772991413",
+      "size": 12400
     },
     "native/assets/payload/device/radio_api.py": {
       "sha256": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
@@ -116,8 +132,8 @@
       "size": 602
     },
     "native/assets/payload/device/service.py": {
-      "sha256": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
-      "size": 35078
+      "sha256": "21d4e00634408f046236b134e2869f3647e0b5176737709bb8801a05d053df18",
+      "size": 41392
     },
     "native/assets/payload/device/telecom_attach.py": {
       "sha256": "fe3946dbd745676271dc34623d7ea527dc5c69f8080d4ab2533b63af94fa1fc8",
@@ -136,16 +152,16 @@
       "size": 961
     },
     "native/assets/payload/device/unified_dca.py": {
-      "sha256": "70f54c5cb003c3021e574fd63bf51f48674645b0a6a0c1dd40f820089fece27c",
-      "size": 15129
+      "sha256": "a8d532285769dbd387297d47952126925fcb4cffb2aff4632cab34039842fe3f",
+      "size": 19092
     },
     "native/assets/payload/device/unified_install.py": {
-      "sha256": "41c60a59b6ebf40757c663d8105fb6b9651c36416aea60be9dd52918870cfafb",
-      "size": 66128
+      "sha256": "883d5a9cca37e2785065abf3d23b71bf29b98afbae12baf1aa0ee3230235c545",
+      "size": 71574
     },
     "native/assets/payload/device/unified_migrate.py": {
-      "sha256": "048b4aea002bc981241e0e665df9fb9a7c13c5faf75129b4630091acd8393457",
-      "size": 7423
+      "sha256": "97894c1d26f3fcecc1f063f07cec12ad33d2b8eac3a9ae9203e8b65c8911ded5",
+      "size": 7790
     },
     "native/assets/payload/device/unified_operator_name.py": {
       "sha256": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
@@ -156,19 +172,19 @@
       "size": 6443
     },
     "native/assets/payload/device/unified_service.py": {
-      "sha256": "60b7937f95a9fe4ef7d58a8cba3d4161e4048e15f6472eb0387ab7ab84701d5c",
-      "size": 18950
+      "sha256": "3b1a01d16757fcf16035f6866bf887012b03fe8b6044f2b09054ca8a7963297f",
+      "size": 43506
     },
     "native/assets/payload/driver/devnp-volte_swcrypto_probe.so": {
       "sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
       "size": 5264
     },
     "native/assets/payload/payload-manifest.json": {
-      "sha256": "f150baf007d4d18e7bad2dbe208643c09e3731a680de3e7d5fabef80ed316d3b",
+      "sha256": "5cd20f594d2f8c89ea219095323cad894ee79a13a49fccde51962355da491094",
       "size": 1737
     },
     "native/assets/payload/payload.json": {
-      "sha256": "9edf878b096e3ce9d4e29af543d91182dc4c138247478f8fef428e2b57b15910",
+      "sha256": "211f0448a6b2031784689a7a8b53d7b0d06ed6d4f3f1fd7860957f7910755dca",
       "size": 1905
     },
     "native/assets/profiles/china-mobile.json": {
@@ -239,10 +255,6 @@
       "sha256": "e3dcc409e952e7526a7d4c1dc30406735fa61dde1917173c7ab8fba8a23f0544",
       "size": 435
     },
-    "native/assets/profiles/variant-trial-sqw100-1-mobile.json": {
-      "sha256": "9ffcd32728f81869566e0a630eabe3be6b9c2893e58a3b6f5cbea07fcd5d955a",
-      "size": 425
-    },
     "native/assets/profiles/variant-trial-sqw100-1-telecom.json": {
       "sha256": "a221be36f3c45e8b6d1fa5c5d70843c6647d57fd3e8d35c6aabbcdc8318140ef",
       "size": 435
@@ -268,7 +280,7 @@
       "size": 1290
     },
     "native/assets/runtime/entry.py": {
-      "sha256": "4c99ffec73c6d1813306b94d683747e5865e96242424e79258d7e8701ed3c95a",
+      "sha256": "0f650adf20528fbebf4f0328188b1b5124f634294cb80d7c40f36fc77dd2478a",
       "size": 27033
     },
     "native/assets/runtime/job-launcher": {
@@ -288,8 +300,8 @@
       "size": 14286
     },
     "native/assets/runtime/worker.py": {
-      "sha256": "d450297a9f8bade7f4aac50b796c11a5ddd62a8c1202b178e59ef90164682c09",
-      "size": 84685
+      "sha256": "04e67346f08931f4f58f8dd5c4578abd0eca12c4ab6eee2fa5c3f0f822c3ac38",
+      "size": 89734
     },
     "native/assets/support/alipay-19_90.png": {
       "sha256": "ac61ce94f79108b084d44b6c942c9973b8ce2554414d4cf6df3cf7777ec213bb",
@@ -332,8 +344,8 @@
       "size": 7485
     },
     "native/bb10volte": {
-      "sha256": "a8087f60703282676f1c234f008a3a43c676007155dbaa07753132ed7a810405",
-      "size": 566612
+      "sha256": "a58c14eb1e8f4cae984e37371bad24d22dbc83189452ebc2d4bbf7dedc4e9737",
+      "size": 703820
     }
   },
   "helper_sha256": "d094ac9b74668cd157c517a02eca68ba310fd76fffe9368e80f5136a4895a8d3",

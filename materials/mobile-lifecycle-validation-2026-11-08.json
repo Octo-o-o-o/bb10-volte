@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "at_utc": "2026-11-07T16:47:08.171796+00:00",
+  "candidate": {
+    "mobile": "0.1.0.37",
+    "desktop_revision": 36,
+    "preview_id": "idle1108"
+  },
+  "host_validation": {
+    "tests_passed": 333,
+    "tests_skipped": 0,
+    "qt_controller_and_network_harness": "passed",
+    "qnx_native_build": "passed",
+    "mobile_signed_bundles": "verified",
+    "windows_offline_selftest": "passed",
+    "matching_mobile_desktop_backend_files": 18,
+    "r34_r35_upgrade_requires_stopped_service": "verified"
+  },
+  "behavior": {
+    "keep_native_ims": true,
+    "unknown_sim_does_not_stop_ims": true,
+    "observation_failure_does_not_restore_ims": true,
+    "confirmed_sim_change_requires_idle_call_checks": true,
+    "foreground_hold_minutes": 10,
+    "background_ui_polling": false,
+    "read_only_pps_event_wait": true,
+    "fallback_observation_seconds": 30,
+    "stop_and_sim_guard_seconds": 30,
+    "steady_full_check_and_log_seconds": 300,
+    "unchanged_status_heartbeat": false,
+    "initial_fast_observation_limit_seconds": 120,
+    "loss_fast_observation_limit_seconds": 60,
+    "automatic_same_boot_native_restart": false,
+    "unknown_state_alerts": false,
+    "lte_only_default": true,
+    "exact_original_network_restore": true
+  },
+  "acceptance": {
+    "phone_contacted": false,
+    "installed_on_phone": false,
+    "published": false,
+    "phone_call_continuity": "unknown",
+    "actual_pps_event_delivery": "unknown",
+    "battery_cpu_memory": "unknown",
+    "bar_removal_then_reboot_calls": "unknown",
+    "lte_only_calls_sms_data": "unknown",
+    "actual_automatic_notifications": "unknown",
+    "compatibility_expanded": false
+  },
+  "artifacts": {
+    "mobile_bar_sha256": "baf4b1f6260c8e8b3c16f75f494346133f5e8f0b40c8c891827d634b6cf4e127",
+    "windows_exe_sha256": "3c1297489982a8996542e410fa2ad087e8d71ef269e0bcaa9769b9a8cb176268"
+  },
+  "evidence_log_sha256": {
+    "checks-final.json": "787098e73dc9b5f9a57e091771ec2eb08ca3daf0a0e025a373ab5441d55e83be",
+    "native-controller.log": "ab0b7b486e428ff78cd7b226c2cd334fdda8e4cec747c27346f88ecd62bdf7d2",
+    "mobile-build-final.log": "76e7b301939cdfc2bc5fc30bda4889dd33552abab55edb9b7c16620e7c0eff99",
+    "windows-build.log": "0973bc2edfa514710a75b6fcb8125ccdfbdc4911ed8ef5238fe6cda17eb6db8b",
+    "windows-selftest.json": "6ad1eb3c6f02daf245521eb9fe5f2bbdc9332537ffc7bfadb5d8536e77a38ea2",
+    "desktop-mobile-artifact-comparison.json": "4d217b7de4d7a7f8c973144494a2164509f3b7257ae123f5cdebdf257f26b726",
+    "upgrade-gates.json": "aa658c5031b04ac49562ce7771e04f746871fb27889b0056ac13bbfa215833e7",
+    "monitor-observation-counts.json": "abc9f2da48e1b2842745cf7246c1cd15f8dd69b4409381a955ba19986a297426"
+  },
+  "notes": [
+    "Three desktop test modules require tkinter, absent from the existing Linux image. They passed with Windows Python; the initial Linux failure logs are retained. The expanded legacy catalog was also rerun on Windows.",
+    "The first mobile37 build was superseded by mobile-build-final.log after adding immediate evidence collection on relevant state changes.",
+    "The optional PPS subscriber uses five read-only descriptors in the existing manager; it is not a new resident process.",
+    "QNX native compilation and POSIX fixtures do not establish BB10 event delivery or battery acceptance."
+  ]
+}

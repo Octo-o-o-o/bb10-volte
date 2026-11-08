@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "date": "2026-11-06",
+  "candidate_mobile_version": "0.1.0.24",
+  "variant": "SQW100-1",
+  "os_version": "10.3.3.3216",
+  "carrier_acceptance": "not_assessed_by_notification_test",
+  "probe": "isolated_temporary_python32_helper_with_explicit_test_title",
+  "transport": "existing_strict_host_checked_ssh",
+  "notification_channel": "sys.service/uib + native BPS bottom toast",
+  "system_response": "notify:ok",
+  "owner_confirmed_popup": true,
+  "owner_confirmed_hub_item": true,
+  "runtime_updated": false,
+  "radio_changed": false,
+  "calls_or_sms_sent": false,
+  "app_autostart_trigger": null,
+  "normal_reboot_trigger": null,
+  "other_variants": null,
+  "known_failed_approach": "Application-specific BPS and PPS requests returned MISSING_SETTINGS; not used in candidate.",
+  "temporary_probe_removed": true,
+  "raw_evidence_kept_in_private_session": true,
+  "evidence_sha256": {
+    "notification-probe-20261106T084707Z-ec99a4.json": "62db66325f4744702510491efbe6fa5966609b638d95082727001433a92b548a",
+    "notification-owner-confirmation.json": "732a209df0f531c6df0d589284ad854682e3a5568262975e4208b20f7ad77704",
+    "notification-probe-20261106T090335Z-57c15c.json": "b897626b625c7b8ad09d310303afe57c6c656d118d2aee7c66c1b072a4477928",
+    "notification-toast-owner-confirmation.json": "481c64ed5cadf8b297b33b9dfbac81b81a83b3d094d4bb1d01a77c7791fdf352",
+    "notification-probe-20261106T091557Z-29a666.json": "d81586bd7dd56cc6781edfe0354591cb81a5d571cfd059f56169cb0be0de8432"
+  },
+  "bundle_signature_verified": true,
+  "notification_tests": {
+    "windows": {
+      "passed": 22,
+      "failed": 0
+    },
+    "linux": {
+      "passed": 22,
+      "failed": 0
+    }
+  },
+  "candidate_installed_on_phone": false,
+  "previous_candidate": {
+    "version": "0.1.0.23",
+    "artifacts": {
+      "bb10-volte-0.1.0.23.bar": "be31b4951bcf1dafcd52255415952514321f72655c03cb54992bb052fb39dd0d",
+      "bb10-volte-0.1.0.23-update.zip": "50bea8ba25ef65fd32f532371d685d8f2a4550b078e241456b6e34ba7300359e",
+      "bb10-volte-0.1.0.23-bootstrap.zip": "e400151bde1564ec29874bb2d0b25bfbf83ac5c77a0aeea8772ad2c6fdf5a10f"
+    },
+    "notification_channel": "sys.service/alertuib"
+  },
+  "owner_confirmed_hub_retained": true,
+  "tap_to_dismiss_observed": null,
+  "pps_toast_experiment": {
+    "owner_confirmed_auto_dismissal_within_two_seconds": true,
+    "cancel_requested_at_ms": 1356,
+    "cancel_acknowledged_at_ms": 1357
+  },
+  "native_button_toast": {
+    "show_api_accepted": true,
+    "cancel_requested_at_ms": 1519,
+    "cancel_api_accepted": true,
+    "owner_confirmed_auto_dismissal": null,
+    "owner_confirmed_button_dismissal": null
+  },
+  "local_candidate_artifacts": {
+    "bb10-volte-0.1.0.24.bar": "6aa4de40bb5d4086f955ecdded00b0c8f7c8196d19aeb430a9c0147498d8f1d3",
+    "bb10-volte-0.1.0.24-update.zip": "d914530e80191028cd075d9a313926e1de3ef3794ebc8cf696092b00636c228a",
+    "bb10-volte-0.1.0.24-bootstrap.zip": "90eed23adc044210b891d9309b99135b024e499c812e096c3e3ed936eb2972dc"
+  }
+}

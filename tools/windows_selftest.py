@@ -97,13 +97,16 @@ def run(output):
     assert not phone_app.window.winfo_exists()
     import variant_trials
     from variant_trial_gui import VariantTrialDialog
-    assert variant_trials.plan('SQC100-3', 'unicom')['route'] == 'manual_candidate'
-    assert variant_trials.plan('SQC100-4', 'mobile')['route'] == 'blocked'
+    assert variant_trials.plan('SQC100-5', 'unicom')['route'] == 'automatic_supported'
+    assert variant_trials.plan('SQC100-3', 'unicom')['route'] == 'automatic_supported'
+    assert variant_trials.plan('SQC100-4', 'mobile')['route'] == 'automatic_supported'
     trial = VariantTrialDialog(root, lambda _: (_ for _ in ()).throw(AssertionError('No phone action allowed')))
     trial.attributes('-alpha', 0.0)
     trial.variant.set('SQW100-1')
     trial.operator.set(tr('中国联通'))
-    assert trial.decision()['route'] == 'read_only_lifecycle_pending'
+    assert trial.decision()['route'] == 'automatic_supported'
+    trial.operator.set(tr('中国电信'))
+    assert trial.decision()['route'] == 'automatic_supported'
     trial.destroy()
     from feedback import Journal, write_bundle
     from feedback_gui import FeedbackDialog

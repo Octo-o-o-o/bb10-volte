@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "owner": "bb10-unified-carriers-v1",
+  "version": "0.5.0",
+  "desktop_revision": 23,
+  "files": {
+    "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
+    "device/profiles.py": "d863e5f097b184b7443dbd96f35f5d894c9487e951128e3b9b85550e86de37a0",
+    "device/device_info.py": "bb95b89e7cb55468db38b97449bb7cdccbdde48c708c77e124f1a0941b263cec",
+    "device/compatibility.py": "d9f1bb16af978d7318d65ffa393a6d5f4b237ea98bcda0c0554be05edb2532eb",
+    "device/service.py": "b079fd9dd23435481dbd7e2142f783b539129dd16f423116ccf63a87da3036ce",
+    "device/ims_image.py": "cc1e8237f803177e88f0271b5bf589be95bd13e8d5264111e5727766d3008163",
+    "device/radio_api.py": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
+    "device/telecom_native.py": "cc7cd3a21cb6a77569e4e42e190a96c48f8134b1c5b38853ef691d0a102c202d",
+    "device/telecom_dca.py": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
+    "device/carrier_policy.py": "dc5f83d0055ca608bba6f171f48fbd753b53e9f4206312def0e0ad76f8915dbb",
+    "device/unified_service.py": "cfa8de4da9b285f39faec18951d1ee929eed2864e31f7a34eb36ff8e2f52af9f",
+    "device/unified_dca.py": "70f54c5cb003c3021e574fd63bf51f48674645b0a6a0c1dd40f820089fece27c",
+    "device/unified_install.py": "a6560e2665bbab9b599f11b9b1c6d470370c16c59b5ecddc6872ce7e240dfb8d",
+    "device/unified_migrate.py": "2d0c4824427796dd8f0cc196ec64d883c0b405afc068e6be67089e3ecac387ef",
+    "device/unified_boot.sh": "8de05ca25d3ecb04dc8766d38a8bc32fd6660daa53e79b90b15bfc8fc162be26",
+    "device/unified_operator_name.py": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
+    "device/unified_own_number.py": "1f8711b6c43364e53ea684867bf30653ab8152dea14d067339b8a025aaa820a0",
+    "driver/devnp-volte_swcrypto_probe.so": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254"
+  }
+}

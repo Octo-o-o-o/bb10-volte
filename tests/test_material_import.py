@@ -307,14 +307,14 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertTrue(self.wizard.ack.get())
 
     def test_root_page_rechecks_phone_connected_after_offline_preparation(self):
-        self.wizard.variant.set('SQC100-3')
+        self.wizard.variant.set('SQC100-5')
         self.wizard.kit = 'prepared Q20 kit'
         self.wizard.usb = {'usb_count': 0, 'device': {}}
         self.wizard.refresh()
         self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
         self.assertEqual(self.wizard.root_detect_button.winfo_parent(), self.wizard.prepare_button.winfo_parent())
         usb = {'usb_count': 1, 'usb_present': True, 'usb_network': True, 'usb_address_ready': True,
-               'device': {'ModelName': 'SQC100-3', 'PlatformVersion': '10.3.3.3216'}}
+               'device': {'ModelName': 'SQC100-5', 'PlatformVersion': '10.3.3.3216'}}
         with patch.object(w, 'local_usb_state', return_value=usb) as probe, \
                 patch.object(w, 'verify_root', side_effect=w.WorkflowError('connection_refused')):
             self.wizard.root_detect_button.invoke()
@@ -323,8 +323,8 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(self.wizard.tabs.index(self.wizard.tabs.select()), 1)
         self.assertEqual(self.wizard.kit, 'prepared Q20 kit')
         self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
-        # SQC100-3 may prepare standalone Root, but is not automatic VoLTE.
-        self.assertIn('尚待适配', self.wizard.support_notice.cget('text'))
+        # SQC100-5 may prepare standalone Root, but is not automatic VoLTE.
+        self.assertIn('理论可试', self.wizard.support_notice.cget('text'))
         self.wizard.root_only.set(True)
         self.wizard.ack.set(True)
         self.wizard.mac_flash_ack.set(True)
@@ -379,7 +379,7 @@ class FirmwareImportGuiTests(unittest.TestCase):
             with self.subTest(variant=variant):
                 self.wizard.usb = {}
                 self.wizard.variant.set(variant)
-                expected = 'normal' if variant in ('SQN100-3', 'SQC100-2', 'SQW100-4') else 'disabled'
+                expected = 'normal'
                 self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), expected)
                 self.assertEqual(str(self.wizard.prepare_button.cget('state')), expected)
                 self.assertIn(variant, self.wizard.support_notice.cget('text'))
@@ -405,32 +405,24 @@ class FirmwareImportGuiTests(unittest.TestCase):
         self.assertEqual(str(self.wizard.flash_button.cget('state')), 'disabled')
         self.wizard.variant.set('SQW100-2')
         self.wizard.root_only.set(True)
-        self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'disabled')
+        self.assertEqual(str(self.wizard.prepare_button.cget('state')), 'normal')
 
     def test_selected_carrier_explains_q20_4_radio_limit_before_download(self):
         self.wizard.variant.set('SQC100-4')
-        self.wizard.operator.set(self.wizard.operator_options[1])
-        self.assertIn('频段没有交集', self.wizard.support_notice.cget('text'))
-        self.assertEqual(str(self.wizard.download_firmware_button.cget('state')), 'disabled')
-        self.wizard.operator.set(self.wizard.operator_options[2])
-        self.assertIn('尚待适配', self.wizard.support_notice.cget('text'))
+        for option in self.wizard.operator_options[1:3]:
+            self.wizard.operator.set(option)
+            self.assertIn('实测未通过',self.wizard.support_notice.cget('text'))
+            self.assertEqual(str(self.wizard.download_firmware_button.cget('state')),'normal')
 
     def test_system_upgrade_does_not_bypass_unsupported_volte_preparation(self):
         import firmware_gui
-        usb = {'usb_count': 1, 'device': {'ModelName': 'SQC100-3', 'PlatformVersion': '10.3.3.2205'}}
-        with patch.object(firmware_gui.upgrade, 'pending_upgrades', return_value=[]):
-            dialog = firmware_gui.FirmwareDialog(self.root, lambda *_: None, usb)
+        usb={'usb_count':1,'device':{'ModelName':'SQC100-5','PlatformVersion':'10.3.3.2205'}}
+        with patch.object(firmware_gui.upgrade,'pending_upgrades',return_value=[]):
+            dialog=firmware_gui.FirmwareDialog(self.root,lambda *_:None,usb)
         try:
-            self.assertEqual(str(dialog.prepare_button.cget('state')), 'disabled')
-            self.assertIn('尚待适配', dialog.support_notice.cget('text'))
-            with patch.object(firmware_gui.upgrade, 'prepare_upgrade') as prepare, \
-                    patch.object(firmware_gui.upgrade, 'upgrade') as flash:
-                dialog.prepare()
-                dialog.kit, dialog.stage = 'test-kit', 'prepared'
-                dialog.ack.set(True)
-                dialog.flash()
-            prepare.assert_not_called()
-            flash.assert_not_called()
+            self.assertEqual(str(dialog.prepare_button.cget('state')),'normal')
+            self.assertIn('理论可试',dialog.support_notice.cget('text'))
+            self.assertEqual(str(dialog.upgrade_button.cget('state')),'disabled')
         finally:
             dialog.close()
 

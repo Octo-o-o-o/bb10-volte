@@ -60,6 +60,11 @@ def main(argv=None):
     config=(sshdir/'sshd_config').read_text()
     config=config.replace('AuthorizedKeysFile=/etc/ssh/authorized_keys2 /accounts/devuser/.ssh/authorized_keys2','AuthorizedKeysFile=/etc/ssh/authorized_keys2')
     assert 'PasswordAuthentication=no' in config
+    if args.variant == 'SQC100-4':
+        # Exact-device intake: enabled mobile data caused pre-auth DNS stalls.
+        # Numeric USB source restrictions and unique key authentication remain.
+        assert not any(line.strip().lower().startswith('usedns') for line in config.splitlines())
+        config = config.rstrip() + '\nUseDNS=no\n'
     (sshdir/'sshd_config').write_text(config,encoding='ascii')
     host=(kit/'q10_host_rsa.pub').read_text().split()
     (kit/'known_hosts').write_text('169.254.0.1 '+' '.join(host[:2])+'\n',encoding='ascii')

@@ -40,9 +40,13 @@ class AutoCarrierWindow:
         ttk.Label(box, text=tr('首次安装后，换卡并正常重启即可在手机上选择运营商。\n'
             '支持当前验证范围：SQN100-3、SQC100-2、SQW100-4 / OS 10.3.3.3216。\n'
             '移动 460-00、联通 460-01、电信 460-11；其他 SIM 类型待适配。\n'
-            'Passport 切换电信入网策略时可能需要再重启一次。'),
+            'SQC100-4 另适配电信 460-11；发短信可能停在发送中并阻塞后续短信。\n'
+            'SQW100-1 另适配联通 460-01、移动 460-00／460-07、电信 460-11；电信短信仍有发送卡住和重复接收问题。携转卡按当前 SIM 归属网络识别。\n'
+            'Passport 保存入网策略后可能需要再正常重启一次。'),
             wraplength=680, justify='left').pack(anchor='w', pady=(16, 12))
-        self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机。三款机型的三网组合均已通过功能验收。'),
+        ttk.Label(box, text=tr('SQW100-4 电信提示：短信可能已送达但仍显示“发送中”，后续短信可能排队。请勿重发已送达短信；VoLTE 仍可正常开启。'),
+                  wraplength=680, justify='left').pack(anchor='w', pady=(0, 8))
+        self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机，程序将检查完整型号、系统和当前 SIM 的适配范围。'),
                                 wraplength=680, justify='left')
         self.status.pack(anchor='w', pady=12)
         self.window._feedback_status_labels = [self.status]
@@ -76,7 +80,9 @@ class AutoCarrierWindow:
         self.completion_button.configure(state='normal' if ready and not self.busy else 'disabled')
         for action, button in self.buttons.items():
             allowed = (not self.busy and (action == 'probe' or
-                action == 'install' and (report.get('can_install') and report.get('sim_supported') is True or report.get('can_update')) or
+                action == 'install' and (report.get('can_install') and report.get('sim_supported') is True or
+                    report.get('can_prepare_mobile_network') and
+                    (not report.get('installed') or report.get('installation_pending')) or report.get('can_update')) or
                 action in ('status', 'enable', 'disable') and report.get('installed') and
                     not report.get('installation_pending') and not report.get('update_pending')))
             if report.get('scope_error') and action != 'probe':
@@ -166,6 +172,8 @@ class AutoCarrierWindow:
                         self.report = result
                         self.status.configure(text=result['variant'] + ' · ' + result.get('operator', tr('SIM 未就绪')))
                         details = tr('安装会保存原始配置并接替现有适配。首次安装及后续换卡需要正常重启。')
+                        if result.get('can_prepare_mobile_network'):
+                            details += '\n\n' + tr('继续安装或启用 VoLTE 时，将自动打开移动网络，确认开启后重新核对 SIM 和适配条件。')
                         if result.get('installed') and result.get('status'):
                             title, details = status_text(result['status'])
                             self.status.configure(text=title)

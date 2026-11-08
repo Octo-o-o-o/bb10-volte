@@ -10,13 +10,25 @@
       ],
       "radio_candidate_operators": [
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQN100-2": {
       "family": "q10",
       "identity_documented": true,
       "china_fdd_bands": [],
-      "radio_candidate_operators": []
+      "radio_candidate_operators": [],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQN100-3": {
       "family": "q10",
@@ -29,13 +41,25 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQN100-4": {
       "family": "q10",
       "identity_documented": true,
       "china_fdd_bands": [],
-      "radio_candidate_operators": []
+      "radio_candidate_operators": [],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQN100-5": {
       "family": "q10",
@@ -45,7 +69,13 @@
       ],
       "radio_candidate_operators": [
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQC100-1": {
       "family": "classic",
@@ -60,7 +90,40 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "intake_20261108": {
+        "evidence": "materials/sqc100-1-intake-2026-11-08.json",
+        "manual_progress": "materials/device-intake-manual-progress.json",
+        "owner_reported_current_operator": "telecom",
+        "native_baseline_pending": false,
+        "installed_latest_candidate": true,
+        "manual_tests_precompleted": false,
+        "board": "CLASSICROW",
+        "os_version": "10.3.3.3216",
+        "intake_os_version": "10.3.3.2163",
+        "hardware_id": "9600270a",
+        "owner_authorized_trial_home_plmns": [
+          "460-00",
+          "460-01",
+          "460-11"
+        ],
+        "native_files_verified": 6,
+        "Root_UID_verified": 0,
+        "installed_mobile_version": "0.1.0.41",
+        "bundled_backend_revision": 40,
+        "current_home_plmn": "460-11",
+        "backend_installed": false,
+        "owner_activation_pending": true,
+        "read_only_original_backup_files_verified": 4,
+        "application_activation_backup_pending": true,
+        "owner_three_carrier_basic_pass": true
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQC100-2": {
       "family": "classic",
@@ -74,7 +137,13 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQC100-3": {
       "family": "classic",
@@ -86,7 +155,49 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "intake_20261108": {
+        "board": "CLASSICVZW",
+        "os_version": "10.3.3.3216",
+        "owner_authorized_trial_home_plmns": [
+          "460-00",
+          "460-01",
+          "460-11"
+        ],
+        "manual_tests_precompleted": false,
+        "manual_progress": "materials/device-intake-manual-progress.json",
+        "evidence": "materials/sqc100-3-intake-2026-11-08.json",
+        "native_baseline_pending": false,
+        "native_files_verified": 6,
+        "Root_UID_verified": 0,
+        "installed_mobile_version": "0.1.0.39",
+        "current_backend_revision": 38,
+        "final_candidate_revision": 38,
+        "current_home_plmn": "460-01",
+        "final_candidate_backend_installed": true,
+        "clean_boot_before_update_pending": false,
+        "current_unicom_IMS_registered": true,
+        "desktop_live_preflight_passed": true,
+        "first_final_normal_boot_acceptance_pending": true,
+        "manual_unicom_core_functional_checks_passed": true,
+        "owner_reports_unicom_basic_SMS_normal": true,
+        "unicom_SMS_detailed_checks_pending": true,
+        "unicom_closed_app_calls_owner_passed": true,
+        "unicom_SMS_busy_after_tests": false,
+        "owner_ready_for_next_carrier": true,
+        "current_device_connected": false,
+        "owner_reports_mobile_swap_passed": true,
+        "owner_reports_telecom_swap_passed": true,
+        "owner_manual_carrier_trial_plan_complete": true,
+        "other_carrier_fresh_HPLMN_unavailable": true,
+        "manual_detail_items_not_inferred": true
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQC100-4": {
       "family": "classic",
@@ -98,6 +209,84 @@
       "radio_candidate_operators": [
         "unicom",
         "telecom"
+      ],
+      "intake_record": {
+        "date": "2026-11-06",
+        "observed_board": "CLASSICNA",
+        "observed_original_os": "10.3.3.3057",
+        "observed_original_radio": "10.3.3.3058",
+        "evidence": "materials/sqc100-4-intake-2026-11-06.json",
+        "automatic_adaptation_admitted": true,
+        "validated_home_plmns": [
+          "460-11"
+        ],
+        "current_case_functional_acceptance_complete": false,
+        "all_carriers_or_client_operations_validated": false,
+        "observed_current_os": "10.3.3.3216",
+        "observed_current_radio": "10.3.3.3217",
+        "root_uid_verified": true,
+        "six_native_hashes_verified": true,
+        "observed_home_plmn": "460-11",
+        "current_stage": "accepted_with_known_sms_defect",
+        "owner_accepted_known_sms_defect": true,
+        "telecom_SMS_acceptance_complete": false,
+        "telecom_SMS_does_not_block_activation": true,
+        "telecom_known_issues": [
+          "outgoing_SMS_remains_pending_after_peer_receipt",
+          "subsequent_SMS_may_block"
+        ],
+        "adaptation_passed": true,
+        "required_scope_closeout_complete": true,
+        "latest_client_validation": {
+          "desktop": "r27",
+          "mobile": "0.1.0.28",
+          "Windows_actual_preflight": true,
+          "mobile_installed_runtime_and_connected_page": true,
+          "normal_boot_autostart": true,
+          "stop_and_configuration_restore": true,
+          "evidence": "materials/sqc100-4-intake-2026-11-06.json"
+        },
+        "unicom_adaptation": {
+          "status": "not_supported",
+          "decision": "owner_closed_after_field_trial",
+          "field_result": "No Unicom LTE found before or after position adjustment.",
+          "hardware_impossibility_proven": false,
+          "automatic_and_manual_entry_closed": true,
+          "evidence": "materials/sqc100-4-intake-2026-11-06.json"
+        },
+        "mobile_adaptation": {
+          "status": "not_adapted_LTE_unavailable",
+          "observed_home_plmn": "460-00",
+          "SIM_ready": true,
+          "LTE_enabled": true,
+          "LTE_scan_completed": true,
+          "discovered_LTE_PLMNs": [
+            "460-11"
+          ],
+          "Mobile_LTE_found": false,
+          "IMS_or_functional_pass_claimed": false,
+          "automatic_and_manual_entry_closed": true,
+          "evidence": "materials/sqc100-4-intake-2026-11-06.json"
+        },
+        "latest_radio_result_client_validation": {
+          "desktop_revision": 30,
+          "desktop_offline_selftest": true,
+          "mobile_version": "0.1.0.31",
+          "mobile_installed_members_verified": 77,
+          "Mobile_blocked_scope_notice_owner_confirmed": true,
+          "public_backend_restored_on_target": true,
+          "Mobile_VoLTE_functional_pass": false,
+          "evidence": "materials/sqc100-4-intake-2026-11-06.json"
+        }
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json",
+      "historical_unsupported_operators": [
+        "unicom"
       ]
     },
     "SQC100-5": {
@@ -110,7 +299,13 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQW100-1": {
       "family": "passport",
@@ -125,13 +320,74 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "intake": {
+        "status": "voice_data_admitted_with_carrier_specific_SMS_issues",
+        "date": "2026-11-06",
+        "observed_board": "WINDERMEREEMEA",
+        "observed_os": "10.3.3.3216",
+        "evidence": "materials/sqw100-1-intake-2026-11-06.json",
+        "automatic_adaptation_admitted": true,
+        "validated_home_plmns": [
+          "460-00",
+          "460-01",
+          "460-07",
+          "460-11"
+        ],
+        "current_case_functional_acceptance_complete": true,
+        "all_carriers_or_client_operations_validated": false,
+        "backend_functional_cases": [
+          "unicom_46001",
+          "mobile_46007",
+          "mobile_46000"
+        ],
+        "new_Unicom_package_GUI_acceptance": "v27_owner_confirmed_connected_and_scope; frozen_r26_GUI_scope_and_CLI_preflight_verified",
+        "admitted_voice_data_cases": [
+          "unicom_46001",
+          "mobile_46007",
+          "telecom_46011_card2",
+          "mobile_46000"
+        ],
+        "telecom_SMS_acceptance_complete": false,
+        "telecom_known_issues": [
+          "outgoing_SMS_may_remain_pending",
+          "incoming_SMS_may_be_duplicated"
+        ],
+        "telecom_SMS_does_not_block_activation": true,
+        "Unicom_final_evidence": "403-unicom-final-client-acceptance.json",
+        "Unicom_acceptance_scope": "Private/v26 functional evidence; v27 normal boot, signed runtime and UI. No fresh all-function v27 or full-uninstall claim.",
+        "active_trial": {
+          "home_plmn": "460-00",
+          "stage": "v30_version_scoped_acceptance_complete",
+          "functional_acceptance_complete": true,
+          "public_activation_admitted": true,
+          "evidence": "materials/sqw100-1-intake-2026-11-06.json"
+        },
+        "new_Mobile00_package_GUI_acceptance": "r29_visible_desktop_and_v30_real_app_install_verified; final_mobile_UI_backend_lifecycle_pending",
+        "Mobile00_evidence": "materials/sqw100-1-intake-2026-11-06.json",
+        "Mobile00_acceptance_scope": "Private backend functional and normal boot passed; new client and Mobile00 stop/restore pending.",
+        "Mobile00_final_evidence": "475-mobile00-v30-final-acceptance.json",
+        "Mobile00_final_mobile_version": "0.1.0.30",
+        "Mobile00_final_desktop_revision": 29
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQW100-2": {
       "family": "passport",
       "identity_documented": false,
       "china_fdd_bands": null,
-      "radio_candidate_operators": null
+      "radio_candidate_operators": null,
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQW100-3": {
       "family": "passport",
@@ -146,7 +402,13 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
     },
     "SQW100-4": {
       "family": "passport",
@@ -161,7 +423,138 @@
         "mobile",
         "unicom",
         "telecom"
-      ]
+      ],
+      "retest_20261107": {
+        "evidence": "materials/sqw100-4-retest-2026-11-07.json",
+        "board": "WINDERMERE4ROW",
+        "os_version": "10.3.3.3216",
+        "retained_activation_home_plmns": [
+          "460-00",
+          "460-01",
+          "460-11"
+        ],
+        "telecom_adaptation": "adapted_with_SMS_limitations",
+        "telecom_voice_data_mobile_UI_verified": true,
+        "owner_accepted_known_SMS_defect": true,
+        "telecom_SMS_acceptance_complete": false,
+        "telecom_SMS_does_not_block_activation": true,
+        "telecom_known_issues": [
+          "outgoing_SMS_remains_pending_after_peer_receipt",
+          "SMS_service_busy_after_send"
+        ],
+        "owner_independent_SIM_tests_enabled": true,
+        "mobile_after_Telecom_SMS_incident": {
+          "evidence": "materials/sqw100-4-retest-2026-11-07.json",
+          "native_SMS_idle_but_published_busy": true,
+          "single_field_reconciled_with_verified_backup": true,
+          "normal_boot_restored_automatic_Mobile_registration": true,
+          "owner_calls_audio_LTE_data_short_long_identical_SMS_passed": true,
+          "functional_versions": {
+            "mobile": "0.1.0.34",
+            "desktop_revision": 33,
+            "backend_revision": 32
+          },
+          "automatic_startup_recovery_candidate": {
+            "mobile": "0.1.0.35",
+            "desktop_revision": 34,
+            "installed_backend": true,
+            "normal_boot_validation_pending": false,
+            "normal_boot_registration_verified": true,
+            "signed_mobile_runtime_verified": true,
+            "positive_stale_write_replayed_on_final_boot": false
+          },
+          "activation_scope_unchanged": true
+        },
+        "new_unit_Unicom_functional_result_pending": false,
+        "new_unit_Mobile_functional_result_pending": false,
+        "mobile_adaptation": "adapted",
+        "mobile_final_client": "0.1.0.35",
+        "mobile_final_backend_revision": 34,
+        "mobile_acceptance_record": "121-mobile34-acceptance-verdict.json",
+        "unicom_manual_result": "owner_confirmed_passed",
+        "unicom_manual_report_date": "2026-11-08",
+        "unicom_fresh_automatic_telemetry_verified": false,
+        "owner_manual_operator_test_plan_complete": true
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
+    },
+    "SQK100-1": {
+      "family": "p9983",
+      "identity_documented": true,
+      "china_fdd_bands": [],
+      "radio_candidate_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "radio_scope_basis": "Owner-authorized exact-unit trials; no band or voice acceptance inferred from Q10",
+      "intake_20261108": {
+        "board": "KHANE",
+        "os_version": "10.3.3.3216",
+        "owner_authorized_trial_home_plmns": [
+          "460-00",
+          "460-01",
+          "460-11"
+        ],
+        "manual_tests_precompleted": false,
+        "manual_progress": "materials/device-intake-manual-progress.json",
+        "evidence": "materials/sqk100-1-intake-2026-11-08.json",
+        "native_baseline_pending": false,
+        "root_OS_radio_written": true,
+        "post_flash_normal_boot_verified": true,
+        "Root_UID_verified": 0,
+        "installed_latest_candidate": true,
+        "windows_selftest_passed": true,
+        "native_files_verified": 6,
+        "installed_mobile_version": "0.1.0.40",
+        "installed_backend_revision": 39,
+        "normal_reboot_required": false,
+        "observed_home_plmn": "460-11",
+        "radio_power_at_readback": "OFF",
+        "boot_hook_verified": true,
+        "evidence_sha256": "4d650a3f53c33eb6c48467195f433676a0b7b1b34f11ce0c45d9dfe0b678d230",
+        "root_success_notification_owner_confirmed": true,
+        "installation_phase_at_last_device_readback": "active_next_boot",
+        "normal_reboot_requirement_satisfied_by_owner_report": true,
+        "owner_confirmed_post_install_readiness": {
+          "post_install_reboot_completed": true,
+          "Root_success": true,
+          "cellular_network_enabled": true,
+          "activation_normal": true
+        },
+        "owner_readiness_confirmed_at_utc": "2026-11-08T06:08:15.523712+00:00",
+        "current_state_basis": "Owner feedback 031; prior radio readback remains historical",
+        "last_device_readback_at_utc": "2026-11-08T04:20:21.426033+00:00"
+      },
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json"
+    },
+    "SQK100-2": {
+      "family": "p9983",
+      "identity_documented": true,
+      "china_fdd_bands": [
+        5
+      ],
+      "radio_candidate_operators": [
+        "telecom"
+      ],
+      "root_recipe_verified": false,
+      "activation_open_operators": [
+        "mobile",
+        "unicom",
+        "telecom"
+      ],
+      "compatibility_evidence": "materials/compatibility-matrix.json",
+      "identity_source": "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-415%20CR%20v1.1e.pdf"
     }
   },
   "sources": {

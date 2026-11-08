@@ -126,14 +126,25 @@ int main(int argc, char **argv)
             bb::cascades::Window *window = lifecycle->mainWindow();
             MobileController c(lifecycle); c.initialize();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
+            CHECK(c.m_screenIdleTimer.isSingleShot());
+            CHECK(c.m_screenIdleTimer.interval() == 600000);
+            c.m_screenIdleTimer.start(1);
+            spin(30);
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            CHECK(!c.m_screenIdleTimer.isActive());
+            c.scheduleRefresh(); lifecycle->showFullscreen();
+            CHECK(!c.m_screenIdleTimer.isActive());
+            CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
             lifecycle->showThumbnail();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            CHECK(!c.m_pollTimer.isActive());
             lifecycle->showFullscreen();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
             lifecycle->hideWindow();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
             lifecycle->lockScreen(); lifecycle->unlockScreen();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::Normal);
+            CHECK(!c.m_screenIdleTimer.isActive());
             lifecycle->showFullscreen();
             CHECK(window->screenIdleMode() == bb::cascades::ScreenIdleMode::KeepAwake);
             lifecycle->lockScreen(); lifecycle->unlockScreen();
@@ -237,7 +248,7 @@ int main(int argc, char **argv)
         {
             MobileController c(&parent); c.initialize();
             c.m_cachedStatus = true;
-            const QStringList states = QString("ready_to_install,update_ready,disabled").split(',');
+            const QStringList states = QString("ready_to_install,mobile_network_auto_enable,update_ready,disabled").split(',');
             for (const QString &state : states) {
                 c.m_model.insert("state", state);
                 CHECK(c.statusMessage() == c.label("cached_general_help"));

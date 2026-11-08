@@ -1,0 +1,24 @@
+{
+  "as_of": "2026-11-08",
+  "sources": [
+    "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-415%20CR%20v1.1e.pdf",
+    "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-391%20ST%20v1.10.pdf"
+  ],
+  "Passport_certified_variants": [
+    "SQW100-1",
+    "SQW100-3",
+    "SQW100-4"
+  ],
+  "SQW100_2": "Production identity remains unconfirmed; absence from certification does not prove nonexistence. Not a diagnosed band failure.",
+  "P9983_certified_variants": [
+    "SQK100-1",
+    "SQK100-2"
+  ],
+  "SQK100_2_LTE_bands": [
+    2,
+    4,
+    5,
+    17
+  ],
+  "new_hardware_tests": false
+}

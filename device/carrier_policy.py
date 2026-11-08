@@ -1,7 +1,7 @@
 """Pure policy for the unified phone service. Compatible with Python 3.2.
 
 Code/catalog integrity is independent of the selected SIM and generated profile.
-Only the hardware, OS, PLMNs and stock images actually studied are admitted.
+Model admission is independent of historical hardware acceptance.
 """
 import copy
 import hashlib
@@ -10,11 +10,33 @@ import profiles
 OWNER = 'bb10-unified-carriers-v1'
 BASE = '/var/bb10_volte'
 OS_VERSION = '10.3.3.3216'
-MODELS = {'SQN100-3': ('q10', None), 'SQC100-2': ('classic', 'CLASSICATT'),
-          'SQW100-4': ('passport', 'WINDERMERE4ROW')}
+MODELS = {
+    'SQN100-1': ('q10', None),
+    'SQN100-2': ('q10', None),
+    'SQN100-3': ('q10', None),
+    'SQN100-4': ('q10', None),
+    'SQN100-5': ('q10', None),
+    'SQC100-1': ('classic', 'CLASSICROW'),
+    'SQC100-2': ('classic', 'CLASSICATT'),
+    'SQC100-3': ('classic', 'CLASSICVZW'),
+    'SQC100-4': ('classic', 'CLASSICNA'),
+    'SQC100-5': ('classic', None),
+    'SQW100-1': ('passport', 'WINDERMEREEMEA'),
+    'SQW100-2': ('passport', None),
+    'SQW100-3': ('passport', None),
+    'SQW100-4': ('passport', 'WINDERMERE4ROW'),
+    'SQK100-1': ('p9983', 'KHANE'),
+    'SQK100-2': ('p9983', None),
+}
 CARRIERS = {'00': ('mobile', 'China Mobile', ['cmnet']),
             '01': ('unicom', 'China Unicom', ['3gnet']),
+            '07': ('mobile', 'China Mobile', ['cmnet']),
             '11': ('telecom', 'China Telecom', ['ctnet', 'ctlte'])}
+# Open trial admission is not evidence of completed functional tests.
+ADMITTED_MNCS = {variant: tuple(sorted(CARRIERS)) for variant in MODELS}
+# Legacy API spelling retained for old tooling; never treat this as acceptance.
+VALIDATED_MNCS = ADMITTED_MNCS
+OWNER_TRIAL_MODELS = tuple(MODELS)
 
 
 def model(facts):
@@ -23,6 +45,9 @@ def model(facts):
         raise ValueError('unsupported_model_or_os')
     family, board = MODELS[variant]
     if board is not None and facts.get('board_type') != board:
+        raise ValueError('hardware_identity_conflict')
+    import device_info
+    if device_info.identify(facts).get('identity_conflict'):
         raise ValueError('hardware_identity_conflict')
     return family
 
@@ -36,7 +61,9 @@ def select(facts, card):
     if type(kind) is not int or not kind & 2 or kind & 16:
         raise ValueError('sim_route_unsupported')
     mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
-    if mcc != '460' or mnc not in CARRIERS:
+    if profiles.carrier_adaptation_blocked(facts.get('variant'), mcc, (mnc,)):
+        raise ValueError('operator_not_supported')
+    if mcc != '460' or mnc not in ADMITTED_MNCS.get(facts.get('variant'), ()):
         raise ValueError('carrier_not_validated')
     if not profiles.identity_matches(imsi, mcc, mnc):
         raise ValueError('sim_identity_unavailable')

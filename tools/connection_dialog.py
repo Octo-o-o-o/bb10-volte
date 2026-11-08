@@ -119,7 +119,7 @@ class ConnectionDialog(tk.Toplevel):
         if self.config:
             self.option(tr('重新查找本机已有连接'), self.rediscover)
         self.option(tr('选择以前刷机的文件夹'), self.select_folder, tr('选择整个文件夹，程序识别登录材料并为本机建立连接。'))
-        self.option(tr('没有旧文件，从手机重新授权'), self.pair, tr('适用于手机已有可用 Root 终端的情况。'))
+        self.option(tr('没有旧文件，从手机重新授权'), self.pair, tr('已有 Root 的手机可在新版 BB10 VoLTE 中点击授权。'))
         if pending_pairings():
             self.option(tr('继续上次未完成的手机授权'), lambda: self.recover('pair'))
 
@@ -152,8 +152,8 @@ class ConnectionDialog(tk.Toplevel):
     def pair(self):
         self.clear_options()
         self.title_label.configure(text=tr('先确认手机可以授权'))
-        self.detail.configure(text=tr('手机需要已有可用的 Root 终端，例如原 Root 工具提供的 Term49。只有图标或开发模式还不够，授权脚本会检查实际权限。'))
-        self.option(tr('有可用的 Root 终端，开始授权'), lambda: self.recover('pair'))
+        self.detail.configure(text=tr('手机需要已有有效 Root。新版 BB10 VoLTE 的“连接电脑”可点击授权，旧版保留终端备用流程；程序会检查实际权限。'))
+        self.option(tr('手机已 Root，开始授权'), lambda: self.recover('pair'))
         self.option(tr('不清楚如何确认'), self.root_help)
         self.option(tr('没有 Root 终端，也没有旧文件'), self.unavailable)
 

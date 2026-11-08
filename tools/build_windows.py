@@ -54,6 +54,9 @@ def runtime_data():
                          'tools/install_usb_drivers.ps1', 'tools/verify_signature.ps1',
                          'materials/sources.json', 'materials/stock-partitions.json', 'materials/stock-upgrade.json',
                          'materials/usb-drivers.json', 'materials/first-run-tools.json', 'materials/device-support.json',
+                         'materials/compatibility-matrix.json', 'materials/device-intake-manual-progress.json',
+                         'materials/sqw100-1-intake-2026-11-06.json',
+                         'materials/sqc100-4-intake-2026-11-06.json',
                          'materials/community-research.json', 'materials/upstream-addon-research.json'}
     names.update({'materials/mobile-app-artifact.json', 'tools/mobile_app_device.py'})
     from mobile_app_install import BUNDLED_BAR, bundled_bar

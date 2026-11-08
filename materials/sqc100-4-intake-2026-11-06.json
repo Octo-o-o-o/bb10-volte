@@ -1,0 +1,1010 @@
+{
+  "schema": 1,
+  "instructions": "null means not observed; no device acceptance is inferred. Keep personal identifiers, keys and raw private logs out of this record.",
+  "declared_variant": "SQC100-4",
+  "reported_delivery": "机主于2026-11-06确认收到并连接本机USB",
+  "device_received": true,
+  "observed_variant": "SQC100-4",
+  "board_type": "CLASSICNA",
+  "bootrom_hardware_id_if_read_only_available": "9700270a",
+  "original_os": "10.3.3.3057",
+  "original_radio": "10.3.3.3058",
+  "original_root_status": "No configured sshd_config or use.sshd marker; no effective UID verification before upgrade",
+  "owner_data_backup_confirmed": null,
+  "physical_condition": null,
+  "system_firmware_and_root": {
+    "selected_recipe": "SQC100-4 / AutoRoot V4 / Windows native cap",
+    "stock_image_sha256_verified": true,
+    "exact_loader_mapping_verified": true,
+    "loader_sha256_verified": true,
+    "flash_result": "stock_os_and_root_os_radio_written",
+    "post_flash_os_radio": {
+      "os": "10.3.3.3216",
+      "radio": "10.3.3.3217"
+    },
+    "root_uid_verified": true,
+    "restore_path_verified": "actual full stock flash exit 0 and normal boot OS 10.3.3.3216 verified before Root",
+    "stage_receipts": {
+      "stock": {
+        "completed": true,
+        "exit_code": 0,
+        "writing_complete": true,
+        "done": true,
+        "at": "2026-11-06T19:05:14.503432+08:00"
+      },
+      "os": {
+        "completed": true,
+        "exit_code": 73,
+        "writing_complete": true,
+        "done": false,
+        "at": "2026-11-06T19:15:00.054981+08:00",
+        "expected_v4_os_security_result": true
+      },
+      "radio": {
+        "completed": true,
+        "exit_code": 0,
+        "writing_complete": true,
+        "done": true,
+        "at": "2026-11-06T19:15:51.402745+08:00",
+        "expected_v4_os_security_result": false
+      }
+    },
+    "post_stock_os": "10.3.3.3216",
+    "post_root_os_boot_verified": true,
+    "post_root_os": "10.3.3.3216",
+    "last_root_access_check": {
+      "at": "2026-11-06T19:34:47.490215+08:00",
+      "ssh_available": true,
+      "unique_host_key_verified": true
+    },
+    "next_required_phone_action": null,
+    "effective_uid": 0,
+    "six_native_fingerprints_match": true,
+    "ssh_dns_fix": {
+      "observed_pre_authentication_delay_seconds": 77.43,
+      "UseDNS": "no",
+      "configuration_test_passed": true,
+      "only_effective_setting_changed": "UseDNS",
+      "fresh_connections_verified": true,
+      "original_configuration_retained": true,
+      "configuration_sha256": "a287950a8092d1fdd01376a7457a918d5b9bb36acc3dc6a02cea36787c1ada60",
+      "windows_recipe_updated_for_exact_variant": true
+    }
+  },
+  "six_native_file_sha256": {
+    "/etc/carrier/config/36.xml": "929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4",
+    "/radio/bin/qct_rrm": "71835f701affcb9254eadb4ee299e8f7d07547543b3e0f61519456b8241dcb3b",
+    "/usr/sbin/dca": "5ebafa9b5b0949090fda37c1b5e6083362bac1007f281d6f1900772aedc1ae06",
+    "/sbin/io-pkt-v6-hc": "17d2bb5b641b3acd1ffac2e98fbd86c881633263598db983db4819702df3d222",
+    "/radio/bin/ims_rrm": "043d38b0f08cf6a9696ef405f3976679e32ff9ad943ec35294c3d3da69a12b67",
+    "/radio/lib/libradiocontrol.so.0.1": "0d0acc34656c16300db8a1b3341174d3749b8d50fe6081350805e05998d3ee8a"
+  },
+  "operator_cases": {
+    "mobile": {
+      "current_route": "blocked",
+      "sim_type_and_home_plmn_without_identifiers": {
+        "state": "READY",
+        "type": "USIM without ISIM",
+        "kind": 2,
+        "home_plmn": "460-00"
+      },
+      "desktop": {
+        "application_build": "Exact-device read-only intake diagnostics; installed backend is the inactive private Unicom 264 snapshot.",
+        "preflight_report": "309-313",
+        "current_lte_data": false,
+        "ims_registration": false,
+        "installation": null,
+        "manual_start": null,
+        "outgoing_call": null,
+        "incoming_call": null,
+        "audio_both_directions": null,
+        "lte_during_call": null,
+        "mobile_data_after_call": null,
+        "sms_short_send_receive": null,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": null,
+        "normal_reboot": null,
+        "observations": "SIM is ready; system and modem LTE are enabled. Completed LTE scan found only 460-11. No Mobile IMS start, functional test or normal-boot validation was performed. The earlier NO SIM result preceded owner insertion and is not a Mobile failure."
+      },
+      "mobile": {
+        "application_build": null,
+        "preflight_report": null,
+        "current_lte_data": null,
+        "ims_registration": null,
+        "installation": null,
+        "manual_start": null,
+        "outgoing_call": null,
+        "incoming_call": null,
+        "audio_both_directions": null,
+        "lte_during_call": null,
+        "mobile_data_after_call": null,
+        "sms_short_send_receive": null,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": null,
+        "normal_reboot": null,
+        "observations": null
+      },
+      "candidate_profile_in_trial_bundle": null,
+      "adaptation_status": "not_adapted_LTE_unavailable",
+      "radio_diagnosis": {
+        "variant": "SQC100-4",
+        "board": "CLASSICNA",
+        "os_version": "10.3.3.3216",
+        "home_plmn": "460-00",
+        "SIM_type": "USIM_without_ISIM",
+        "at": "2026-11-07T14:38:59.759159+08:00",
+        "read_only": true,
+        "owner_question": "移动网络菜单只有3G和2G，是否导致此前联通无法使用；用户报告所在地只有4G。",
+        "SIM_ready": true,
+        "LTE_enabled_in_PPS": true,
+        "LTE_enabled_in_modem": true,
+        "carrier_allows_LTE": true,
+        "configured_technologies": [
+          "gsm",
+          "umts",
+          "lte"
+        ],
+        "modem_mode_preference_mask": 28,
+        "PPS_enabled_technologies": 19,
+        "capability_and_enabled_LTE_bands": [
+          1,
+          2,
+          4,
+          5,
+          7,
+          13,
+          17,
+          25
+        ],
+        "scan_completed": true,
+        "discovered_LTE_PLMNs": [
+          "460-11"
+        ],
+        "Mobile_LTE_found": false,
+        "usable_LTE_data": false,
+        "IMS_connected": false,
+        "cached_200_OK_ignored": true,
+        "no_SIM_before_owner_insert_is_not_Mobile_failure": true,
+        "earlier_Unicom_SIM_was_ready": true,
+        "earlier_Unicom_LTE_was_enabled": true,
+        "UI_4G_option_absence_cause": "Not established; the menu is not evidence that modem LTE is disabled.",
+        "diagnosis": "Current Mobile LTE admission is blocked. Enabled bands match documented hardware; no Mobile LTE was found. No evidence of an LTE-disabled configuration.",
+        "published_Mobile_RF_overlap": false,
+        "modem_set_requests": 0,
+        "PPS_configuration_writes": 0,
+        "Mobile_native_IMS_attempted": false,
+        "other_device_accessed": false,
+        "sources": {
+          "309-trial-observation.json": "760861dd8c6e85d80775e30c247d6b762856711eed7ba3c5df4bfe36ab674f45",
+          "310-mobile-SIM-baseline.json": "7caee50e65abddc37c0e422ac2bd65fc3cc5a7d054d56ebb8299bf23a0a8fcea",
+          "311-network-capture.json": "982292e5f00a78d8012fb3111b7ca73543f11e0547125457ad470391000d2da5",
+          "312-mobile-nas.json": "11b257acf03d516ab696e00f85711d95695cdb2d5bca30cb0ace58f0bf3c5685",
+          "277-unicom-lte-coverage-check.json": "55670ed78c1061edbcb04039a577f9bc2bac0560b4ac854f797dbc98c2482b82"
+        },
+        "references": [
+          {
+            "title": "BlackBerry OS 10.3.3 Security Target v1.10, Table 1",
+            "url": "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-391%20ST%20v1.10.pdf#page=11",
+            "local_pdf_sha256": "ada5e369bd08dd4435c3a611e2376d8b5650ec58deb31c8522c80eda0336bb21",
+            "fact": "SQC100-4: FDD-LTE bands 1, 2/25, 4, 5, 7, 13, 17; no TD-LTE listed."
+          },
+          {
+            "title": "MIIT public mobile frequency allocation, data as of April 2024",
+            "url": "https://www.miit.gov.cn/jgsj/wgj/kpzs/art/2021/art_9105abf8095d49bd9065c1b6ebb06d2a.html",
+            "accessed": "2026-11-07",
+            "source_data_date": "2024-04",
+            "fact": "Mobile LTE FDD at 900 and 1700/1800 MHz, plus TD-LTE allocations; this is not a measurement of the owner location."
+          }
+        ],
+        "acceptance_facts": {
+          "identity_root_native": true,
+          "original_backups": true,
+          "SMS_idle": true,
+          "normal_boot_registration": null,
+          "normal_stop_restore": null
+        }
+      }
+    },
+    "unicom": {
+      "current_route": "blocked",
+      "sim_type_and_home_plmn_without_identifiers": {
+        "state": "READY",
+        "type_bits": 2,
+        "usim_without_isim": true,
+        "home_plmn": "460-01"
+      },
+      "desktop": {
+        "application_build": null,
+        "preflight_report": null,
+        "current_lte_data": null,
+        "ims_registration": null,
+        "installation": null,
+        "manual_start": null,
+        "outgoing_call": null,
+        "incoming_call": null,
+        "audio_both_directions": null,
+        "lte_during_call": null,
+        "mobile_data_after_call": null,
+        "sms_short_send_receive": null,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": null,
+        "normal_reboot": null,
+        "observations": "Unicom marked unsupported at owner request after two completed LTE scans found only Telecom LTE. No native IMS launch or functional acceptance. Automatic and manual product entry closed; original runtime settings restored. New client package verification is recorded separately."
+      },
+      "mobile": {
+        "application_build": null,
+        "preflight_report": null,
+        "current_lte_data": null,
+        "ims_registration": null,
+        "installation": null,
+        "manual_start": null,
+        "outgoing_call": null,
+        "incoming_call": null,
+        "audio_both_directions": null,
+        "lte_during_call": null,
+        "mobile_data_after_call": null,
+        "sms_short_send_receive": null,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": null,
+        "normal_reboot": null,
+        "observations": null
+      },
+      "candidate_profile_in_trial_bundle": null,
+      "new_intake_baseline": {
+        "at": "2026-11-07T08:53:21.082368+08:00",
+        "variant": "SQC100-4",
+        "board": "CLASSICNA",
+        "home_plmn": "460-01",
+        "SIM_kind": 2,
+        "USIM_without_ISIM": true,
+        "new_boot_and_root_verified": true,
+        "different_SIM_from_Telecom": true,
+        "root_UID": 0,
+        "six_native_files_verified": true,
+        "public_r27_payload_verified": true,
+        "previous_Telecom_configuration_restored": true,
+        "old_crypto_resource_released": true,
+        "SMS_idle": true,
+        "calls_idle": true,
+        "current_unsupported_SIM_guard_expected": true,
+        "LTE_currently_observed": false,
+        "data_connected": null,
+        "other_device_modified": false
+      },
+      "private_trial_preparation": {
+        "evidence": "264-unicom-trial-preparation.json",
+        "exact_scope_cases_passed": 13,
+        "native_voice_and_SMS_code_changed": false,
+        "public_runtime_admission_changed": false
+      },
+      "private_managed_trial": {
+        "installation_verified": true,
+        "installation_evidence": "267-unicom-install-verification.json",
+        "rollback_files_verified": 3,
+        "manual_start_completed": true,
+        "start_evidence": "268-unicom-start.json",
+        "latest_phase": "error_restored",
+        "readiness_timeout_seconds": 300,
+        "native_IMS_launched": false,
+        "original_configuration_restored": true,
+        "original_four_DCA_files_verified": true,
+        "UE_usage": 0,
+        "voice_policy": 0,
+        "crypto_resources_unused": true,
+        "SIM_is_current_bound_Unicom": true,
+        "normal_reboot_with_Unicom_service_accepted": false,
+        "calls_SMS_data_accepted": false,
+        "Telecom_SMS_waiver_applied_to_Unicom": false,
+        "final_observation_evidence": "278-trial-observation.json"
+      },
+      "lte_coverage_checkpoint": {
+        "at": "2026-11-07T09:14:19.879668+08:00",
+        "radio_and_mobile_data_enabled": true,
+        "configured_network_mode": [
+          "gsm",
+          "umts",
+          "lte"
+        ],
+        "network_selection": "AUTO",
+        "modem_registration_state": "not_registered_searching",
+        "lte_service": "none",
+        "lte_networks_found": [
+          "460-11"
+        ],
+        "Unicom_LTE_found": false,
+        "LTE_scan_completed": true,
+        "enabled_bands_match_hardware_capability": true,
+        "documented_fdd_lte_bands": [
+          1,
+          2,
+          4,
+          5,
+          7,
+          13,
+          17,
+          25
+        ],
+        "owner_reports_recent_4g_in_other_phone": true,
+        "hypothesis": "Current-location LTE coverage compatible with this hardware suffix is unconfirmed.",
+        "permanent_operator_incompatibility_established": false,
+        "modem_set_requests": 0,
+        "persistent_band_or_NV_changes": false,
+        "evidence": [
+          "273-unicom-nas.json",
+          "275-unicom-nas.json",
+          "277-unicom-lte-coverage-check.json"
+        ],
+        "primary_reference": "https://www.commoncriteriaportal.org/nfs/ccpfiles/files/epfiles/383-4-391%20ST%20v1.10.pdf"
+      },
+      "adaptation_status": "not_supported",
+      "closure": {
+        "at": "2026-11-07T09:32:04.472201+08:00",
+        "owner_requested": true,
+        "decision": "Stop Unicom adaptation and mark this exact hardware suffix unsupported.",
+        "evidence": [
+          "282-owner-position-adjusted.json",
+          "283-unicom-nas.json",
+          "284-unicom-position-recheck-analysis.json",
+          "286-owner-closes-unicom.json"
+        ],
+        "LTE_scan_before_and_after_position_change": [
+          "460-11"
+        ],
+        "Unicom_LTE_discovered": false,
+        "IMS_or_functional_pass_claimed": false,
+        "permanent_hardware_incompatibility_proven": false,
+        "automatic_and_manual_entry_closed_in_new_source": true,
+        "phone_private_trial_payload_retained_while_owner_swaps_SIM": false,
+        "phone_payload_cleanup_pending_next_authorized_mobile_case": false,
+        "source_and_packaged_clients_updated": true,
+        "public_payload_restored_evidence": "326-mobile-radio-product-verified.json"
+      },
+      "later_read_only_rechecks": [
+        {
+          "at": "2026-11-08T00:20:09.920953+08:00",
+          "variant": "SQC100-4",
+          "board": "CLASSICNA",
+          "os_version": "10.3.3.3216",
+          "SIM_home_plmn": "460-01",
+          "SIM_state": "READY",
+          "SIM_kind": 2,
+          "same_subscriber_identity_as_previous_Unicom_case": true,
+          "current_LTE_network_plmn": "460-11",
+          "current_LTE_band": 5,
+          "registration_state": "denied",
+          "packet_domain": "detached",
+          "LTE_network_forbidden": true,
+          "emergency_only": true,
+          "mobile_data_connected": false,
+          "IMS_connected": false,
+          "cached_IMS_200_OK_is_not_current_registration": true,
+          "LTE_enabled": true,
+          "conclusion": "The inserted SIM remains the earlier Unicom 460-01 SIM. 460-11 is the current limited-service LTE network, not the SIM home PLMN; no successful registration or data/IMS connection.",
+          "carrier_code_reference": {
+            "url": "https://www.sunmobile.com.hk/TDWorld/r/cms/www/red/files/SUN_Mobile_Master.pdf#page=1",
+            "title": "SUN Mobile roaming network list, effective 2025-08-01",
+            "mapping": {
+              "460-01": "China Unicom",
+              "460-11": "China Telecom"
+            },
+            "accessed": "2026-11-08"
+          },
+          "enum_layout_reference": {
+            "path": "research/volte_session/radio-inspection/libqmi-qmi-enums-nas.h",
+            "sha256": "dffb273546f84869b59ac8c63432ed0fbc798b26d1a970603ae1077bf76eb6a4"
+          },
+          "configuration_modified": false,
+          "activation_attempted": false,
+          "full_scan_performed": false,
+          "other_device_accessed": false,
+          "existing_product_admission_changed": false,
+          "evidence": {
+            "001-SIM-network-recheck.json": "a7ee8373d90b2e880e966a0cf772733b69fff9d042588d566293f547a7d16c99"
+          },
+          "evidence_root": "research/device-intake/SQC100-4/2026-11-08/"
+        }
+      ]
+    },
+    "telecom": {
+      "current_route": "automatic_supported",
+      "sim_type_and_home_plmn_without_identifiers": {
+        "state": "READY",
+        "type_bits": 6,
+        "usim_without_isim": true,
+        "home_plmn": "460-11"
+      },
+      "desktop": {
+        "application_build": "0.5.0-r27-preview-sqc4ct1107",
+        "preflight_report": {
+          "source": "private intake engine snapshot",
+          "actual_variant": "SQC100-4",
+          "actual_board": "CLASSICNA",
+          "root_and_six_native_files_passed": true,
+          "blockers": [
+            {
+              "code": "lte_not_ready",
+              "id": "lte",
+              "status": "wait"
+            },
+            {
+              "code": "data_services_off",
+              "id": "apn",
+              "status": "wait"
+            },
+            {
+              "code": "baseline_not_clean",
+              "id": "baseline",
+              "status": "wait"
+            }
+          ]
+        },
+        "current_lte_data": true,
+        "ims_registration": true,
+        "installation": {
+          "completed": true,
+          "client": "private intake CLI based on r23 engine",
+          "application_build": "private-exact-SQC100-4-460-11",
+          "backup_verified": true,
+          "normal_reboot_required": true,
+          "public_desktop_GUI_flow_verified": false
+        },
+        "manual_start": null,
+        "outgoing_call": true,
+        "incoming_call": true,
+        "audio_both_directions": true,
+        "lte_during_call": {
+          "sampled": true,
+          "active_samples": 5,
+          "all_active_samples_on_lte": true,
+          "full_call_duration_coverage": false
+        },
+        "mobile_data_after_call": true,
+        "sms_short_send_receive": false,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": {
+          "passed": true,
+          "transport": "shared desktop API",
+          "original_configuration_readback": true,
+          "GUI_button_exercised": null,
+          "evidence": "247-ready-for-final-normal-boot.json"
+        },
+        "normal_reboot": true,
+        "observations": "Private CLI-installed engine auto-started after verified normal reboot and registered IMS 200 OK. Owner confirmed bidirectional calls/audio, incoming SMS and browsing. First outbound SMS is received but UI remains sending and subsequent send is blocked.",
+        "private_engine_preflight": {
+          "variant": "SQC100-4",
+          "family": "classic",
+          "os_version": "10.3.3.3216",
+          "root_kind": "autoroot-v4",
+          "sim_supported": true,
+          "sim_reason": null,
+          "operator": "telecom",
+          "can_install": true,
+          "scope_error": null,
+          "installed": false,
+          "legacy_detected": false,
+          "call_idle": true,
+          "stock_template_verified": true
+        },
+        "current_radio_power": "ON",
+        "latest_network_snapshot": {
+          "internet_connectable": true,
+          "internet_present": true,
+          "mcc": "460",
+          "data_connected": false,
+          "lte_active_band_mask": 16,
+          "data_settings_read_error": null,
+          "network_service": 33555457,
+          "sim_type": 6,
+          "mnc": "11",
+          "identity_matches": true,
+          "data_read_error": null,
+          "internet_enabled": true,
+          "sim_state": "READY",
+          "radio_on": true,
+          "observed_data_apn": "unknown",
+          "radio_read_error": null,
+          "data_service_mode": "ON",
+          "apn_matches": null,
+          "network_read_error": null,
+          "data_services_status": "ON",
+          "lte_band_capability_mask": 16846939,
+          "lte": true,
+          "scope": "snapshot_only_not_registration_or_band_proof",
+          "internet_active": true,
+          "emergency_service": true,
+          "lte_data_service": false
+        },
+        "first_normal_boot_autostart": {
+          "verified_new_boot": true,
+          "ims_connected": true,
+          "registration_status": "200 OK",
+          "stop_restore_cycle_complete": false
+        },
+        "sms_submission_issue": {
+          "outgoing_call": true,
+          "incoming_call": true,
+          "audio_both_directions": true,
+          "receive_sms": true,
+          "internet_browsing": true,
+          "first_sms_received_by_peer": true,
+          "first_sms_ui_leaves_sending": false,
+          "subsequent_sms_can_send": false,
+          "long_sms": null,
+          "identical_content_messages": null
+        },
+        "packaged_preflight": {
+          "outcome": "compatible",
+          "registered": true,
+          "evidence": "239-desktop-preflight.json"
+        },
+        "shared_backend_installation": {
+          "completed": true,
+          "update": true,
+          "backup_verified": true,
+          "evidence": "225-shared-backend-update-verified.json"
+        },
+        "normal_reboot_evidence": "251-final-normal-boot-verified.json"
+      },
+      "mobile": {
+        "application_build": "0.1.0.28",
+        "preflight_report": null,
+        "current_lte_data": true,
+        "ims_registration": true,
+        "installation": {
+          "native_GUI_installed": true,
+          "all_files_verified": 78,
+          "service_payload_matches_GUI_bundle": true,
+          "GUI_service_install_button_exercised": false
+        },
+        "manual_start": null,
+        "outgoing_call": null,
+        "incoming_call": null,
+        "audio_both_directions": null,
+        "lte_during_call": null,
+        "mobile_data_after_call": null,
+        "sms_short_send_receive": null,
+        "sms_long_and_duplicate": null,
+        "stop_and_restore": null,
+        "normal_reboot": true,
+        "observations": "v28 installed, all 78 package members and 58 selected signed runtime files verified. New normal boot automatically registered Telecom LTE/IMS; owner confirmed the connected page. Calls/SMS/data baseline is recorded separately; no further SMS retest required by owner.",
+        "normal_reboot_evidence": "251-final-normal-boot-verified.json",
+        "visible_connected_state_evidence": "254-owner-mobile-connected.json"
+      },
+      "candidate_profile_in_trial_bundle": "profiles/variant-trial-sqc100-4-telecom.json",
+      "owner_selected_for_first_case": true,
+      "known_SMS_defect_accepted_by_owner": true,
+      "SMS_defect_does_not_block_activation": true
+    }
+  },
+  "automatic_adaptation_admitted": true,
+  "hardware_acceptance_complete": false,
+  "owner_authorized_data_wipe": true,
+  "scope": "Only SQC100-4 / CLASSICNA / OS 10.3.3.3216 / China Telecom HPLMN 460-11 / USIM without ISIM. Voice, incoming SMS and data have owner evidence. Outgoing SMS completion/queue defect is explicitly accepted as a known limitation; other carriers remain unverified.",
+  "owner_data_backup_required": false,
+  "current_stage": "Telecom_completed_Unicom_closed_Mobile_blocked_no_LTE",
+  "evidence_date": "2026-11-06",
+  "parallel_usb": {
+    "verified": true,
+    "method": "IP_UNICAST_IF without explicit source bind",
+    "authentication": "Exact physical USB identity and network interface; independently pinned SSH host key.",
+    "native_operation_selector": "GUID decoded from discovery and matched against actual USB identity",
+    "other_phone_modified": false,
+    "root_transport": "exact current USB identity and interface; independent pinned SSH host key, HTTP discovery optional after Root"
+  },
+  "technical_evidence": {
+    "native_info": {
+      "exit_code": 0,
+      "actual_hardware_id": "9700270a",
+      "done": true
+    },
+    "loader_sha256": "108ab6743c488b5558d29a8e3bc422dddeaa0466a36ed45e13a3082317e575ef",
+    "local_evidence_root": "research/device-intake/SQC100-4/2026-11-06/",
+    "intake_reference": "docs/SQC100-4-INTAKE-2026-11-06.md",
+    "root_uid_evidence": "054-root-uid.json",
+    "native_and_sim_baseline": "054-root-baseline.json"
+  },
+  "last_updated": "2026-11-08T00:20:09.920953+08:00",
+  "local_candidate_versions": {
+    "desktop": "0.5.0-r27-preview-sqc4ct1107",
+    "mobile": "0.1.0.28",
+    "adaptation_passed_by_owner": true,
+    "mobile_installed_on_target": true,
+    "desktop_packaged_preflight_passed": true,
+    "pending": [],
+    "mobile_connected_page_owner_confirmed": true
+  },
+  "mobile_gui": {
+    "version": "0.1.0.28",
+    "installation_verified": true,
+    "installed_files_verified": 78,
+    "bar_sha256": "50c542c31fcf0f35b358a9ca633d1722b0c5c2db8d99232ba93f176303b59566",
+    "operator_functional_acceptance": false,
+    "connected_label_owner_confirmed": true,
+    "signed_runtime_files_verified": 58,
+    "current_boot_registration_verified": true,
+    "known_SMS_defect_accepted_by_owner": true
+  },
+  "next_required_action": "No further software-only LTE enablement is indicated. Mobile activation remains blocked until a usable compatible LTE network is demonstrated. The installed public backend removed the private Unicom trial; its update receipt requires a normal reboot before a future supported-carrier start. Current Mobile functionality remains unverified.",
+  "private_trial": {
+    "service_installed": true,
+    "enabled_for_next_normal_boot": true,
+    "identity_scope": "SQC100-4 / CLASSICNA / 10.3.3.3216 / USIM-without-ISIM 460-11",
+    "public_automatic_scope_expanded": true,
+    "functional_acceptance_complete": false,
+    "installation_evidence": "077-telecom-install.json",
+    "pre_reboot_snapshot": "080-trial-observation.json",
+    "first_normal_boot_verified": true,
+    "ims_registration_verified": true,
+    "current_blocker": "No SMS activation blocker after explicit owner acceptance; client and lifecycle checks remain pending.",
+    "historical_snapshot": true
+  },
+  "isolated_app_candidates": {
+    "desktop": "0.5.0-r24-preview-sqc4ct1106",
+    "mobile": "0.1.0.24",
+    "built_and_verified": true,
+    "mobile_installed_on_target": false,
+    "snapshot_stage": "first private installation, before reboot acceptance",
+    "scope": "public automatic activation remains blocked; these packages do not fix the new SMS defect",
+    "installed_mobile_gui_version": "0.1.0.23"
+  },
+  "sms_native_investigation": {
+    "at": "2026-11-06T23:09:34.067364+08:00",
+    "variant": "SQC100-4",
+    "operator": "telecom",
+    "native_cellular_services_sha256": "750690d27b75005a579d9573e46fa98f50b2c036f35565a000d272b2d2707655",
+    "native_qct_rrm_sha256": "71835f701affcb9254eadb4ee299e8f7d07547543b3e0f61519456b8241dcb3b",
+    "outbound_evidence": {
+      "sip_acceptance": 202,
+      "peer_receipt_owner_confirmed": true,
+      "rp_submit_confirmation_seen": false,
+      "native_TR1M_expiry_seconds": 45,
+      "timeout_resets_native_modem_without_upper_notification": true
+    },
+    "timeout_candidate": {
+      "offset": "0xe74e2",
+      "before": "bbe0",
+      "after": "49e1",
+      "offline_native_emulation_passed": true,
+      "live_applied": false,
+      "scope": "Actual timeout reports native failure, never synthesizes success.",
+      "112_guard_rejected_before_memory_write": true
+    },
+    "reboot_persistence": {
+      "UI_pending_messages_deleted_by_owner": true,
+      "normal_reboot_verified": true,
+      "native_modem_state_idle": true,
+      "native_upper_busy_byte": 0,
+      "entire_active_uplink_region_zero": true,
+      "published_PPS_busy_was_true": true,
+      "native_initialize_zeros_uplink_but_skips_status_refresh_when_existing_status_parses": true,
+      "rovemgr_log_explicitly_blocks_IMS_because_SMS_busy": true
+    },
+    "recovery_121": {
+      "resynchronized_to_actual_native_idle": true,
+      "published_busy_now": false,
+      "changed_only_published_busy_attribute": true,
+      "disk_firmware_or_message_database_changed": false,
+      "connection_manager_rejected_stale_registration_record_after_unblock": true,
+      "normal_reboot_requested_after_state_recovery": true
+    },
+    "remaining": [
+      "Verify next normal boot and first REGISTER",
+      "Find missing network RP confirmation",
+      "Validate actual outgoing status and subsequent messages",
+      "Long/identical SMS and complete lifecycle acceptance",
+      "Integrate proven fix in desktop and phone payloads"
+    ],
+    "public_automatic_admission": false,
+    "functional_acceptance_complete": false,
+    "other_device_modified": false,
+    "raw_evidence_location": "private/",
+    "disassembly_sha256": "4f1ebd0143c58218a050a2aba2ee244125c7d7873ec262375f87269ea2b949c2",
+    "evidence": [
+      "108-qct-timeout-candidate-emulation.json",
+      "112-sms-timeout-trial.json",
+      "115-network-capture.json",
+      "118-native-sms-extraction.json",
+      "119-network-capture.json",
+      "120-network-capture.json",
+      "121-sms-resync-result.json",
+      "122-network-capture.json"
+    ]
+  },
+  "sms_owner_scope_update": {
+    "at": "2026-11-06T23:28:21.412764+08:00",
+    "owner_report": "短信状态异常好像仅电信存在；刚测试 SQW100-1 也有。",
+    "operator_scope": "China Telecom suspected; not proven exclusive",
+    "models": {
+      "SQC100-4": "reproduced in current session",
+      "SQW100-1": "owner-confirmed recurrence; no device access in current session"
+    },
+    "other_carriers": "not established by this report",
+    "other_device_modified": false
+  },
+  "sms_latest_checkpoint": {
+    "at": "2026-11-07T01:00:56.607018+08:00",
+    "variant": "SQC100-4",
+    "operator": "telecom",
+    "owner_normal_reboot_root_verified": true,
+    "installer_serialization_error_corrected_without_bypassing_guards": true,
+    "installed_candidate": 180,
+    "native_code_candidate": 168,
+    "native_code_changed_since_offline_tests": false,
+    "installed_and_rollback_hashes_verified": true,
+    "runtime_readiness": {
+      "at": "2026-11-07T00:59:23.668894+08:00",
+      "variant": "SQC100-4",
+      "operator": "telecom",
+      "new_boot_verified": true,
+      "exact_payload_manifest_verified": true,
+      "runtime_image_sha256": "7cda5fe3865dd57bcffc10cd213356fc6ba093a79af7ebbbf77ec1fea9ca2dab",
+      "ims_connected": true,
+      "sms_busy_false": true,
+      "audit": {
+        "counts": {
+          "to_parsed": 0,
+          "mo": 0,
+          "exact_target_match": 0,
+          "hook": 0,
+          "telecom_uri": 0,
+          "content_type": 0,
+          "header_updated": 0
+        },
+        "contains_identifiers_or_message_content": false,
+        "compiled_code_in_memory_verified": true,
+        "stable": true
+      },
+      "raw_sha256": "172e0ada8082dd8b0b2e02404d44cdce65c5d8034846c64ad4d76b4af51ff534",
+      "manual_sms_test_pending": true,
+      "sms_fix_verified": false,
+      "other_device_modified": false,
+      "historical_pre_test_snapshot": true
+    },
+    "initial_registration_capture": {
+      "step": 185,
+      "wait_limit_seconds": 180,
+      "readiness_timed_out": true,
+      "capture_setting_restored": true,
+      "sms_not_requested_during_unready_state": true
+    },
+    "current_capture": {
+      "step": 189,
+      "ready_received": true,
+      "bounded": true,
+      "manual_test_requested": true,
+      "full_registration_packet_coverage_verified": false,
+      "completed": true,
+      "settings_restored": true,
+      "result": "Peer received, sender pending; To correction observed, no RP submit confirmation captured."
+    },
+    "current_state": "SMS investigation parked by owner; adaptation passed, shared product installed and client/lifecycle closeout completed.",
+    "internet_followup": "A first-person China Telecom peer-received/UI-failure case is confirmed on LineageOS; same BB10 cause and transferable fix remain unproven.",
+    "sms_fix_verified": false,
+    "public_activation_admitted": true,
+    "functional_acceptance_complete": false,
+    "other_device_modified": false,
+    "evidence": [
+      "175-network-capture.json",
+      "176-loader-checks.json",
+      "177-preinstall-readiness.json",
+      "178-telecom-install.json",
+      "180-installer-fingerprint-correction.json",
+      "181-telecom-install.json",
+      "182-full-uri-install-checkpoint.json",
+      "183-telecom-enable.json",
+      "184-sms-web-followup.json",
+      "185-native-sms-capture.json",
+      "186-telecom-start.json",
+      "187-network-capture.json",
+      "190-network-capture.json",
+      "191-full-uri-live-readiness.json"
+    ],
+    "owner_accepted_known_SMS_defect": true,
+    "latest_owner_evidence": "193-owner-known-defect-acceptance.json",
+    "latest_wire_evidence": "195-pcap-sip-summary.json",
+    "corrected_To_observed_on_wire": true,
+    "corrected_To_did_not_fix_submission_completion": true
+  },
+  "acceptance": {
+    "status": "accepted_with_known_sms_defect",
+    "owner_explicitly_authorized": true,
+    "owner_evidence": "193-owner-known-defect-acceptance.json",
+    "SMS_functional_pass": false,
+    "known_defects": [
+      "Peer receives outgoing SMS but sender remains pending.",
+      "Following SMS can be blocked."
+    ],
+    "unqualified_full_acceptance": false,
+    "desktop_and_mobile_new_package_acceptance": "completed for installed version and tested operations",
+    "adaptation_passed": true,
+    "approval_basis": "explicit_owner_authorization",
+    "latest_owner_evidence": "224-owner-adaptation-pass.json",
+    "visible_result": "适配通过",
+    "SMS_issue_is_admission_blocker": false,
+    "required_scope_closeout_complete": true,
+    "final_owner_UI_evidence": "254-owner-mobile-connected.json",
+    "completed_at": "2026-11-07T02:10:59.289843+08:00"
+  },
+  "product_candidate": {
+    "at": "2026-11-07T02:10:59.289848+08:00",
+    "desktop": {
+      "version": "0.5.0-r27-preview-sqc4ct1107",
+      "sha256": "ced113e6ee3c6a411f92e618d7d2c845a5e859aff09a20b8232de19ac1e003fe",
+      "build_passed": true,
+      "packaged_offline_selftest_passed": true,
+      "actual_device_preflight": {
+        "outcome": "compatible",
+        "registered": true,
+        "evidence": "239-desktop-preflight.json"
+      },
+      "exact_USB_connection_timeout_seconds": 20,
+      "supersedes_initial_build": true,
+      "artifact": "artifacts/desktop-r27-usb-bound/bb10-volte-0.5.0-r27-preview-sqc4ct1107-windows-x64.exe"
+    },
+    "mobile": {
+      "version": "0.1.0.28",
+      "sha256": "50c542c31fcf0f35b358a9ca633d1722b0c5c2db8d99232ba93f176303b59566",
+      "build_and_signature_passed": true,
+      "pinned_members": 78,
+      "installed_on_target": true,
+      "actual_GUI_acceptance": {
+        "connected_label_owner_confirmed": true,
+        "scope_label_visual_confirmation": null,
+        "scope_text_in_verified_installed_build": true,
+        "evidence": "254-owner-mobile-connected.json"
+      },
+      "all_78_installed_files_verified": true,
+      "installation_evidence": "218-mobile-install.json",
+      "signed_runtime_files_verified": 58,
+      "selected_runtime_matches_actual_BAR": true,
+      "runtime_evidence": "250-mobile-runtime-check.json"
+    },
+    "shared_backend": {
+      "exact_model": "SQC100-4",
+      "board": "CLASSICNA",
+      "os": "10.3.3.3216",
+      "home_plmn": "460-11",
+      "SIM": "USIM without ISIM",
+      "native_SMS_experiment_shipped": false,
+      "private_SIM_bound_helper_shipped": false,
+      "installation_on_target": "passed",
+      "installed_payload_matches_both_clients": true,
+      "rollback_files_verified": 6,
+      "current_boot_registration_verified": true,
+      "status_evidence": "230-telecom-status.json",
+      "stop_and_restore": {
+        "at": "2026-11-07T01:53:33.800074+08:00",
+        "variant": "SQC100-4",
+        "adaptation_passed_by_owner": true,
+        "stop_and_original_configuration_restore_verified": true,
+        "original_DCA_files_verified": 4,
+        "voice_policy": 0,
+        "ue_usage_policy": 0,
+        "native_IMS_and_manager_exited": true,
+        "crypto_provider_retained_until_OS_reboot": true,
+        "autostart_reenabled": true,
+        "normal_boot_and_mobile_GUI_pending": true,
+        "desktop_r27_actual_preflight": "compatible and registered",
+        "mobile_v28_members_verified": 78,
+        "SMS_known_defect_blocks_acceptance": false,
+        "other_device_modified": false,
+        "evidence": [
+          "218-mobile-install.json",
+          "225-shared-backend-update-verified.json",
+          "237-windows-selftest.json",
+          "239-desktop-preflight.json",
+          "240-telecom-disable.json",
+          "241-trial-observation.json",
+          "243-trial-observation.json",
+          "244-telecom-status.json",
+          "245-telecom-enable.json",
+          "246-trial-observation.json"
+        ]
+      },
+      "autostart_enabled": true,
+      "current_state": "running; current-boot Telecom LTE/IMS registered",
+      "normal_boot": {
+        "at": "2026-11-07T02:05:24.294255+08:00",
+        "variant": "SQC100-4",
+        "operator": "telecom",
+        "home_plmn": "460-11",
+        "adaptation_passed_by_owner": true,
+        "new_normal_boot_and_Root_verified": true,
+        "same_SIM_verified": true,
+        "exact_shared_payload_verified": true,
+        "automatic_start_after_reboot": true,
+        "explicit_start_command_issued_after_reboot": false,
+        "runtime_records_all_current_boot": true,
+        "LTE_IMS_registered": true,
+        "LTE_data_connected": true,
+        "SMS_idle_before_new_sends": true,
+        "SMS_completion_defect_remains_known": true,
+        "original_backups_still_verified": true,
+        "raw_observation_sha256": "7414a7605b07b50608aad00a581fbf504db11693e0c4708ed5e09fcb49205468",
+        "other_device_modified": false
+      },
+      "normal_boot_and_mobile_GUI_pending": false,
+      "normal_boot_required_for_closeout": false
+    },
+    "public_release": false,
+    "source_integration": "221-product-source-integration.json"
+  },
+  "previous_local_candidate_versions": {
+    "desktop": "0.5.0-r23-preview-sqc100-4-20261106",
+    "mobile": "0.1.0.23",
+    "hardware_acceptance": false,
+    "installed_on_target": true,
+    "mobile_installed_on_target": true,
+    "installation_scope": "Native GUI v23 and private exact-case backend installed; public automatic activation remains blocked.",
+    "historical_build_snapshot": true
+  },
+  "adaptation_passed": true,
+  "required_scope_closeout_complete": true,
+  "active_case": "mobile_radio_blocked",
+  "operator_adaptation_status": {
+    "telecom_46011": "passed_with_owner_accepted_SMS_limitation",
+    "unicom_46001": "not_supported_owner_closed",
+    "mobile": "not_adapted_LTE_unavailable"
+  },
+  "active_case_complete": false,
+  "unicom_closure_candidate": {
+    "at": "2026-11-07T09:37:13.160364+08:00",
+    "desktop_revision": 28,
+    "mobile_version": "0.1.0.29",
+    "desktop_offline_selftest_passed": true,
+    "desktop_sha256": "c6c4cac385f28fd3e6127de0e6a3c983ad0265f177817829d5927ee8bab6ff64",
+    "mobile_sha256": "5c2077999a01ba80360bce824f3c4919606d0508b159c2ac9d02f26eb9b61766",
+    "mobile_signature_verified": true,
+    "mobile_pinned_members": 77,
+    "Unicom_automatic_and_manual_routes_closed": true,
+    "old_generic_and_trial_profiles_rejected": true,
+    "restoration_remains_available": true,
+    "Telecom_scope_and_known_SMS_limitation_preserved": true,
+    "Mobile_case": "awaiting_owner_SIM_ready",
+    "installed_on_phone": false,
+    "phone_private_trial_migration_pending": true,
+    "public_release": false
+  },
+  "radio_result_client_candidate": {
+    "at": "2026-11-07T14:50:08.128511+08:00",
+    "variant": "SQC100-4",
+    "board": "CLASSICNA",
+    "home_plmn": "460-00",
+    "desktop_revision": 30,
+    "desktop_selftest_passed": true,
+    "desktop_executable": "artifacts\\desktop-r30-radio-result\\bb10-volte-0.5.0-r30-preview-sqc4radio1107-windows-x64.exe",
+    "desktop_sha256": "3d3c51d94713eefbf29acd966a91002251add149061dc732fe25f02f944ecd60",
+    "mobile_version": "0.1.0.31",
+    "mobile_installed_on_target": true,
+    "mobile_all_pinned_members_verified": true,
+    "mobile_pinned_members": 77,
+    "mobile_sha256": "43bd12b0258a153f7986ba7d9cc0d78d61f4e8f7a501dfe4dc895fd737317269",
+    "mobile_visible_page_owner_confirmation": true,
+    "public_backend_matches_desktop_and_mobile": true,
+    "private_Unicom_trial_admission_removed": true,
+    "original_configuration_preserved": true,
+    "original_backups_verified": true,
+    "native_IMS_and_manager_inactive": true,
+    "Mobile_activation_blocked": true,
+    "Mobile_functional_acceptance_passed": false,
+    "Telecom_prior_acceptance_preserved": true,
+    "Telecom_SMS_limitation_preserved": true,
+    "normal_reboot_after_update_performed": false,
+    "update_receipt_requires_normal_reboot_before_future_supported_carrier_start": true,
+    "public_release": false,
+    "other_device_accessed": false,
+    "evidence": [
+      "313-mobile-radio-result.json",
+      "316-mobile-acceptance-verdict.json",
+      "319-mobile-v31-radio-result.json",
+      "321-radio-result-apps-verified.json",
+      "322-mobile-product-probe.json",
+      "323-mobile-product-install.json",
+      "324-trial-observation.json",
+      "325-mobile-install.json"
+    ],
+    "Mobile_blocked_scope_notice_visible": true,
+    "UI_evidence": "330-owner-mobile-blocked-page-confirmed.json",
+    "owner_confirmation_at": "2026-11-07T14:51:50.696389+08:00"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "release": "v0.5.0-r42",
+  "mobile_version": "0.1.0.43",
+  "as_of": "2026-11-08",
+  "integration": {
+    "base_commit": "1eca62848b327cd64e75902c23c43fec893eb087",
+    "previous_local_revisions_included": "r22 through r41",
+    "other_worktree_dirty_files_reviewed": 118,
+    "implementation_already_integrated": true,
+    "eight_remaining_metadata_differences": "Preserved newer main intake evidence, per-device progress and support metadata.",
+    "historical_pre_r13_stash_commit_already_ancestor": true,
+    "other_worktree_and_stash_preserved": true
+  },
+  "admission": {
+    "model_entries": 16,
+    "officially_documented_entries": 15,
+    "unconfirmed_entry": "SQW100-2",
+    "carrier_entries": 48,
+    "tested_status_does_not_gate_activation": true,
+    "root_native_SIM_backup_checks_retained": true,
+    "SQK100_2_first_flash_recipe_provided": false
+  },
+  "evidence": {
+    "new_SQC100_1_and_SQK100_1_three_carrier_owner_reports_recorded": true,
+    "unmeasured_items_remain_unknown": true,
+    "new_release_hardware_acceptance": false,
+    "phone_contacted_during_release_work": false
+  },
+  "checks": {
+    "windows_regressions": {
+      "run": 1084,
+      "skipped": 65,
+      "result": "passed",
+      "note": "POSIX-only cases skipped on Windows; final root-recipe distinction separately passed 11 focused tests."
+    },
+    "native_Qt_controller": "passed",
+    "website_static_tests": 21,
+    "website_browser_tests": 32,
+    "website_result": "passed",
+    "unified_payload_files_crosschecked": 18,
+    "mobile_bundle_signature_verified": true,
+    "matching_mobile_BAR_in_both_desktop_builds": true,
+    "matching_current_runtime_code_in_both_desktop_builds": true,
+    "public_allowlist_privacy_and_hashes": "passed",
+    "CI": "Required Ubuntu and Windows workflow results belong to the release commit; do not infer them from local Windows checks."
+  },
+  "windows": {
+    "artifact": "bb10-volte-0.5.0-r42-windows-x64.exe",
+    "sha256": "89916b56bf0e90618fd60e675d48f9c9aebb998f9f36da7a0232036bf3aa0502",
+    "bytes": 21132351,
+    "resource_files_verified": 170,
+    "packaged_selftest_passed": true,
+    "mobile_bar_sha256": "7745d9db94ffc11657082532fc02ef3a09c30cc888061a8f663d9b9966de22dc",
+    "catalog_entries": 16,
+    "phone_contacted": false
+  },
+  "macos": {
+    "artifact": "bb10-volte-0.5.0-r42-macos-universal.dmg",
+    "sha256": "62a3f64f552bf28de2e98ec2d56fb7def85c1597bc939659e1e47fd4afb2a302",
+    "bytes": 31923612,
+    "desktop_revision": 42,
+    "mobile_version": "0.1.0.43",
+    "app_notarized": true,
+    "dmg_notarized": true,
+    "stapled_tickets_verified": true,
+    "mounted_offline_selftest_passed": true,
+    "gatekeeper_status": "assessments disabled",
+    "gatekeeper_enforcement_enabled": false,
+    "phone_contacted": false
+  },
+  "mobile": {
+    "artifacts": {
+      "bb10-volte-0.1.0.43-bootstrap.zip": "e52016bbd8e1a8775e1bacc7714017effe03f9ccf09f7362e3a72906ba477973",
+      "bb10-volte-0.1.0.43-update.zip": "74ba914bfd0cd8c876b0753b8230fd689a54d5a33bf838265b848612537230c0",
+      "bb10-volte-0.1.0.43.bar": "7745d9db94ffc11657082532fc02ef3a09c30cc888061a8f663d9b9966de22dc",
+      "latest.json": "c051ad8ffc8af2001f52cc78d5ad90315bbd1c629b1605c515b54b8c4896220f"
+    },
+    "builder_image": "ghcr.io/xiazy/blackberry10-toolchain@sha256:60ce49510a37ed92368cca010bbaabf97b12d209b9fab179e8491b266bb2578f",
+    "bundle_signature_verified": true,
+    "hardware_acceptance": "not_established_by_packaging",
+    "protocol": 2,
+    "publisher_key_id": "9e512df0eab3abcbe651a5bc30790c9412bb3fa74ffc8ddc9541e7b56a2fd6be",
+    "schema": 1,
+    "version": "0.1.0.43"
+  },
+  "limitations": [
+    "Historical real-device results retain original versions and scope.",
+    "Windows executable is not Authenticode signed.",
+    "Mac app and DMG have accepted notarization and validated stapled tickets. The build host has Gatekeeper enforcement disabled; this task did not change that setting and does not claim enforcement testing.",
+    "Some Telecom outgoing SMS are delivered but remain sending locally; this is unresolved.",
+    "Radio bands are hardware properties, not altered by opening software entry."
+  ]
+}

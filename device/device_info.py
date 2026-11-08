@@ -7,12 +7,13 @@ OS_VERSION = '10.3.3.3216'
 FAMILIES = {
     'q10': {'name': 'BlackBerry Q10', 'prefix': 'SQN100-', 'aliases': ('q10',)},
     'classic': {'name': 'BlackBerry Classic (Q20)', 'prefix': 'SQC100-', 'aliases': ('q20', 'classic')},
+    'p9983': {'name': "BlackBerry Porsche Design P'9983", 'prefix': 'SQK100-', 'aliases': ('9983', 'p9983')},
     'passport': {'name': 'BlackBerry Passport (Q30)', 'prefix': 'SQW100-', 'aliases': ('q30', 'passport')},
 }
 # Public board names reported in the pinned community research. A board name
 # supplements the normal model number; it never grants compatibility by itself.
-RESEARCH_BOARDS = {'CLASSICATT': 'classic', 'CLASSICVZW': 'classic',
-                   'WINDERMERE4ROW': 'passport'}
+RESEARCH_BOARDS = {'CLASSICROW': 'classic', 'CLASSICATT': 'classic', 'CLASSICVZW': 'classic', 'CLASSICNA': 'classic',
+                   'WINDERMERE4ROW': 'passport', 'WINDERMEREEMEA': 'passport', 'KHANE': 'p9983'}
 
 
 def read_identity():
@@ -20,7 +21,7 @@ def read_identity():
     board = None
     try:
         value = n.value(n.attrs(n.read('/pps/services/hw_info/inventory')), 'Board_Type')
-        if isinstance(value, str) and value in RESEARCH_BOARDS:
+        if isinstance(value, str) and re.match(r'\A[A-Z0-9_]{1,64}\Z', value):
             board = value
     except (OSError, ValueError, TypeError, AttributeError):
         pass
@@ -47,7 +48,7 @@ def identify(facts):
     return {'family': family, 'display_name': FAMILIES[family]['name'] if family in FAMILIES else 'Unrecognized BB10 device',
             'recognized': recognized, 'identity_conflict': conflict, 'hardware_tested': baseline,
             'variant': facts.get('variant'), 'os_version': facts.get('os_version'),
-            'board_type': board if isinstance(board, str) and board in RESEARCH_BOARDS else None,
+            'board_type': board if isinstance(board, str) and re.match(r'\A[A-Z0-9_]{1,64}\Z', board) else None,
             'native_engine': ENGINE, 'experimental_device': recognized and not baseline}
 
 

@@ -1,47 +1,14 @@
-# bb10-volte — 让黑莓 Q10、Q20、Passport 用上 VoLTE
+# bb10-volte — 让 Q10、Q20、Passport、P’9983 用上 VoLTE
 
-<img src="assets/icon.png" width="96" alt="BB10 VoLTE">
+**桌面 r42 · 手机原生版 0.1.0.43。** 全部目录后缀的三网入口开放。实测可用、未实测、实测未通过和已知问题分别显示，不再因这些标签阻挡启用。
 
-**简体中文** | [English](README.en.md)
+SQC100-1 与 P’9983 SQK100-1 已收到机主三网通过反馈；SQK100-2 官方身份已确认但未实测，SQW100-2 量产身份仍待核实。仍需有效 Root、OS 10.3.3.3216、匹配原生文件、当前 SIM 身份和可恢复备份。
 
+[完整适配表](docs/COMPATIBILITY.md) · [逐台手动进度](docs/INTAKE-MANUAL-PROGRESS.md) · [本版说明](docs/RELEASE-r42.md)
 
-**当前实验发行：桌面版 v0.5.0-r21 + 手机原生版 0.1.0.19。** 自动流程面向已 Root、系统 **10.3.3.3216** 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**。各版本的实机结果不同；新版 0.1.0.19 / r21 尚未在 Q10 上完成整包实机验收。
+已 Root：安装 BAR，直接在手机检查、备份并启用；独立使用不需要电脑配对。未 Root：推荐 Windows / Mac 引导准备，刷写前核对固件与加载器身份。换卡前正常关机，开机后按应用提示操作；仅在明确提示时再重启。
 
-[选择使用指南](https://bb10-volte.octoooo.com/guides.html) · [桌面版指南](https://bb10-volte.octoooo.com/guide.html) · [手机版指南](https://bb10-volte.octoooo.com/mobile.html)
-
-- **推荐：[使用桌面安装器安装](https://bb10-volte.octoooo.com/mobile-installer.html)**。Windows 和 Mac 包内置相同、已核验的 BAR，打开“更多 → 安装手机应用”，检查手机后确认安装，无需另找安装包。
-- **[下载 BAR 手动安装](https://bb10-volte.octoooo.com/mobile-manual.html)**：适合已有兼容本机安装器的 Root 手机。[BAR 直链](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar) · [SHA-256](https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.1.0.19.bar.sha256)。
-
-推荐原生 BAR，经 BB10 系统安装服务注册应用，再在手机内备份和启用。首次完全不用电脑需要已有本机安装入口。手机右上角 **OctoLab** 提供出品信息、GitHub Star 和可展开的咖啡支持；不弹窗催促，不以付款解锁功能，不采集付款行为。
-
-应用安装包使用 Cloudflare R2 直链，无需 JavaScript 或 GitHub 即可下载。固件继续放在[百度网盘](https://pan.baidu.com/s/1zLsoynq3nkOs7AwgSM7rqw?pwd=fp4r)（提取码 `fp4r`）与[极空间](https://t3.znas.cn/9jkbxczhAK4)。不同网络可达性仍有差异；本轮探测出口为美国，不冒充中国大陆实测。
-
-Q20／联通与 Passport／移动的完整流程、换卡测试属于 v12／服务 r18。重刷后的 Q10／电信在 v18／r18 通过通话和短信，但移动数据浏览失败；电信代理修复的 r21 载荷已在 Passport／电信实测，新版整包尚未在 Q10 复验。详见[发行范围与整合记录](docs/RELEASE-r21.md)。
-
-## 历史功能与兼容性
-
-以下旧桌面验收不等于本次 Q10 原生应用已验收。
-
-首次连接 Windows 或 Mac 安装一次；以后正常关机换卡、开机，手机自动适配移动、联通、电信，无需再次连接电脑刷机。继续使用自己的 SIM、号码、套餐和系统拨号器，在 LTE 下接打电话。
-
-**历史桌面版本记录了三款机型、三家运营商，仍为实验功能。**适用于已 Root 的 **Q10 SQN100-3、Q20 SQC100-2、Passport SQW100-4**，系统 **10.3.3.3216**。Passport 切入或离开电信入网策略时，可能需要再正常重启一次；程序会解释原因并提示重新检查。
-
-[使用指南](https://bb10-volte.octoooo.com/guide.html) · [发布与更新](https://github.com/Octo-o-o-o/bb10-volte/releases) · [更新日志](docs/UPDATELOG.md)
-
-**r15 新增：**完整后缀前置检查、Root 页重新检测并保留已准备镜像、[9 步图文与中文讲解视频](https://bb10-volte.octoooo.com/guide.html#walkthrough)，以及各步骤的[脱敏反馈包](docs/FEEDBACK.md)。反馈保存在本地，由用户检查后自行发送，不自动上传。
-
-“更多 → 候选机型本地试测”提供 13 组受检查约束的手动候选、6 组 Passport 只读检查，**新增后缀尚未实机验收，不属于上面的自动适配范围**。完整型号、系统、SIM、原生文件或恢复条件不满足时提前说明原因。详见[本地试测指南](docs/VARIANT-LOCAL-TRIALS.md)及[14 个后缀的材料与覆盖研究](docs/ALL-VARIANTS-COVERAGE-PLAN.md)。
-
-[按型号复制测试说明与反馈表](https://bb10-volte.octoooo.com/trials.html) · [完整兼容性与进度表](https://bb10-volte.octoooo.com/index.html#variant-matrix)
-
-| 候选后缀 | 运营商 | r15 提供的流程 |
-| --- | --- | --- |
-| SQN100-1、SQN100-5 | 电信 460-11 | 手动候选；需当地已有 LTE B5 数据 |
-| SQC100-1、SQC100-3、SQC100-5 | 移动 460-00、联通 460-01、电信 460-11 | 手动候选；检查后先安装，再单独启动 |
-| SQC100-4 | 联通 460-01、电信 460-11 | 手动候选；检查后先安装，再单独启动 |
-| SQW100-1、SQW100-3 | 上述三个运营商 | 只读诊断；停止及恢复未验证，安装阻断 |
-
-候选流程需要已有有效 AutoRoot v4／Root SSH、OS 10.3.3.3216 和可用 LTE 数据，自启动始终关闭。SQN100-2/-4 的本批国内组合、SQC100-4／移动、未核实的 SQW100-2、其他 MNC 和 ISIM 不开放本批试装。Root 配方存在不代表对应加载器或首刷已经验证。
+本版整合电脑配对、任务恢复与升级、需要处理时的状态通知、稳定连接时减少检查和写入，以及 CTNET 代理和短信确认关联修复。部分电信短信已送达却仍显示发送中，请勿重复发送；各型号历史问题保留在适配表。新版整包尚未完成新的全型号实机验收，不宣称量测过省电幅度。
 
 ## 下载
 
@@ -59,30 +26,12 @@ Q20／联通与 Passport／移动的完整流程、换卡测试属于 v12／服�
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/bb10-volte-0.5.0-r21-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r21/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r21/SHA256SUMS.txt) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-windows-x64.exe) |
+| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-macos-universal.dmg) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/bb10-volte-0.5.0-r42-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r42/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r42/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
-
-## 支持情况
-
-**以下九项是旧版桌面功能的历史实机记录，不扩展本次手机版范围。**
-
-![Q10、Q20、Passport 与移动、联通、电信的九项功能验收，全部通过](website/src/assets/carrier-acceptance.png)
-
-| 机型 / OS 10.3.3.3216 | 中国移动 | 中国联通 | 中国电信 |
-| --- | --- | --- | --- |
-| Q10 SQN100-3 | 已支持 | 已支持 | 已支持 |
-| Q20 SQC100-2 | 已支持 | 已支持 | 已支持 |
-| Passport SQW100-4 | 已支持 | 已支持 | 已支持 |
-
-实测包括系统拨号器呼出、呼入、双向声音、LTE 通话和不连电脑换卡；本机号码与运营商显示也已验证。图中手机为机型示意。准确 SIM 范围为移动 460-00、联通 460-01、电信 460-11 的 USIM（无 ISIM）。
-
-**r14 已启用短信 ACK 关联修复。** Q20 SQC100-2／联通 460-01 与 Passport SQW100-4／移动 460-00 已完成原生短信双向收发、两段长短信、相同内容两条独立消息及至少 3 分钟无重复观察；双向通话声音与 LTE 正常。其他组合的短信尚未实测。见[实机验收](materials/sms-device-validation-2026-11-01.json)与[修复说明](docs/SMS-ACK-NATIVE.md)。
-
-不同组合的测试时间和依据保留在[验收记录](materials/unified-carrier-acceptance.json)，包括初始卡与换卡测试、日志和机主确认的区别。其他硬件变体、系统版本、漫游、长期待机和紧急呼叫尚未完整验证。
 
 ## Windows 界面
 

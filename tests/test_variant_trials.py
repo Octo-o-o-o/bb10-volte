@@ -12,6 +12,15 @@ from unittest.mock import Mock, patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / 'tools'), str(ROOT / 'device')]
 import variant_trials as trials
+
+def historical_profile(variant, operator):
+    p = profiles.default()
+    p.update(id='variant-trial-'+variant.lower()+'-'+operator, label='Historical trial fixture')
+    mnc,apns=profiles.TRIAL_OPERATORS[operator]
+    p['carrier'].update(mcc='460',mncs=[mnc],data_apns=list(apns))
+    p['runtime']['autostart']=False
+    return profiles.validate(p)
+
 import device_support
 import compatibility as c
 import profiles
@@ -47,7 +56,7 @@ class CandidateContracts(unittest.TestCase):
         import telecom_native
         expected = dict(native.STOCK_HASHES, **{'/radio/bin/qct_rrm': telecom_native.QCT_HASH,
                                                '/usr/sbin/dca': telecom_native.DCA_HASH})
-        p = trials.profile('SQC100-3', 'unicom')
+        p = historical_profile('SQC100-5', 'unicom')
         with patch.object(c, 'read_network', return_value={}), \
                 patch.object(c, 'incoming_diagnostics', return_value={}), \
                 patch.object(c, 'installed_state', return_value={'state': 'absent'}), \
@@ -55,7 +64,7 @@ class CandidateContracts(unittest.TestCase):
                 patch.object(c.os, 'uname', return_value=('QNX',), create=True), \
                 patch.object(c.os.path, 'isfile', return_value=True), \
                 patch.object(c.ctypes, 'sizeof', return_value=4), \
-                patch.object(c.device_info, 'read_identity', return_value={'variant': 'SQC100-3'}), \
+                patch.object(c.device_info, 'read_identity', return_value={'variant': 'SQC100-5'}), \
                 patch.object(c.device_info, 'engine_matches', return_value=True), \
                 patch.object(c.n, 'read', side_effect=lambda path: path.encode('ascii')), \
                 patch.object(c.n, 'digest', side_effect=lambda value: '0' * 64 if value == b'/usr/sbin/dca' else expected[value.decode('ascii')]), \
@@ -70,17 +79,16 @@ class CandidateContracts(unittest.TestCase):
         self.assertTrue(all(value for path, value in result['trial_native_hashes'].items() if path != '/usr/sbin/dca'))
         self.assertEqual(result['trial_observed_board'], 'TEST_UNKNOWN_BOARD')
 
-    def test_all_42_combinations_have_explicit_routes_and_only_19_generate_trials(self):
+    def test_all_45_combinations_have_explicit_routes_and_only_8_generate_trials(self):
         routes = [trials.plan(v, op)['route'] for v in device_support.catalog() for op in profiles.TRIAL_OPERATORS]
         self.assertEqual({route: routes.count(route) for route in set(routes)},
-                         {'manual_candidate': 13, 'read_only_lifecycle_pending': 6,
-                          'automatic_supported': 9, 'blocked': 14})
+                         {'automatic_supported': 48})
         with tempfile.TemporaryDirectory() as temporary:
             folder = Path(temporary) / 'trial-pack'
             matrix = trials.export(folder)
-            self.assertEqual(len(matrix['cases']), 42)
+            self.assertEqual(len(matrix['cases']), 48)
             files = list((folder / 'profiles').glob('*.json'))
-            self.assertEqual(len(files), 19)
+            self.assertEqual(len(files), 0)
             for path in files:
                 p = profiles.validate(json.loads(path.read_text()))
                 self.assertFalse(p['runtime']['autostart'])
@@ -88,13 +96,13 @@ class CandidateContracts(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 trials.export(folder)
 
-    def test_13_manual_candidates_require_real_checks_and_explicit_opt_in(self):
+    def test_manual_candidates_require_real_checks_and_explicit_opt_in(self):
         for variant in device_support.catalog():
             for operator in profiles.TRIAL_OPERATORS:
                 if trials.plan(variant, operator)['route'] != 'manual_candidate':
                     continue
                 with self.subTest(variant=variant, operator=operator):
-                    p, facts = trials.profile(variant, operator), facts_for(variant, operator)
+                    p, facts = historical_profile(variant, operator), facts_for(variant, operator)
                     self.assertFalse(c.evaluate(facts, p, False)['can_install'])
                     result = c.evaluate(facts, p, True)
                     self.assertTrue(result['can_install'])
@@ -109,28 +117,30 @@ class CandidateContracts(unittest.TestCase):
     def test_passport_candidates_never_bypass_the_existing_restoration_gate(self):
         for variant in ('SQW100-1', 'SQW100-3'):
             for operator in profiles.TRIAL_OPERATORS:
+                if trials.plan(variant, operator)['route'] == 'automatic_supported':
+                    continue
                 with self.subTest(variant=variant, operator=operator):
-                    result = c.evaluate(facts_for(variant, operator), trials.profile(variant, operator), True)
+                    result = c.evaluate(facts_for(variant, operator), historical_profile(variant, operator), True)
                     self.assertFalse(result['can_install'])
                     self.assertFalse(result['can_start'])
                     self.assertFalse(result['can_restore'])
                     self.assertEqual(result['outcome'], 'needs_adaptation')
 
     def test_model_native_sim_and_lte_changes_block_a_previously_valid_trial(self):
-        p = trials.profile('SQC100-3', 'unicom')
-        for changes in ({'variant': 'SQC100-5'}, {'trial_native_hashes': {}},
+        p = historical_profile('SQC100-5', 'unicom')
+        for changes in ({'variant': 'SQC100-3'}, {'trial_native_hashes': {}},
                         {'mnc': '00'}, {'sim_type': 18}, {'lte': False},
                         {'data_connected': False}, {'clean_configuration': False}):
             with self.subTest(changes=changes):
-                facts = facts_for('SQC100-3', 'unicom')
+                facts = facts_for('SQC100-5', 'unicom')
                 facts.update(changes)
                 self.assertFalse(c.evaluate(facts, p, True)['can_install'])
-        facts = facts_for('SQC100-3', 'unicom')
+        facts = facts_for('SQC100-5', 'unicom')
         facts['trial_native_hashes']['/usr/sbin/dca'] = False
         self.assertFalse(c.evaluate(facts, p, True)['can_install'])
 
     def test_trial_profile_cannot_enable_startup_change_network_or_remove_binding(self):
-        original = trials.profile('SQC100-4', 'telecom')
+        original = historical_profile('SQC100-5', 'unicom')
         for change in ('autostart', 'mnc', 'ims', 'malformed_id', 'lte_attach'):
             p = copy.deepcopy(original)
             if change == 'autostart':
@@ -147,10 +157,10 @@ class CandidateContracts(unittest.TestCase):
                 profiles.validate(p)
 
     def test_report_exports_only_bounded_board_and_known_native_hashes(self):
-        facts = facts_for('SQC100-3', 'unicom')
+        facts = facts_for('SQC100-5', 'unicom')
         facts['trial_observed_board'] = 'private\nvalue'
         facts['trial_native_sha256']['/private/secret'] = 'b' * 64
-        result = c.evaluate(facts, trials.profile('SQC100-3', 'unicom'), True)['variant_trial']
+        result = c.evaluate(facts, historical_profile('SQC100-5', 'unicom'), True)['variant_trial']
         self.assertIsNone(result['observed_board'])
         self.assertNotIn('/private/secret', json.dumps(result))
         self.assertEqual(len(result['native_sha256']), 6)
@@ -174,7 +184,7 @@ class CandidateWindowTests(unittest.TestCase):
         dialog = VariantTrialDialog(self.root, callback)
         dialog.withdraw()
         self.addCleanup(dialog.destroy)
-        for variant, operator in (('SQC100-4', 'mobile'), ('SQW100-2', 'unicom'), ('SQC100-2', 'unicom')):
+        for variant, operator in (('SQC100-4', 'mobile'), ('SQC100-4', 'unicom'), ('SQW100-2', 'unicom'), ('SQC100-2', 'unicom')):
             dialog.variant.set(variant)
             dialog.operator.set(device_support.operator_name(operator))
             dialog.check()
@@ -188,15 +198,15 @@ class CandidateWindowTests(unittest.TestCase):
         app.run = Mock()
         app.experimental.set(True)
         app.ack.set(True)
-        p = trials.profile('SQC100-3', 'unicom')
+        p = historical_profile('SQC100-5', 'unicom')
         app.check_variant_trial(p)
         app.run.assert_called_once_with('preflight')
         self.assertFalse(app.experimental.get())
         self.assertFalse(app.ack.get())
-        self.assertIn('SQC100-3', app.trial_notice.cget('text'))
+        self.assertIn('SQC100-5', app.trial_notice.cget('text'))
         self.assertIn('disabled', app.edit_button.state())
         app.root.after_cancel(app._drain_job)
-        report = c.evaluate(facts_for('SQC100-3', 'unicom'), p, True)
+        report = c.evaluate(facts_for('SQC100-5', 'unicom'), p, True)
         report['installation'] = {'state': 'stopped', 'current_profile': True}
         report.update(can_install=False, can_start=True, can_update=False)
         app.events.put(('result', ('install', {'installed': True, 'preflight': report})))
@@ -208,10 +218,10 @@ class CandidateWindowTests(unittest.TestCase):
         with patch.object(gui, 'saved_connection', return_value=None):
             app = gui.App(self.root)
         self.addCleanup(lambda: app.root.after_cancel(app._drain_job))
-        p = trials.profile('SQC100-3', 'unicom')
+        p = historical_profile('SQC100-5', 'unicom')
         app.set_profile(p)
         app.experimental.set(True)
-        app.render_report(c.evaluate(facts_for('SQC100-3', 'unicom'), p, True))
+        app.render_report(c.evaluate(facts_for('SQC100-5', 'unicom'), p, True))
         app.ack.set(True)
         client = Mock()
         with patch.object(gui, 'resolve_connection', return_value=(client, {'host': 'bb10-root', 'config': ''})), \

@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "at_local": "2026-11-08T14:29:22.307296+08:00",
+  "feature": "explicit_activation_mobile_network_auto_on",
+  "desktop_revision": 41,
+  "mobile_version": "0.1.0.42",
+  "preview_id": "networkon1108",
+  "phone_contacted": false,
+  "hardware_acceptance": "pending",
+  "published": false,
+  "windows_related_tests": {
+    "run": 318,
+    "passed": 279,
+    "skipped_platform_or_tools": 39,
+    "failed": 0
+  },
+  "linux_mobile_engine_tests": 30,
+  "linux_mobile_runtime_tests": 88,
+  "native_controller_harness": "passed",
+  "windows_executable_selftest": "passed",
+  "same_bar_bundled_in_windows": true,
+  "matching_payload_files": 18,
+  "prior_r40_payload_retained": true,
+  "expanded_container_suite": {
+    "run": 875,
+    "errors": 45,
+    "failures": 2,
+    "skipped": 18,
+    "passed": false,
+    "limitations": [
+      "Qt container lacks tkinter",
+      "Python 3.11 lacks Path.is_junction",
+      "Read-only /work prevents two staging tests",
+      "r18 exact delta assertion was already stale in the original r40 manifest"
+    ]
+  },
+  "artifact_hashes": {
+    "bb10-volte-0.1.0.42-bootstrap.zip": "84dba3e25df836993635a29f9ae742f443b56622e6f45089345afc93fe59f94c",
+    "bb10-volte-0.1.0.42-update.zip": "b334a69112407f1249caa4045a39e146a9b7cbe735c736e98b75280f298b048f",
+    "bb10-volte-0.1.0.42.bar": "66834de51e0a5b40b2ff61230dbad3c155301a918616b5f688affafb38db4bd1",
+    "bb10-volte-0.5.0-r41-preview-networkon1108-windows-x64.build.json": "0d57f7ca6f51bc41236b4c6b70276aaa72f00338d9f5d81fc45f8881525981d4",
+    "bb10-volte-0.5.0-r41-preview-networkon1108-windows-x64.exe": "4c9d8bd2554b817839480a4b0159ec023062b64a1226b4b47e5c7df4d76cb6a2",
+    "bb10-volte-0.5.0-r41-preview-networkon1108-windows-x64.exe.sha256": "b977f98493915a0a189428f8e0e2872028d9cca2466020ff9d0d69ffa0dc4980",
+    "latest.json": "a6f95aa97050c97bfa2dba96103def8bd4849334bb5ec1a6cbd56331637e9782"
+  },
+  "evidence_directory": "research/mobile-network-auto-on-20261108",
+  "log_sha256": {
+    "linux-full-suite.log": "060113071448ee6eb92a0cf156aa223d7b24a0a4fe80781f4113886271a48647",
+    "linux-mobile-engine.log": "a0053f806011c791d46c677af80c76c5eb8b4803c63004eb14cfd04e0d02e9a6",
+    "linux-mobile-runtime.log": "93ee0ee327961c9ef6e85f11ca3de994549b7aa3751244608821330c3c2cb6f9",
+    "linux-test_idle_service.py.log": "5c3f368b190fa72cb18ba7fb276f7bb9c9b19dd72a288448b22d2bebf57b7bc5",
+    "linux-test_mobile_app_install.py.log": "aa87acda5ce0ceea7e841131eaaa55d62bf181fc1880335cf051fd3137e49610",
+    "linux-test_mobile_package.py.log": "72fdd2d02bc786d72d1cb80d46ccb4c7465afe4d025dce5af638960bed3b2672",
+    "mobile-build.log": "720d69d13613e6f99ccfdb08c282a56e3f41a616db6556db400ab57eb7bfca57",
+    "native-controller.log": "ab0b7b486e428ff78cd7b226c2cd334fdda8e4cec747c27346f88ecd62bdf7d2",
+    "tests-test_mobile_engine.py.log": "64575a53d4c8e8dbf86dbd16ae3f7833a89d81d9a4dd6f4d42fe6901c024b3f3",
+    "tests-test_mobile_network_activation.py.log": "0e1178cfdeaba1e8d8cde4674ebd3b0656d19824a50aee2e958da2e8e8eaf687",
+    "tests-test_mobile_runtime.py.log": "1a3839c59325c3247b851b4791192172f1c1a6df0dcf22cc0824f26549920ad4",
+    "windows-build-before-pending-ui.log": "58f476cc1d96def5ac45f3c80a9d0ac89d536d2d2ec79e783568734584c29a81",
+    "windows-build-default-python.log": "aae530a1cfa859163a6679a9240c93f6d1909227f3f77d02c83c2fc238f071c0",
+    "windows-build.log": "1b1dcbfbfb1e101226f119f08b1558907e32d65de92d31233bbe6f686474d708",
+    "windows-executable-selftest.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows-test_auto_carrierall.py.log": "80c0b00466ed685fcec65105dd12da04544c49abbe846f79907f03b95e14f77e",
+    "windows-test_desktop_package.py.log": "35be9162f465fd84aae93914da6e46223e7b32c520020a2f5375021b0758289c",
+    "windows-test_i18n.py.log": "71f6bbccba33456426d521b369f77d096e9a6230bcce14bcb9f23fccf6a52255",
+    "windows-test_idle_service.py.log": "be5f18eedf2b180f40f29ad277858325a50ba14caa91d7f2aea6f96d01587772",
+    "windows-test_legacy_upgrade_catalog.py.log": "0f60089433d2c2ef2afe88d1ef66af8c5b245edf7cb2e22ca5d4b34e62607559",
+    "windows-test_mobile_app_install.py.log": "06c9abc00465902552084c164657caa4addfac51df705dbe02c7f9c6406eff28",
+    "windows-test_mobile_native.py.log": "e2d1440b244c54cbff09f5a71edba5f299bbf72ffef66117674d955a4066049c",
+    "windows-test_mobile_network_activation.py.log": "38a3effb0a7670e3838b854b1d88eb84ea17c679b7644a209f810ecf02ce82c7",
+    "windows-test_mobile_package.py.log": "bd8f78f4aacb74b905946693fe759aee4681ed9ef1d0dca8787c2cdc9b78e1fc",
+    "windows-test_mobile_runtime.py.log": "c125e864690585fe2c1cef02831a8cd4c7c5f7c295ecae69976bbdeb405eb1ae",
+    "windows-test_mobile_support.py.log": "bc02917d91a8d90c645c07979363570a8383fbbef5477cfe0b19a5f01926e8cd",
+    "windows-test_release.py.log": "c171a3203f2ee37b83974a55be153553dbf14030f69830cef016aa3df7a5eba4",
+    "windows-test_task_notifications.py.log": "731497fe438734e5d846eb72a6e10623269b7612b89b976353e7d67fb6c7b7ef"
+  },
+  "linux_related_suites": [
+    {
+      "log": "linux-mobile-runtime.log",
+      "tests": 88,
+      "passed": true
+    },
+    {
+      "log": "linux-mobile-engine.log",
+      "tests": 30,
+      "passed": true
+    },
+    {
+      "log": "linux-test_mobile_package.py.log",
+      "tests": 32,
+      "passed": true
+    },
+    {
+      "log": "linux-test_mobile_app_install.py.log",
+      "tests": 32,
+      "passed": true
+    },
+    {
+      "log": "linux-test_idle_service.py.log",
+      "tests": 16,
+      "passed": true
+    }
+  ]
+}

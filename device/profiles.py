@@ -25,6 +25,18 @@ CONFIG_RE = r'/etc/carrier/config/([0-9]{1,6})\.xml'
 TRIAL_PREFIX = 'variant-trial-'
 TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
                    'telecom': ('11', ['ctnet', 'ctlte'])}
+# Closed by the owner after exact-device field trials. This product exclusion
+# does not assert that every possible location has incompatible radio coverage.
+# Historical failed trials are evidence, not an activation veto.
+UNSUPPORTED_OPERATORS = {}
+
+
+def carrier_adaptation_blocked(variant, mcc, mncs):
+    return mcc == '460' and any(
+        operator in UNSUPPORTED_OPERATORS.get(variant, ()) and mnc in mncs
+        for operator, (mnc, unused_apns) in TRIAL_OPERATORS.items())
+
+
 # This original BB10 carrier file assigns the legacy CTWAP proxy to the
 # ordinary CTNET internet service. Keep this workaround bound to the exact
 # stock file observed on the affected device, not to arbitrary carrier files.

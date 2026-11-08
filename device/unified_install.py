@@ -17,6 +17,7 @@ import carrier_policy as policy
 import service as s
 import unified_service as u
 import unified_migrate as migration
+import unified_dca as network
 import telecom_dca as dca
 import telecom_native as radio
 
@@ -25,7 +26,40 @@ MANAGEMENT = '/var/bb10_volte-management'
 MANAGEMENT_SCHEMA = 2
 _lock_depth = 0
 _lock_pid = None
-PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa9404270580f',
+# Actual mobile 0.1.0.22 / desktop r22 map preserved by the SQC100-4 intake.
+# r34/mobile35: accepted before the idle/notice candidate.
+# r35/mobile36: previous idle/notification candidate.
+PREVIOUS_PAYLOADS = (
+                    # r41/mobile42 before evidence-independent model admission.
+                    '0b8c7236977778c8abe6345ba24ac1faff368faa28eba17cc724556fec2b315b',
+                    # r40/mobile41 before explicit activation can turn cellular ON.
+                    '3064c5836cac88a3cf3769e6ca882cd53b40b39a89fd62b30604af70e8bd8128',
+                    # r39/mobile40 before exact SQC100-1 admission.
+                    '0aba00b5b5cc31d76fa3e968f1599d96803c5d35808bb8b388107d32f732f28f',
+                    # r38/mobile39 before exact SQK100-1 admission.
+                    '09715b083db338d263752c96a7c6795c043d06852eebaaa3c7f4d85cc09ca11e','31e49226ef388bb1ba4d0070e78c3a270bdb67428c1f1d688b2a34eb6637deff',
+                    '35303db01a8d71f3f8056102cc40bf2a972008420c11d9c33c604ff84d38ad62',
+                    'be1add90c8d89da2146bb3baac47aad435e03dcb28bf83bac7b3a09523ab067f',
+                    '2b0a38e9d0789328b02c165491be2542255e9df1e0e6742819dd522dd942abd3',
+                    'de1c8cbc47345fcfa16712d94a8cdeb18361fbe6777ae70a8764d27e87ff13f7',
+                    # r32/r33 backend read back on the SQW100-4 intake unit.
+                    'a2ee5acadb44d651a7fef080961ce842faed9e02db10a674ed6ae88e06410942',
+                    'd44c454a6d9bda23ccab6084af7aaf21b31ae9800f1250d9f3ef474fe5b1b101',
+                    '8c014d61008f02cee5e27d67eb774f832cdfb68dceb1b53983626a8cc6f33054',
+                     '2953eaeb684759cdbdbd5f23229c3210e2fd1bacae64980a943451bb5e433e51',
+                     '94a04a5cb80aed8bfd19e1d2f0aa6741321cd6520f4c2c0239f40a7db70231e5',
+                    '5434c4ac3fa3849b5ef6eb80289b6a28c53aebd3963ce8f42212d23d47227ec3',
+                    '67727c3005fb880abdb96cff09a953bbf8824a0ce0a6421ff5a7decb90c92d1c',
+                    '24181d10e152ef9cd72c58bd9652dcac698ae3cf93c39cb446c256795747efcc',
+                    '1334093b3f11f5c59ee65579037bef348e17b3682cdc75741a49b0bfb0d30312',
+                    'd2cfbb2dce434032e63f1a71a51749d24eba6d3f7451097cbeda501757ee3814',
+                    # r21 verified against committed source and all 18 phone files.
+                    # Runtime canonical JSON includes the trailing LF.
+                    '14f12228c4306df69e797e1d26839bec7ac560e05b3fed690cf12d70957b7715',
+                    # Shared r29/r30 backend, preserved as unified-payload-r29.json.
+                    'a54ac20b79a9b5f9b923ac8ff8d26708d5cb738a5437ee7141994d7621163751',
+                    '1e9db2342f6add6e12a49cab4135bdc66397bf8175f11c1701153e5b1468c4b9',
+                    'f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa9404270580f',
                     'b7ee1d25881b3334fbeb5179a4dfd2d24cb0394de9901311543c1dc713242294',
                     'ae6527a3324d7745751776cae35cb02cb5e088406fb3ee8a55bad215c438e3da',
                     '99ff0c8b1c3118bbb15b0177a9177e2f592b4d0711fb1c59698eddfb3942b4f2',
@@ -45,6 +79,7 @@ PREVIOUS_PAYLOADS = ('f1575fe455b23edac0ce0a315ec3d4b364d668df65fae213e5aaa94042
                      # The r18 phone payload shipped unchanged in desktop r20.
                      'b975409427c96fee16f10f7a271c53ebf181d37522b64e1b858cd1aeda3db777')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
+                'device/device_info.py', 'device/unified_migrate.py',
                 'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
@@ -365,6 +400,7 @@ def probe():
 
 
 def with_sim_status(result, facts):
+    install_ready = bool(result.get('can_install'))
     try:
         selection = policy.select(facts, u.card())
         result['operator'] = selection['operator']
@@ -376,7 +412,45 @@ def with_sim_status(result, facts):
     except ValueError as error:
         result['sim_supported'], result['sim_reason'] = False, str(error)
         result['can_install'] = False
+    result['mobile_network_off'] = network.mobile_radio_state() == 'OFF'
+    status = result.get('status') or {}
+    enable_ready = (result.get('installed') is True and status.get('enabled') is False and
+        not status.get('manager_alive') and result.get('call_idle') is True and
+        not result.get('installation_pending') and not result.get('update_pending') and
+        not result.get('update_available') and status.get('phase') not in
+        ('error', 'error_restored', 'cleanup_required', 'reboot_required', 'carrier_reboot_required'))
+    # This grants only an explicit attempt to open the radio. SIM admission is
+    # checked again after ON; it never turns an unread SIM into a supported one.
+    result['can_prepare_mobile_network'] = bool(result['mobile_network_off'] and
+        (install_ready or enable_ready) and (result.get('sim_supported') is True or
+        result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable')))
     return result
+
+
+def prepare_mobile_network():
+    """Shared explicit pre-activation step; probe/status/boot never call this."""
+    report = probe()  # Includes exact model, board, OS, native images and Root.
+    assert not report.get('scope_error'), report.get('scope_error')
+    if network.mobile_radio_state() == 'ON':
+        changed = {'before': 'ON', 'after': 'ON', 'changed': False}
+    else:
+        assert report.get('can_prepare_mobile_network') is True, 'mobile_network_enable_blocked'
+        changed = network.enable_mobile_network()
+    facts, unused = identity()
+    # OFF can temporarily hide SIM identity. Wait only for that transient read,
+    # then enforce the existing exact carrier and native-template admission.
+    for attempt in range(21):
+        try:
+            policy.select(facts, u.card())
+            break
+        except ValueError as error:
+            if str(error) not in ('sim_not_ready', 'sim_identity_unavailable') or attempt == 20:
+                raise
+            time.sleep(0.5)
+    report = probe()
+    assert report.get('sim_supported') is True, report.get('sim_reason') or 'sim_not_ready'
+    assert network.mobile_radio_state() == 'ON', 'mobile_network_enable_unconfirmed'
+    return {'mobile_network': changed, 'probe': report}
 
 
 def update(stage):
@@ -871,12 +945,15 @@ def known_uninstall_member(name, payload):
     state = ('journal.json', 'status.json', 'lock.json', 'stop-request', 'native.log', 'native-previous.log',
              'owned-ims-events.log', 'boot.log', 'last-error.txt', 'selection.json', 'native-attempt.json',
              'stock-handoff.json', 'operator-name-status.json', 'operator-name-original.txt', 'operator-name.json',
-             'own-number-display.json', 'own-number-status.json', 'dca.json', 'radio-mode.json')
+             'own-number-display.json', 'own-number-status.json', 'dca.json', 'radio-mode.json',
+             'connection-notification.json', 'attention-notification.json', 'sim-notification.json', 'sms-busy-recovery.json')
     if name.startswith('state/') and name[6:] in state:
         return True
     if re.match(r'\Astate/own-number-history/before-[0-9]+\.json\Z', name):
         return True
     if re.match(r'\Aarchive/journal-[a-f0-9]{16}\.json\Z', name):
+        return True
+    if re.match(r'\Aarchive/sms-busy-[a-f0-9]{32}\.json\Z', name):
         return True
     found = re.match(r'\Aarchive/update-[a-f0-9]{12}/(.+)\Z', name)
     if found and found.group(1) in set(UPDATE_FILES) | {'payload.before.json', 'update-result.json', 'rollback-result.json'}:
@@ -1101,14 +1178,16 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 result = u.public_status()
     else:
         assert action in ('prepare', 'activate', 'record-backup', 'update', 'rollback',
-            'uninstall', 'start', 'enable', 'disable', 'cleanup-stage'), 'unknown_action'
+            'uninstall', 'start', 'enable', 'disable', 'cleanup-stage', 'prepare-network'), 'unknown_action'
         with management_lock():
             if os.path.isfile(BASE + '/uninstall-pending.json'):
                 assert action in ('uninstall', 'cleanup-stage'), 'uninstall_pending'
             if action in ('start', 'enable'):
                 assert not any(os.path.isfile(BASE + '/' + name) for name in
                     ('install-pending.json', 'update-pending.json', 'rollback-pending.json', 'uninstalled.json')), 'management_transaction_pending'
-            if action == 'prepare':
+            if action == 'prepare-network':
+                result = prepare_mobile_network()
+            elif action == 'prepare':
                 result = prepare(stage)
             elif action == 'activate':
                 result = activate()

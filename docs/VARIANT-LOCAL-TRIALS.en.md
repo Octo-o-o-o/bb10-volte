@@ -1,8 +1,14 @@
+> Historical document: r42 opens all catalog models. The former admission restrictions below are superseded; use [current compatibility](COMPATIBILITY.md).
+
 # Local trials for additional variants
+
+SQC100-4 update, 2026-11-07: Telecom 460-11 retains automatic setup and its known SMS notice. Unicom is unsupported at the owner’s request and its trial entry is closed; Mobile 460-00 did not obtain usable LTE in this field test. The current catalog exports 14 trials: 11 manual and three read-only. See the [SQC100-4 record](SQC100-4-INTAKE-2026-11-06.md).
 
 [Copy or download instructions and feedback forms for each exact variant](https://bb10-volte.octoooo.com/en/trials.html).
 
 [简体中文](VARIANT-LOCAL-TRIALS.md) · [Full research (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md)
+
+Local candidate r29 / mobile 0.1.0.30, 2026-11-07: SQW100-1 / WINDERMEREEMEA adds Mobile 460-00 to the exact automatic route alongside Unicom 460-01, Mobile 460-07 and Telecom 460-11. Mobile 460-00 private-backend functions and normal-boot checks passed; package installation, UI and stop/restore acceptance is version-specific. Telecom pending-send and duplicate-receive SMS issues remain separate and do not block activation. See the [intake record](SQW100-1-INTAKE-2026-11-06.md). This expands the observed Mobile PLMN without adding model/carrier trial combinations; other MNCs remain blocked. The r15 description below records the older 19-profile release.
 
 This is an experimental route for variants without new hardware acceptance. It reuses the existing manual service and adds exact-model binding, six native-file checks, fixed carrier settings and separate installation/start steps. It does not add candidates to automatic carrier support.
 
@@ -12,8 +18,7 @@ Use an already rooted phone with working AutoRoot v4 / Root SSH. A report does n
 |---|---|
 | SQN100-1, SQN100-5 | Telecom 460-11; working local LTE B5 data is required |
 | SQC100-1, SQC100-3, SQC100-5 | Mobile 460-00, Unicom 460-01, Telecom 460-11 |
-| SQC100-4 | Unicom 460-01, Telecom 460-11 |
-| SQW100-1, SQW100-3 | Checks and export for all three carriers; installation remains blocked pending native lifecycle/restoration validation |
+| SQW100-3 | Checks and export for all three carriers; installation remains blocked pending native lifecycle/restoration validation |
 
 There are 13 manual candidates and six read-only candidates. Actual checks still require OS 10.3.3.3216, QNX ARM32, Root, matching native files, USIM without ISIM, the selected home PLMN, working LTE data, a verified stock template and a clean baseline. Band overlap does not establish local coverage or voice support.
 

@@ -1,0 +1,109 @@
+{
+  "at_utc": "2026-11-07T06:21:25.649345+00:00",
+  "variant": "SQW100-1",
+  "board": "WINDERMEREEMEA",
+  "os_version": "10.3.3.3216",
+  "home_plmn": "460-00",
+  "SIM_type": "USIM_without_ISIM",
+  "mobile_version": "0.1.0.30",
+  "desktop_revision": 29,
+  "identity_root_and_six_native_files_verified": true,
+  "system_reflashed": false,
+  "current_voice_policy": {
+    "before": 0,
+    "after": 3,
+    "meaning": "IMS preferred; final policy is not the abandoned PS_ONLY trial"
+  },
+  "UE_usage": {
+    "before": 0,
+    "after": 1,
+    "four_sources": [
+      "ims",
+      "ims_defaults",
+      "omadm",
+      "test"
+    ],
+    "entry": "ue_usage_setting::data_centric"
+  },
+  "PPS_changes": [
+    {
+      "object": "/pps/services/carrier_config/ims/ims",
+      "field": "IMS_services",
+      "before": null,
+      "after": "json:[{\"feature_tag\":\"\",\"network\":[\"LTE\"],\"service\":\"voice\"},{\"feature_tag\":\"\",\"network\":[\"LTE\"],\"service\":\"sms\"}]"
+    },
+    {
+      "object": "/pps/services/carrier_config/ims/ims",
+      "field": "Home_network_domain_name",
+      "before": ":",
+      "after": ":ims.mnc000.mcc460.3gppnetwork.org"
+    },
+    {
+      "object": "/pps/services/carrier_config/ims/ims",
+      "field": "supported_networks",
+      "before": null,
+      "after": "json:[\"LTE\"]"
+    },
+    {
+      "object": "/pps/services/carrier_config/ims/ims",
+      "field": "IMS_profilesV2",
+      "before": null,
+      "after": "json:[\"IR92\"]"
+    },
+    {
+      "object": "/pps/services/carrier_config/ims/ims",
+      "field": "SMS_Over_IP_Network_Indication",
+      "before": null,
+      "after": "b:true"
+    },
+    {
+      "object": "/pps/services/cds/cnice/status_persistent",
+      "field": "cdsc_xml",
+      "before": ":",
+      "after": ":/var/bb10_volte/runtime/carrier/36-ims.xml"
+    },
+    {
+      "object": "/pps/services/carrier_config/radio_common/cellular_protocol_configuration",
+      "field": "voice_domain_preference_EUTRAN",
+      "before": null,
+      "after": "n:3"
+    }
+  ],
+  "stock_template": {
+    "path": "/etc/carrier/config/404.xml",
+    "sha256": "01093873ac626da82ec30c45a2db18925af12f5f9dec1fdca63c7ef3c70f0598"
+  },
+  "runtime_patch_purposes": [
+    "Use the owned common IMS configuration object",
+    "Allow ordinary voice through the existing VoPS guard workaround",
+    "Mobile EarlySdp adjustment for reliable 180 handling",
+    "Existing raw 3GPP MT report correlation"
+  ],
+  "runtime_patch_count": 4,
+  "original_native_binaries_unchanged_hash_verified": true,
+  "runtime_software_crypto_provider": {
+    "before": -1,
+    "after": 0,
+    "release": "Normal reboot after managed stop; no online unload"
+  },
+  "autostart_enabled": true,
+  "native_SMS_engine_changed_from_private_Mobile00_trial": false,
+  "new_product_runtime_files_changed_from_private_trial": [
+    "device/carrier_policy.py",
+    "device/compatibility.py",
+    "device/profiles.py",
+    "device/unified_install.py",
+    "device/unified_migrate.py"
+  ],
+  "admitted_exact_home_plmns": [
+    "460-00",
+    "460-01",
+    "460-07",
+    "460-11"
+  ],
+  "Telecom_proxy_fix_scope": "Only exact 446.xml hash and ctnet internet block in generated copy; observed removal is recorded in 174-179. Original/MMS preserved.",
+  "IR92_UsePreconditions_globally_disabled": false,
+  "Telecom_SMS_fixed": false,
+  "private_raw_evidence_sha256": "8f9eff20c0b8177a1136694e94a58ece85ca26e951c4bd1178b7dcf31570089a",
+  "normal_stop_restore_verified_record": "464-mobile00-v30-enabled-checkpoint.json"
+}

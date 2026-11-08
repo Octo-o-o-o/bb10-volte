@@ -125,6 +125,8 @@ class AutoClient:
                         raise WorkflowError('unified_backup_not_verified')
                 result['desktop_backup'] = str(folder)
                 return result
+            if before.get('can_prepare_mobile_network') is True:
+                before = self.execute(stage, 'unified_install.py', ('prepare-network',), 120)['probe']
             if not before.get('can_install') or before.get('sim_supported') is not True:
                 raise WorkflowError(before.get('sim_reason') or 'unified_preflight_blocked', before)
             prepared = self.execute(stage, 'unified_install.py', ('prepare', stage), 180)
@@ -154,6 +156,11 @@ class AutoClient:
             receipt_file.write_bytes(policy.profiles.canonical(receipt))
             self.upload(receipt_file, stage + '/backup-receipt.json')
             self.execute(stage, 'unified_install.py', ('record-backup', stage + '/backup-receipt.json'))
+            # Do not turn the radio on a second time if it was switched off
+            # during backup. Keep the prepared transaction for explicit retry.
+            check = self.execute(stage, 'unified_install.py', ('probe',))
+            if check.get('mobile_network_off') is True:
+                raise WorkflowError('mobile_network_off', check)
             result = self.execute(stage, 'unified_install.py', ('activate',), 240)
             result['desktop_backup'] = str(folder)
         return result
@@ -185,6 +192,7 @@ class AutoClient:
             state = self.execute(BASE, 'unified_service.py', ('status',), 180)
             if state.get('manager_alive'):
                 raise WorkflowError('restore_pending')
+            self.execute(BASE, 'unified_install.py', ('prepare-network',), 120)
         return self.execute(BASE, 'unified_service.py', (action,), 180)
 
 

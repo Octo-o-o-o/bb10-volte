@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "at_utc": "2026-11-07T16:11:03.920029+00:00",
+  "candidate": {
+    "mobile": "0.1.0.36",
+    "windows_revision": 35,
+    "preview_id": "idle1107"
+  },
+  "host_validation": {
+    "tests_passed": 265,
+    "tests_skipped": 0,
+    "qt_controller_and_network_harness": "passed",
+    "qnx_native_build": "passed",
+    "mobile_signature_and_bundle_files": "verified",
+    "windows_offline_selftest": "passed",
+    "old_r34_upgrade_gate": "verified"
+  },
+  "behavior": {
+    "foreground_hold_minutes": 10,
+    "background_ui_polling": false,
+    "startup_poll_seconds": 3,
+    "stable_after_seconds": 60,
+    "stable_poll_seconds": 30,
+    "unchanged_status_write_seconds": 60,
+    "stable_log_scan_seconds": 60,
+    "lte_only_default": true,
+    "disable_restores_exact_original_mode": true,
+    "unknown_state_alerts": false,
+    "confirmed_sim_swap_requests_restart": true,
+    "changed_sim_after_reboot_requests_app_review": true
+  },
+  "acceptance": {
+    "phone_contacted": false,
+    "installed_on_phone": false,
+    "published": false,
+    "battery_drain": "unknown",
+    "cpu_and_memory_on_phone": "unknown",
+    "lte_only_calls_sms_data": "unknown",
+    "normal_boot_and_restore_on_candidate": "unknown",
+    "automatic_notification_visibility": "unknown",
+    "compatibility_expanded": false
+  },
+  "artifacts": {
+    "mobile_bar_sha256": "e917035abf8cd2dcd7518d323a65771bf130bbea09a95ee2e1e546b14df73e5e",
+    "windows_exe_sha256": "bee452004b374320606ec6ac30ca550fbfbe779c976d7f13ae663c7edfb64d9f"
+  },
+  "evidence_log_sha256": {
+    "native-controller.log": "ab0b7b486e428ff78cd7b226c2cd334fdda8e4cec747c27346f88ecd62bdf7d2",
+    "mobile-build-final.log": "00afa836ee5b509d40c0a39ad686932473216118eedfb89cfcb3a057df1520fc",
+    "windows-build-complete.log": "d628295e0c8d1d291425d50fffe65f7e6234d1856b42a1ca853980e63500d88f",
+    "windows-selftest.json": "6c6da8bd7dc10b95405cdbfe1328bceaf4e9f07fe0708a27be81fcedd8e0255b",
+    "checks.json": "f7ecf0f8325f57c9fb6e72cff8d77ead62887dce5021be20ad32ea7522229089",
+    "notification-fixture-final.log": "d58ba69664fc1a88fdb383e4174237d28b192ca0ad0c7c00d0fa2bfd26ac3fad",
+    "r34-upgrade-check.json": "c21624611c75d81f374635efc50849b7d156e2a235883ed968ee1848953fdbe6"
+  },
+  "notes": [
+    "The source privacy scan initially rejected synthetic test SIM digits; fixtures now construct explicit synthetic values and the scan passes.",
+    "A first offline Windows build lacked cached license files; pinned local inputs were copied and the final build passed.",
+    "Windows-only O_NONBLOCK test failure was resolved by running the QNX/POSIX behavioral tests in the existing Linux test container, without changing device code for the host.",
+    "The first mobile36 build predates the requested SIM notices and is superseded by mobile-build-final.log."
+  ]
+}

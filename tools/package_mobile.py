@@ -146,7 +146,8 @@ def bundle_inputs(key, version=MOBILE_VERSION):
     for source in sorted((ROOT / 'profiles').glob('*.json')):
         blobs['profiles/' + source.name] = source.read_bytes()
     blobs.update(trial_inputs())
-    for name in ('unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json'):
+    for name in ('compatibility-matrix.json', 'unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json',
+                 'sqw100-1-intake-2026-11-06.json', 'sqc100-4-intake-2026-11-06.json'):
         blobs['materials/' + name] = (ROOT / 'materials' / name).read_bytes()
     # Bind the pinned entry to every other signed member and manifest field,
     # without a self-referential hash of the entry itself.

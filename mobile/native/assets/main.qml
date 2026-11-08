@@ -3,7 +3,7 @@ import bb.system 1.2
 
 NavigationPane {
     id: navigation
-    backButtonsVisible: !volteController.operationInProgress
+    backButtonsVisible: !volteController.operationInProgress && !pairingController.busy
     peekEnabled: false
     function t(key) { var language = volteController.language; return volteController.label(key); }
     function syncOperationDialog() {
@@ -66,6 +66,13 @@ NavigationPane {
                 }
                 Label {
                     text: volteController.deviceText + "  ·  " + volteController.carrierText
+                    multiline: true
+                    textStyle.fontSize: FontSize.Small
+                    textFormat: TextFormat.Plain
+                }
+                Label {
+                    text: volteController.compatibilityText
+                    visible: text.length > 0
                     multiline: true
                     textStyle.fontSize: FontSize.Small
                     textFormat: TextFormat.Plain

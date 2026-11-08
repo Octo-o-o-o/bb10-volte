@@ -1,0 +1,457 @@
+{
+  "schema": 1,
+  "as_of": "2026-11-08",
+  "release": "v0.5.0-r42",
+  "mobile_version": "0.1.0.43",
+  "admission": "All listed model/carrier combinations are open regardless of evidence status. Evidence is historical and version-specific, not new release acceptance.",
+  "labels": {
+    "passed": {
+      "zh": "实测可用",
+      "en": "Tested usable"
+    },
+    "issues": {
+      "zh": "实测有问题",
+      "en": "Tested with issues"
+    },
+    "failed": {
+      "zh": "实测未通过",
+      "en": "Tested unsuccessful"
+    },
+    "untested": {
+      "zh": "理论可试／未实测",
+      "en": "Theoretical / untested"
+    }
+  },
+  "operators": {
+    "mobile": {
+      "zh": "移动",
+      "en": "Mobile"
+    },
+    "unicom": {
+      "zh": "联通",
+      "en": "Unicom"
+    },
+    "telecom": {
+      "zh": "电信",
+      "en": "Telecom"
+    }
+  },
+  "models": {
+    "SQN100-1": {
+      "variant": "SQN100-1",
+      "family": "q10",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQN100-1 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQN100-1 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQN100-2": {
+      "variant": "SQN100-2",
+      "family": "q10",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQN100-2 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQN100-2 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQN100-3": {
+      "variant": "SQN100-3",
+      "family": "q10",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "issues"
+      },
+      "note": {
+        "zh": "三网历史通话可用；电信短信已实测，旧版网页问题的修复尚未在此型号复测。",
+        "en": "Historical three-carrier calls; Telecom SMS tested. The older browser issue has not been retested on this model after the shared fix."
+      },
+      "evidence": [
+        "materials/unified-carrier-acceptance.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQN100-3 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测有问题\n三网历史通话可用；电信短信已实测，旧版网页问题的修复尚未在此型号复测。",
+        "en": "SQN100-3 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested with issues\nHistorical three-carrier calls; Telecom SMS tested. The older browser issue has not been retested on this model after the shared fix."
+      }
+    },
+    "SQN100-4": {
+      "variant": "SQN100-4",
+      "family": "q10",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQN100-4 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQN100-4 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQN100-5": {
+      "variant": "SQN100-5",
+      "family": "q10",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQN100-5 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQN100-5 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQC100-1": {
+      "variant": "SQC100-1",
+      "family": "classic",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "passed"
+      },
+      "note": {
+        "zh": "机主确认三网通话、短信、上网正常；0.1.0.41／r40。细项计数及生命周期未单独确认。",
+        "en": "Owner reports calls, SMS and data normal on all three carriers, mobile41/r40. Detailed counts and lifecycle were not separately confirmed."
+      },
+      "evidence": [
+        "materials/sqc100-1-intake-2026-11-08.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQC100-1 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测可用\n机主确认三网通话、短信、上网正常；0.1.0.41／r40。细项计数及生命周期未单独确认。",
+        "en": "SQC100-1 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested usable\nOwner reports calls, SMS and data normal on all three carriers, mobile41/r40. Detailed counts and lifecycle were not separately confirmed."
+      }
+    },
+    "SQC100-2": {
+      "variant": "SQC100-2",
+      "family": "classic",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "passed"
+      },
+      "note": {
+        "zh": "三网历史通话可用，短信与恢复证据按原版本保留。",
+        "en": "Historical three-carrier calls; SMS and restore evidence retains its original version scope."
+      },
+      "evidence": [
+        "materials/unified-carrier-acceptance.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQC100-2 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测可用\n三网历史通话可用，短信与恢复证据按原版本保留。",
+        "en": "SQC100-2 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested usable\nHistorical three-carrier calls; SMS and restore evidence retains its original version scope."
+      }
+    },
+    "SQC100-3": {
+      "variant": "SQC100-3",
+      "family": "classic",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "passed"
+      },
+      "note": {
+        "zh": "机主确认三网基础功能正常；0.1.0.39／r38。短信细项与生命周期按记录区分。",
+        "en": "Owner reports basic functions normal on all three carriers, mobile39/r38. Detailed SMS and lifecycle retain their recorded scope."
+      },
+      "evidence": [
+        "materials/sqc100-3-intake-2026-11-08.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQC100-3 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测可用\n机主确认三网基础功能正常；0.1.0.39／r38。短信细项与生命周期按记录区分。",
+        "en": "SQC100-3 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested usable\nOwner reports basic functions normal on all three carriers, mobile39/r38. Detailed SMS and lifecycle retain their recorded scope."
+      }
+    },
+    "SQC100-4": {
+      "variant": "SQC100-4",
+      "family": "classic",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "failed",
+        "unicom": "failed",
+        "telecom": "issues"
+      },
+      "note": {
+        "zh": "电信通话、收信、数据可用，发送状态有问题；移动与联通本次未通过 LTE 入网。三网仍开放试用。",
+        "en": "Telecom calls, incoming SMS and data work, but outgoing status is faulty. Mobile and Unicom LTE admission failed in recorded trials; all remain open."
+      },
+      "evidence": [
+        "materials/sqc100-4-intake-2026-11-06.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQC100-4 · 三网开放\n移动: 实测未通过 / 联通: 实测未通过 / 电信: 实测有问题\n电信通话、收信、数据可用，发送状态有问题；移动与联通本次未通过 LTE 入网。三网仍开放试用。",
+        "en": "SQC100-4 · All carriers open\nMobile: Tested unsuccessful / Unicom: Tested unsuccessful / Telecom: Tested with issues\nTelecom calls, incoming SMS and data work, but outgoing status is faulty. Mobile and Unicom LTE admission failed in recorded trials; all remain open."
+      }
+    },
+    "SQC100-5": {
+      "variant": "SQC100-5",
+      "family": "classic",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQC100-5 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQC100-5 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQW100-1": {
+      "variant": "SQW100-1",
+      "family": "passport",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "issues"
+      },
+      "note": {
+        "zh": "移动含 460-07 携转卡，联通正常；电信通话/数据可用，发送状态和重复收信问题保留。",
+        "en": "Mobile includes a ported-number 460-07 SIM; Unicom works. Telecom calls/data work, with pending-send and duplicate-receive issues retained."
+      },
+      "evidence": [
+        "materials/sqw100-1-intake-2026-11-06.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQW100-1 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测有问题\n移动含 460-07 携转卡，联通正常；电信通话/数据可用，发送状态和重复收信问题保留。",
+        "en": "SQW100-1 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested with issues\nMobile includes a ported-number 460-07 SIM; Unicom works. Telecom calls/data work, with pending-send and duplicate-receive issues retained."
+      }
+    },
+    "SQW100-2": {
+      "variant": "SQW100-2",
+      "family": "passport",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "官方认证列出 Passport -1/-3/-4，尚未核实 -2 量产身份；以“—”表示资料待核实，不断言不存在或仅频段受限。入口保留。",
+        "en": "Official certification lists Passport -1/-3/-4. Production identity for -2 remains unconfirmed; a dash means unconfirmed, not proven nonexistent or band-blocked. Entry stays open."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQW100-2 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n官方认证列出 Passport -1/-3/-4，尚未核实 -2 量产身份；以“—”表示资料待核实，不断言不存在或仅频段受限。入口保留。",
+        "en": "SQW100-2 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nOfficial certification lists Passport -1/-3/-4. Production identity for -2 remains unconfirmed; a dash means unconfirmed, not proven nonexistent or band-blocked. Entry stays open."
+      }
+    },
+    "SQW100-3": {
+      "variant": "SQW100-3",
+      "family": "passport",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "Shared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      },
+      "evidence": [
+        "materials/device-support.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQW100-3 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n复用共享引擎的理论试用，尚无本后缀功能实测；当地 LTE 频段和网络仍影响结果。",
+        "en": "SQW100-3 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nShared-engine trial without functional tests on this suffix; local LTE bands and network still affect results."
+      }
+    },
+    "SQW100-4": {
+      "variant": "SQW100-4",
+      "family": "passport",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "issues"
+      },
+      "note": {
+        "zh": "移动、联通已实测；电信通话/数据正常，但短信送达后可能仍显示发送中。",
+        "en": "Mobile and Unicom tested. Telecom calls/data work, but delivered SMS may remain pending locally."
+      },
+      "evidence": [
+        "materials/sqw100-4-retest-2026-11-07.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQW100-4 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测有问题\n移动、联通已实测；电信通话/数据正常，但短信送达后可能仍显示发送中。",
+        "en": "SQW100-4 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested with issues\nMobile and Unicom tested. Telecom calls/data work, but delivered SMS may remain pending locally."
+      }
+    },
+    "SQK100-1": {
+      "variant": "SQK100-1",
+      "family": "p9983",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "passed",
+        "unicom": "passed",
+        "telecom": "passed"
+      },
+      "note": {
+        "zh": "机主明确反馈三网实测通过；引用最后安装的 0.1.0.40／r39。未补采新遥测或逐项短信计数。",
+        "en": "Owner explicitly reports all three carriers passed; reference installed mobile40/r39. No fresh telemetry or detailed SMS counts were provided."
+      },
+      "evidence": [
+        "materials/sqk100-1-intake-2026-11-08.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQK100-1 · 三网开放\n移动: 实测可用 / 联通: 实测可用 / 电信: 实测可用\n机主明确反馈三网实测通过；引用最后安装的 0.1.0.40／r39。未补采新遥测或逐项短信计数。",
+        "en": "SQK100-1 · All carriers open\nMobile: Tested usable / Unicom: Tested usable / Telecom: Tested usable\nOwner explicitly reports all three carriers passed; reference installed mobile40/r39. No fresh telemetry or detailed SMS counts were provided."
+      }
+    },
+    "SQK100-2": {
+      "variant": "SQK100-2",
+      "family": "p9983",
+      "admission": {
+        "mobile": true,
+        "unicom": true,
+        "telecom": true
+      },
+      "status": {
+        "mobile": "untested",
+        "unicom": "untested",
+        "telecom": "untested"
+      },
+      "note": {
+        "zh": "官方资料确认该后缀，FDD-LTE B2/B4/B5/B17；暂无功能实测。已 Root 且原生文件匹配时可试用；本地首次刷写配方尚未核验。",
+        "en": "Officially documented with LTE B2/B4/B5/B17; no functional tests. Trial available with existing Root and matching native files; a local first-flash recipe is not verified."
+      },
+      "evidence": [
+        "materials/model-identity-research-2026-11-08.json"
+      ],
+      "new_release_hardware_acceptance": false,
+      "summary": {
+        "zh": "SQK100-2 · 三网开放\n移动: 理论可试／未实测 / 联通: 理论可试／未实测 / 电信: 理论可试／未实测\n官方资料确认该后缀，FDD-LTE B2/B4/B5/B17；暂无功能实测。已 Root 且原生文件匹配时可试用；本地首次刷写配方尚未核验。",
+        "en": "SQK100-2 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nOfficially documented with LTE B2/B4/B5/B17; no functional tests. Trial available with existing Root and matching native files; a local first-flash recipe is not verified."
+      }
+    }
+  }
+}

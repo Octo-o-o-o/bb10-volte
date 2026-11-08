@@ -1,0 +1,129 @@
+{
+  "at": "2026-11-07T00:32:40.954052+08:00",
+  "requested_by_owner": true,
+  "variant": "SQC100-4",
+  "scope": "China Telecom SMS received by peer but sender remains pending; no subscriber identifiers used in searches.",
+  "queries": [
+    "中国电信 VoLTE 短信 发送中 对方收到 RP-ACK",
+    "China Telecom IMS SMS SIP 202 no RP-ACK",
+    "BlackBerry 电信 短信 一直 发送中 VoLTE",
+    "\"电信\" \"对方收到\" \"发送中\" 短信",
+    "\"电信\" \"短信\" \"发送失败\" \"对方收到\" volte",
+    "\"China Telecom\" \"SMS\" \"RP-ACK\"",
+    "\"电信\" \"短信\" \"一直发送中\"",
+    "\"China Telecom\" \"3gpp2\" \"SMS\"",
+    "site:forums.quectel.com SMS China Telecom",
+    "\"IMS SMS\" \"RP-ACK\" timeout quectel"
+  ],
+  "findings": [
+    {
+      "source": "Huawei Cloud official domestic SMS receipt documentation",
+      "url": "https://support.huaweicloud.com/api-msgsms/sms_05_0051.html",
+      "code": "China Telecom IC:0015",
+      "observation": "Documents a delivered message with delayed state report in a gateway overload scenario.",
+      "relevance": "Proves this broad symptom class exists on a Telecom messaging chain.",
+      "limit": "A2P platform delivery receipt; not handset-originated IMS RP-ACK and not evidence of the cause on this SQC100-4."
+    },
+    {
+      "source": "China Telecom Tianyi Cloud official SMS code documentation (no longer maintained)",
+      "url": "https://www.ctyun.cn/document/10020426/10633777",
+      "observation": "Lists Telecom IC:0015 as already delivered to the user terminal.",
+      "limit": "Same A2P scope and historical documentation; no BB10 fix is specified."
+    },
+    {
+      "source": "Quectel official forum: EC200N owner reproduction and follow-up",
+      "url": "https://forums.quectel.com/t/ec200n-sms-submission-hangs-on-lte-roaming-but-succeeds-on-gsm/60276",
+      "reported_dates": [
+        "2026-08-27",
+        "2026-09-05"
+      ],
+      "observation": "Owner reported indefinite CMGS wait on LTE roaming, then reported firmware update resolved it.",
+      "limit": "UK SIM roaming on China Mobile; peer receipt was not established. Similar completion hang, not a China Telecom or BB10 reproduction."
+    },
+    {
+      "source": "Quectel official forum: EC800M_CN_LE firmware support response",
+      "url": "https://forums.quectel.com/t/qpy-ocpu-v0005-ec800m-cnle-fw-optional-sms-module/55811",
+      "observation": "Support distinguishes NAS-only SMS firmware from a VoLTE variant needed for complete domestic carrier SMS support.",
+      "limit": "Explains why carrier paths differ; this phone already sends a real IMS MESSAGE, so it does not identify this failure."
+    },
+    {
+      "source": "Android official CarrierConfigManager.ImsSms reference",
+      "url": "https://developer.android.com/reference/android/telephony/CarrierConfigManager.ImsSms",
+      "observation": "Defines TR1 as the MO wait for network RP-ACK and bounds sending retries/final failure reporting.",
+      "relevance": "Independent implementation reference for separating submit confirmation and finite timeout behavior.",
+      "limit": "Not a BB10 patch or evidence of a current Telecom network defect."
+    },
+    {
+      "source": "ETSI / 3GPP TS 24.341 v12.6.0",
+      "url": "https://www.etsi.org/deliver/etsi_ts/124300_124399/124341/12.06.00_60/ts_124341v120600p.pdf",
+      "observation": "SIP acceptance and RP submit report are separate; SMSC addressing uses the selected service-centre URI.",
+      "limit": "Protocol baseline; cannot attribute an absent report to the operator without more evidence."
+    }
+  ],
+  "conclusion": "A directly reported Telecom peer-received/UI-failure case exists on LineageOS. No exact BB10 same-cause report or transferable confirmed fix has been established.",
+  "excluded_as_explanations": [
+    "Cloud A2P template/anti-abuse errors do not by themselves explain a received handset SMS.",
+    "No primary evidence found that this live Telecom case requires switching to 3GPP2."
+  ],
+  "local_evidence": [
+    "163-owner-candidate-sms-result.json",
+    "164-network-capture.json",
+    "165-pcap-sip-summary.json",
+    "170-native-uri-api-findings.json"
+  ],
+  "local_conclusion": "Both captures contain only outbound 3GPP RP-DATA and bodyless SIP 202; the first candidate left To unchanged because the native formatter omitted URI parameters. Carrier causality remains open.",
+  "phone_modified_by_research": false,
+  "other_device_modified": false,
+  "followup": {
+    "at": "2026-11-07T00:49:01.372058+08:00",
+    "variant": "SQC100-4",
+    "requested_by_owner": true,
+    "queries": [
+      "中国电信 VoLTE 短信 已收到 一直发送中 RP ACK IMS",
+      "China Telecom IMS SMS RP-ACK user=phone To header",
+      "site.forums.quectel.com China Telecom SMS delivered timeout",
+      "China Telecom SMS not sent LineageOS fix"
+    ],
+    "findings": [
+      {
+        "source": "https://www.reddit.com/r/LineageOS/comments/e1up0d/sms_not_sent_tap_to_try_again_but_actually_sent/",
+        "kind": "First-person report linked to original defect tracker",
+        "date": "2019-11-27",
+        "device": "Redmi Note 4 / mido",
+        "system": "LineageOS 16.0 / 2019-11-26",
+        "operator": "China Telecom",
+        "peer_received_reported": true,
+        "sender_ui": "Not sent; tap to try again",
+        "alternate_messaging_app_same_result": true,
+        "limitations": "Different OS and device; immediate failure rather than permanent sending. No evidence of the same IMS/RP root cause."
+      },
+      {
+        "source": "https://gitlab.com/LineageOS/issues/android/-/issues/1432",
+        "api_source": "https://gitlab.com/api/v4/projects/LineageOS%2Fissues%2Fandroid/issues/1432",
+        "kind": "Original user defect report; API body read",
+        "title": "LineageOS not recognizing the SMS sent confirmation from China Telecom",
+        "peer_receipt_explicitly_confirmed_by_author": true,
+        "state_observed": "closed",
+        "closed_at": "2020-06-21T17:08:16Z",
+        "merge_requests_count": 0,
+        "fix_verified": false,
+        "notes_fetch": "401 Unauthorized; no authenticated access attempted",
+        "limitations": "The report title suggests a confirmation issue but does not prove its cause; closed does not establish fixed."
+      },
+      {
+        "source": "https://forumschinese.quectel.com/t/topic/2291",
+        "kind": "First-person reports and vendor forum response",
+        "date": "2023-07-07 through 2023-12-20",
+        "device": "EC800M",
+        "operator": "China Telecom",
+        "symptom": "SMS network timeout; China Mobile worked in the same module.",
+        "reported_resolution": "Firmware with VoLTE support; user reported Telecom SMS working after upgrade.",
+        "limitations": "No successful peer receipt in failing case. This BB10 already sends actual IMS MESSAGE and receives SMS, so absent VoLTE support is not the observed defect."
+      }
+    ],
+    "conclusion": "A directly reported Telecom peer-received/UI-failure case exists on LineageOS. No exact BB10 same-cause report or transferable confirmed fix has been established.",
+    "phone_modified_by_research": false,
+    "other_device_modified": false
+  },
+  "last_updated": "2026-11-07T00:49:01.382927+08:00"
+}

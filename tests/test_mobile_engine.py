@@ -61,7 +61,7 @@ class StatusTests(unittest.TestCase):
                'status_from_current_boot': True, 'current': {'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']}}
         saved = {'boot': ['boot'], 'operator': 'telecom', 'sim_sha256': 'secret-old-sim'}
         with ExitStack() as stack:
-            for item in (patch.object(u, 'verify'), patch.object(u, 'boot_token', return_value=['boot']),
+            for item in (patch.object(u.n, 'read', return_value=b'@status\nsmsServiceBusy:b:false\n'), patch.object(u, 'verify'), patch.object(u, 'boot_token', return_value=['boot']),
                          patch.object(u.s, 'read_status', return_value=raw),
                          patch.object(u.os.path, 'isfile', side_effect=lambda p: p in (u.SELECTION, u.BASE + '/enabled')),
                          patch.object(u.s, 'load', return_value=saved),

@@ -8,6 +8,7 @@ import stat
 import struct
 import subprocess
 import sys
+import socket
 
 PAIR_PUBLIC_KEY = None
 PAIR_REQUEST_ID = None
@@ -75,6 +76,106 @@ def public_key(value):
     if offset != len(raw):
         raise ValueError('Invalid RSA public key')
     return ' '.join(parts[:2])
+
+
+def pairing_request(key, request_id):
+    """Public data only; desktop private keys never leave their original folder."""
+    if not isinstance(request_id, str) or not re.match(r'\A[a-f0-9]{12}\Z', request_id):
+        raise ValueError('Invalid pairing request')
+    return {'schema': 1, 'kind': 'bb10-computer-pairing',
+            'request_id': request_id, 'computer_public_key': public_key(key)}
+
+
+def parse_pairing_request(raw):
+    if not isinstance(raw, bytes) or not 0 < len(raw) <= 16384:
+        raise ValueError('Invalid pairing request')
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError('Invalid pairing request')
+            result[key] = value
+        return result
+    value = json.loads(raw.decode('utf-8-sig'), object_pairs_hook=pairs)
+    if (not isinstance(value, dict) or set(value) !=
+            {'schema', 'kind', 'request_id', 'computer_public_key'} or
+            type(value['schema']) is not int or value['schema'] != 1 or
+            value['kind'] != 'bb10-computer-pairing' or
+            not isinstance(value['computer_public_key'], str)):
+        raise ValueError('Invalid pairing request')
+    return pairing_request(value['computer_public_key'], value['request_id'])
+
+
+def key_fingerprint(key):
+    raw = base64.b64decode(public_key(key).split()[1].encode('ascii'))
+    return 'SHA256:' + base64.b64encode(hashlib.sha256(raw).digest()).decode('ascii').rstrip('=')
+
+
+def usb_ssh_available():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(2)
+    try:
+        sock.connect(('169.254.0.1', 22))
+        return True
+    except socket.error:
+        return False
+    finally:
+        sock.close()
+
+
+def usb_ssh_safe_to_start():
+    config = settings('/etc/ssh/sshd_config')
+    # ListenAddress accepts multiple entries; a command-line entry would not
+    # remove an explicit wildcard or Wi-Fi listener from the original file.
+    return (all(value in ('169.254.0.1', '169.254.0.1:22')
+                for value in config.get('listenaddress', [])) and
+            all(value == '22' for value in config.get('port', [])))
+
+
+def mobile_pair(encoded):
+    """Invoked only by the compiled phone UI after its explicit owner button.
+
+    The UI passes the exact previewed bytes as data. No file chosen from shared
+    storage is imported, executed, or granted path trust.
+    """
+    if os.geteuid() != 0 or os.uname()[0] != 'QNX':
+        raise ValueError('ROOT_REQUIRED: enter an existing Root terminal first')
+    if (not isinstance(encoded, str) or len(encoded) > 21848 or
+            not re.match(r'\A[A-Za-z0-9+/]+={0,2}\Z', encoded)):
+        raise ValueError('Invalid pairing request')
+    raw = base64.b64decode(encoded.encode('ascii'))
+    if base64.b64encode(raw).decode('ascii') != encoded:
+        raise ValueError('Invalid pairing request')
+    request = parse_pairing_request(raw)
+    result_path = authorize(request['computer_public_key'], request['request_id'])
+    available = usb_ssh_available()
+    start_code = None
+    if not available and usb_ssh_safe_to_start():
+        # Use the already reviewed original SSH layout. Do not replace keys,
+        # change startup flags, or bind a new service to Wi-Fi interfaces.
+        with open('/dev/null', 'wb') as sink:
+            try:
+                start_code = subprocess.call(['/usr/sbin/sshd', '-f', '/etc/ssh/sshd_config',
+                    '-o', 'ListenAddress=169.254.0.1'], stdout=sink, stderr=sink)
+            except OSError:
+                start_code = -1
+        available = usb_ssh_available()
+    return {'schema': 1, 'state': 'paired', 'request_id': request['request_id'],
+            'fingerprint': key_fingerprint(request['computer_public_key']),
+            'result_path': result_path, 'usb_ssh_available': available,
+            'ssh_start_exit_code': start_code, 'desktop_verification_required': True}
+
+
+def cleanup_mobile_bridge():
+    own = os.path.abspath(__file__)
+    parent = os.path.dirname(own)
+    if (os.geteuid() != 0 or not re.match(r'\A/var/bb10_pair_bridge_[a-f0-9]{32}\Z', parent)
+            or os.path.basename(own) != 'pair.py' or os.path.islink(parent)
+            or os.path.realpath(parent) != parent or os.listdir(parent) != ['pair.py']
+            or os.path.islink(own)):
+        raise ValueError('UNSAFE_CLEANUP_PATH')
+    os.unlink(own)
+    os.rmdir(parent)
 
 
 def settings(path):
@@ -186,7 +287,15 @@ def main():
 
 if __name__ == '__main__':
     try:
-        main()
+        if sys.argv[1:] == ['--cleanup']:
+            cleanup_mobile_bridge()
+        elif len(sys.argv) == 3 and sys.argv[1] == '--mobile-request':
+            print(json.dumps(mobile_pair(sys.argv[2]), sort_keys=True))
+        else:
+            main()
     except (OSError, ValueError) as error:
-        print(phone_message(str(error)))
+        if len(sys.argv) > 1 and sys.argv[1] == '--mobile-request':
+            print(json.dumps({'schema': 1, 'state': 'error', 'error': str(error)}))
+        else:
+            print(phone_message(str(error)))
         raise SystemExit(1)

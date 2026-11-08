@@ -13,6 +13,32 @@ import auto_carrier_managed as managed
 
 
 class UnifiedDesktopTests(unittest.TestCase):
+    def test_known_sim_change_needs_manual_restart_and_unknown_is_not_a_swap(self):
+        from auto_carrier_view import status_view
+        state = {'phase': 'running', 'manager_alive': True, 'native_alive': True,
+                 'status_from_current_boot': True, 'selected_this_boot': True,
+                 'enabled': True, 'management_schema': 2, 'current_sim_matches': False,
+                 'current': {'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']}}
+        changed = status_view(state)
+        self.assertFalse(changed['ready'])
+        self.assertEqual(changed['check_code'], 'unified_sim_changed')
+        state['current_sim_matches'] = None
+        self.assertNotEqual(status_view(state)['check_code'], 'unified_sim_changed')
+        state['current_sim_matches'] = True
+        self.assertTrue(status_view(state)['ready'])
+
+    def test_changed_sim_after_reboot_does_not_request_another_restart_before_selection(self):
+        from auto_carrier_view import status_view
+        for phase in ('waiting_for_native_ims', 'waiting_for_phone_idle', 'waiting_for_sim', 'running'):
+            for selected in (False, None):
+                state = {'phase': phase, 'manager_alive': True, 'native_alive': True,
+                         'status_from_current_boot': True, 'selected_this_boot': selected,
+                         'enabled': True, 'management_schema': 2, 'current_sim_matches': False,
+                         'current': {'ims': 'connected', 'register_status': '200 OK', 'ran': 'LTE', 'radio': ['lte']}}
+                response = status_view(state)
+                self.assertFalse(response['ready'])
+                self.assertEqual(response['check_code'], 'unified_waiting')
+
     def test_unified_directory_takes_priority_and_blocks_legacy_install(self):
         client = object.__new__(w.Client)
         client.detect_managed = True
@@ -59,6 +85,39 @@ class UnifiedDesktopTests(unittest.TestCase):
             auto.action('enable')
         self.assertEqual(auto.execute.call_count, 1)
         self.assertEqual(auto.execute.call_args[0][2], ('status',))
+
+    def test_enable_prepares_mobile_network_before_enabling_the_service(self):
+        transport = Mock()
+        transport.remote.return_value = json.dumps(a.verify_package())
+        auto = a.AutoClient(transport)
+        auto.execute = Mock(side_effect=[{'manager_alive': False}, {'mobile_network': {'after': 'ON'}}, {'enabled': True}])
+        self.assertTrue(auto.action('enable')['enabled'])
+        self.assertEqual([call.args[2] for call in auto.execute.call_args_list], [('status',), ('prepare-network',), ('enable',)])
+
+    def test_power_preparation_failure_never_enables_the_service(self):
+        transport = Mock()
+        transport.remote.return_value = json.dumps(a.verify_package())
+        auto = a.AutoClient(transport)
+        auto.execute = Mock(side_effect=[{'manager_alive': False}, w.WorkflowError('mobile_network_rejected')])
+        with self.assertRaisesRegex(w.WorkflowError, 'mobile_network_rejected'):
+            auto.action('enable')
+        self.assertEqual([call.args[2] for call in auto.execute.call_args_list], [('status',), ('prepare-network',)])
+
+    def test_install_rechecks_sim_after_opening_before_preparing_originals(self):
+        before = {'variant': 'SQC100-1', 'installed': False, 'can_install': False,
+                  'sim_supported': False, 'sim_reason': 'sim_not_ready', 'can_prepare_mobile_network': True}
+        for supported in (False, True):
+            after = dict(before, sim_supported=supported, can_install=supported,
+                         sim_reason=None if supported else 'sim_route_unsupported')
+            auto = a.AutoClient(Mock())
+            auto.execute = Mock(side_effect=[before, {'probe': after}, w.WorkflowError('prepare_reached')])
+            with self.subTest(supported=supported), patch.object(auto, 'stage') as stage:
+                stage.return_value.__enter__.return_value = '/verified-stage'
+                with self.assertRaisesRegex(w.WorkflowError, 'prepare_reached' if supported else 'sim_route_unsupported'):
+                    auto.install()
+            commands = [call.args[2] for call in auto.execute.call_args_list]
+            self.assertEqual(commands[:2], [('probe',), ('prepare-network',)])
+            self.assertEqual(len(commands), 3 if supported else 2)
 
     def test_known_previous_candidate_remains_manageable_for_upgrade(self):
         old = json.loads((a.ROOT / 'materials/unified-previous-payload.json').read_text())

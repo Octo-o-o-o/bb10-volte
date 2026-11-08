@@ -1,0 +1,852 @@
+{
+  "schema": 1,
+  "records": [
+    {
+      "manifest_sha256": "eb2c1e4b5e8f2d53f23cf0b36737a251f69024141b9e298f3440160fadad58f9",
+      "report_sha256": "d6303a89f158b73c57774b01d255a8fb8b79dd8b179943bb2c9ecfe4bd1ebc5f",
+      "verdict": {
+        "schema": 1,
+        "at_utc": "2026-11-07T06:21:50.005846+00:00",
+        "scope": {
+          "variant": "SQW100-1",
+          "board": "WINDERMEREEMEA",
+          "os_version": "10.3.3.3216",
+          "home_plmn": "460-00",
+          "SIM_type": "USIM_without_ISIM"
+        },
+        "status": "adapted",
+        "checks": {
+          "identity_root_native": {
+            "evidence": [
+              {
+                "source": "identity",
+                "pointer": "/identity_root_and_six_native_files_verified"
+              }
+            ],
+            "scope_note": "Frozen r29 real preflight plus retained six-file intake baseline.",
+            "result": "passed"
+          },
+          "original_backups": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/original_backups_verified"
+              }
+            ],
+            "scope_note": "Final v30 original backup hashes.",
+            "result": "passed"
+          },
+          "normal_boot_registration": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/normal_boot_auto_registration_verified"
+              },
+              {
+                "source": "final",
+                "pointer": "/current_boot_SIM_and_payload_bound"
+              }
+            ],
+            "scope_note": "Current v30 boot and SIM bound.",
+            "result": "passed"
+          },
+          "normal_stop_restore": {
+            "evidence": [
+              {
+                "source": "restore",
+                "pointer": "/previous_stop_restore_and_provider_release_passed"
+              }
+            ],
+            "scope_note": "Private Mobile00 service normal stop/restore and subsequent provider-release boot, before v30 backend update.",
+            "result": "passed"
+          },
+          "outgoing_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/outgoing_call"
+              }
+            ],
+            "scope_note": "Fresh v30 owner test; call directions also sampled in 471.",
+            "result": "passed"
+          },
+          "incoming_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/incoming_call"
+              }
+            ],
+            "scope_note": "Fresh v30 owner test; call directions also sampled in 471.",
+            "result": "passed"
+          },
+          "two_way_audio": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/two_way_audio"
+              }
+            ],
+            "scope_note": "Fresh v30 owner test; call directions also sampled in 471.",
+            "result": "passed"
+          },
+          "LTE_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/LTE_during_calls"
+              }
+            ],
+            "scope_note": "Fresh v30 owner test; call directions also sampled in 471.",
+            "result": "passed"
+          },
+          "data_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/cellular_data_during_calls"
+              }
+            ],
+            "scope_note": "Fresh v30 owner test; call directions also sampled in 471.",
+            "result": "passed"
+          },
+          "HTTP_HTTPS": {
+            "evidence": [
+              {
+                "source": "private_functions",
+                "pointer": "/owner_confirmed/HTTP_browser"
+              },
+              {
+                "source": "private_functions",
+                "pointer": "/owner_confirmed/HTTPS_browser"
+              }
+            ],
+            "scope_note": "Private Mobile00 trial, not freshly repeated on v30.",
+            "result": "passed"
+          },
+          "short_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/short_SMS_local_sent_status"
+              },
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/short_SMS_received_exactly_once"
+              }
+            ],
+            "scope_note": "Fresh v30 send completion and exact visible delivery count.",
+            "result": "passed"
+          },
+          "long_SMS": {
+            "evidence": [
+              {
+                "source": "private_functions",
+                "pointer": "/owner_confirmed/long_SMS_both_directions_sender_complete_full_exact_once"
+              }
+            ],
+            "scope_note": "Private Mobile00 trial; preserved version scope.",
+            "result": "passed"
+          },
+          "identical_incoming_SMS": {
+            "evidence": [
+              {
+                "source": "private_functions",
+                "pointer": "/owner_confirmed/two_identical_incoming_short_SMS_received_exactly_twice"
+              }
+            ],
+            "scope_note": "Private Mobile00 trial; preserved version scope.",
+            "result": "passed"
+          },
+          "SMS_idle": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/final_SMS_PPS_and_two_native_samples_idle"
+              }
+            ],
+            "scope_note": "Fresh post-v30 test PPS and two native samples.",
+            "result": "passed"
+          },
+          "desktop_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/frozen_desktop_selftest_GUI_scope_and_real_preflight_passed"
+              }
+            ],
+            "scope_note": "Actual frozen Windows r29 EXE.",
+            "result": "passed"
+          },
+          "mobile_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/actual_v30_selected_by_verified_product_function"
+              }
+            ],
+            "scope_note": "v30 signed runtime and payload verified independently in 472; BAR members in 448.",
+            "result": "passed"
+          },
+          "mobile_UI": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/owner_confirmed/mobile_UI_connected"
+              }
+            ],
+            "scope_note": "Owner checked actual v30 page.",
+            "result": "passed"
+          }
+        },
+        "sources": {
+          "identity": {
+            "path": "476-SQW100-1-configuration-delta.json",
+            "sha256": "55088b75ee72d44e65b060f07257c1cb4b4f3f9b56159cdf8ffdd98b2e3b0a8c",
+            "versions": {
+              "mobile_version": "0.1.0.30",
+              "desktop_revision": 29
+            }
+          },
+          "private_functions": {
+            "path": "436-mobile00-private-functional-acceptance.json",
+            "sha256": "27c20d8cac2ab970bc2c6e010eb7012408a61ea9d599b294dcf7dd5ab2cab064",
+            "versions": {
+              "private_runtime_map_fingerprint": "d44c454a6d9bda23ccab6084af7aaf21b31ae9800f1250d9f3ef474fe5b1b101"
+            }
+          },
+          "restore": {
+            "path": "464-mobile00-v30-enabled-checkpoint.json",
+            "sha256": "bc5437bdd9955d0ca8c0c1d44933f8ad1aec8d4107af69ef3baf5af7b4ac1164",
+            "versions": {
+              "mobile_version": "0.1.0.30",
+              "desktop_revision": 29,
+              "runtime_map_sha256": "a54ac20b79a9b5f9b923ac8ff8d26708d5cb738a5437ee7141994d7621163751"
+            }
+          },
+          "final": {
+            "path": "475-mobile00-v30-final-acceptance.json",
+            "sha256": "3d3adebbff737100d022730eff4a35cd6a606178826c814918ad1ad382bf752c",
+            "versions": {
+              "mobile_version": "0.1.0.30",
+              "desktop_revision": 29,
+              "runtime_map_sha256": "a54ac20b79a9b5f9b923ac8ff8d26708d5cb738a5437ee7141994d7621163751"
+            }
+          }
+        },
+        "missing_checks": [],
+        "failed_checks": [],
+        "known_SMS_limitations": [],
+        "product_scope": {
+          "runtime_scope_enabled": true,
+          "explicit_product_exclusion": false,
+          "carrier_policy_sha256": "a824682cb4859f370675e904c6563b35488937984dcc57c8232facbbf57ff1fb",
+          "support_catalog_sha256": "c638164fa1d902414a8657a282c25e958d1cf9ebb4535771dbc0d1ea92ee3b09"
+        },
+        "all_checks_fresh_same_version_claimed": false,
+        "phone_contacted": false,
+        "runtime_admission_modified": false,
+        "public_release_performed": false
+      }
+    },
+    {
+      "manifest_sha256": "718aeecc39e0768a4308cefd8ce83278825203237b8f127b7fb3ca1eb5d82658",
+      "report_sha256": "9b8805d4fa5a63027711237bdff7b5af123db88d4291aa9f8ecf8a1c90363bc3",
+      "verdict": {
+        "schema": 1,
+        "at_utc": "2026-11-07T06:39:00.141815+00:00",
+        "scope": {
+          "variant": "SQC100-4",
+          "board": "CLASSICNA",
+          "os_version": "10.3.3.3216",
+          "home_plmn": "460-00",
+          "SIM_type": "USIM_without_ISIM"
+        },
+        "status": "incomplete",
+        "checks": {
+          "identity_root_native": {
+            "evidence": [
+              {
+                "source": "radio_intake",
+                "pointer": "/acceptance_facts/identity_root_native"
+              }
+            ],
+            "scope_note": "Read-only Mobile 460-00 baseline in 309-313; installed inactive private Unicom 264 engine. This does not claim Mobile functional or package acceptance.",
+            "result": "passed"
+          },
+          "original_backups": {
+            "evidence": [
+              {
+                "source": "radio_intake",
+                "pointer": "/acceptance_facts/original_backups"
+              }
+            ],
+            "scope_note": "Read-only Mobile 460-00 baseline in 309-313; installed inactive private Unicom 264 engine. This does not claim Mobile functional or package acceptance.",
+            "result": "passed"
+          },
+          "normal_boot_registration": {
+            "evidence": [
+              {
+                "source": "radio_intake",
+                "pointer": "/acceptance_facts/normal_boot_registration"
+              }
+            ],
+            "scope_note": "Read-only Mobile 460-00 baseline in 309-313; installed inactive private Unicom 264 engine. This does not claim Mobile functional or package acceptance.",
+            "result": "not_tested"
+          },
+          "normal_stop_restore": {
+            "evidence": [
+              {
+                "source": "radio_intake",
+                "pointer": "/acceptance_facts/normal_stop_restore"
+              }
+            ],
+            "scope_note": "Read-only Mobile 460-00 baseline in 309-313; installed inactive private Unicom 264 engine. This does not claim Mobile functional or package acceptance.",
+            "result": "not_tested"
+          },
+          "outgoing_call": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "incoming_call": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "two_way_audio": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "LTE_during_calls": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "data_during_calls": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "HTTP_HTTPS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "short_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "long_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "identical_incoming_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "SMS_idle": {
+            "evidence": [
+              {
+                "source": "radio_intake",
+                "pointer": "/acceptance_facts/SMS_idle"
+              }
+            ],
+            "scope_note": "Read-only Mobile 460-00 baseline in 309-313; installed inactive private Unicom 264 engine. This does not claim Mobile functional or package acceptance.",
+            "result": "passed"
+          },
+          "desktop_package": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "mobile_package": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "mobile_UI": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          }
+        },
+        "sources": {
+          "radio_intake": {
+            "path": "313-mobile-radio-result.json",
+            "sha256": "c8234ba4ae11c01d3316b0f84b036b807e241e68129a65cd8fb05c36598e7c82",
+            "versions": {}
+          }
+        },
+        "missing_checks": [
+          "normal_boot_registration",
+          "normal_stop_restore",
+          "outgoing_call",
+          "incoming_call",
+          "two_way_audio",
+          "LTE_during_calls",
+          "data_during_calls",
+          "HTTP_HTTPS",
+          "short_SMS",
+          "long_SMS",
+          "identical_incoming_SMS",
+          "desktop_package",
+          "mobile_package",
+          "mobile_UI"
+        ],
+        "failed_checks": [],
+        "known_SMS_limitations": [],
+        "product_scope": {
+          "runtime_scope_enabled": false,
+          "explicit_product_exclusion": false,
+          "carrier_policy_sha256": "a824682cb4859f370675e904c6563b35488937984dcc57c8232facbbf57ff1fb",
+          "support_catalog_sha256": "54ab9999ce6e326b536de2fa26a87881061dd5607acb985bff83574bcae1f1e9"
+        },
+        "all_checks_fresh_same_version_claimed": false,
+        "phone_contacted": false,
+        "runtime_admission_modified": false,
+        "public_release_performed": false
+      }
+    },
+    {
+      "manifest_sha256": "83e9cafd14a28fd8445ecfd6aa6072913eb1c962f3ea400493017d33379e882f",
+      "report_sha256": "fbe0cc3daa29834c2a15c7d400af783af86a662d2efcd989d41d10d156f7f8af",
+      "verdict": {
+        "schema": 1,
+        "at_utc": "2026-11-07T13:49:22.758076+00:00",
+        "scope": {
+          "variant": "SQW100-4",
+          "board": "WINDERMERE4ROW",
+          "os_version": "10.3.3.3216",
+          "home_plmn": "460-11",
+          "SIM_type": "USIM_without_ISIM"
+        },
+        "status": "adapted_with_SMS_limitations",
+        "checks": {
+          "identity_root_native": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/identity_root_native"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "original_backups": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/original_backups"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "normal_boot_registration": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/normal_boot_registration"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "normal_stop_restore": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/normal_stop_restore"
+              }
+            ],
+            "scope_note": "Live stop/restore on this phone used mobile33 with r21 backend, followed by verified provider release. The r32 restore functions and listed dependencies match; see input restore_scope.",
+            "result": "passed"
+          },
+          "outgoing_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/outgoing_call"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "incoming_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/incoming_call"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "two_way_audio": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/two_way_audio"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "LTE_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/LTE_during_calls"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "data_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/data_during_calls"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "HTTP_HTTPS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/HTTP_HTTPS"
+              }
+            ],
+            "scope_note": "Same physical unit; see hashed input receipts. Functional tests used mobile33 with the unchanged r32 backend.",
+            "result": "passed"
+          },
+          "short_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/short_SMS"
+              }
+            ],
+            "scope_note": "Failed: message reached its recipient but local sending state did not complete. Explicit owner exception retained.",
+            "result": "failed"
+          },
+          "long_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/long_SMS"
+              }
+            ],
+            "scope_note": "Complete long-SMS acceptance not established; keep unknown under the owner-accepted Telecom SMS limitation.",
+            "result": "not_tested"
+          },
+          "identical_incoming_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/identical_incoming_SMS"
+              }
+            ],
+            "scope_note": "Owner reports incoming SMS normal; exact duplicate-message counting is not independently confirmed. Kept unknown.",
+            "result": "not_tested"
+          },
+          "SMS_idle": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/SMS_idle"
+              }
+            ],
+            "scope_note": "Busy state persisted after delivery. Known Telecom SMS completion defect, explicitly accepted by the owner.",
+            "result": "failed"
+          },
+          "desktop_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/desktop_package"
+              }
+            ],
+            "scope_note": "Final Windows r33 frozen self-test and actual phone preflight passed with the newly paired key.",
+            "result": "passed"
+          },
+          "mobile_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/mobile_package"
+              }
+            ],
+            "scope_note": "Mobile34 signed BAR installed and all 78 files verified; native IMS PID, current boot, SIM, payload and backups preserved.",
+            "result": "passed"
+          },
+          "mobile_UI": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/mobile_UI"
+              }
+            ],
+            "scope_note": "Owner saw connected state on mobile33; mobile34 only adds model guidance, compiled and installed with all 78 files read back. No repeat owner GUI check claimed.",
+            "result": "passed"
+          }
+        },
+        "sources": {
+          "final": {
+            "path": "075-telecom-acceptance-evidence.json",
+            "sha256": "7061e4654e03081bef4b79ed486000d86a88cc55de1c0d7f2d4e378e447c98ec",
+            "versions": {
+              "mobile_version": "0.1.0.34",
+              "desktop_revision": 33
+            }
+          }
+        },
+        "missing_checks": [],
+        "failed_checks": [],
+        "known_SMS_limitations": [
+          {
+            "code": "telecom_outgoing_completion_pending",
+            "checks": [
+              "short_SMS",
+              "long_SMS",
+              "identical_incoming_SMS",
+              "SMS_idle"
+            ],
+            "owner_authorization": {
+              "source": "final",
+              "pointer": "/owner_authorizes_SMS_exception"
+            }
+          }
+        ],
+        "product_scope": {
+          "runtime_scope_enabled": true,
+          "explicit_product_exclusion": false,
+          "carrier_policy_sha256": "a824682cb4859f370675e904c6563b35488937984dcc57c8232facbbf57ff1fb",
+          "support_catalog_sha256": "9443fa8c3f7846a427ce896dd73e329467b2908dd8efb1c3eedbd92cc0189868"
+        },
+        "all_checks_fresh_same_version_claimed": false,
+        "phone_contacted": false,
+        "runtime_admission_modified": false,
+        "public_release_performed": false
+      }
+    },
+    {
+      "manifest_sha256": "13622ade4112539193386fe53c16b80c7b84fe397f70fac4224cc74943108926",
+      "report_sha256": "67b05b43df432a08a97f1ba870ff576653432df098c73ff7f49ec7b286596b5d",
+      "verdict": {
+        "schema": 1,
+        "at_utc": "2026-11-07T15:51:34.962517+00:00",
+        "scope": {
+          "variant": "SQW100-4",
+          "board": "WINDERMERE4ROW",
+          "os_version": "10.3.3.3216",
+          "home_plmn": "460-00",
+          "SIM_type": "USIM_without_ISIM"
+        },
+        "status": "adapted",
+        "checks": {
+          "identity_root_native": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/identity_root_native"
+              }
+            ],
+            "scope_note": "See hashed exact-unit evidence and explicit version reuse in 118; not all checks were repeated on r34.",
+            "result": "passed"
+          },
+          "original_backups": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/original_backups"
+              }
+            ],
+            "scope_note": "See hashed exact-unit evidence and explicit version reuse in 118; not all checks were repeated on r34.",
+            "result": "passed"
+          },
+          "normal_boot_registration": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/normal_boot_registration"
+              }
+            ],
+            "scope_note": "Actual r34 normal-boot automatic Mobile registration in 115, still connected in 115c; no extra start/reboot.",
+            "result": "passed"
+          },
+          "normal_stop_restore": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/normal_stop_restore"
+              }
+            ],
+            "scope_note": "Actual stop/restore 105 on backend32 and provider release 110; restore functions/dependencies unchanged (118). Full r34 uninstall not repeated.",
+            "result": "passed"
+          },
+          "outgoing_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/outgoing_call"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "incoming_call": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/incoming_call"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "two_way_audio": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/two_way_audio"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "LTE_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/LTE_during_calls"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "data_during_calls": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/data_during_calls"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "HTTP_HTTPS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/HTTP_HTTPS"
+              }
+            ],
+            "scope_note": "Owner reports web use normal in reply to explicit Wi-Fi-off HTTP and HTTPS check (117).",
+            "result": "passed"
+          },
+          "short_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/short_SMS"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "long_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/long_SMS"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "identical_incoming_SMS": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/identical_incoming_SMS"
+              }
+            ],
+            "scope_note": "Same physical unit and SIM: owner/observer acceptance 093 on mobile34/backend32. Reused after checking unchanged native stack, profile, IMS patch recipe and lifecycle functions (118).",
+            "result": "passed"
+          },
+          "SMS_idle": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/SMS_idle"
+              }
+            ],
+            "scope_note": "Current r34: pinned native producer/QCT idle, published busy=false (115c).",
+            "result": "passed"
+          },
+          "desktop_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/desktop_package"
+              }
+            ],
+            "scope_note": "Final Windows r34 EXE frozen self-test 108 and strict USB-bound actual-phone preflight 116 passed.",
+            "result": "passed"
+          },
+          "mobile_package": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/mobile_package"
+              }
+            ],
+            "scope_note": "Signed mobile35 BAR: 78 installed files (102), 57 signed effective runtime files and selection verified (115c).",
+            "result": "passed"
+          },
+          "mobile_UI": {
+            "evidence": [
+              {
+                "source": "final",
+                "pointer": "/mobile_UI"
+              }
+            ],
+            "scope_note": "Owner confirms connected on mobile35 (117); effective signed runtime verified (115c).",
+            "result": "passed"
+          }
+        },
+        "sources": {
+          "final": {
+            "path": "119-mobile34-acceptance-evidence.json",
+            "sha256": "8c68926782e4f73de6ec34518f0699e7657cf625246ee50ec7064d79c7f1fb5a",
+            "versions": {
+              "mobile_version": "0.1.0.35",
+              "desktop_revision": 34
+            }
+          }
+        },
+        "missing_checks": [],
+        "failed_checks": [],
+        "known_SMS_limitations": [],
+        "product_scope": {
+          "runtime_scope_enabled": true,
+          "explicit_product_exclusion": false,
+          "carrier_policy_sha256": "a824682cb4859f370675e904c6563b35488937984dcc57c8232facbbf57ff1fb",
+          "support_catalog_sha256": "10f1bdd1af13fbf5ce72452eda6b05e78d80e9dba01949c4865090510f587b5a"
+        },
+        "all_checks_fresh_same_version_claimed": false,
+        "phone_contacted": false,
+        "runtime_admission_modified": false,
+        "public_release_performed": false
+      }
+    }
+  ]
+}

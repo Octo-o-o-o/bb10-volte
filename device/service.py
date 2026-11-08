@@ -7,6 +7,7 @@ import json
 import os
 import posixpath
 import re
+import select
 import signal
 import subprocess
 import sys
@@ -52,6 +53,8 @@ child = None
 event_seen = set()
 startup_handoff = {}
 startup_timing = {}
+last_status_snapshot = None
+last_status_write = None
 ACTIVE_REQUEST = profiles.request()
 ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
 
@@ -87,22 +90,31 @@ def live():
             'power': n.value(radio, 'power_status')}
 
 
-def status(phase, error=None, details=None):
+def status(phase, error=None, details=None, observation=None):
+    global last_status_snapshot, last_status_write
     startup_timing.setdefault(phase, time.time())
     result = {'phase': phase, 'at': time.time(), 'manager_pid': os.getpid(),
               'native_pid': j.get('native_pid') if j else None, 'error': error,
               'boot': boot_token(),
               'startup_timing': dict(startup_timing),
               'stock_handoff': dict(startup_handoff),
-              'ims_observation_scope': 'owned_native' if phase in ('running', 'registering')
+              'ims_observation_scope': 'owned_native' if phase in ('running', 'registering', 'monitoring_unknown')
               and j and j.get('native_pid') else 'system_status_only'}
     if details is not None:
         result['startup_wait'] = details
     try:
-        result.update(live())
+        result.update(live() if observation is None else observation)
     except Exception:
         result['native_status_unavailable'] = True
-    n.atomic(STATUS, json.dumps(result, indent=2).encode('ascii'))
+    snapshot = dict(result)
+    snapshot.pop('at')
+    now = result['at']
+    # This is a transition record, not a liveness lease. Both clients check
+    # the current boot, processes and live PPS when the user requests status.
+    if (snapshot != last_status_snapshot or last_status_write is None or
+            not os.path.isfile(STATUS)):
+        n.atomic(STATUS, json.dumps(result, indent=2).encode('ascii'))
+        last_status_snapshot, last_status_write = snapshot, now
 
 
 def stopping():
@@ -641,6 +653,151 @@ def prepare_connection():
     return True
 
 
+class MonitorWaiter:
+    """Read-only PPS subscriptions; unsupported/broken streams fall back safely.
+
+    QNX full-mode subscriptions retain the latest object without a delta queue.
+    Attribute filters avoid waking on unrelated radio counters. No object is
+    created or modified. The 30 s guard also observes explicit stop/native exit.
+    """
+    WATCHES = (
+        ('/pps/services/ims/status_public', ('status', 'default_ran')),
+        ('/pps/services/ims/cellular/status_private', ('register_status',)),
+        (RADIO, ('network_technology', 'power_status')),
+        ('/pps/services/cellular/uicc/card0/status_private', ('uicc_state', 'hplmn')),
+        ('/pps/services/cellular/uicc/card0/status_restricted', ('imsi',)),
+    )
+
+    def __init__(self):
+        self.streams = {}
+        try:
+            import fcntl
+            if os.uname()[0] != 'QNX':
+                return
+            for path, fields in self.WATCHES:
+                fd = os.open(path + '?f=' + '+'.join(fields), os.O_RDONLY | os.O_NONBLOCK)
+                self.streams[fd] = (fields, None)
+                fcntl.fcntl(fd, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
+                self.streams[fd] = (fields, self.snapshot(fd, fields))
+        except Exception:
+            self.close()
+
+    def snapshot(self, fd, fields):
+        data = os.read(fd, 65536)
+        # Deleted, truncated, unreadable or unexpectedly large objects are not
+        # registration failures. Leave event mode instead of spinning on EOF.
+        # Full-mode objects may carry qualifiers, e.g. the handset's radio
+        # status uses [n]@status_public. Treat the qualifier like n.attrs().
+        header = re.sub(br'^\[[^]]*\]', b'', data.split(b'\n', 1)[0])
+        if not header.startswith(b'@') or len(data) >= 65536:
+            raise ValueError('monitor_stream_unavailable')
+        values = n.attrs(data)
+        return tuple(values.get(name) for name in fields)
+
+    def close(self):
+        for fd in self.streams:
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+        self.streams = {}
+
+    def wait(self, seconds):
+        if not self.streams:
+            time.sleep(min(seconds, 30))
+            return
+        deadline = time.time() + seconds
+        duplicate_events = 0
+        try:
+            while time.time() < deadline:
+                if stopping() or child.poll() is not None:
+                    return
+                before = time.time()
+                readable = select.select(list(self.streams), [], [], min(30, deadline - before))[0]
+                changed = False
+                for fd in readable:
+                    fields, previous = self.streams[fd]
+                    current = self.snapshot(fd, fields)
+                    changed = changed or current != previous
+                    self.streams[fd] = (fields, current)
+                if changed:
+                    # Coalesce a burst; never inspect faster than startup polling.
+                    time.sleep(min(seconds, ACTIVE_PROFILE['runtime']['poll_seconds']))
+                    return
+                if time.time() < before:
+                    return  # A wall-clock correction cannot extend this wait.
+                if readable:
+                    duplicate_events += 1
+                    if duplicate_events >= 8:
+                        raise ValueError('monitor_repeated_unchanged_events')
+        except Exception:
+            # Optional observation must not enter serve()'s configuration rollback.
+            self.close()
+            time.sleep(min(seconds, 30))
+
+
+def monitor_native():
+    """Preserve native IMS; only setup or an explicit/confirmed stop can restore."""
+    connected_since, last_collect, previous_phase, previous_state = None, None, None, None
+    fast_until = time.time() + 120
+    was_steady, count = False, 0
+    waiter = MonitorWaiter()
+    try:
+        while not stopping():
+            if child.poll() is not None:
+                # QNX may terminate IMS before delivering our shutdown signal.
+                try:
+                    collect_vpn_evidence()
+                except Exception:
+                    pass
+                try:
+                    status('native_exited', 'Native IMS exited; explicit stop restores configuration')
+                except Exception:
+                    pass
+                return False
+            try:
+                state = live()
+            except Exception:
+                state = {}
+            complete = all(state.get(key) is not None for key in
+                           ('ims', 'register_status', 'ran', 'radio', 'power'))
+            phase = ('running' if state.get('ims') == 'connected' and
+                     state.get('register_status') == '200 OK' else
+                     'registering' if complete else 'monitoring_unknown')
+            now = time.time()
+            lte_connected = (phase == 'running' and state.get('ran') in ('LTE', 'lte')
+                             and state.get('radio') == ['lte'] and state.get('power') == 'ON')
+            if not lte_connected:
+                connected_since = None
+            elif connected_since is None or now < connected_since:
+                connected_since = now
+            steady = connected_since is not None and now - connected_since >= 60
+            if was_steady and not steady:
+                fast_until = now + 60
+            fast = not steady and now < fast_until
+            interval = 10 * ACTIVE_PROFILE['runtime']['poll_seconds'] if fast else 300
+            if (count in (0, 1, 2) or previous_phase != phase or previous_state != state or
+                    (steady and not was_steady) or last_collect is None or
+                    now < last_collect or now - last_collect >= interval):
+                try:
+                    collect_vpn_evidence()
+                except Exception:
+                    pass  # Diagnostic/display failures never tear down live IMS.
+                last_collect = now
+            try:
+                status(phase, observation=state)
+            except Exception:
+                pass  # A full disk or unreadable status receipt is not an IMS failure.
+            # Native IMS handles re-registration itself. Prolonged unknown or
+            # disconnected states also stop fast polling, without automatic retries.
+            waiter.wait(ACTIVE_PROFILE['runtime']['poll_seconds'] if fast else 300)
+            previous_phase, previous_state, was_steady = phase, state, steady
+            count += 1
+        return True
+    finally:
+        waiter.close()
+
+
 def serve():
     global child, shutdown, j
     startup_timing['manager_started'] = time.time()
@@ -669,24 +826,8 @@ def serve():
         j['native_pid'] = child.pid
         save_journal()
         status('registering')
-        count = 0
-        while not stopping():
-            if child.poll() is not None:
-                # QNX may terminate IMS before delivering our shutdown signal.
-                # Preserve the journal instead of reloading the modem mid-shutdown.
-                try:
-                    collect_vpn_evidence()
-                except Exception:
-                    pass
-                status('native_exited', 'Native IMS exited; explicit stop restores configuration')
-                return
-            if count in (1, 2) or count % 10 == 0:
-                collect_vpn_evidence()
-            state = live()
-            status('running' if state['ims'] == 'connected' and state['register_status'] == '200 OK' else 'registering')
-            # LTE loss is handled by the native IMS state machine; never toggle radio here.
-            time.sleep(ACTIVE_PROFILE['runtime']['poll_seconds'])
-            count += 1
+        if not monitor_native():
+            return
         if os.path.exists(STOP):
             restore()
         else:

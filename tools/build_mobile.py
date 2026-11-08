@@ -1,5 +1,6 @@
 """Build the native ARMv7 BAR in the pinned, isolated BB10 builder container."""
 import argparse
+import base64
 import json
 from pathlib import Path
 import subprocess
@@ -9,12 +10,27 @@ from package_mobile import ROOT, BUILDER, MOBILE_VERSION, package, prepare_asset
 from mobile_i18n import check_generated
 
 
+def prepare_pairing_header(source):
+    # Compile fixed reviewed code into the native executable. User-selected
+    # request files remain data and never receive executable path trust.
+    payload = (ROOT / 'tools/phone_pairing.py').read_bytes().replace(b'\r\n', b'\n')
+    if (payload.count(b'PAIR_PUBLIC_KEY = None') != 1 or
+            payload.count(b'PAIR_REQUEST_ID = None') != 1 or
+            b'BB10_COMPILED_PAIRING_HELPER' in payload):
+        raise ValueError('Expected the generic pairing helper without device keys')
+    path = source / 'build/pairing_payload.h'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('#pragma once\nstatic const char BB10_PAIRING_PAYLOAD_B64[] = "' +
+                    base64.b64encode(payload).decode('ascii') + '";\n', encoding='ascii', newline='\n')
+
+
 def build(key, version=MOBILE_VERSION):
     check_generated()
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+', version):
         raise ValueError('Mobile/BAR version must have four numeric components')
     source = ROOT / 'mobile/native'
     (source / 'build').mkdir(parents=True, exist_ok=True)
+    prepare_pairing_header(source)
     command = ['docker', 'run', '--rm', '--network', 'none', '--cap-drop', 'ALL',
                '--security-opt', 'no-new-privileges', '-v', str(source) + ':/src',
                '-w', '/src', BUILDER]

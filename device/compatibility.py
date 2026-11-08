@@ -466,6 +466,11 @@ def evaluate(s, profile=None, allow_experimental=False):
     def check(key, passed, code, failure='block'):
         checks.append({'id': key, 'status': 'pass' if passed else failure, 'code': code})
     check('model', device['recognized'], 'device_identified' if device['recognized'] else 'device_identity_unknown')
+    # Also reject imported/old trial profiles and generic profiles for a closed
+    # actual SIM route. Keep restoration available for historical installations.
+    if (profiles.carrier_adaptation_blocked(device['variant'], s.get('mcc'), (s.get('mnc'),)) or
+            profiles.carrier_adaptation_blocked(device['variant'], p['carrier']['mcc'], p['carrier']['mncs'])):
+        check('operator_support', False, 'operator_not_supported')
     if device['family'] == 'passport':
         check('provider_lifecycle', device_info.provider_lifecycle_supported(device),
               'passport_provider_lifecycle_unvalidated', 'adapt')

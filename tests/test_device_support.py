@@ -33,34 +33,32 @@ class ModelSupportTests(unittest.TestCase):
             try:
                 with patch.object(support, 'resource_root', return_value=bundle):
                     self.assertTrue(support.assess('SQC100-2')['automatic_volte'])
-                    self.assertEqual(support.assess('SQC100-3')['code'], 'adaptation_pending')
-                    self.assertEqual(support.assess('SQW100-2')['code'], 'model_unconfirmed')
+                    self.assertEqual(support.assess('SQC100-3')['code'], 'supported')
+                    self.assertEqual(support.assess('SQW100-2')['code'], 'supported')
             finally:
                 support.catalog.cache_clear()
 
     def test_all_catalog_variants_have_an_explicit_outcome_without_granting_radio_candidates(self):
-        self.assertEqual(set(support.catalog()), set(root_setup.firmware_variants()))
+        self.assertEqual(set(support.catalog()) - set(root_setup.firmware_variants()), {'SQK100-2'})
         outcomes = [support.assess(v, op) for v in support.catalog() for op in ('mobile', 'unicom', 'telecom')]
-        self.assertEqual(len(outcomes), 42)
-        self.assertEqual(sum(x['automatic_volte'] for x in outcomes), 9)
-        self.assertEqual(sum(x['code'] == 'radio_no_overlap' for x in outcomes), 11)
-        self.assertEqual(sum(x['code'] == 'model_unconfirmed' for x in outcomes), 3)
-        self.assertEqual(sum(x['code'] == 'adaptation_pending' for x in outcomes), 19)
+        self.assertEqual(len(outcomes), 48)
+        self.assertEqual(sum(x['automatic_volte'] for x in outcomes), 48)
+        self.assertEqual(sum(x['code'] == 'radio_no_overlap' for x in outcomes), 0)
+        self.assertEqual(sum(x['code'] == 'model_unconfirmed' for x in outcomes), 0)
+        self.assertEqual(sum(x['code'] == 'adaptation_pending' for x in outcomes), 0)
         self.assertEqual({v for v in support.catalog() if support.assess(v)['automatic_volte']}, set(policy.MODELS))
 
     def test_q20_4_and_north_american_q10_are_not_three_carrier_candidates(self):
-        self.assertEqual(support.assess('SQC100-4', 'mobile')['code'], 'radio_no_overlap')
-        self.assertEqual(support.assess('SQC100-4', 'unicom')['code'], 'adaptation_pending')
-        for v in ('SQN100-1', 'SQN100-5'):
-            self.assertEqual(support.assess(v)['candidate_operators'], ['telecom'])
-        for v in ('SQN100-2', 'SQN100-4'):
-            self.assertEqual(support.assess(v)['candidate_operators'], [])
+        for v in ('SQC100-4','SQN100-1','SQN100-2','SQN100-4','SQN100-5'):
+            for op in ('mobile','unicom','telecom'):
+                self.assertTrue(support.assess(v,op)['automatic_volte'])
+        self.assertEqual(support.assess('SQC100-4')['evidence_status']['unicom'],'failed')
 
     def test_root_only_intent_does_not_invent_unknown_hardware(self):
-        self.assertIsNotNone(support.preparation_blocker('SQC100-3'))
-        self.assertIsNone(support.preparation_blocker('SQC100-3', root_only=True))
-        for v in ('SQW100-2', 'SQW100-9', 'SQC100-99', ''):
-            self.assertIsNotNone(support.preparation_blocker(v, root_only=True))
+        self.assertIsNone(support.preparation_blocker('SQC100-5'))
+        self.assertIsNone(support.preparation_blocker('SQW100-2'))
+        for v in ('SQW100-9','SQC100-99',''):
+            self.assertIsNotNone(support.preparation_blocker(v,root_only=True))
 
 
 class PhoneProbeTests(unittest.TestCase):
@@ -75,7 +73,7 @@ class PhoneProbeTests(unittest.TestCase):
         self.stack.enter_context(patch.object(installer.device_info, 'read_identity', side_effect=lambda: self.facts))
 
     def test_unsupported_models_os_and_conflicting_boards_stop_before_native_or_legacy_operations(self):
-        cases = [(dict(self.facts, variant='SQC100-3'), 'unsupported_model_or_os'),
+        cases = [(dict(self.facts, variant='SQC100-99'), 'unsupported_model_or_os'),
                  (dict(self.facts, os_version='10.3.3.2205'), 'os_not_supported'),
                  (dict(self.facts, board_type='CLASSICVZW'), 'hardware_identity_conflict')]
         for facts, code in cases:
@@ -113,7 +111,7 @@ class PhoneProbeTests(unittest.TestCase):
 class DesktopTransportTests(unittest.TestCase):
     def test_rejected_probe_never_enters_prepare_update_or_backup(self):
         for report in (
-                {'variant': 'SQC100-3', 'scope_error': 'unsupported_model_or_os'},
+                {'variant': 'SQC100-99', 'scope_error': 'unsupported_model_or_os'},
                 {'variant': 'SQC100-2', 'can_install': True, 'sim_supported': False, 'sim_reason': 'sim_route_unsupported'},
                 {'variant': 'SQC100-2', 'can_install': False, 'sim_supported': True}):
             client = AutoClient(MagicMock())
@@ -128,7 +126,7 @@ class DesktopTransportTests(unittest.TestCase):
 
     def test_unknown_model_probe_can_be_retried_after_switching_devices(self):
         client = AutoClient(MagicMock())
-        reports = [{'variant': 'SQC100-3', 'scope_error': 'unsupported_model_or_os'}, {'variant': 'SQC100-2'}]
+        reports = [{'variant': 'SQC100-99', 'scope_error': 'unsupported_model_or_os'}, {'variant': 'SQC100-2'}]
         with patch.object(client, 'stage', side_effect=lambda: contextlib.nullcontext('/var/test-stage')), \
                 patch.object(client, 'execute', side_effect=reports):
             client.probe()

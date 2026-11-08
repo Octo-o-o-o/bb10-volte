@@ -14,9 +14,15 @@ endif()
 configure_file(src/bundle_identity.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/bundle_identity.h" @ONLY)
 
 include(BB10Qt4)
-qt4_wrap_cpp(MOC_SOURCES src/mobilecontroller.h src/supportcontroller.h)
-add_executable(bb10volte src/main.cpp src/mobilecontroller.cpp src/supportcontroller.cpp ${MOC_SOURCES})
-target_include_directories(bb10volte PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/generated")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/pairing_payload.h")
+    if(NOT BB10_ALLOW_INCOMPLETE_BUNDLE)
+        message(FATAL_ERROR "Missing compiled pairing helper. Run tools/build_mobile.py.")
+    endif()
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/pairing_payload.h" "#pragma once\nstatic const char BB10_PAIRING_PAYLOAD_B64[] = \"\";\n")
+endif()
+qt4_wrap_cpp(MOC_SOURCES src/mobilecontroller.h src/supportcontroller.h src/pairingcontroller.h)
+add_executable(bb10volte src/main.cpp src/mobilecontroller.cpp src/supportcontroller.cpp src/pairingcontroller.cpp ${MOC_SOURCES})
+target_include_directories(bb10volte PRIVATE src "${CMAKE_CURRENT_SOURCE_DIR}/build" "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_link_libraries(bb10volte PRIVATE
     bbcascades bbdata bbsystem bbcascadespickers
     QtDeclarative QtScript QtSvg QtSql sqlite3 z QtXmlPatterns

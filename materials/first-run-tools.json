@@ -4,7 +4,8 @@
   "auto_root_models": [
     "Q10",
     "Classic (Q20)",
-    "Passport (Q30)"
+    "Passport (Q30)",
+    "Porsche Design P'9983 (SQK100-1)"
   ],
   "auto_root_variants": [
     "SQN100-1",
@@ -20,7 +21,8 @@
     "SQW100-1",
     "SQW100-2",
     "SQW100-3",
-    "SQW100-4"
+    "SQW100-4",
+    "SQK100-1"
   ],
   "seven_zip_bootstrap": {
     "file": "7zr-26.05.exe",

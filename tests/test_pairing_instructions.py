@@ -1,6 +1,9 @@
 """Run the exported guard in a local shell with mocked phone commands."""
 from pathlib import Path
 import os
+import base64
+import json
+import struct
 import shutil
 import subprocess
 import sys
@@ -19,6 +22,10 @@ class PairingInstructionTests(unittest.TestCase):
         self.folder = Path(self.temp.name)
         self.script = self.folder / 'bb10-pair-abcdef123456.py'
         self.script.write_text('# public fixture only')
+        fields = [b'ssh-rsa', b'\x01\x00\x01', b'\x00' + b'\x21' * 256]
+        blob = b''.join(struct.pack('>I', len(value)) + value for value in fields)
+        self.key = 'ssh-rsa ' + base64.b64encode(blob).decode('ascii')
+        (self.folder / 'identity.pub').write_text(self.key)
         self.export = self.folder / 'export'
         self.export.mkdir()
 
@@ -26,12 +33,24 @@ class PairingInstructionTests(unittest.TestCase):
         (self.folder / 'identity').write_text('private fixture')
         export_pairing_files(self.script, self.export)
         self.assertEqual({p.name for p in self.export.iterdir()},
-                         {self.script.name, self.script.stem + '-instructions.txt'})
+                         {self.script.name, self.script.stem + '-instructions.txt', self.script.stem + '-request.json'})
         self.assertEqual((self.export / self.script.name).read_bytes(), self.script.read_bytes())
         instruction = (self.export / (self.script.stem + '-instructions.txt')).read_text(encoding='utf-8')
         self.assertIn(phone_commands(self.script.name), instruction)
         self.assertNotIn('private fixture', instruction)
+        request = json.loads((self.export / (self.script.stem + '-request.json')).read_text())
+        self.assertEqual(request['computer_public_key'], self.key)
+        self.assertEqual(request['request_id'], 'abcdef123456')
+        self.assertNotIn('private fixture', json.dumps(request))
         export_pairing_files(self.script, self.export)
+
+    def test_conflicting_request_prevents_all_partial_exports(self):
+        existing = self.export / (self.script.stem + '-request.json')
+        existing.write_text('owner content')
+        with self.assertRaisesRegex(RecoveryError, 'pairing_export_conflict'):
+            export_pairing_files(self.script, self.export)
+        self.assertEqual(existing.read_text(), 'owner content')
+        self.assertEqual(list(self.export.iterdir()), [existing])
 
     def test_conflicting_instructions_are_preserved_before_partial_export(self):
         existing = self.export / (self.script.stem + '-instructions.txt')

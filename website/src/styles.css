@@ -456,3 +456,6 @@ html:lang(en) .risk-banner > a { grid-column: 2; }
 .carrier-acceptance-visual figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; padding: 1rem 1.25rem; font-size: .875rem; line-height: 1.6; }
 .carrier-acceptance-visual figcaption p { margin: 0; max-width: 82ch; }
 .carrier-acceptance-visual figcaption > a { flex-shrink: 0; align-self: flex-start; }
+
+/* Evidence is distinct from open activation. */
+.evidence-passed{color:#176a42;background:#e4f5eb}.evidence-issues{color:#7b5510;background:#fff3cf}.evidence-failed{color:#8b3434;background:#fceaea}.evidence-untested{color:#4c6156;background:#edf3ef}.variant-table td small{display:block;margin-top:.35rem}.variant-progress p{white-space:pre-line}

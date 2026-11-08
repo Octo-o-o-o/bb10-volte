@@ -23,25 +23,6 @@ Page {
                     Option { text: page.t("profile_unicom"); value: "china-unicom"; selected: volteController.legacyProfile === "china-unicom" },
                     Option { text: page.t("profile_telecom"); value: "china-telecom"; selected: volteController.legacyProfile === "china-telecom" },
                     Option { text: page.t("profile_telecom_46011"); value: "china-telecom-46011"; selected: volteController.legacyProfile === "china-telecom-46011" },
-                    Option { text: "SQC100-1 / " + page.t("profile_mobile"); value: "variant-trial-sqc100-1-mobile"; selected: volteController.legacyProfile === "variant-trial-sqc100-1-mobile" },
-                    Option { text: "SQC100-1 / " + page.t("profile_telecom"); value: "variant-trial-sqc100-1-telecom"; selected: volteController.legacyProfile === "variant-trial-sqc100-1-telecom" },
-                    Option { text: "SQC100-1 / " + page.t("profile_unicom"); value: "variant-trial-sqc100-1-unicom"; selected: volteController.legacyProfile === "variant-trial-sqc100-1-unicom" },
-                    Option { text: "SQC100-3 / " + page.t("profile_mobile"); value: "variant-trial-sqc100-3-mobile"; selected: volteController.legacyProfile === "variant-trial-sqc100-3-mobile" },
-                    Option { text: "SQC100-3 / " + page.t("profile_telecom"); value: "variant-trial-sqc100-3-telecom"; selected: volteController.legacyProfile === "variant-trial-sqc100-3-telecom" },
-                    Option { text: "SQC100-3 / " + page.t("profile_unicom"); value: "variant-trial-sqc100-3-unicom"; selected: volteController.legacyProfile === "variant-trial-sqc100-3-unicom" },
-                    Option { text: "SQC100-4 / " + page.t("profile_telecom"); value: "variant-trial-sqc100-4-telecom"; selected: volteController.legacyProfile === "variant-trial-sqc100-4-telecom" },
-                    Option { text: "SQC100-4 / " + page.t("profile_unicom"); value: "variant-trial-sqc100-4-unicom"; selected: volteController.legacyProfile === "variant-trial-sqc100-4-unicom" },
-                    Option { text: "SQC100-5 / " + page.t("profile_mobile"); value: "variant-trial-sqc100-5-mobile"; selected: volteController.legacyProfile === "variant-trial-sqc100-5-mobile" },
-                    Option { text: "SQC100-5 / " + page.t("profile_telecom"); value: "variant-trial-sqc100-5-telecom"; selected: volteController.legacyProfile === "variant-trial-sqc100-5-telecom" },
-                    Option { text: "SQC100-5 / " + page.t("profile_unicom"); value: "variant-trial-sqc100-5-unicom"; selected: volteController.legacyProfile === "variant-trial-sqc100-5-unicom" },
-                    Option { text: "SQN100-1 / " + page.t("profile_telecom"); value: "variant-trial-sqn100-1-telecom"; selected: volteController.legacyProfile === "variant-trial-sqn100-1-telecom" },
-                    Option { text: "SQN100-5 / " + page.t("profile_telecom"); value: "variant-trial-sqn100-5-telecom"; selected: volteController.legacyProfile === "variant-trial-sqn100-5-telecom" },
-                    Option { text: "SQW100-1 / " + page.t("profile_mobile") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-1-mobile"; selected: volteController.legacyProfile === "variant-trial-sqw100-1-mobile" },
-                    Option { text: "SQW100-1 / " + page.t("profile_telecom") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-1-telecom"; selected: volteController.legacyProfile === "variant-trial-sqw100-1-telecom" },
-                    Option { text: "SQW100-1 / " + page.t("profile_unicom") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-1-unicom"; selected: volteController.legacyProfile === "variant-trial-sqw100-1-unicom" },
-                    Option { text: "SQW100-3 / " + page.t("profile_mobile") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-3-mobile"; selected: volteController.legacyProfile === "variant-trial-sqw100-3-mobile" },
-                    Option { text: "SQW100-3 / " + page.t("profile_telecom") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-3-telecom"; selected: volteController.legacyProfile === "variant-trial-sqw100-3-telecom" },
-                    Option { text: "SQW100-3 / " + page.t("profile_unicom") + " / " + page.t("trial_read_only"); value: "variant-trial-sqw100-3-unicom"; selected: volteController.legacyProfile === "variant-trial-sqw100-3-unicom" }
                 ]
                 onSelectedOptionChanged: { if (selectedOption) volteController.legacyProfile = selectedOption.value; }
             }
