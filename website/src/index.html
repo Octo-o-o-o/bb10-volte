@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BB10 VoLTE — 让老黑莓用上 4G 通话</title>
-  <meta name="description" content="已 Root 的黑莓 Q10、Q20、Passport，优先使用原生 BAR 安装，在手机上管理 VoLTE。保留桌面辅助与首次 Root 教程；手机候选版仍在发布验收。">
+  <meta name="description" content="黑莓 Q10、Q20、Passport、P’9983 开放三网入口。已 Root 用手机版 BAR；未 Root 用 Windows 或 Mac 引导。实测、测试中和已知问题分开记录。">
   <meta name="theme-color" content="#f4f5f2">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" type="image/png" href="assets/icon.png">
@@ -14,7 +14,7 @@
   <link rel="alternate" hreflang="en" href="https://bb10-volte.octoooo.com/en/">
   <link rel="alternate" hreflang="x-default" href="https://bb10-volte.octoooo.com/">
   <meta property="og:title" content="BB10 VoLTE — 让老黑莓用上 4G 通话">
-  <meta property="og:description" content="已 Root 的黑莓 Q10、Q20、Passport，优先使用原生 BAR 安装，在手机上管理 VoLTE。保留桌面辅助与首次 Root 教程；手机候选版仍在发布验收。">
+  <meta property="og:description" content="黑莓 Q10、Q20、Passport、P’9983 开放三网入口。已 Root 用手机版 BAR；未 Root 用 Windows 或 Mac 引导。实测、测试中和已知问题分开记录。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bb10-volte.octoooo.com/">
   <meta property="og:site_name" content="BB10 VoLTE">
@@ -54,6 +54,7 @@
         <span class="brand-edition">OCTOLAB</span>
       </a>
       <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a href="#release">本版说明</a>
         <a href="#how">工作原理</a>
         <a href="guides.html">使用指南</a>
         <a href="mobile.html">手机版</a>
@@ -82,14 +83,14 @@
         <div class="hero-grid">
           <div class="hero-copy">
             <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span>BLACKBERRY 10 · NATIVE VOLTE</p>
-            <h1 id="hero-title">让黑莓 Q10、Q20、Passport<br><em>用上 VoLTE。</em></h1>
-            <p class="hero-lead">已经 Root？优先安装原生 BAR，在手机上完成检查、备份、开启与恢复。缺少本机安装入口时，电脑只需辅助首次安装。继续用自己的 SIM、号码和系统拨号器。</p>
+            <h1 id="hero-title">让黑莓 Q10、Q20、<br>Passport、P’9983 <em>用上 VoLTE。</em></h1>
+            <p class="hero-lead">还没 Root，用 Windows 或 Mac 做完整准备。已经 Root，安装手机版 BAR，在手机上检查、备份并开启。继续用自己的 SIM、号码和系统拨号器。</p>
             <div class="hero-actions">
               <a class="button button-primary" href="mobile.html"><span class="button-copy"><span>已 Root · 手机安装指南</span><small>原生 BAR · 推荐方式</small></span><svg class="icon" aria-hidden="true"><use href="#icon-book"/></svg></a>
               <a class="button button-secondary" href="#download">桌面下载与 Root 准备</a>
             </div>
             <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span class="button-copy"><span>下载 macOS 通用版</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span><svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
-            <p class="hero-note">手机版 0.1.0.43 · Q10、Q20、Passport、P’9983 全部目录型号开放；实测结果单独标明。<a href="#variant-matrix">查看完整适配表</a></p>
+            <p class="hero-note">手机版 0.1.0.43 · 桌面 r42。全部目录型号开放；实测、测试中和已知问题分开记录。<a href="#release">本版说明与用法</a> · <a href="#variant-matrix">完整适配表</a></p>
 
           </div>
 
@@ -107,7 +108,29 @@
           </div>
         </div>
 
-        <div class="proof-strip"><div><span class="proof-number">4</span><p><strong>四大家族，三网开放</strong><small>实测与测试中分别记录</small></p></div><div><span class="proof-number">一次安装</span><p><strong>以后换卡由手机自动适配</strong><small>关机换卡、正常开机即可</small></p></div><div><span class="proof-number">原生通话</span><p><strong>保留自己的号码和拨号器</strong><small>接打电话全程使用 LTE</small></p></div><a href="#compatibility">查看实测机型与范围</a></div></div></section>
+        <div class="proof-strip"><div><span class="proof-number">4</span><p><strong>四大家族，三网开放</strong><small>实测与测试中分别记录</small></p></div><div><span class="proof-number">一次安装</span><p><strong>换卡先正常关机</strong><small>开机后只在提示时再重启</small></p></div><div><span class="proof-number">原生通话</span><p><strong>保留自己的号码和拨号器</strong><small>接打电话全程使用 LTE</small></p></div><a href="#compatibility">查看实测机型与范围</a></div></div></section>
+
+    <section class="region" id="release" aria-labelledby="release-title">
+      <div class="shell">
+        <div class="chapter"><span>00 / r42 · 0.1.0.43</span><span>开放入口，实测单独记录。</span></div>
+        <div class="section-heading">
+          <h2 id="release-title">这一版改了什么，<br><em>以及怎么用。</em></h2>
+          <p>Q10、Q20、Passport、P’9983 的目录后缀都可以试用。<br>“测试中”表示已开放、还没实测；<br>它和已经测过的结果不是一回事。</p>
+        </div>
+        <ol class="journey-steps">
+          <li><span class="journey-number">01</span><div><small>MODELS</small><h3>四个家族一起开放</h3><p>P’9983 纳入同一套流程。SQC100-1 与 SQK100-1 已有机主三网通过反馈；SQK100-2 仍在测试中。SQW100-2 的量产身份未核实，标记为“—”。</p></div><span class="step-mark">开放不等于全部测过</span></li>
+          <li><span class="journey-number">02</span><div><small>NOTICES</small><h3>该处理时才会提示</h3><p>开机后如果还要激活、换卡后还要处理，或连接失败，应用会说明下一步。连接稳定时减少重复检查和写入，没有测量过整机省电幅度。</p></div><span class="step-mark">不表示完全不占资源</span></li>
+          <li><span class="journey-number">03</span><div><small>FIXES</small><h3>网页和重复短信</h3><p>已修复定位到的代理导致网页打不开、短信确认关联造成的重复收信，以及部分换卡后的短信忙状态。不能据此认为所有网络都不再重复收信。</p></div><span class="step-mark">按已定位的问题修复</span></li>
+          <li><span class="journey-number">04</span><div><small>CHOOSE</small><h3>先看手机有没有 Root</h3><p>还没 Root：用 Windows 或 Mac 做完整准备，刷写会清空数据，先备份。已经 Root：安装手机版 BAR，在手机里检查、备份并开启。</p></div><span class="step-mark">日常使用不必一直连电脑</span></li>
+        </ol>
+        <div class="principles">
+          <article><span>重启</span><h3>只在提示时再重启</h3><p>重启后先解锁，等到 Root 生效，再给注册留几分钟。不必固定连着重启三次。换卡前正常关机；提示要写入新配置时再重启。Passport 进出电信时若提示再重启一次，按提示做。</p></article>
+          <article><span>前提</span><h3>开发模式，或有效 Root</h3><p>连电脑时按提示打开开发模式。只用手机版时必须已经 Root。缺了对应的一项，启用会失败。系统仍须是 10.3.3.3216，原生文件也要匹配。</p></article>
+          <article><span>连不上</span><h3>先换能传数据的线</h3><p>只充电的线认不到手机。换线、换 USB 口，再看驱动。官方连接软件也连不上，只说明连接本身有问题，不一定就是这根线坏了。</p></article>
+        </div>
+        <div class="risk-banner" role="note"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>部分电信短信已送达，本机仍可能显示“发送中”。</strong>下一条可能因此排队。已经送达的不要反复重发。如果你解决了，欢迎提交 Pull Request 或在 Issues 里说明方法，合入后会在项目里致谢。</p><a href="https://github.com/Octo-o-o-o/bb10-volte/issues" target="_blank" rel="noopener noreferrer">去 Issues 说明<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+      </div>
+    </section>
 
     <section class="region how-region" id="how" aria-labelledby="how-title">
       <div class="shell">
@@ -156,7 +179,7 @@
           <p>先确认 Root 与原生安装入口。<br>安装后，在手机内备份和开启；<br>最后用真实通话与短信确认。</p>
         </div>
         <div class="journey-grid">
-          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>等待 Root 生效</h3><p>开机解锁，等到 Root 成功提示，确认准确型号与系统。</p></div><span class="step-mark">首次 Root 是单独步骤</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>安装原生应用</h3><p>使用兼容 BAR 安装器或对应新版桌面辅助，核对实际安装版本。</p></div><span class="step-mark">以手机候选版发布状态为准</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>在手机里备份、开启</h3><p>跟随应用完成备份与正常重启。Passport 策略切换可能还需再正常重启一次。</p></div><span class="step-mark">后续日常管理不需电脑</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>验证真实通话</h3><p>呼出、呼入、再呼出，各接通至少两分钟；确认双向声音、LTE 和短信。</p></div><span class="step-mark">保存当前 SIM 的验收记录</span></li></ol>
+          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>等待 Root 生效</h3><p>开机解锁，等到 Root 成功提示，确认准确型号与系统。</p></div><span class="step-mark">首次 Root 是单独步骤</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>安装原生应用</h3><p>使用兼容 BAR 安装器或对应新版桌面辅助，核对实际安装版本。</p></div><span class="step-mark">当前手机版 0.1.0.43</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>在手机里备份、开启</h3><p>跟随应用完成备份与正常重启。Passport 策略切换可能还需再正常重启一次。</p></div><span class="step-mark">后续日常管理不需电脑</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>验证真实通话</h3><p>呼出、呼入、再呼出，各接通至少两分钟；确认双向声音、LTE 和短信。</p></div><span class="step-mark">保存当前 SIM 的验收记录</span></li></ol>
 
           <article class="acceptance-paper">
             <div class="paper-heading"><span>FIELD CHECK / 3 MODELS</span><svg class="icon" aria-hidden="true"><use href="#icon-phone"/></svg></div>
@@ -184,7 +207,7 @@
           <h2 id="compatibility-title">你的黑莓，<br><em>现在能用吗？</em></h2>
           <p>目前还是实验版，不能保证都能用。<br>请确认完整型号和系统版本，<br>以及 SIM 卡和运营商。</p>
         </div>
-        <div class="risk-banner" id="variant-trials" role="note"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>所有完整后缀：入口开放，实测单独记录</strong> Q10、Q20、Passport、P’9983 全部目录后缀三网入口开放。实测通过、测试中和历史失败分别记录；Root 配方和实际刷写仍按设备身份核对。</p><a href="guide.html#walkthrough-trials">查看候选试测条件</a></div>
+        <div class="risk-banner" id="variant-trials" role="note"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>所有完整后缀：入口开放，实测单独记录</strong> Q10、Q20、Passport、P’9983 全部目录后缀三网入口开放。实测通过、测试中和历史失败分别记录，也都可以试用。P’9983 SQK100-1 为机主三网通过；SQK100-2 测试中；SQW100-2 身份待核实。Root、原生文件和刷写仍按设备身份核对。</p><a href="#variant-matrix">查看完整适配表</a></div>
         <!-- compatibility:start -->
 <!-- compatibility:end -->
         <figure class="carrier-acceptance-visual" id="carrier-acceptance-visual">
@@ -247,7 +270,8 @@
           <div class="faq-intro"><h2 id="faq-title">你可能还想问。<br><em>答案在这里。</em></h2><p>想一步步跟着操作，<br>请打开完整使用指南。</p><a class="button button-secondary" href="guide.html">打开完整使用指南<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
           <div class="faq-list">
             <details><summary>所有黑莓手机都能用吗？<span aria-hidden="true"></span></summary><p>四大家族全部目录后缀已开放，具体实测范围见完整型号表。需要 Root、OS 10.3.3.3216、匹配原生文件与无 ISIM 的 USIM，当前模板为移动 460-00/07、联通 460-01、电信 460-11。首次 Root 与开启 VoLTE 是不同步骤。</p></details>
-            <details><summary>一定要 Root 吗？会不会丢数据？<span aria-hidden="true"></span></summary><p>需要。Root 就是取得手机的系统管理员权限。已经 Root、也有可信 SSH 连接的手机不用重刷；未 Root 的 Q10 可使用首次准备向导，但刷机会清空数据，而且这个流程仍是实验功能。请先备份。</p></details>
+            <details><summary>一定要 Root 吗？会不会丢数据？<span aria-hidden="true"></span></summary><p>需要。Root 就是取得手机的系统管理员权限。已经 Root 的手机安装 BAR 即可，不用重刷。还没 Root 时，用 Windows 或 Mac 的首次准备；刷机会清空数据，而且这个流程仍是实验功能。请先备份。连电脑时按提示打开开发模式。</p></details>
+            <details><summary>换卡或失败后要做什么？<span aria-hidden="true"></span></summary><p>换卡前正常关机，换好后开机。只在应用提示新配置需要重启时再重启，通常不用重装，也不必固定连着重启三次。认不到手机时，先换能传数据的线和 USB 口。部分电信短信送达后仍可能显示发送中，不要反复重发已经送达的短信。</p></details>
             <details><summary>这是网络电话吗？打电话免费吗？<span aria-hidden="true"></span></summary><p>不是网络电话服务，也不提供免费通话。你仍使用自己的 SIM 卡、号码和套餐，费用按运营商标准收取。SIM 要已开通 VoLTE，并能正常使用 4G 数据。本项目也不提供 SIM 解锁。</p></details>
             <details><summary>显示“已注册”，就一定能打电话了吗？<span aria-hidden="true"></span></summary><p>还不能确定。“已注册”只表示连上了运营商的通话服务。请用自带拨号器打出、接听，确认双方声音和全程 4G，再分别拔掉 USB、正常重启后复测。长期稳定性和紧急呼叫仍未得到完整验证，请不要依赖它作为唯一的紧急联络方式。</p></details>
             <details><summary>还要自己安装 Python 吗？<span aria-hidden="true"></span></summary><p>使用 Windows EXE 或 macOS DMG 都不需要。只有从源码运行，才需要自己安装 Python 3.14（含 Tk）。请从同一个版本的发布页面下载安装包和对应的 SHA-256 校验文件。</p></details>

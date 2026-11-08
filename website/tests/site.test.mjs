@@ -10,21 +10,20 @@ const pages = ['index.html', 'guides.html', 'mobile-installer.html', 'mobile-man
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
 const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42';
 
-test('candidate guide is available in both languages without expanding accepted support', () => {
+test('candidate guide keeps open entry separate from completed tests', () => {
   for (const prefix of ['', 'en/']) {
     const home = html[prefix + 'index.html'];
     const guide = html[prefix + 'guide.html'];
-    assert.ok(home.includes('guide.html#walkthrough-trials'));
+    assert.ok(home.includes('id="release"'));
     assert.ok(guide.includes('id="walkthrough-trials"'));
-    for (const variant of ['SQN100-1', 'SQN100-5', 'SQC100-1', 'SQC100-3', 'SQC100-4', 'SQC100-5', 'SQW100-1', 'SQW100-3']) {
-      assert.ok(guide.includes(variant), variant);
-    }
     const trial = guide.split('id="walkthrough-trials"')[1].split('</section>')[0];
-    assert.match(trial, /13/);
-    assert.match(trial, /6/);
-    assert.match(trial, /只读|Read-only/);
-    assert.match(trial, /自启动始终关闭|Autostart remains off/);
-    assert.match(trial, /未实机验收|no (?:new )?hardware acceptance/);
+    for (const variant of ['SQC100-1', 'SQK100-1', 'SQK100-2', 'SQW100-2', 'SQW100-3']) {
+      assert.ok(trial.includes(variant), variant);
+    }
+    assert.match(trial, prefix ? /can all be tried/ : /都可以试用/);
+    assert.match(trial, prefix ? /does not mean every suffix passed/ : /不等于每个后缀都通过/);
+    assert.match(trial, prefix ? /Working Root/ : /有效 Root/);
+    assert.doesNotMatch(trial, /禁止安装|installation blocked/);
   }
 });
 
