@@ -1157,3 +1157,14 @@ ENGLISH['SQC100-1 / CLASSICROW：已开放移动 460-00、联通 460-01、电信
 ENGLISH.update({
     '继续安装或启用 VoLTE 时，将自动打开移动网络，确认开启后重新核对 SIM 和适配条件。': 'Continuing VoLTE installation or enablement will turn on Mobile Network, verify it is on, and recheck the SIM and compatibility.',
 })
+
+ENGLISH.update({
+    '另一个窗口或程序正在准备材料，请等待完成后重试，不会另建一份。': 'Another window or application is preparing materials. Wait for it to finish and retry; no duplicate preparation will be created.',
+    '本地镜像、原版固件和个人密钥校验通过，复用已有准备：': 'Local images, stock firmware and personal credentials verified; reusing: ',
+    '本地驱动文件校验通过，复用已有准备：': 'Local driver files verified; reusing: ',
+    '部分构建临时文件未能清理，请退出程序后按磁盘清理说明处理：': 'Some temporary build files could not be removed. Close the application and follow the disk cleanup instructions: ',
+    '缓存校验失败，已清除无效文件，将重新获取 ': 'Cache verification failed; invalid bytes removed. Downloading again: ',
+    '已有进度无法与可用节点匹配，已清除旧进度，将重新下载 ': 'Saved progress does not match available sources; discarded it and restarting: ',
+    '存储位置与磁盘清理': 'Storage locations and disk cleanup',
+    '下载缓存：{}\n个人材料：{}\n\n先关闭所有本程序和刷写窗口。下载缓存可以删除，下次需要时会重新下载。\n\n确认只是电脑准备失败、从未开始手机刷写，或手机已正常启动、Root 和连接已确认且无需继续刷写或恢复时，可删除 root-kit 或 root-kit-* 内的 stock、images、stock-upgrade 子目录。\n\n不要删除整个 private 或 root-kit 目录；保留个人密钥、ssh_config、known_hosts、备份、日志和刷写记录。刷写中断或状态不明时先保留全部材料。': 'Download cache: {}\nPersonal materials: {}\n\nClose all copies of this application and all flashing windows first. The download cache can be deleted; required files will be downloaded again.\n\nIf only computer-side preparation failed and phone flashing never started, or the phone boots normally with Root and connectivity confirmed and no further flashing or recovery is needed, you may delete the stock, images and stock-upgrade subfolders inside root-kit or root-kit-*.\n\nKeep the private and root-kit folders themselves, personal keys, ssh_config, known_hosts, backups, logs and flash records. Preserve all materials if flashing was interrupted or its outcome is uncertain.',
+})

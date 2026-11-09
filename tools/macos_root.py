@@ -246,7 +246,8 @@ def build_images(kit, original, progress, variant):
     output.mkdir()
     progress(tr('原生构建并校验 OS / radio 镜像；不会连接或刷写手机'))
     with (kit / 'root-build.log').open('xb') as log:
-        child = subprocess.run([str(tools['bb10mt']), 'batch', '-i', str(original), '-s', 'patch-owner.txt', '-o', str(output)],
+        from preparation_cache import run_preparation
+        child = run_preparation([str(tools['bb10mt']), 'batch', '-i', str(original), '-s', 'patch-owner.txt', '-o', str(output)], kit,
                                cwd=tools['work'], env=native_environment(tools), stdout=log, stderr=subprocess.STDOUT,
                                timeout=1800)
     if child.returncode:
@@ -262,16 +263,36 @@ def prepare_root_kit_macos(variant, progress, proxy=None, cache_dir=None, offlin
     if variant not in catalog()['auto_root_variants']:
         fail('root_model_unsupported')
     private = private_root()
-    private.mkdir(parents=True, mode=0o700, exist_ok=True)
-    if shutil.disk_usage(private).free < 15 * 1024 ** 3:
-        fail('insufficient_disk')
+    from preparation_cache import (preparation_lock, clean_abandoned_roots, reusable_root_kit,
+                                   mark_ready, clean_failed_root, trim_intermediates)
+    with preparation_lock(private):
+        private.chmod(0o700)
+        clean_abandoned_roots(private, progress)
+        existing = reusable_root_kit(private, variant, 'darwin', progress)
+        if existing:
+            return existing
+        if shutil.disk_usage(private).free < 15 * 1024 ** 3:
+            fail('insufficient_disk')
+        kit = private / ('root-kit-' + uuid.uuid4().hex[:12])
+        try:
+            _prepare_root_kit_macos(kit, variant, progress, proxy, cache_dir, offline)
+            mark_ready(kit)
+        except BaseException:
+            clean_failed_root(private, kit, progress)
+            raise
+        trim_intermediates(kit, variant, progress)
+        return str(kit)
+
+
+def _prepare_root_kit_macos(kit, variant, progress, proxy, cache_dir, offline):
     cache = Path(cache_dir) if cache_dir else download_root()
     cache.mkdir(parents=True, mode=0o700, exist_ok=True)
     source = json.loads((ROOT / 'materials/sources.json').read_text())
     inputs = {item['id']: item for item in source['verified_inputs']}
     bundle = fetch(inputs['autoroot-v4'], cache, progress, proxy, offline)
-    kit = private / ('root-kit-' + uuid.uuid4().hex[:12])
     kit.mkdir(mode=0o700)
+    from preparation_cache import mark_started
+    mark_started(kit, variant, 'darwin')
     work = kit / 'autoroot'
     work.mkdir(mode=0o700)
     tools = prepare_tools(bundle, work, cache, progress, proxy, offline)

@@ -25,8 +25,9 @@ def main(argv=None):
     output=kit/'images'
     assert output.is_dir() and not any(output.iterdir()),'Use an empty output folder; preserve existing images'
     with (kit/'root-build.log').open('wb') as log:
-        result=subprocess.run([str(kit/'autoroot/bb10mt.exe'),'batch','-i',str(original),
-            '-s','patch-owner.txt','-o',str(output)],cwd=kit/'autoroot',stdout=log,stderr=subprocess.STDOUT,
+        from preparation_cache import run_preparation
+        result=run_preparation([str(kit/'autoroot/bb10mt.exe'),'batch','-i',str(original),
+            '-s','patch-owner.txt','-o',str(output)],kit,cwd=kit/'autoroot',stdout=log,stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     assert result.returncode==0,'Image builder failed; inspect the private root-build.log'
     report=verify_build(kit,variant)

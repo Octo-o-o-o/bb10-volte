@@ -68,13 +68,23 @@ class MaterialImportTests(unittest.TestCase):
             self.run_import()
         self.assertFalse(self.target.exists())
 
-    def test_verified_import_replaces_bad_cache_without_altering_source_or_partial(self):
+    def test_verified_import_replaces_bad_cache_and_removes_redundant_partial(self):
         self.target.write_bytes(b'corrupt cache')
         self.partial.write_bytes(b'old partial')
         self.run_import()
         self.assertEqual(self.target.read_bytes(), self.data)
         self.assertEqual(self.source.read_bytes(), self.data)
-        self.assertEqual(self.partial.read_bytes(), b'old partial')
+        self.assertFalse(self.partial.exists())
+
+    def test_existing_verified_cache_is_reused_without_another_copy_or_free_space(self):
+        self.target.write_bytes(self.data)
+        self.partial.write_bytes(b'redundant prefix')
+        with patch.object(f.shutil, 'disk_usage', return_value=SimpleNamespace(free=0)), \
+                patch.object(Path, 'replace', side_effect=AssertionError('must reuse existing cache')):
+            self.assertEqual(self.run_import(), self.target)
+        self.assertEqual(self.source.read_bytes(), self.data)
+        self.assertFalse(self.partial.exists())
+        self.assertEqual(list(self.folder.glob('*.importing')), [])
 
     def test_selecting_cache_itself_only_verifies_without_extra_space(self):
         self.target.write_bytes(self.data)

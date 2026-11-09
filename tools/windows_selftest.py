@@ -293,6 +293,32 @@ def run(output):
     root.attributes('-alpha', 0.0)
     root.geometry('960x700')
     root.deiconify()
+    from ui_responsiveness import measure
+    ui_responsiveness = {}
+    if sys.platform == 'win32':
+        ui_responsiveness['main_resize'] = measure(root, action=lambda count:
+            root.geometry('{}x700'.format(960 + count % 10 * 4)))
+        root.geometry('960x700')
+        # Constructors alone do not paint withdrawn windows. Exercise the
+        # actual connection/Root pages and their progress animation offline.
+        connection = ConnectionDialog(root, lambda *_: None, auto_check=False)
+        connection.attributes('-alpha', 0.0)
+        connection.progress.pack(fill='x')
+        connection.progress.start()
+        ui_responsiveness['connection_resize'] = measure(connection, action=lambda count:
+            connection.geometry('{}x650'.format(790 + count % 10 * 4)))
+        connection.progress.stop()
+        connection.close()
+        wizard = SetupWizard(root, lambda *_: None, auto_check=False)
+        wizard.attributes('-alpha', 0.0)
+        wizard.progress.start()
+        ui_responsiveness['root_tabs'] = measure(wizard, action=lambda count:
+            wizard.tabs.select((count // 5) % len(wizard.tabs.tabs())))
+        wizard.progress.stop()
+        wizard.close()
+        for sample in ui_responsiveness.values():
+            assert sample['samples'] >= 10 and sample['p95_gap_ms'] < 250, sample
+            assert sample['max_gap_ms'] < 750, sample
     root.update()
     visible_buttons = [button for button in app.buttons.values() if button.winfo_manager()]
     for widget in visible_buttons + [app.activity, app.setup_button]:
@@ -415,6 +441,7 @@ def run(output):
               'root_probe_resource_verified': True,
               'minimum_window_actions_visible': True,
               'shared_control_theme_loaded': True,
+              'ui_responsiveness': ui_responsiveness,
               'system_language_and_translations_verified': True,
               'persistent_state_outside_bundle': not private_root().is_relative_to(bundle),
               'python_network_disabled_during_selftest': True,

@@ -36,9 +36,16 @@ def extract_stock(stock, archive, destination, seven_zip):
     destination.mkdir(exist_ok=False)
     original = destination / stock['extracted_file']
     if stock['file'] == stock['extracted_file']:
-        shutil.copyfile(archive, original)
+        # Identical, immutable input on one filesystem needs no second copy.
+        # Deleting either name leaves the other usable. Cross-volume imports
+        # and filesystems without hard links retain the ordinary copy fallback.
+        try:
+            original.hardlink_to(archive)
+        except OSError:
+            shutil.copyfile(archive, original)
     else:
-        result = subprocess.run([str(seven_zip), 'e', '-y', str(archive), stock['extracted_file'], '-o' + str(destination)],
+        from preparation_cache import run_preparation
+        result = run_preparation([str(seven_zip), 'e', '-y', str(archive), stock['extracted_file'], '-o' + str(destination)], destination.parent,
                                 capture_output=True, timeout=600,
                                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         if result.returncode:

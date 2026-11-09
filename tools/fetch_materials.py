@@ -222,14 +222,16 @@ def import_material(item, source, folder=None, progress=None):
             folder.mkdir(parents=True, exist_ok=True)
             with _download_lock(partial.with_name(partial.name + '.lock')):
                 _regular(target)
+                _clean_obsolete_downloads(item, folder)
                 same_file = target.exists() and source.samefile(target)
-                if not same_file and shutil.disk_usage(folder).free < total:
+                cached = target.exists() and sha(target) == item['sha256']
+                if not same_file and not cached and shutil.disk_usage(folder).free < total:
                     raise MaterialImportError('import_insufficient_disk')
                 h, count, last_progress = hashlib.sha256(), 0, time.monotonic()
                 progress(tr('正在校验并导入 ') + item['file'] + tr('，请稍候…'))
                 # An independent file leaves resumable downloads and an existing
                 # cache intact until the entire selected input is verified.
-                if not same_file:
+                if not same_file and not cached:
                     temporary = folder / (item['file'] + '.' + uuid.uuid4().hex + '.importing')
                 output_file = temporary.open('xb') if temporary else nullcontext()
                 temporary_created = temporary is not None
@@ -247,6 +249,7 @@ def import_material(item, source, folder=None, progress=None):
                     raise MaterialImportError('import_hash_mismatch')
                 if temporary:
                     temporary.replace(target)
+                _clean_obsolete_downloads(item, folder, complete=True)
                 progress(tr('固件已导入并通过 SHA-256 校验：') + item['file'])
                 return target
     except OSError:
@@ -288,8 +291,28 @@ def _download_lock(path):
 
 
 def _quarantine(path):
+    # Invalid multi-GB bodies are not useful resume data. Keep one tiny receipt
+    # per canonical/partial path instead of a new full copy after every failure.
     if path.exists():
-        path.rename(path.with_name(path.name + '.invalid-' + uuid.uuid4().hex[:8]))
+        _regular(path)
+        receipt = path.with_name(path.name + '.invalid.json')
+        _regular(receipt)
+        receipt.write_text(json.dumps({'file': path.name, 'rejected_bytes': path.stat().st_size}), encoding='utf-8')
+        path.unlink()
+
+
+def _clean_obsolete_downloads(item, folder, complete=False):
+    """Only app-owned names for this file, under its download/import lock."""
+    name = re.escape(item['file'])
+    digest = re.escape(item['sha256'])
+    patterns = [name + r'\.[0-9a-f]{32}\.importing',
+                name + r'(?:\.[0-9a-f]{64}\.partial)?\.invalid-[0-9a-f]{8}']
+    if complete:
+        patterns += [name + r'\.(?:[0-9a-f]{8}|' + digest + r')\.partial(?:\.json)?',
+                     name + r'(?:\.[0-9a-f]{64}\.partial)?\.invalid\.json']
+    for path in folder.iterdir():
+        if any(re.fullmatch(pattern, path.name) for pattern in patterns) and not path.is_symlink() and path.is_file():
+            path.unlink()
 
 
 def _metadata(path):
@@ -463,14 +486,18 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
     with _download_lock(partial.with_name(partial.name + '.lock')):
         for path in (target, partial, meta):
             _regular(path)
+        if not verify_only:
+            _clean_obsolete_downloads(item, folder)
         if target.exists():
             progress(tr('校验 ') + name)
             if sha(target) == digest:
+                if not verify_only:
+                    _clean_obsolete_downloads(item, folder, complete=True)
                 return
             if verify_only:
                 raise DownloadError('download_hash_mismatch', name)
             _quarantine(target)
-            progress(tr('缓存校验失败，已隔离，将重新获取 ') + name)
+            progress(tr('缓存校验失败，已清除无效文件，将重新获取 ') + name)
         if verify_only:
             raise FileNotFoundError('Missing: ' + name)
         if not partial.exists():
@@ -487,6 +514,7 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
             if sha(partial) == digest:
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
+                _clean_obsolete_downloads(item, folder, complete=True)
                 return
             if item.get('size') is not None and partial.stat().st_size > item['size']:
                 _quarantine(partial)
@@ -508,14 +536,14 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
         for attempt in range(attempts):
             candidates = [url for url in urls if url not in blocked]
             if not candidates and resume_conflicts and not clean_restart and partial.exists():
-                # All remaining sources disagree with the saved tail. Keep the
-                # rejected partial for diagnosis, and try one clean recovery.
+                # All remaining sources disagree with the saved tail. Record
+                # its size, discard invalid bytes and try one clean recovery.
                 _quarantine(partial)
                 meta.unlink(missing_ok=True)
                 blocked.difference_update(resume_conflicts)
                 candidates = [url for url in urls if url not in blocked]
                 clean_restart = True
-                progress(tr('已有进度无法与可用节点匹配，已隔离旧进度，将重新下载 ') + name)
+                progress(tr('已有进度无法与可用节点匹配，已清除旧进度，将重新下载 ') + name)
             if not candidates:
                 break
             eligible = [url for url in candidates if ready_at[url] <= time.monotonic()]
@@ -548,6 +576,7 @@ def _fetch(item, folder, make_opener, progress, verify_only, headers):
                     raise _Retryable(tr('文件校验失败，重新下载一次'))
                 partial.replace(target)
                 meta.unlink(missing_ok=True)
+                _clean_obsolete_downloads(item, folder, complete=True)
                 return
             except _Retryable as error:
                 last_error = DownloadError('download_failed', name, str(error))

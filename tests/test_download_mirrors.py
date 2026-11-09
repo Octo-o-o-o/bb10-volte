@@ -244,7 +244,7 @@ class MirrorTests(unittest.TestCase):
         self.assert_complete()
         self.assertEqual(len(self.transfers()), 4)
         self.assertNotIn('Range', self.transfers()[-1][1])
-        self.assertEqual(len(list(self.folder.glob('*.invalid-*'))), 1)
+        self.assertEqual(list(self.folder.glob('*.invalid-*')), [])
 
     def test_bad_old_prefix_does_not_blacklist_healthy_finishing_source(self):
         self.partial.write_bytes(b'damaged prefix' + self.data[14:400000])

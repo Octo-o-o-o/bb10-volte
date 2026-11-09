@@ -249,7 +249,7 @@ class ConnectionDialog(tk.Toplevel):
         self.status.configure(text=tr('正在识别所选文件夹…') if action == 'materials' else tr('正在检查连接和权限，请稍候…'))
         self.refresh()
         self.progress.pack(side='bottom', fill='x', before=self.status)
-        self.progress.start(12)
+        self.progress.start()
         def worker():
             try:
                 self.events.put((action, work()))

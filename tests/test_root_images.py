@@ -60,7 +60,7 @@ class RootImageTests(unittest.TestCase):
         self.assertNotEqual(images.recipe('SQC100-2')[1]['radio_original_sha256'],
                             images.recipe('SQN100-3')[1]['radio_original_sha256'])
 
-    def test_classic_exe_is_copied_and_verified_without_extraction_or_execution(self):
+    def test_classic_exe_is_linked_and_verified_without_extraction_or_execution(self):
         stock = dict(setup.stock_firmware('SQC100-2'), sha256=digest(b'original'), extracted_sha256=digest(b'original'))
         source = self.folder / stock['file']
         source.write_bytes(b'original')
@@ -68,7 +68,19 @@ class RootImageTests(unittest.TestCase):
             target = images.extract_stock(stock, source, self.folder / 'stock', '7zip')
         self.assertEqual(target.read_bytes(), b'original')
         self.assertEqual(source.read_bytes(), b'original')
+        self.assertTrue(source.samefile(target))
+        source.unlink()
+        self.assertEqual(target.read_bytes(), b'original')
         run.assert_not_called()
+
+    def test_classic_exe_copy_fallback_for_filesystems_without_hardlinks(self):
+        stock = dict(setup.stock_firmware('SQC100-2'), sha256=digest(b'original'), extracted_sha256=digest(b'original'))
+        source = self.folder / stock['file']
+        source.write_bytes(b'original')
+        with patch.object(Path, 'hardlink_to', side_effect=OSError('not supported')):
+            target = images.extract_stock(stock, source, self.folder / 'stock', '7zip')
+        self.assertEqual(target.read_bytes(), b'original')
+        self.assertFalse(source.samefile(target))
 
     def test_archive_extracts_only_pinned_autoloader_and_rejects_bad_output(self):
         stock = dict(setup.stock_firmware('SQW100-4'), sha256=digest(b'archive'), extracted_sha256=digest(b'original'))
@@ -162,6 +174,10 @@ class RootImageTests(unittest.TestCase):
                 flash.assert_not_called()
 
     def test_mac_preparation_fetches_selected_family_and_passes_variant_to_builder(self):
+        from preparation_cache import KEY_FILES
+        def identity(kit):
+            for name in KEY_FILES:
+                (kit / name).write_bytes(b'non-secret fixture')
         for variant in VARIANTS:
             private = self.folder / variant
             with patch.object(macos_root.platform, 'system', return_value='Darwin'), \
@@ -170,7 +186,7 @@ class RootImageTests(unittest.TestCase):
                     patch.object(macos_root.shutil, 'disk_usage', return_value=SimpleNamespace(free=100 * 1024**3)), \
                     patch.object(macos_root, 'fetch', return_value=self.folder / 'input') as fetch, \
                     patch.object(macos_root, 'prepare_tools', return_value={'seven_zip': '7zz'}), \
-                    patch.object(macos_root, 'prepare_identity'), \
+                    patch.object(macos_root, 'prepare_identity', side_effect=identity), \
                     patch.object(macos_root, 'extract_stock', return_value=self.folder / 'stock') as extract, \
                     patch.object(macos_root, 'build_images') as build:
                 kit = macos_root.prepare_root_kit_macos(variant, lambda _: None, cache_dir=self.folder / 'cache', offline=True)

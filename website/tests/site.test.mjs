@@ -8,7 +8,7 @@ import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSI
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guides.html', 'mobile-installer.html', 'mobile-manual.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guides.html', 'en/mobile-installer.html', 'en/mobile-manual.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r42/bb10-volte-0.5.0-r42';
+const fallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43';
 
 test('candidate guide keeps open entry separate from completed tests', () => {
   for (const prefix of ['', 'en/']) {
@@ -227,7 +227,7 @@ test('both translations retain the extra restart and offline SIM-change scope', 
     for (const variant of ['SQN100-3', 'SQC100-2', 'SQW100-4']) assert.ok(source.includes(variant));
     assert.ok(source.includes('acceptance.json'));
     assert.ok(source.includes('data-github-download="windows"'));
-    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r42/'));
+    assert.ok(source.includes('bb10-downloads.octoooo.com/v0.5.0-r43/'));
     assert.match(source, page.startsWith('en/') ? /extra normal restart|additional normal restart/ : /再正常重启一次|还需一次正常重启/);
   }
 });
@@ -257,7 +257,7 @@ test('mobile installation has two static routes and versioned R2 downloads', asy
       assert.ok(idsFor(source).has(id), `${page}: missing ${id}`);
     }
     assert.match(source, /https:\/\/github\.com\/Octo-o-o-o\/bb10-volte\/releases"/);
-    assert.match(source, /v0\.5\.0-r42/);
+    assert.match(source, /v0\.5\.0-r43/);
     assert.match(source, /120/);
     assert.match(source, /SUD success/);
     assert.match(source, /mobile-installer\.html/); assert.match(source, /mobile-manual\.html/); assert.doesNotMatch(source, /尚未公开发布|not publicly released/);

@@ -613,7 +613,7 @@ class App:
         self.last_result = None
         self.refresh_buttons()
         self.progress.pack(fill='x', pady=(0, 10), before=self.activity.master)
-        self.progress.start(12)
+        self.progress.start()
         self.summary.configure(text=tr('正在执行，请保持设备连接'), fg=BLUE)
         self.detail.configure(text=tr('请保持 USB 连接，不要换卡或拨打电话。'))
 
@@ -1103,9 +1103,10 @@ def main():
     # The window remains resizable; Tk's default font scaling otherwise clips
     # the fixed-width sidebar and pushes the operation status below the window.
     root.tk.call('tk', 'scaling', min(float(root.tk.call('tk', 'scaling')), 1.6))
-    preview = json.loads((ROOT / 'project.json').read_text(encoding='utf-8')).get('preview_id')
+    project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+    preview = project.get('preview_id')
     app = App(root, args.host, args.ssh_config, auto_connect=not bool(preview or args.variant_trials or args.trial_variant), profile=selected_profile)
-    if args.variant_trials or preview:
+    if args.variant_trials or preview and project.get('preview_start_page', 'variants') == 'variants':
         root.after_idle(app.variant_trials)
     root.mainloop()
     return 0

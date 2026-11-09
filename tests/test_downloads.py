@@ -245,12 +245,12 @@ class DownloadTests(unittest.TestCase):
                 self.fetch()
             self.assertEqual(self.partial.read_bytes(), b'x')
 
-    def test_416_for_stale_partial_restarts_and_preserves_rejected_bytes(self):
+    def test_416_for_stale_partial_restarts_without_retaining_rejected_bytes(self):
         self.partial.write_bytes(b'x' * (len(self.data) + 100))
         self.fetch()
         self.assert_complete()
         self.assertNotIn('Range', self.requests[1])
-        self.assertEqual(len(list(self.folder.glob('*.invalid-*'))), 1)
+        self.assertEqual(list(self.folder.glob('*.invalid-*')), [])
 
     def test_complete_partial_promotes_without_network(self):
         self.partial.write_bytes(self.data)
@@ -268,7 +268,7 @@ class DownloadTests(unittest.TestCase):
         self.fetch()
         self.assert_complete()
         self.assertEqual(self.requests[0]['Range'], 'bytes=2345-')
-        self.assertTrue(small.exists())
+        self.assertFalse(small.exists())
         self.assertFalse(large.exists())
         self.assertEqual(unrelated.read_bytes(), b'untouched')
 
@@ -293,7 +293,9 @@ class DownloadTests(unittest.TestCase):
         self.assertFalse(self.target.exists())
         self.assertFalse(self.partial.exists())
         self.assertEqual(len(self.requests), 2)
-        self.assertEqual(len(list(self.folder.glob('*.invalid-*'))), 2)
+        self.assertEqual(list(self.folder.glob('*.invalid-*')), [])
+        self.assertEqual(len(list(self.folder.glob('*.invalid.json'))), 1)
+        self.assertLess(sum(p.stat().st_size for p in self.folder.glob('*.invalid.json')), 1024)
 
     def test_corrupt_old_partial_can_recover_by_clean_refetch(self):
         self.partial.write_bytes(b'corrupted prefix')

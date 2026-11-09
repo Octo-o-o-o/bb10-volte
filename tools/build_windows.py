@@ -83,7 +83,11 @@ def main():
     parser.add_argument('--offline', action='store_true', help='Require cached, hash-verified build inputs; no downloads')
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'dist', help='Destination for this build and its records')
     parser.add_argument('--preview-id', help='Label a separate unpublished preview without changing the source release version')
+    parser.add_argument('--preview-start-page', choices=('home', 'variants'),
+                        help='Initial page for a preview (default: variants)')
     args = parser.parse_args()
+    if args.preview_start_page and not args.preview_id:
+        parser.error('--preview-start-page requires --preview-id')
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     assert sys.platform == 'win32' and platform.machine().lower() in ('amd64', 'x86_64')
@@ -100,6 +104,7 @@ def main():
     project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
     if args.preview_id is not None:
         project.update(preview_id=args.preview_id, state='unpublished_local_trial_preview')
+        project['preview_start_page'] = args.preview_start_page or 'variants'
         desktop_release_version(project)  # Validate before constructing any output paths.
     archive = fetch(spec['openssh'], args.offline)
     vendor = ROOT / 'build/windows-vendor/openssh'
@@ -173,8 +178,9 @@ def main():
     assert not any(any(token in name for token in forbidden) for name in index)
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
     assert {'root_setup', 'root_images', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
+            'preparation_cache', 'storage_help',
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
-            'connection_flow', 'connection_materials', 'ui_theme', 'i18n', 'translations_en',
+            'connection_flow', 'connection_materials', 'ui_theme', 'ui_responsiveness', 'i18n', 'translations_en',
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy', 'device_support',
             'variant_trials', 'variant_trial_gui', 'feedback', 'feedback_gui',

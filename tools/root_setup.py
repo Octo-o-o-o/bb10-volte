@@ -276,14 +276,34 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
     if sys.platform == 'darwin':
         from macos_root import prepare_root_kit_macos
         return prepare_root_kit_macos(variant, progress, proxy, cache_dir, offline)
-    private_root().mkdir(parents=True, exist_ok=True)
-    if shutil.disk_usage(private_root()).free < 15 * 1024 ** 3:
-        raise SetupError('insufficient_disk')
+    if sys.platform != 'win32':
+        raise SetupError('windows_root_required')
+    from preparation_cache import (preparation_lock, clean_abandoned_roots, reusable_root_kit,
+                                   mark_ready, clean_failed_root, trim_intermediates)
+    private = private_root()
+    with preparation_lock(private):
+        clean_abandoned_roots(private, progress)
+        existing = reusable_root_kit(private, variant, 'win32', progress)
+        if existing:
+            return existing
+        if shutil.disk_usage(private).free < 15 * 1024 ** 3:
+            raise SetupError('insufficient_disk')
+        folder = private / ('root-kit-' + uuid.uuid4().hex[:12])
+        try:
+            _prepare_root_kit_windows(folder, variant, progress, proxy, cache_dir, offline)
+            mark_ready(folder)
+        except BaseException:
+            clean_failed_root(private, folder, progress)
+            raise
+        trim_intermediates(folder, variant, progress)
+        return str(folder)
+
+
+def _prepare_root_kit_windows(folder, variant, progress, proxy, cache_dir, offline):
     tools = ensure_tools(progress, proxy, cache_dir, offline)
     source = json.loads((ROOT / 'materials/sources.json').read_text(encoding='utf-8'))
     inputs = [item for item in source['verified_inputs'] if not item['id'].startswith('stock-')]
     fetch_entries(inputs + [stock_firmware(variant)], tools['cache'], progress, proxy, verify_only=offline)
-    folder = private_root() / ('root-kit-' + uuid.uuid4().hex[:12])
     progress(tr('生成本设备使用的个人密钥与 Root 镜像'))
     import prepare_root
     prepare_root.main(['--variant', variant, '--seven-zip', str(tools['seven_zip']), '--output', str(folder),
@@ -302,7 +322,11 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
 
 
 def prepared_images(folder, allowed_stages=('prepared',)):
-    folder = Path(folder).resolve()
+    from preparation_cache import linked
+    folder = Path(folder)
+    if linked(folder) or linked(folder / 'images'):
+        raise SetupError('image_not_verified')
+    folder = folder.resolve()
     state = json.loads((folder / 'setup-state.json').read_text(encoding='utf-8'))
     if state['variant'] not in catalog()['auto_root_variants'] or state['stage'] not in allowed_stages:
         raise SetupError('flash_state_unknown')
@@ -446,13 +470,41 @@ def flash_root(folder, confirmed, progress):
 
 
 def prepare_driver_kit(progress, proxy=None):
-    tools = ensure_tools(progress, proxy)
+    from preparation_cache import preparation_lock, linked, read_json, remove_owned_tree
+    private = private_root()
     spec = json.loads((ROOT / 'materials/usb-drivers.json').read_text(encoding='utf-8'))
-    fetch_entries(spec['parts'], tools['cache'], progress, proxy)
-    folder = private_root() / ('windows-usb-' + uuid.uuid4().hex[:12])
-    import prepare_usb_drivers
-    prepare_usb_drivers.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder), '--cache', str(tools['cache'])])
-    return str(folder)
+    files = {'package/BlackBerry-USBDrivers-5.0.0.2.exe': spec['bundle_sha256'],
+             'USBInstallerMSIx64.msi': spec['msi_sha256'],
+             **{'rim-usb/' + name: digest for name, digest in spec['driver_files'].items()}}
+    with preparation_lock(private):
+        for folder in [private / 'windows-usb'] + sorted(private.glob('windows-usb-*')):
+            if linked(folder) or any(linked(folder / name) for name in ('package', 'rim-usb')):
+                continue
+            try:
+                if read_json(folder / 'verification.json').get('prepared') is not True:
+                    continue
+                verify_files(folder, files)
+            except (OSError, ValueError, SetupError):
+                continue
+            progress(tr('本地驱动文件校验通过，复用已有准备：') + str(folder))
+            return str(folder)
+        tools = ensure_tools(progress, proxy)
+        fetch_entries(spec['parts'], tools['cache'], progress, proxy)
+        folder = private / ('windows-usb-' + uuid.uuid4().hex[:12])
+        import prepare_usb_drivers
+        try:
+            prepare_usb_drivers.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder), '--cache', str(tools['cache'])])
+        except BaseException:
+            # This directory belongs to this call and has never been installed.
+            for name in ('package', 'bootstrapper', 'payload', 'extracted', 'rim-usb'):
+                remove_owned_tree(private, folder, name)
+            for name in ('payload.cab', 'USBInstallerMSIx64.msi'):
+                (folder / name).unlink(missing_ok=True)
+            raise
+        for name in ('bootstrapper', 'payload', 'extracted'):
+            remove_owned_tree(private, folder, name)
+        (folder / 'payload.cab').unlink(missing_ok=True)
+        return str(folder)
 
 
 def install_driver_kit(folder):

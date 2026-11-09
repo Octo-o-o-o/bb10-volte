@@ -16,7 +16,7 @@ class WebsiteVariantMatrixTests(unittest.TestCase):
         variants = [item['variant'] for item in data['models']]
         self.assertEqual(len(variants), len(set(variants)))
         self.assertEqual(set(variants), set(device_support.catalog()))
-        self.assertEqual(data['release'], 'v0.5.0-r42')
+        self.assertEqual(data['release'], 'v0.5.0-r43')
         for item in data['models']:
             self.assertEqual(item['family'], device_support.catalog()[item['variant']]['family'])
             self.assertEqual(set(item['routes']), {'mobile', 'unicom', 'telecom'})
@@ -24,8 +24,8 @@ class WebsiteVariantMatrixTests(unittest.TestCase):
                 with self.subTest(variant=item['variant'], operator=operator):
                     self.assertEqual(route, variant_trials.plan(item['variant'], operator)['route'])
         sqw = next(item for item in data['models'] if item['variant'] == 'SQW100-1')
-        self.assertIn('460-07', sqw['note']['zh'])
-        self.assertIn('460-07', sqw['note']['en'])
+        self.assertIn('460-07', sqw['evidence_summary']['zh'])
+        self.assertIn('460-07', sqw['evidence_summary']['en'])
 
 
 if __name__ == '__main__':

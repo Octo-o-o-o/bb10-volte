@@ -37,7 +37,7 @@ class OpenAdmissionTests(unittest.TestCase):
         website=json.loads((ROOT/'website/src/compatibility.json').read_text(encoding='utf8'))
         for row in website['models']:
             self.assertEqual(row['evidence_status'],matrix['models'][row['variant']]['status'])
-            self.assertEqual(row['progress'],matrix['models'][row['variant']]['summary'])
+            self.assertEqual(row['evidence_summary'],matrix['models'][row['variant']]['summary'])
         import build_windows
         self.assertIn('materials/compatibility-matrix.json',build_windows.runtime_data())
         import zipfile

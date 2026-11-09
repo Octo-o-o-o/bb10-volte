@@ -22,6 +22,7 @@ from root_setup import (SetupError, catalog, local_usb_state, verify_root,
 from workflow import WorkflowError
 from fetch_materials import DownloadError, MaterialImportError, source_urls, source_label
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
+from storage_help import show_storage_help
 
 MESSAGES = {
     'firmware_version_unknown': tr('未读到完整 OS 版本。请先解锁手机并重新检测，确认系统版本后才能刷写 Root。'),
@@ -50,6 +51,7 @@ MESSAGES = {
     'already_rooted': tr('已检测到可用 Root，已阻止重复刷写。请直接返回主界面检查设备。'),
     'ssh_access_needs_repair': tr('手机已提供 SSH，但未能验证当前密钥。请导入原有个人配置，不要用重新刷写修复密钥问题。'),
     'insufficient_disk': tr('可用磁盘空间不足，请至少预留 15 GB 后重试。'),
+    'preparation_busy': tr('另一个窗口或程序正在准备材料，请等待完成后重试，不会另建一份。'),
     'tool_hash_mismatch': tr('工具文件校验失败，已停止。请保留现场并重新获取正确材料。'),
     'image_not_verified': tr('镜像校验未通过，已禁止刷写。'),
     'device_model_not_verified': tr('未能核对唯一连接手机的型号。请解锁手机，只保留这一台 USB 设备后重试。'),
@@ -258,6 +260,7 @@ class SetupWizard(tk.Toplevel):
         self.driver_button.pack(anchor='w', pady=20)
         self.progress = ttk.Progressbar(body, mode='indeterminate')
         self.progress.pack(fill='x', pady=(18, 10))
+        ttk.Button(body, text=tr('存储位置与磁盘清理'), command=lambda: show_storage_help(self)).pack(anchor='w')
         ttk.Button(body, text=tr('关闭'), command=self.close).pack(anchor='e')
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
@@ -406,7 +409,7 @@ class SetupWizard(tk.Toplevel):
         self.events.begin(action)
         self.busy = True
         self.refresh()
-        self.progress.start(12)
+        self.progress.start()
         self.status.configure(text=tr('正在校验本地固件文件，请稍候…') if action == 'import_firmware' else tr('正在处理，请保持设备连接。'))
         def worker():
             try:

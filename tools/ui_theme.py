@@ -66,16 +66,8 @@ def _chevron(master, scale, color):
     return _image(master, size, size, sample)
 
 
-def apply_theme(root, font):
-    """Install once per Tcl interpreter, including all child dialogs."""
-    style = ttk.Style(root)
-    if 'bb10' in style.theme_names():
-        style.theme_use('bb10')
-        return style
-    style.theme_create('bb10', parent='clam')
-    style.theme_use('bb10')
-    scale = max(1, float(root.tk.call('tk', 'scaling')) / (96 / 72))
-    px = lambda value: max(1, round(value * scale))
+def _image_controls(root, style, font, scale, px):
+    """Rounded controls for platforms without Windows' per-tile GDI cost."""
     images = []
     # Tcl owns the elements but Python must keep their PhotoImages alive.
     root._bb10_theme_images = images
@@ -145,6 +137,73 @@ def apply_theme(root, font):
         ('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})]})])
     style.configure('Horizontal.TProgressbar', thickness=px(4), borderwidth=0)
 
+    rounded('Surface.tab', [('', BG, BG), ('selected', '#FFFFFF', BORDER),
+                            ('focus', '#E8EEF7', BLUE), ('active', '#E8EEF7', '#E8EEF7')])
+    style.layout('TNotebook.Tab', [('Surface.tab', {'sticky': 'nsew', 'children': [
+        ('Notebook.padding', {'sticky': 'nsew', 'children': [
+            ('Notebook.focus', {'sticky': 'nsew', 'children': [
+                ('Notebook.label', {'sticky': 'nsew'})]})]})]})])
+
+
+def _windows_controls(style, font, px):
+    """Use clam's drawing primitives, never tiled PhotoImages, on Windows.
+
+    Tk image elements tile rather than scale their centers. Our small rounded
+    images left only a 2-pixel center; a wide control generated thousands of
+    GDI/alpha-blend operations on every repaint (Tk 9.0.4). This stalls the
+    event loop even without any device work. Keep colors, focus and dimensions
+    while inheriting the built-in elements from clam.
+    """
+    for name in ('TButton', 'Accent.TButton', 'TMenubutton'):
+        accent = name == 'Accent.TButton'
+        style.configure(name, font=(font, 11), padding=(px(18), px(9)), anchor='center',
+                        foreground='white' if accent else INK,
+                        background=BLUE if accent else 'white',
+                        borderwidth=1, relief='flat', focuscolor='white' if accent else BLUE)
+        style.map(name, foreground=[('disabled', '#7C8BA0')],
+                  background=[('disabled', '#DCE5F5' if accent else '#E9EDF3'),
+                              ('pressed', '#17449F' if accent else '#E4EBF5'),
+                              ('active', '#1C4FBE' if accent else '#F6F8FC')],
+                  bordercolor=[('disabled', '#E9EDF3'), ('focus', '#102E6D' if accent else BLUE),
+                               ('active', '#AEBED3')],
+                  lightcolor=[('focus', BLUE)], darkcolor=[('focus', BLUE)])
+    for name in ('TEntry', 'TCombobox', 'TSpinbox'):
+        style.configure(name, font=(font, 11), padding=(px(10), px(8)), foreground=INK,
+                        fieldbackground='white', selectbackground=BLUE, selectforeground='white',
+                        borderwidth=1, arrowsize=px(16), arrowcolor=MUTED)
+        style.map(name, foreground=[('disabled', '#7C8BA0')],
+                  fieldbackground=[('disabled', '#E9EDF3'), ('readonly', 'white')],
+                  background=[('disabled', '#E9EDF3'), ('readonly', 'white')],
+                  bordercolor=[('focus', BLUE)], lightcolor=[('focus', BLUE)],
+                  darkcolor=[('focus', BLUE)], arrowcolor=[('disabled', '#99A6B8')])
+    for orientation, sticky in (('Vertical', 'ns'), ('Horizontal', 'ew')):
+        name = orientation + '.TScrollbar'
+        style.layout(name, [(orientation + '.Scrollbar.trough', {'sticky': sticky,
+            'children': [(orientation + '.Scrollbar.thumb', {'sticky': 'nsew'})]})])
+        style.configure(name, background='#BAC6D6', troughcolor=BG, bordercolor=BG,
+                        lightcolor='#BAC6D6', darkcolor='#BAC6D6', borderwidth=0,
+                        arrowsize=px(10), gripcount=0)
+        style.map(name, background=[('pressed', '#71849F'), ('active', '#91A2B9')])
+    style.configure('Horizontal.TProgressbar', background=BLUE, troughcolor='#E2E8F2',
+                    lightcolor=BLUE, darkcolor=BLUE, bordercolor='#E2E8F2',
+                    thickness=px(4), borderwidth=0)
+
+
+def apply_theme(root, font):
+    """Install once per Tcl interpreter, including all child dialogs."""
+    style = ttk.Style(root)
+    if 'bb10' in style.theme_names():
+        style.theme_use('bb10')
+        return style
+    style.theme_create('bb10', parent='clam')
+    style.theme_use('bb10')
+    scale = max(1, float(root.tk.call('tk', 'scaling')) / (96 / 72))
+    px = lambda value: max(1, round(value * scale))
+    if root.tk.call('tk', 'windowingsystem') == 'win32':
+        _windows_controls(style, font, px)
+    else:
+        _image_controls(root, style, font, scale, px)
+
     style.configure('.', font=(font, 11), background=BG, foreground=INK,
                     bordercolor=BORDER, lightcolor=BORDER, darkcolor=BORDER)
     style.configure('TFrame', background=BG)
@@ -155,12 +214,6 @@ def apply_theme(root, font):
     style.map('TCheckbutton', background=[('active', BG)], foreground=[('disabled', '#7C8BA0')])
     style.configure('TNotebook', background=BG, borderwidth=0, tabmargins=(0, 0, 0, px(12)))
     style.configure('TNotebook', bordercolor=BG, lightcolor=BG, darkcolor=BG)
-    rounded('Surface.tab', [('', BG, BG), ('selected', '#FFFFFF', BORDER),
-                            ('focus', '#E8EEF7', BLUE), ('active', '#E8EEF7', '#E8EEF7')])
-    style.layout('TNotebook.Tab', [('Surface.tab', {'sticky': 'nsew', 'children': [
-        ('Notebook.padding', {'sticky': 'nsew', 'children': [
-            ('Notebook.focus', {'sticky': 'nsew', 'children': [
-                ('Notebook.label', {'sticky': 'nsew'})]})]})]})])
     style.configure('TNotebook.Tab', font=(font, 11), padding=(px(16), px(9)),
                     background=BG, foreground=MUTED, borderwidth=0)
     style.map('TNotebook.Tab', background=[('selected', 'white'), ('active', '#E8EEF7')],

@@ -250,6 +250,7 @@ class MacUpgradeTests(UpgradeTests):
 
     def test_prepare_does_not_contact_or_flash_phone(self):
         import macos_root
+        (self.folder / u.JOURNAL).unlink()
         output = self.folder / 'stock-upgrade'
         contents = {p.name: p.read_bytes() for p in output.iterdir()}
         for path in output.iterdir():

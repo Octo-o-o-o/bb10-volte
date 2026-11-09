@@ -39,6 +39,8 @@ def main(argv=None):
     kit.mkdir(parents=True)
     account=subprocess.check_output(['whoami'],text=True).strip()
     subprocess.run(['icacls',str(kit),'/inheritance:r','/grant:r',account+':(OI)(CI)F','SYSTEM:(OI)(CI)F'],check=True,capture_output=True)
+    from preparation_cache import mark_started
+    mark_started(kit, args.variant, 'win32')
     work=kit/'autoroot';work.mkdir()
     with zipfile.ZipFile(args.cache/items['autoroot-v4']['file']) as z:
         for member in z.infolist():

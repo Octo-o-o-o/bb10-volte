@@ -174,7 +174,7 @@ class MobileAppInstallWindow:
         self.busy = True
         self.refresh()
         self.progress.pack(fill='x', pady=(0, 8), before=self.status)
-        self.progress.start(12)
+        self.progress.start()
         self.status.configure(text=tr('正在核验连接和安装任务，请稍候。'))
         expected_device = self.report.get('device_id')
         self.events.begin(action)

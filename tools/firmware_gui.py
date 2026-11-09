@@ -15,6 +15,7 @@ from fetch_materials import DownloadError, MaterialImportError
 from i18n import tr
 from mac_help import scrolled_page
 from profile_editor import FONT
+from storage_help import show_storage_help
 
 MESSAGES = {
     'upgrade_insufficient_disk': tr('准备原版系统与 Root 镜像至少需要 24 GB 可用空间。请释放空间后重试。'),
@@ -70,6 +71,7 @@ class FirmwareDialog(tk.Toplevel):
         self.root_only_check.pack(anchor='w', pady=(8, 0))
         self.prepare_button = ttk.Button(content, text=tr('准备升级与 Root 材料'), command=self.prepare)
         self.prepare_button.pack(anchor='w', pady=(12, 8))
+        ttk.Button(content, text=tr('存储位置与磁盘清理'), command=lambda: show_storage_help(self)).pack(anchor='w', pady=(0, 8))
         self.download_button = ttk.Button(content, text=tr('固件浏览器下载与离线导入'), command=self.downloads)
         self.download_button.pack(anchor='w')
         self.history = upgrade.pending_upgrades()

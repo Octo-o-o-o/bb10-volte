@@ -64,12 +64,38 @@ def read_state(folder):
 def prepare_upgrade(variant, progress, proxy=None, cache_dir=None, offline=False):
     if sys.platform not in ('win32', 'darwin'):
         raise root.SetupError('root_platform_mismatch')
-    private_root().mkdir(parents=True, exist_ok=True)
-    if shutil.disk_usage(private_root()).free < 24 * 1024 ** 3:
-        raise root.SetupError('upgrade_insufficient_disk')
+    from preparation_cache import (preparation_lock, clean_abandoned_roots,
+                                   reusable_root_kit, remove_owned_tree)
+    private = private_root()
+    with preparation_lock(private):
+        clean_abandoned_roots(private, progress)
+        existing = reusable_root_kit(private, variant, sys.platform, progress)
+        if existing and (Path(existing) / JOURNAL).exists():
+            verify_kit(existing)
+            return existing
+        if existing:
+            remove_owned_tree(private, Path(existing), 'stock-upgrade')
+        # Reusing a Windows kit adds only a small upgrade journal. A Mac kit
+        # still needs space for the signed stock partitions when not yet split.
+        required = (8 if existing else 24) if sys.platform == 'darwin' else (0 if existing else 24)
+        if shutil.disk_usage(private).free < required * 1024 ** 3:
+            raise root.SetupError('upgrade_insufficient_disk')
     # One prepared kit binds stock and Root to the same model, source and keys.
     # The Root builder's source hash check also verifies the extracted stock EXE.
-    folder = Path(root.prepare_root_kit(variant, progress, proxy, cache_dir, offline))
+    folder = Path(existing or root.prepare_root_kit(variant, progress, proxy, cache_dir, offline))
+    with preparation_lock(private):
+        if (folder / JOURNAL).exists():
+            verify_kit(folder)
+            return str(folder)
+        try:
+            return _prepare_upgrade(folder, variant, progress)
+        except BaseException:
+            if not (folder / JOURNAL).exists():
+                remove_owned_tree(private, folder, 'stock-upgrade')
+            raise
+
+
+def _prepare_upgrade(folder, variant, progress):
     state, _ = root.prepared_images(folder)
     if state.get('variant') != variant:
         raise root.SetupError('image_not_verified')
@@ -83,12 +109,19 @@ def prepare_upgrade(variant, progress, proxy=None, cache_dir=None, offline=False
                        'bytes': original.stat().st_size, 'sha256': stock['extracted_sha256']})
     elif sys.platform == 'darwin':
         from macos_root import verified_tools, native_environment
+        from preparation_cache import remove_owned_tree, linked, run_preparation
         tools = verified_tools(folder / 'autoroot')
         output = folder / 'stock-upgrade'
+        # A crash during an offline split is retried in this same kit, with its
+        # original keys. Never reset a journal or append another stock copy.
+        remove_owned_tree(private_root(), folder, 'stock-upgrade')
+        log_path = folder / 'stock-split.log'
+        if linked(log_path):
+            raise root.SetupError('image_not_verified')
         output.mkdir()
         progress(tr('提取原版签名系统与无线固件，尚不刷写手机…'))
-        with (folder / 'stock-split.log').open('xb') as log:
-            result = subprocess.run([str(tools['bb10mt']), 'split', '-i', str(original), '-o', str(output)],
+        with log_path.open('wb') as log:
+            result = run_preparation([str(tools['bb10mt']), 'split', '-i', str(original), '-o', str(output)], folder,
                                     cwd=tools['bb10mt'].parent, env=native_environment(tools),
                                     stdout=log, stderr=subprocess.STDOUT, timeout=600)
         log_text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '',
