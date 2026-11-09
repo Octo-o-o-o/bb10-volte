@@ -1,5 +1,7 @@
 # bb10-volte — Q10, Q20, Passport and P’9983
 
+**macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
+
 **Desktop r43 · mobile 0.1.0.43.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
@@ -41,7 +43,7 @@ If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
 | Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-windows-x64.exe) |
-| macOS universal DMG | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
+| macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
 | Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-experimental.zip) |
 | SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r43/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/SHA256SUMS.txt) |
 

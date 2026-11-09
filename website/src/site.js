@@ -2,6 +2,8 @@ export const REPOSITORY_URL = 'https://github.com/Octo-o-o-o/bb10-volte';
 export const RELEASE_KEYS = ['windows', 'windows-sha', 'mac', 'mac-sha', 'source', 'source-sha'];
 // Update these together with the static HTML only after both copies are verified.
 export const RELEASE_TAG = 'v0.5.0-r43';
+// macOS maintenance ended on 2026-11-09. Do not advance with Windows releases.
+export const MACOS_RELEASE_TAG = 'v0.5.0-r43';
 export const MIRROR_BASE = 'https://bb10-downloads.octoooo.com';
 
 export function selectRelease(releases) {
@@ -18,8 +20,6 @@ export function selectRelease(releases) {
     const names = {
       windows: `${basename}-windows-x64.exe`,
       'windows-sha': `${basename}-windows-x64.exe.sha256`,
-      mac: `${basename}-macos-universal.dmg`,
-      'mac-sha': `${basename}-macos-universal.dmg.sha256`,
       source: `${basename}-experimental.zip`,
       'source-sha': `${basename}-experimental.zip.sha256`,
       checksums: 'SHA256SUMS.txt',
@@ -28,6 +28,9 @@ export function selectRelease(releases) {
     if (!Object.values(names).every((name) => available.has(name))) continue;
     const base = `${REPOSITORY_URL}/releases/download/${tag}`;
     const urls = Object.fromEntries(Object.entries(names).map(([key, name]) => [key, `${base}/${name}`]));
+    const macBase = `${REPOSITORY_URL}/releases/download/${MACOS_RELEASE_TAG}/bb10-volte-${MACOS_RELEASE_TAG.slice(1)}-macos-universal.dmg`;
+    urls.mac = macBase;
+    urls['mac-sha'] = `${macBase}.sha256`;
     return { tag, version, page: `${REPOSITORY_URL}/releases/tag/${tag}`, urls };
   }
   return null;
@@ -37,7 +40,7 @@ export function applyRelease(documentRoot, release) {
   if (!release) return;
   for (const key of RELEASE_KEYS) {
     documentRoot.querySelectorAll(`[data-download="${key}"]`).forEach((link) => {
-      link.href = release.tag === RELEASE_TAG
+      link.href = release.tag === RELEASE_TAG || key === 'mac' || key === 'mac-sha'
         ? release.urls[key].replace(`${REPOSITORY_URL}/releases/download`, MIRROR_BASE)
         : release.urls[key];
     });
@@ -58,7 +61,7 @@ export function applyRelease(documentRoot, release) {
   });
   const filenames = {
     windows: `bb10-volte-${release.version}-windows-x64.exe`,
-    mac: `bb10-volte-${release.version}-macos-universal.dmg`,
+    mac: `bb10-volte-${MACOS_RELEASE_TAG.slice(1)}-macos-universal.dmg`,
   };
   documentRoot.querySelectorAll('[data-package-file]').forEach((element) => {
     element.textContent = filenames[element.dataset.packageFile];

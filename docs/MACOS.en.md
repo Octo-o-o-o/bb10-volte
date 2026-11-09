@@ -1,9 +1,11 @@
 # macOS app and phone connection
 
+**macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
+
 r14: Apple Silicon Mac / Q20 SQC100-2 passed native first Root, new-key UID 0, normal-menu restart, SMS and short bidirectional voice. Full first-use GUI operation, other first-Root models and Intel USB flashing remain unverified. Sections explicitly dated r5/r6/2026-10-29 are historical; see the [current hardware scope](SMS-ROOT-ACCEPTANCE-2026-11-01.md).
 
 <!-- unified-current:start -->
-**Current experimental release: `bb10-volte-0.5.0-r8-macos-universal.dmg`.** It shares the Automatic carrier setup workflow and phone payload with Windows. See [installation and later powered-off SIM changes](AUTO-CARRIERS.en.md). Current Mac physical USB acceptance is deferred by the owner. Signing, notarization, software self-tests and historical USB transport checks are separate evidence; published-version records below retain their original version labels.
+**Final macOS release: `bb10-volte-0.5.0-r43-macos-universal.dmg`.** Downloads and frozen source are available at [v0.5.0-r43](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r43). It includes Automatic carrier setup and the mobile 0.1.0.43 payload; later updates on other platforms do not imply a macOS update. See [installation and powered-off SIM changes](AUTO-CARRIERS.en.md). r43 passed signing, notarization and offline self-tests, with no new Mac phone acceptance. Historical records below retain their original versions and scope.
 <!-- unified-current:end -->
 
 

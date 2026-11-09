@@ -1,5 +1,7 @@
 # bb10-volte — 让 Q10、Q20、Passport、P’9983 用上 VoLTE
 
+**macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
+
 **桌面 r43 · 手机版 0.1.0.43。** Q10、Q20、Passport、P’9983 的移动、联通、电信都能试。表里只标以前测得怎么样，不会因此拦住你。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
@@ -41,7 +43,7 @@ Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](doc
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
 | Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-windows-x64.exe) |
-| macOS universal DMG | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
+| macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
 | 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-experimental.zip) |
 | SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r43/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/SHA256SUMS.txt) |
 

@@ -1,9 +1,11 @@
 # macOS 应用与手机连接
 
+**macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
+
 r14：Apple 芯片 Mac／Q20 SQC100-2 已完成原生首次 Root、手机新密钥 UID 0、正常菜单重启及短信／短时双向通话。完整 GUI 首次使用、其他机型首次 Root 和 Intel USB 刷写尚未验证。下方注明 r5／r6／2026-10-29 的内容为历史记录；最新范围见[实机验收](SMS-ROOT-ACCEPTANCE-2026-11-01.md)。
 
 <!-- unified-current:start -->
-**本轮实验版：`bb10-volte-0.5.0-r8-macos-universal.dmg`。** 与 Windows 共用“三网自动适配”流程和手机载荷。首次安装及以后关机换卡见[统一流程](AUTO-CARRIERS.md)。本轮 Mac 实机 USB 验收按机主安排暂缓；签名、公证、软件自检和历史 USB 连接记录分别保留。下文已发布版本的记录注明其对应版本。
+**最终 macOS 版本：`bb10-volte-0.5.0-r43-macos-universal.dmg`。** 下载与固定源码见 [v0.5.0-r43](https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r43)。该版使用三网自动适配流程及手机版 0.1.0.43 载荷；以后其他平台的更新不代表 macOS 也有更新。首次安装及关机换卡见[统一流程](AUTO-CARRIERS.md)。r43 的签名、公证和离线自检通过，没有新增 Mac 实机手机验收。下文历史记录保留原版本及验证范围。
 <!-- unified-current:end -->
 
 

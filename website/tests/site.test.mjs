@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MIRROR_BASE, REPOSITORY_URL, selectRelease } from '../src/site.js';
+import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MACOS_RELEASE_TAG, MIRROR_BASE, REPOSITORY_URL, selectRelease } from '../src/site.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guides.html', 'mobile-installer.html', 'mobile-manual.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guides.html', 'en/mobile-installer.html', 'en/mobile-manual.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
@@ -119,7 +119,7 @@ test('release selection rejects drafts, malformed tags and incomplete assets', (
   assert.equal(selectRelease([releaseFixture('v0.3.4-r1', { draft: true })]), null);
   assert.equal(selectRelease([releaseFixture('latest')]), null);
   const incomplete = releaseFixture();
-  incomplete.assets = incomplete.assets.filter((asset) => !asset.name.endsWith('.dmg'));
+  incomplete.assets = incomplete.assets.filter((asset) => !asset.name.endsWith('.exe'));
   assert.equal(selectRelease([incomplete]), null);
   const noChecksums = releaseFixture();
   noChecksums.assets = noChecksums.assets.filter((asset) => asset.name !== 'SHA256SUMS.txt');
@@ -147,9 +147,12 @@ test('applying a release updates every download and release link', () => {
   const release = selectRelease([releaseFixture()]);
   applyRelease(documentRoot, release);
   assert.equal(packageFile.textContent, 'bb10-volte-0.3.4-r1-windows-x64.exe');
-  assert.equal(checksumCommand.textContent, 'shasum -a 256 "$HOME/Downloads/bb10-volte-0.3.4-r1-macos-universal.dmg"');
+  assert.equal(checksumCommand.textContent, `shasum -a 256 "$HOME/Downloads/bb10-volte-${MACOS_RELEASE_TAG.slice(1)}-macos-universal.dmg"`);
   for (const key of RELEASE_KEYS) {
-    for (const element of get(`[data-download="${key}"]`)) assert.equal(element.href, release.urls[key]);
+    const expected = key === 'mac' || key === 'mac-sha'
+      ? release.urls[key].replace(`${REPOSITORY_URL}/releases/download`, MIRROR_BASE)
+      : release.urls[key];
+    for (const element of get(`[data-download="${key}"]`)) assert.equal(element.href, expected);
   }
   for (const element of get('[data-release-version]')) assert.equal(element.textContent, '最新版');
   for (const element of get('[data-release-link]')) assert.equal(element.href, release.page);
@@ -199,6 +202,32 @@ test('dynamic menu labels use the page language', () => {
   assert.equal(menuLabel('en', false), 'Open navigation menu');
   assert.equal(menuLabel('zh-CN', true), '关闭导航菜单');
   assert.equal(menuLabel('zh-CN', false), '打开导航菜单');
+});
+
+test('a later Windows release without Mac assets keeps final Mac downloads and verification pinned', () => {
+  const newer = releaseFixture('v0.5.0-r44');
+  newer.assets = newer.assets.filter((asset) => !asset.name.includes('macos'));
+  const release = selectRelease([newer]);
+  assert.equal(release.tag, 'v0.5.0-r44');
+  const groups = new Map();
+  const get = (selector) => groups.get(selector) || [];
+  for (const key of RELEASE_KEYS) {
+    groups.set(`[data-download="${key}"]`, [{ href: '' }]);
+    groups.set(`[data-github-download="${key}"]`, [{ href: '' }]);
+  }
+  const filename = { dataset: { packageFile: 'mac' }, textContent: '' };
+  const command = { dataset: { checksumCommand: 'mac' }, textContent: '' };
+  groups.set('[data-package-file]', [filename]);
+  groups.set('[data-checksum-command]', [command]);
+  applyRelease({ querySelectorAll: get }, release);
+  const finalFile = 'bb10-volte-0.5.0-r43-macos-universal.dmg';
+  for (const [key, suffix] of [['mac', ''], ['mac-sha', '.sha256']]) {
+    assert.equal(get(`[data-download="${key}"]`)[0].href, `${MIRROR_BASE}/v0.5.0-r43/${finalFile}${suffix}`);
+    assert.equal(get(`[data-github-download="${key}"]`)[0].href, `${REPOSITORY_URL}/releases/download/v0.5.0-r43/${finalFile}${suffix}`);
+  }
+  assert.match(get('[data-download="windows"]')[0].href, /v0\.5\.0-r44/);
+  assert.equal(filename.textContent, finalFile);
+  assert.equal(command.textContent, `shasum -a 256 "$HOME/Downloads/${finalFile}"`);
 });
 
 test('curated release retains the R2 route and a version-matched GitHub alternative', () => {
