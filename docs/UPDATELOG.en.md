@@ -1,3 +1,7 @@
+# r44 / mobile 0.1.0.44
+
+Admitted models can start fresh when no known legacy service remains. Unknown models and legacy leftovers stay blocked, and another model's recovery directory is never reused. Mobile is now 0.1.0.44. macOS stays at r43. See the [release notes](RELEASE-r44.en.md).
+
 # r42 / mobile 0.1.0.43
 
 All catalog models open, honest per-model evidence, P’9983 owner feedback, integrated pairing/lifecycle/network improvements. See [release notes](RELEASE-r42.md).

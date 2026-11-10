@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r44/bb10-volte-0.5.0-r44-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -37,7 +37,7 @@ test('mobile installation guide works without JavaScript on small square screens
   for (const pathname of ['/mobile.html', '/en/mobile.html']) {
     await page.goto(pathname);
     await expect(page.locator('.mobile-nav')).toBeVisible();
-    await expect(page.locator('#release-status')).toContainText('r43');
+    await expect(page.locator('#release-status')).toContainText('r44');
     await page.locator('.mobile-contents a[href="#entry"]').click();
     await expect(page).toHaveURL(/#entry$/);
     await expect(page.locator('#entry-title')).toBeInViewport();
@@ -122,11 +122,12 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r43';
-  const basename = 'bb10-volte-0.5.0-r43';
+  const tag = 'v0.5.0-r44';
+  const basename = 'bb10-volte-0.5.0-r44';
+  const macName = 'bb10-volte-0.5.0-r43-macos-universal.dmg';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,
-    `${basename}-macos-universal.dmg`, `${basename}-macos-universal.dmg.sha256`,
+    `${macName}`, `${macName}.sha256`,
     `${basename}-experimental.zip`, `${basename}-experimental.zip.sha256`, 'SHA256SUMS.txt',
   ];
   await page.route('https://api.github.com/repos/Octo-o-o-o/bb10-volte/releases?per_page=10', (route) => route.fulfill({
@@ -136,9 +137,9 @@ test('guide updates version, package names and checksum commands together', asyn
   await page.goto('/guide.html');
   await expect(page.locator('[data-release-version]').first()).toHaveText('最新版');
   await expect(page.locator('[data-package-file="windows"]')).toHaveText(`${basename}-windows-x64.exe`);
-  await expect(page.locator('[data-package-file="mac"]')).toHaveText(`${basename}-macos-universal.dmg`);
+  await expect(page.locator('[data-package-file="mac"]')).toHaveText(macName);
   await expect(page.locator('[data-checksum-command="windows"]')).toContainText(`${basename}-windows-x64.exe`);
-  await expect(page.locator('[data-checksum-command="mac"]')).toContainText(`${basename}-macos-universal.dmg`);
+  await expect(page.locator('[data-checksum-command="mac"]')).toContainText(macName);
   await expect(page.locator('[data-release-link]')).toHaveAttribute('href', new RegExp(`${tag}$`));
 });
 

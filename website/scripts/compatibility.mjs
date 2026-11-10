@@ -7,7 +7,7 @@ const escape = value => String(value).replaceAll('&','&amp;').replaceAll('<','&l
 export function instructions(model, language) {
  const en=language==='en';
  return (en ? [
- `BB10 VoLTE r43 — ${model.variant} testing instructions`,
+ `BB10 VoLTE r44 — ${model.variant} testing instructions`,
  'All three carriers are open. The labels are old results, not a new pass.',model.evidence_summary.en,
  'Requirements: Root, BB10 10.3.3.3216, matching native files, USIM without ISIM. Backup and recovery conditions are checked.',
  '1. Install the current phone app. Check the phone, then follow the backup/install or update action.',
@@ -20,7 +20,7 @@ export function instructions(model, language) {
  'Attach only redacted JSON or ZIP diagnostics. Never include IMSI, IMEI, ICCID, phone numbers, keys or SMS contents.',
  'Computer pairing and SSH are optional for desktop management, not everyday phone-only use.'
  ] : [
- `BB10 VoLTE r43｜${model.variant} 测试说明`,
+ `BB10 VoLTE r44｜${model.variant} 测试说明`,
  '移动、联通、电信都能试。格子里是以前的结果，不是这版又测过。',model.evidence_summary.zh,
  '需要 Root、BB10 10.3.3.3216、匹配原生文件及无 ISIM 的 USIM；应用会核对备份和恢复条件。',
  '1. 安装新版手机应用，检查手机，按页面提示备份并安装或更新。',

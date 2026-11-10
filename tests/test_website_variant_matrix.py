@@ -16,7 +16,7 @@ class WebsiteVariantMatrixTests(unittest.TestCase):
         variants = [item['variant'] for item in data['models']]
         self.assertEqual(len(variants), len(set(variants)))
         self.assertEqual(set(variants), set(device_support.catalog()))
-        self.assertEqual(data['release'], 'v0.5.0-r43')
+        self.assertEqual(data['release'], 'v0.5.0-r44')
         for item in data['models']:
             self.assertEqual(item['family'], device_support.catalog()[item['variant']]['family'])
             self.assertEqual(set(item['routes']), {'mobile', 'unicom', 'telecom'})

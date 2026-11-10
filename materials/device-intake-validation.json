@@ -847,6 +847,190 @@
         "runtime_admission_modified": false,
         "public_release_performed": false
       }
+    },
+    {
+      "manifest_sha256": "25bf502af59f4ac7d22aa13c4d4fb295485fb67d0beb91069ec7e3f324cd0adc",
+      "report_sha256": "b48e9a57c9c96d9b8d4bb06f6ef80661681bd8a04dddc4862c8f41a0b608caa0",
+      "verdict": {
+        "schema": 1,
+        "at_utc": "2026-11-09T16:54:44.661624+00:00",
+        "scope": {
+          "variant": "SQN100-3",
+          "board": "R085",
+          "os_version": "10.3.3.3216",
+          "home_plmn": "460-11",
+          "SIM_type": "USIM_without_ISIM"
+        },
+        "status": "incomplete",
+        "checks": {
+          "identity_root_native": {
+            "evidence": [
+              {
+                "source": "scoped",
+                "pointer": "/identity_root_native"
+              }
+            ],
+            "scope_note": "Same-unit UID0 and six-file baseline before reinstall, no intervening firmware flash.",
+            "result": "passed"
+          },
+          "original_backups": {
+            "evidence": [
+              {
+                "source": "scoped",
+                "pointer": "/original_backups"
+              }
+            ],
+            "scope_note": "Four original files read back on phone and PC after reboot.",
+            "result": "passed"
+          },
+          "normal_boot_registration": {
+            "evidence": [
+              {
+                "source": "scoped",
+                "pointer": "/normal_boot_registration"
+              }
+            ],
+            "scope_note": "Final installation reboot differs from install boot; three LTE IMS 200 OK samples.",
+            "result": "passed"
+          },
+          "normal_stop_restore": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "outgoing_call": {
+            "evidence": [
+              {
+                "source": "owner",
+                "pointer": "/confirmed/outgoing_call"
+              }
+            ],
+            "scope_note": "Owner replied all requested basic tests were perfect.",
+            "result": "passed"
+          },
+          "incoming_call": {
+            "evidence": [
+              {
+                "source": "owner",
+                "pointer": "/confirmed/incoming_call"
+              }
+            ],
+            "scope_note": "Owner replied all requested basic tests were perfect.",
+            "result": "passed"
+          },
+          "two_way_audio": {
+            "evidence": [
+              {
+                "source": "owner",
+                "pointer": "/confirmed/two_way_audio"
+              }
+            ],
+            "scope_note": "Owner confirmed requested sound from both sides.",
+            "result": "passed"
+          },
+          "LTE_during_calls": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "data_during_calls": {
+            "evidence": [
+              {
+                "source": "owner",
+                "pointer": "/confirmed/data_during_calls_and_web"
+              }
+            ],
+            "scope_note": "Owner confirmed cellular web access during a call.",
+            "result": "passed"
+          },
+          "HTTP_HTTPS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "short_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "long_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "identical_incoming_SMS": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "SMS_idle": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "desktop_package": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          },
+          "mobile_package": {
+            "evidence": [
+              {
+                "source": "scoped",
+                "pointer": "/mobile_package"
+              }
+            ],
+            "scope_note": "All 83 application files verified after the final reboot.",
+            "result": "passed"
+          },
+          "mobile_UI": {
+            "evidence": [],
+            "scope_note": "Not tested",
+            "result": "not_tested"
+          }
+        },
+        "sources": {
+          "scoped": {
+            "path": "089-telecom-scoped-evidence.json",
+            "sha256": "76dd73f69e19c2d89ea41e14602581b3d0e0a3122c1be28c1c7bd9a46d0138a3",
+            "versions": {
+              "mobile_version": "0.1.0.43",
+              "desktop_revision": 43
+            }
+          },
+          "owner": {
+            "path": "088-telecom-owner-functional-pass.json",
+            "sha256": "6087ceb66fdef9b0d0b191622620a4b64926d15fc7e59df6b542eefcbef4abcb",
+            "versions": {
+              "mobile_version": "0.1.0.43",
+              "desktop_revision": 43
+            }
+          }
+        },
+        "missing_checks": [
+          "normal_stop_restore",
+          "LTE_during_calls",
+          "HTTP_HTTPS",
+          "short_SMS",
+          "long_SMS",
+          "identical_incoming_SMS",
+          "SMS_idle",
+          "desktop_package",
+          "mobile_UI"
+        ],
+        "failed_checks": [],
+        "known_SMS_limitations": [],
+        "product_scope": {
+          "runtime_scope_enabled": true,
+          "explicit_product_exclusion": false,
+          "carrier_policy_sha256": "280ac436f1499b10d1b2f2248982b2f5f6c4b1d1792e12bad546ddfd4c0d0cbf",
+          "support_catalog_sha256": "0d78f55c8518f9d9a82b9132fbb262e7c3a57bef4d5bf666caa60e0bf6a02305"
+        },
+        "all_checks_fresh_same_version_claimed": false,
+        "phone_contacted": false,
+        "runtime_admission_modified": false,
+        "public_release_performed": false
+      }
     }
   ]
 }

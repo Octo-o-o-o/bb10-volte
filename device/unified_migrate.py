@@ -27,12 +27,16 @@ def legacy_boot(base):
 
 
 def inspect(facts):
-    if facts['variant'] in ('SQW100-1', 'SQC100-4', 'SQC100-3', 'SQK100-1', 'SQC100-1'):
-        # These exact suffixes have no accepted legacy installation. Never
-        # reuse a different suffix's recovery path based on device family.
+    variant = facts['variant']
+    if variant not in BASES:
+        # An admitted model without a validated migration may start fresh only
+        # if no known legacy installation is present. Never borrow a different
+        # suffix's recovery path based on its device family.
+        if variant not in policy.MODELS:
+            raise ValueError('unsupported_model_or_os')
         assert not any(os.path.lexists(path) for path in BASES.values()), 'unvalidated_legacy_installation'
         return None
-    base = BASES[facts['variant']]
+    base = BASES[variant]
     if not os.path.exists(base):
         return None
     assert not os.path.islink(base), 'legacy_directory_changed'
