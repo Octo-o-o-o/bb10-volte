@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "kind": "manual_owner_test_progress_not_activation_admission",
-  "updated_utc": "2026-11-10T08:46:39.485456+00:00",
+  "updated_utc": "2026-11-11T09:48:44.043714+00:00",
   "grouping": [
     "unit_case",
     "variant",
@@ -842,6 +842,84 @@
       "evidence": "materials/sqw100-3-intake-2026-11-10.json",
       "evidence_sha256": "1fba31538aeb689378bdd13363754a069cf5094498707ed4f513fbb87d9b2713",
       "scope_note": "New physical SQW100-3; no SIM detected during installation. The owner will insert cards and complete the app-guided backup, activation and manual checks. No carrier, call, audio, SMS, data or reboot results are assumed."
+    },
+    {
+      "unit_case": "SQN100-3/2026-11-11",
+      "variant": "SQN100-3",
+      "operator": "mobile",
+      "observed_home_plmn": null,
+      "manual_status": "pending",
+      "reference_version": "0.1.0.44 / r44, reinstalled after the blue-LED repair",
+      "completed_checks": {
+        "outgoing_call": null,
+        "incoming_call": null,
+        "two_way_audio": null,
+        "LTE_during_calls": null,
+        "data_during_calls": null,
+        "HTTP_HTTPS": null,
+        "short_SMS": null,
+        "long_SMS": null,
+        "identical_incoming_SMS": null,
+        "mobile_UI": null
+      },
+      "repeat_manual_tests_required": false,
+      "first_manual_tests_pending": true,
+      "evidence": "materials/sqn100-3-intake-2026-11-11.json",
+      "evidence_sha256": "1e4750d65a51e091e350251e255833baf68687738e0df3a043e42d97623bcc53",
+      "scope_note": "No mobile-network SIM was present at install time. After the blue-LED repair the app and backend were reinstalled; this SIM remains untested.",
+      "blue_led_repair_verified": true
+    },
+    {
+      "unit_case": "SQN100-3/2026-11-11",
+      "variant": "SQN100-3",
+      "operator": "unicom",
+      "observed_home_plmn": "460-01",
+      "manual_status": "pending",
+      "reference_version": "0.1.0.44 / r44, reinstalled after the blue-LED repair",
+      "completed_checks": {
+        "outgoing_call": null,
+        "incoming_call": null,
+        "two_way_audio": null,
+        "LTE_during_calls": null,
+        "data_during_calls": null,
+        "HTTP_HTTPS": null,
+        "short_SMS": null,
+        "long_SMS": null,
+        "identical_incoming_SMS": null,
+        "mobile_UI": null
+      },
+      "repeat_manual_tests_required": false,
+      "first_manual_tests_pending": true,
+      "evidence": "materials/sqn100-3-intake-2026-11-11.json",
+      "evidence_sha256": "1e4750d65a51e091e350251e255833baf68687738e0df3a043e42d97623bcc53",
+      "scope_note": "China Unicom 460-01 was present. The owner activated the backend in the app and IMS reported connected/200 OK after a reboot; calls, audio, SMS and data are still untested.",
+      "blue_led_repair_verified": true
+    },
+    {
+      "unit_case": "SQN100-3/2026-11-11",
+      "variant": "SQN100-3",
+      "operator": "telecom",
+      "observed_home_plmn": null,
+      "manual_status": "pending",
+      "reference_version": "0.1.0.44 / r44, reinstalled after the blue-LED repair",
+      "completed_checks": {
+        "outgoing_call": null,
+        "incoming_call": null,
+        "two_way_audio": null,
+        "LTE_during_calls": null,
+        "data_during_calls": null,
+        "HTTP_HTTPS": null,
+        "short_SMS": null,
+        "long_SMS": null,
+        "identical_incoming_SMS": null,
+        "mobile_UI": null
+      },
+      "repeat_manual_tests_required": false,
+      "first_manual_tests_pending": true,
+      "evidence": "materials/sqn100-3-intake-2026-11-11.json",
+      "evidence_sha256": "1e4750d65a51e091e350251e255833baf68687738e0df3a043e42d97623bcc53",
+      "scope_note": "No telecom SIM was present at install time. After the blue-LED repair the app and backend were reinstalled; this SIM remains untested.",
+      "blue_led_repair_verified": true
     }
   ]
 }
