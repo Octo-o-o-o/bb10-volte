@@ -2,6 +2,8 @@
 
 欢迎提交 Q10、Classic（Q20）、Passport（Q30）和其他 BB10 设备、地区与运营商的测试反馈，**可用和不可用都欢迎**。目前唯一的实机通话组合是 Q10 SQN100-3 / BB10 OS 10.3.3.3216 / 北京中国联通 460-01。通过公开的 [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues) 提交，中文或英文均可。
 
+另外：如果手机在正常重启后丢失应用或数据、开机亮蓝灯，这通常是手机系统/数据分区的历史问题，不是 VoLTE 功能本身。修复工具、校验值和两台 Q10 的实测记录见 [bb10-blue-led-recovery](https://github.com/Octo-o-o-o/bb10-blue-led-recovery)；提交反馈时请注明是否已按该说明做过跨重启验证。
+
 请复制填写以下项目；无法取得的信息写“未知”，不必为了反馈另装诊断工具。
 
 ```text
@@ -32,5 +34,7 @@ BB10 完整版本：
 Both working and non-working device/carrier combinations are welcome in [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues). Only Q10 SQN100-3 / BB10 OS 10.3.3.3216 / Beijing China Unicom 460-01 has hardware calling evidence so far.
 
 Include the result, phone model/variant, full BB10 version, carrier and region, MCC/MNC if available, roaming/number-porting status, project version, source/EXE/DMG method and desktop OS. Source users should include the Python version. Describe the completed steps or failure stage/error, incoming/outgoing calls, audio in both directions, continued 4G, USB-disconnected use and recovery after a normal phone-menu reboot. Mark checks you have not performed as untested. Registration alone does not prove calling works.
+
+Also: if the phone loses apps or data and shows a blue LED after a normal restart, that is usually a historical phone OS/data-partition problem rather than VoLTE itself. The repair utility, hashes and observed results are documented at [bb10-blue-led-recovery](https://github.com/Octo-o-o-o/bb10-blue-led-recovery); when reporting, note whether you verified persistence across restarts as described there.
 
 Optionally attach the GUI's redacted preflight report and selected profile. Do not publish private directories, Root images, SSH keys, raw SIP logs, phone numbers, SIM/device identifiers or authentication material. Unknown fields may be left as unknown; no extra diagnostic tools are required to report a result.

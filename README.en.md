@@ -22,6 +22,10 @@ The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. S
 - Restart again only when the app asks. Power off before changing the SIM. Passport entering or leaving Telecom may need an extra normal restart.
 - The computer needs Developer Mode. The phone app needs Root. If the computer cannot see the phone, use a cable that carries data.
 
+## Apps disappear or a blue LED appears after a restart
+
+A few BB10 phones lose apps or data and show a blue notification LED after a normal restart. This is a historical phone OS/data-partition problem, not something caused by VoLTE activation. The historical repair utility, hashes and results from two Q10 units are documented at [bb10-blue-led-recovery](https://github.com/Octo-o-o-o/bb10-blue-led-recovery). After a repair, create your own test file and restart normally to confirm; do not treat the tool's "Fixed" message alone as proof.
+
 ## Downloads
 
 | Computer | System requirements |
