@@ -100,6 +100,15 @@ python tools/gui.py
 
 源码运行需要 Python 3.14（含 Tk）；完整 Root 准备使用该版本的 Zstandard 支持。原厂 `/radio/bin/ims_rrm` 不被覆盖，安装使用经过校验的独立副本；原生文件不匹配会停止。固定材料、上游来源与许可证见 [sources.json](materials/sources.json)及 [NOTICE](NOTICE.md)。
 
+### 内置 AI 助手 Skill（支持各家 AI 直接识别机型并操作）
+
+仓库内置标准 Agent Skill [`.agents/skills/bb10-volte/SKILL.md`](.agents/skills/bb10-volte/SKILL.md) 与无界面结构化 JSON 入口 [`tools/ai_skill.py`](tools/ai_skill.py)。使用 Antigravity、Codex、Claude Code、Cursor 等 AI 编程助手打开本仓库（或通过 `npx skills add Octo-o-o-o/bb10-volte` 安装 Skill）即可让 AI 自动完成 **16 个 BB10 硬件后缀**（`SQN100-1..5`、`SQC100-1..5`、`SQW100-1..4`、`SQK100-1..2`）的只读机型/OS/Root/SIM 识别、电脑配对、手机版 BAR 安装、三网 VoLTE 备份激活/状态检查/回滚，以及经人工确认后的 3216 升级与首次 Root 准备：
+
+```powershell
+python tools/ai_skill.py detect
+python tools/ai_skill.py models --variant SQC100-1
+```
+
 软件测试、冻结包自检、签名公证与真实手机通话分开验收。源码发布使用显式文件清单和敏感信息扫描；私钥、原始通信日志、号码与设备标识不在公开资料中。官网源码与测试见 [website/README](website/README.md)。
 
 [Windows 打包](docs/WINDOWS-EXE.md) · [macOS 打包](docs/MACOS.md) · [源码构建](docs/BUILD.md) · [统一流程](docs/AUTO-CARRIERS.md) · [贡献说明](CONTRIBUTING.md) · [非商业许可 / 商用需授权](LICENSE)

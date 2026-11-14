@@ -98,6 +98,15 @@ python tools/gui.py
 
 Source execution requires Python 3.14 with Tk. The original `/radio/bin/ims_rrm` is preserved; installation uses a verified independent copy. Native hash mismatches stop installation. Fixed materials, provenance and licenses are recorded in [sources.json](materials/sources.json) and [NOTICE](NOTICE.md).
 
+### Built-in AI Agent Skill
+
+This repository ships a built-in Agent Skill at [`.agents/skills/bb10-volte/SKILL.md`](.agents/skills/bb10-volte/SKILL.md) paired with the headless JSON CLI [`tools/ai_skill.py`](tools/ai_skill.py). AI coding assistants such as Antigravity, Codex, Claude Code, and Cursor can discover the skill directly in the workspace (or install it via `npx skills add Octo-o-o-o/bb10-volte`) to safely identify connected BB10 hardware/OS/Root/SIM state and operate all **16 supported variants** (`SQN100-1..5`, `SQC100-1..5`, `SQW100-1..4`, `SQK100-1..2`) across pairing, native phone app installation, unified 3-carrier VoLTE setup/status/rollback, and owner-confirmed stock `10.3.3.3216` upgrade or AutoRoot workflows:
+
+```sh
+python tools/ai_skill.py detect
+python tools/ai_skill.py models --variant SQC100-1
+```
+
 Software tests, frozen-package checks, signatures/notarization and actual phone calls are separate evidence. Public packages use an explicit allowlist and privacy scan, excluding keys, raw communications logs, numbers and device identifiers. The bilingual website and its tests are included; see [website/README](website/README.md).
 
 [Windows](docs/WINDOWS-EXE.en.md) · [macOS](docs/MACOS.en.md) · [Build](docs/BUILD.en.md) · [Automatic carriers](docs/AUTO-CARRIERS.en.md) · [Contributing](CONTRIBUTING.md) · [Noncommercial license / Commercial paid](LICENSE)

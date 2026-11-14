@@ -44,7 +44,9 @@ PATTERNS = ('device/*.py', 'device/*.sh', 'driver/*.c', 'driver/*.exports',
             'website/scripts/*.mjs', 'website/tests/*.mjs', 'website/src/*.html',
             'website/src/en/*.html', 'website/src/*.css', 'website/src/*.js',
             'website/src/*.xml', 'website/src/*.json', 'mobile/runtime/*.py',
-            'mobile/native/src/*.c', 'mobile/native/src/*.cpp', 'mobile/native/src/*.h', 'mobile/native/assets/*.qml')
+            'mobile/native/src/*.c', 'mobile/native/src/*.cpp', 'mobile/native/src/*.h', 'mobile/native/assets/*.qml',
+            '.agents/skills/bb10-volte/SKILL.md', '.agents/skills/bb10-volte/references/*.md',
+            '.agents/skills/bb10-volte/scripts/*.py')
 HELPER = 'driver/devnp-volte_swcrypto_probe.so'
 RECORDING_MANIFEST = 'materials/recording-files.json'
 SENSITIVE = {
