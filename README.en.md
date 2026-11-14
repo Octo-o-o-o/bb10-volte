@@ -26,6 +26,13 @@ The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. S
 
 A few BB10 phones lose apps or data and show a blue notification LED after a normal restart. This is a historical phone OS/data-partition problem, not something caused by VoLTE activation. The historical repair utility, hashes and results from two Q10 units are documented at [bb10-blue-led-recovery](https://github.com/Octo-o-o-o/bb10-blue-led-recovery). After a repair, create your own test file and restart normally to confirm; do not treat the tool's "Fixed" message alone as proof.
 
+## BlackBerry Passport on Android 11 (LineageOS 18.1)
+
+This repository (`bb10-volte`) targets stock **BlackBerry 10 (`OS 10.3.3.3216` / QNX)** only (SSH/BAR installer + `/radio/bin/ims_rrm` runtime). If your BlackBerry Passport has been flashed to **Android 11 (LineageOS 18.1)**, use our dedicated sister project instead:
+
+- Official website & direct downloads: [passport-volte.octoooo.com](https://passport-volte.octoooo.com/en/)
+- GitHub repository: [Octo-o-o-o/passport-android11-volte](https://github.com/Octo-o-o-o/passport-android11-volte)
+
 ## Downloads
 
 | Computer | System requirements |
