@@ -1,3 +1,7 @@
+# r46 / mobile 0.1.0.46
+
+Fixes the China Telecom (`460-03` / `460-11`) outbound SMS-over-IMS local "Sending..." stall (`telecom_mo_ack`, synthesizing a matching 2-byte 3GPP `RP-ACK` `0x1015` to `qct_rrm` after SIP `202 Accepted` + `0x1014` IPC success; Mobile/Unicom untouched), and automatically lights up the classic BlackBerry status-bar icon whenever VoLTE is registered on LTE via QNX `?critical`. Verified on SQC100-2 (Telecom 460-11). Retains all r45 cross-carrier incoming-call SIP/SDP fixes; published r42–r45 services upgrade in place after stopping. Mobile is now 0.1.0.46. macOS stays at r43. See the [release notes](RELEASE-r46.en.md).
+
 # r45 / mobile 0.1.0.45
 
 Unifies incoming-call SIP/SDP signaling across Telecom, Unicom and Mobile (`MediaDialog.EarlySdp=0`, `MediaDialog.Omit200OkSdp=0`) for regional SBC/TAS and ringback platforms where incoming calls drop on ring, callers hear no ringback, or non-100rel / early-`UPDATE` answers omit SDP. Published r42–r44 services upgrade in place after stopping; regional handset confirmation is pending. Mobile is now 0.1.0.45. macOS stays at r43. See the [release notes](RELEASE-r45.en.md).

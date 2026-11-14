@@ -25,7 +25,9 @@ def main():
             current = m.s.load(m.BASE + '/payload.json')
             candidate = m.s.load(stage + '/payload.json')
             if current == candidate and m.installed_management_schema() == 2 and not os.path.isfile(m.UPDATE_PENDING):
+                m.u.setup()
                 m.u.verify()
+                m.cleanup_stage(stage)
                 result = {'updated': True, 'runtime_only': True, 'reboot_required': False}
             else:
                 result = m.manage('update', stage=stage, operation_id=request['operation_id'])

@@ -77,12 +77,15 @@ class ExactClassicNAScope(unittest.TestCase):
         changes={name for name in before['files'] if before['files'][name]!=current['files'][name]}
         self.assertLessEqual(changes,set(unified_install.UPDATE_FILES))
         self.assertIn('device/ims_image.py',changes)
-        # r44 retained the reviewed r36 parent service; r45 updates only the MT signaling image/service selection.
+        # r44 retained the reviewed r36 parent service; r45/r46 update only MT signaling, Telecom MO SMS completion, and status-bar indicator.
         parent=json.loads((ROOT/'materials/unified-payload-r36.json').read_text())
         r44=json.loads((ROOT/'materials/unified-payload-r44.json').read_text())
+        r45=json.loads((ROOT/'materials/unified-payload-r45.json').read_text())
         self.assertEqual(r44['files']['device/unified_service.py'],parent['files']['device/unified_service.py'])
-        r45_changes={name for name in r44['files'] if r44['files'][name]!=current['files'][name]}
-        self.assertEqual(r45_changes,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
+        r44_to_current={name for name in r44['files'] if r44['files'][name]!=current['files'][name]}
+        self.assertEqual(r44_to_current,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
+        r45_to_current={name for name in r45['files'] if r45['files'][name]!=current['files'][name]}
+        self.assertEqual(r45_to_current,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
 
     def test_other_exact_model_carrier_admission_is_preserved(self):
         self.assertEqual(policy.VALIDATED_MNCS['SQW100-1'],('00','01','07','11'))

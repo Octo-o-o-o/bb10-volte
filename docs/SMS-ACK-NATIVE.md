@@ -87,3 +87,16 @@ python tools/verify_sms_ack.py --native private/ims_rrm --report private/new-sms
 实机下一步应先确认临时 IMS 能在 QNX 正常加载，再短时采集同一条 MT 与 ACK 的原始 SIP：检查 `In-Reply-To == 下行 Call-ID`、RP 参考号、网关 Request-URI／To 和 SIP 成功响应，并观察至少 180 秒、Hub 只新增一次。随后验证并发短信、长短信分段、合法重复内容、MO、语音、正常重启／关机换卡及停用恢复。原生 SIP 文件日志的开关、保存与恢复步骤见[取证文档](SMS-DIAGNOSTICS.md#查看-sip-与-in-reply-to)。
 
 升级器会备份并替换已知载荷的 `ims_image.py`，新临时镜像只在服务正常重新启动后生成；运行中的进程不会被热改写。正式源码中的原生候选仍默认关闭；Q20 私有验收的失败及修订见上文，旧的语音验收不能用于新镜像。用户所述 `bb10root/bb10-volte main+PR#1` 是另一个 C 项目，本项目 Python 载荷不可直接覆盖其安装；需基于同一受校验的原生文件采用相应集成方式并实机验收。
+
+## 电信发出短信（MO SMS-over-IMS）本地完成回执候选（r46）
+
+在中国电信（`460-03`／`460-11`）网络中，上行 `application/vnd.3gpp.sms` `RP-DATA`（类型 `0x00`）经 SIP `MESSAGE` 发送后，电信 IP-SM-GW 返回 SIP `202 Accepted`，短信实际送达对端，但网关不再另行下发承载 3GPP `RP-ACK` 的 SIP `MESSAGE`。对 OS 10.3.3.3216 原厂 `ims_rrm` 与 `qct_rrm` 的反汇编确认：
+
+- `ims_rrm` 的 `ImsEngineSmsMgr::onSmsDeliverySuccess`（`0xdaa5e..0xdab48`）收到 `202 Accepted` 时，仅构造并发送 `NOTIFY_SMS_OUTGOING_RP_PDU_STATUS`（TLV `0x1014`：`(0x103d=0, 0x103e=tx_id)`）。
+- `qct_rrm` 的 `0xe5080..0xe6234` 在 3GPP 短信模式下仅将 `0x1014` 记为 SIP 传输层已接收，不推进出站短信状态机；必须继续收到 `NOTIFY_SMS_INCOMING_RP_PDU`（TLV `0x1015`）并经 `libradioutil.so.0.1` 的 `SmsDecode3gppSmRlPdu`（`0xf2cd`）解码出匹配 `RP-MR` 的 3GPP `RP-ACK`（2 字节 `03 <RP-MR>`），才完成出站事务并清除 Hub 的“发送中”。
+
+因此，r46 在同一固定 `ims_rrm` 临时副本上新增显式开关 `telecom_mo_ack=True`（仅 `460-03`／`460-11` 启用，移动／联通保持原 2 钩子 `sms_ack_binary` 不变）：
+
+- `0x2ee3c6` 替换为 `sms_telecom_tx_hook`：对下行报告（`0x02`／`0x04`）保持原 `In-Reply-To` 关联；对上行 3GPP MO `RP-DATA`（`0x00`，长度 `>= 3`）读取 `msg+0x14` 处的 SIP `tx_id` 与 `rpdu[1]` 处的 `RP-MR` 记入独立 `mo_cache`（16 槽位，180 秒期限），缓存基址 `cache` 仍固定在 `0x4a3000` 以保持既有 `sms_busy_recovery` 偏移不变。
+- `0xdaae2`（替换 `BL 0x139084`）在构造 `0x1014` TLV 时按 `(engine=r5, tx_id=*(sp+0x20))` 匹配并弹出待完成 `RP-MR`；`0xdab44`（替换 `BL 0x11ec60`）先调用原发送器投递 `0x1014`，仅当原 IPC 返回 `>= 0` 且存在刚弹出的有效记录时，复用原厂 `0x139084` 与 `0x11ec60` 紧接补发 28 字节 `0x1015` TLV（`0x1041={0x03, RP-MR}`、`0x1042={0x02}`、`0x1044={0,0,0,0}`）。
+- 钩子入口均使用显式 `.thumb_func` 汇编桩对齐 8 字节栈并经 `BLX` 进入 C 实现，避免 Thumb `BL` 直跳 ARM 函数触发非法指令。离线 64 组 ASLR 仿真与 ELF 检查已通过，并已在 `SQC100-2`（中国电信 `460-11`）真机实测确认通过。

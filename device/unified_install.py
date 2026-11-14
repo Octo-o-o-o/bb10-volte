@@ -30,6 +30,10 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # Pre-Telecom-MO-SMS-fix r46/mobile46 candidate read back on SQC100-2.
+                    '1e52f431fbe8445a76d7f6fd6d9054535512216c3fc1287057d374287370c9b7',
+                    # r45/mobile45 before automatic Navigator BlackBerry status-bar indicator.
+                    '8a101135e33cbe384c6c2c31b935b284e11b6a620ec33f336af4cebb9d805a6d',
                     # r44/mobile44 before cross-carrier MT EarlySdp/Omit200OkSdp fix.
                     'ef9208d0f19624f07d33512394c8337ec55c1072ad52310361e53539183bcd7d',
                     # r42/r43 shared backend before fresh-model migration fix.

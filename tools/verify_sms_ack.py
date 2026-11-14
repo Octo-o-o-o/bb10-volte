@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'device'))
 import carrier_policy
 import ims_image as image
-from sms_ack_emulator import Emulator
+from sms_ack_emulator import Emulator, decode_tlv
 
 
 def programs(raw):
@@ -60,7 +60,7 @@ def branch(raw, at):
     return at + 4 + value
 
 
-def elf_checks(stock, patched):
+def elf_checks(stock, patched, telecom_mo_ack=False):
     assert notes(stock) == notes(patched), 'Platform/build notes changed'
     old = unwind(stock)
     new = unwind(patched)
@@ -90,11 +90,23 @@ def elf_checks(stock, patched):
         h for h in headers if h[0] in (2, 3, 6, 0x6474e552)]
     assert branch(stock, 0x2eeff2) == 0x218098
     assert branch(stock, 0x2ee3c6) == 0x1b5d54
+    assert branch(stock, 0xdaae2) == 0xda97c
+    assert branch(stock, 0xdab44) == 0x11ec60
     assert branch(patched, 0x2eeff2) == image.SMS_ACK_RX
-    assert branch(patched, 0x2ee3c6) == image.SMS_ACK_TX
-    for start, end in ((0x63378, 0x6339e), (0x7c0de, 0x7d154), (0xdaf7a, 0xdb74c),
-                       (0x2ee2c4, 0x2ee3c6), (0x2ee3ca, 0x2eeff2),
-                       (0x2eeff6, 0x2ef4b0), (0x303a5c, 0x303b68)):
+    if telecom_mo_ack:
+        assert branch(patched, 0x2ee3c6) == image.SMS_ACK_TELECOM_TX
+        assert branch(patched, 0xdaae2) == image.SMS_ACK_MO_POP
+        assert branch(patched, 0xdab44) == image.SMS_ACK_MO_SEND
+        sms_ranges = ((0x63378, 0x6339e), (0x7c0de, 0x7d154),
+                      (0xdaa5e, 0xdaae2), (0xdaae6, 0xdab44), (0xdab48, 0xdb74c),
+                      (0x2ee2c4, 0x2ee3c6), (0x2ee3ca, 0x2eeff2),
+                      (0x2eeff6, 0x2ef4b0), (0x303a5c, 0x303b68))
+    else:
+        assert branch(patched, 0x2ee3c6) == image.SMS_ACK_TX
+        sms_ranges = ((0x63378, 0x6339e), (0x7c0de, 0x7d154), (0xdaa5e, 0xdb74c),
+                      (0x2ee2c4, 0x2ee3c6), (0x2ee3ca, 0x2eeff2),
+                      (0x2eeff6, 0x2ef4b0), (0x303a5c, 0x303b68))
+    for start, end in sms_ranges:
         assert patched[start:end] == stock[start:end], 'Unexpected change to existing SMS logic'
     # Getter and string-length contracts used by the shim, verified in the
     # original instructions instead of inventing C++ object layouts.
@@ -103,7 +115,9 @@ def elf_checks(stock, patched):
             'notes_preserved': True, 'dynamic_imports_and_relro_unchanged': True,
             'qnx_two_load_headers_preserved': True, 'original_rw_overlay_and_bss_preserved': True,
             'shim_outside_rw_pages': True, 'no_writable_executable_segment': True,
-            'original_bl_targets_checked': True, 'stock_sms_logic_preserved_except_two_hooks': True,
+            'original_bl_targets_checked': True,
+            'stock_sms_logic_preserved_except_two_hooks': not telecom_mo_ack,
+            'telecom_mo_ack_hooks_checked': telecom_mo_ack,
             'qnx_loader_validated': False}
 
 
@@ -119,10 +133,12 @@ def verify(stock):
     legacy_unicom = image.temporary_binary(stock, True, sms_ack=True)[0]
     legacy_mobile = image.mobile_binary(stock, True, sms_ack=True)[0]
     unified_mt = image.mt_voice_binary(stock, True, sms_ack=True)[0]
+    telecom_mt = image.mt_voice_binary(stock, True, sms_ack=True, telecom_mo_ack=True)[0]
     elf_checks(stock, legacy_unicom)
     elf_checks(stock, legacy_mobile)
     checks = elf_checks(stock, unified_mt)
-    images = {'mobile': unified_mt, 'unicom': unified_mt, 'telecom': unified_mt}
+    telecom_checks = elf_checks(stock, telecom_mt, telecom_mo_ack=True)
+    images = {'mobile': unified_mt, 'unicom': unified_mt, 'telecom': telecom_mt}
     matrix = []
     for variant, (family, board) in carrier_policy.MODELS.items():
         for mnc in carrier_policy.CARRIERS:
@@ -130,10 +146,11 @@ def verify(stock):
                 {'variant': variant, 'board_type': board, 'os_version': carrier_policy.OS_VERSION},
                 {'state': 'READY', 'kind': 2, 'mcc': '460', 'mnc': mnc, 'imsi': '460'+mnc+'0'*10})
             assert selected['request']['profile']['ims']['sms'] is True
+            is_telecom = selected['operator'] == 'telecom'
             patched = images[selected['operator']]
             for load in (0, 0x10000000, 0x28000000):
-                emu = Emulator(load)
-                emu.install_callsites(patched)
+                emu = Emulator(load, telecom_mo_ack=is_telecom)
+                emu.install_callsites(patched, telecom_mo_ack=is_telecom)
                 # Reverse ACK order catches a last-message-only cache.
                 emu.receive(ref=1, call='first@invalid', gateway='sip:first.invalid')
                 emu.receive(ref=2, call='second@invalid', gateway='sip:second.invalid')
@@ -143,9 +160,27 @@ def verify(stock):
                     assert result['target'] == 'sip:'+name+'.invalid'
                     assert result['headers']['to'] == ['<sip:'+name+'.invalid>']
                     assert result['headers']['call-id'] == ['fresh-ack@invalid']
+                if is_telecom:
+                    emu.send_mo(ref=0x38, call='mo-1@invalid', pdu_id=4)
+                    emu.send_mo(ref=0x39, call='mo-2@invalid', pdu_id=5)
+                    for call, pdu_id, ref in (('mo-2@invalid', 5, 0x39), ('mo-1@invalid', 4, 0x38)):
+                        emu.ipc_sent.clear()
+                        popped, rc = emu.deliver_mo_success(call=call)
+                        assert popped == pdu_id and rc == 0
+                        assert len(emu.ipc_sent) == 2
+                        assert decode_tlv(emu.ipc_sent[0][1])[0] == 0x1014
+                        msg_id, items = decode_tlv(emu.ipc_sent[1][1])
+                        assert msg_id == 0x1015
+                        assert items == [
+                            (0x1041, bytes([0x03, ref, 0, 0])),
+                            (0x1042, bytes([0x02, 0, 0, 0])),
+                            (0x1044, bytes([0, 0, 0, 0])),
+                        ]
             matrix.append({'variant': variant, 'operator': selected['operator'], 'mnc': mnc,
                            'image_sha256': hashlib.sha256(patched).hexdigest(),
-                           'same_receive_and_report_hooks': True, 'emulated_callsite_aslr_cases': 3,
+                           'same_receive_and_report_hooks': True,
+                           'telecom_mo_ack_hooks': is_telecom,
+                           'emulated_callsite_aslr_cases': 3,
                            'device_sms_acceptance': False})
     return {'schema': 1, 'status': 'offline_native_correlation_checks_passed',
             'stock_sha256': image.STOCK_SHA,
@@ -155,8 +190,9 @@ def verify(stock):
             'hardware_acceptance_evaluated_by_this_verifier': False,
             'shim_code_sha256': hashlib.sha256(image.SMS_ACK_CODE).hexdigest(),
             'receive_hook': '0x2eeff2', 'report_hook': '0x2ee3c6',
-            'elf_checks': checks, 'matrix': matrix,
-            'limitations': ['Native SIP header/URI/clock APIs are mocked at verified ABI boundaries.',
+            'telecom_mo_pop_hook': '0xdaae2', 'telecom_mo_send_hook': '0xdab44',
+            'elf_checks': checks, 'telecom_elf_checks': telecom_checks, 'matrix': matrix,
+            'limitations': ['Native SIP header/URI/clock/TLV/IPC APIs are mocked at verified ABI boundaries.',
                             'No QNX process was launched and no carrier transaction was sent.',
                             'This offline report cannot establish delivery counts, gateway acceptance or voice regression.']}
 
@@ -169,7 +205,9 @@ def main():
     result = verify(args.native.read_bytes())
     with args.report.open('x', encoding='ascii') as output:
         output.write(json.dumps(result, indent=2) + '\n')
-    print(json.dumps({'matrix_cases': len(result['matrix']), 'elf_checks': result['elf_checks']}))
+    print(json.dumps({'matrix_cases': len(result['matrix']),
+                      'elf_checks': result['elf_checks'],
+                      'telecom_elf_checks': result['telecom_elf_checks']}))
 
 
 if __name__ == '__main__':

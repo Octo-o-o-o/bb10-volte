@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT
- * Correlate raw 3GPP MT reports in the hash-pinned BB10 10.3.3.3216 IMS image.
- * No sends, retries, RPDU changes, message suppression, or persistent state.
+ * Correlate raw 3GPP MT reports in the hash-pinned BB10 10.3.3.3216 IMS image,
+ * and synthesize local 3GPP MO RP-ACK after SIP 2xx on China Telecom (460-03/11)
+ * where the IP-SM-GW returns 202 Accepted without a downstream SIP RP-ACK.
  * Native addresses/ABI are documented in docs/SMS-ACK-NATIVE.md.
  */
 typedef unsigned int u32;
@@ -9,6 +10,8 @@ typedef char check_u32[sizeof(u32) == 4 ? 1 : -1];
 
 #define CODE_VA 0x500000u
 #define SLOTS 32u
+#define MO_SLOTS 16u
+#define MO_STAGED 8u
 #define HEADER_MAX 512u
 #define RP_MAX 255u
 #define TTL_SECONDS 180u
@@ -19,11 +22,25 @@ struct entry {
     char call_id[HEADER_MAX], gateway[HEADER_MAX];
     u8 rp[RP_MAX];
 };
-static struct {
+static __attribute__((section(".bss.cache"))) struct {
     volatile u32 lock, epoch;
     u32 captured, correlated, conflict, missing, malformed, full;
     struct entry entries[SLOTS];
 } cache;
+
+struct mo_entry {
+    u32 used, reference, at;
+    char call_id[HEADER_MAX];
+};
+struct mo_stage {
+    u32 used, engine, pdu_id, reference, at;
+};
+static struct {
+    volatile u32 lock;
+    u32 captured, popped, synthesized, conflict, full;
+    struct mo_entry entries[MO_SLOTS];
+    struct mo_stage pending[MO_STAGED];
+} mo_cache;
 
 static u32 base(void) { return ((u32)&sms_anchor & ~1u) - CODE_VA; }
 #define NATIVE(type, address) ((type)(base() + (address)))
@@ -31,6 +48,10 @@ static u32 base(void) { return ((u32)&sms_anchor & ~1u) - CODE_VA; }
 static void copy(void *dst, const void *src, u32 count) {
     u8 *d = dst; const u8 *s = src;
     while (count--) *d++ = *s++;
+}
+static void zero(void *dst, u32 count) {
+    volatile u8 *d = dst;
+    while (count--) *d++ = 0;
 }
 static int equal(const void *a, const void *b, u32 count) {
     const u8 *x = a, *y = b;
@@ -49,6 +70,8 @@ static int same(const char *a, const char *b) {
 }
 static int lock(void) { return !__sync_lock_test_and_set(&cache.lock, 1); }
 static void unlock(void) { __sync_lock_release(&cache.lock); }
+static int mo_lock(void) { return !__sync_lock_test_and_set(&mo_cache.lock, 1); }
+static void mo_unlock(void) { __sync_lock_release(&mo_cache.lock); }
 /* A missed MT capture might reuse an old reference. Invalidate old snapshots
  * even if another thread holds the cache lock; never borrow stale context. */
 static void missed_capture(void) { __sync_fetch_and_add(&cache.epoch, 1); }
@@ -65,6 +88,9 @@ static int now(u32 *seconds) {
 }
 static int current(const struct entry *e, u32 time) {
     return e->owner && e->epoch == cache.epoch && time >= e->at && time - e->at < TTL_SECONDS;
+}
+static int mo_live(u32 used, u32 at, u32 time) {
+    return used && time >= at && time - at < TTL_SECONDS;
 }
 
 /* SAL header map lookup: { ..., String *values, int count }. String is one
@@ -210,9 +236,134 @@ __attribute__((visibility("hidden"))) void sms_correlate(void *message, const u8
     NATIVE(void (*)(void *), 0x66141)(native_uri);
 }
 
-/* Two BL replacements preserve the original arguments and callee-saved
- * registers. Both call sites have an aligned stack and no live condition flags.
- * The receive hook reproduces the original getter (message + 0x20).
+/* Telecom-only MO capture at 0x2ee3c6: record outbound 3GPP MO RP-DATA
+ * (rp[0] == 0) Call-ID -> RP-MR so ImsEngineSmsMgr::onSmsDeliverySuccess can
+ * complete qct_rrm's WAIT_FOR_RP_ACK state after SIP 2xx.
+ */
+__attribute__((visibility("hidden"))) void sms_mo_capture(void *message, const u8 *rp, u32 size, u32 owner) {
+    char cid[HEADER_MAX];
+    struct mo_entry *slot = 0;
+    u32 time, i;
+    if (!owner || !rp || size < 2 || size > RP_MAX || rp[0] != 0 || !now(&time)) return;
+    cid[0] = 0;
+    if (!token(cid, single(message, "Call-ID"))) return;
+    if (!mo_lock()) return;
+    for (i = 0; i < MO_SLOTS; ++i) {
+        struct mo_entry *e = &mo_cache.entries[i];
+        if (!mo_live(e->used, e->at, time)) { if (!slot) slot = e; continue; }
+        if (!same(e->call_id, cid)) continue;
+        if (e->used != 1 || e->reference != rp[1]) {
+            e->used = 2; ++mo_cache.conflict;
+        }
+        mo_unlock(); return;
+    }
+    if (slot) {
+        slot->used = 1; slot->reference = rp[1]; slot->at = time;
+        copy(slot->call_id, cid, length(cid, HEADER_MAX) + 1);
+        ++mo_cache.captured;
+    } else ++mo_cache.full;
+    mo_unlock();
+}
+
+/* Telecom-only hook target for 0xdaae2 inside ImsEngineSmsMgr::onSmsDeliverySuccess.
+ * Runs only on SIP 2xx delivery success (never on 4xx/5xx/timeout failure).
+ */
+__attribute__((visibility("hidden")))
+u32 sms_mo_pop(u32 engine, const char * const *call_id_obj, u32 remove, void *out1, void *out2) {
+    u32 pdu_id = NATIVE(u32 (*)(u32, const char * const *, u32, void *, void *), 0xda97d)(
+        engine, call_id_obj, remove, out1, out2);
+    char cid[HEADER_MAX];
+    u32 time, i, ref = 0;
+    int matched = 0;
+    struct mo_stage *slot = 0;
+    if (pdu_id >= 0xffu || !engine || !call_id_obj || !now(&time)) return pdu_id;
+    cid[0] = 0;
+    if (!token(cid, *call_id_obj)) return pdu_id;
+    if (!mo_lock()) return pdu_id;
+    for (i = 0; i < MO_SLOTS; ++i) {
+        struct mo_entry *e = &mo_cache.entries[i];
+        if (!mo_live(e->used, e->at, time) || !same(e->call_id, cid)) continue;
+        if (e->used == 1) {
+            ref = e->reference;
+            matched = 1;
+        }
+        e->used = 0;
+        break;
+    }
+    if (matched) {
+        for (i = 0; i < MO_STAGED; ++i) {
+            struct mo_stage *s = &mo_cache.pending[i];
+            if (mo_live(s->used, s->at, time) && s->engine == engine && s->pdu_id == pdu_id) {
+                slot = s; break;
+            }
+            if (!mo_live(s->used, s->at, time) && !slot) slot = s;
+        }
+        if (slot) {
+            slot->used = 1; slot->engine = engine; slot->pdu_id = pdu_id;
+            slot->reference = ref; slot->at = time;
+            ++mo_cache.popped;
+        } else ++mo_cache.full;
+    }
+    mo_unlock();
+    return pdu_id;
+}
+
+typedef int (*tlv_create_fn)(void *, u32, u32, u32,
+                             u32, u32, const void *,
+                             u32, u32, const void *,
+                             u32, u32, const void *);
+
+/* Telecom-only hook target for 0xdab44 inside ImsEngineSmsMgr::onSmsDeliverySuccess.
+ * Sends stock NOTIFY_SMS_RP_PDU_STATUS (0x1014) first so qct_rrm enters
+ * WAIT_FOR_RP_ACK, then injects NOTIFY_SMS_INCOMING_RP_PDU (0x1015) carrying
+ * 3GPP Network->MS RP-ACK {0x03, rp_mr} (len=2, format=0).
+ */
+__attribute__((visibility("hidden")))
+int sms_mo_send(void *ipc, const u8 *status_buf, u32 status_len, u32 flags) {
+    int (*send_fn)(void *, const void *, u32, u32) =
+        NATIVE(int (*)(void *, const void *, u32, u32), 0x11ec61);
+    int rc = send_fn(ipc, status_buf, status_len, flags);
+    u32 engine, pdu_id, time, i, ref = 0, fmt_3gpp;
+    int found = 0, tlv_len;
+    u8 tlv_buf[64], rp_ack[2], rp_len;
+    if (!ipc || !status_buf) return rc;
+    engine = *(const u32 *)(const void *)(status_buf - 0x14);
+    pdu_id = *(status_buf - 1);
+    if (!now(&time) || !mo_lock()) return rc;
+    for (i = 0; i < MO_STAGED; ++i) {
+        struct mo_stage *s = &mo_cache.pending[i];
+        if (!mo_live(s->used, s->at, time)) continue;
+        if (s->engine == engine && s->pdu_id == pdu_id) {
+            ref = s->reference;
+            s->used = 0;
+            found = 1;
+            break;
+        }
+    }
+    mo_unlock();
+    if (rc != 0 || !found) return rc;
+    zero(tlv_buf, sizeof(tlv_buf));
+    rp_ack[0] = 3u;
+    rp_ack[1] = (u8)ref;
+    rp_len = 2u;
+    fmt_3gpp = 0u;
+    tlv_len = NATIVE(tlv_create_fn, 0x139085)(
+        tlv_buf, sizeof(tlv_buf), 3u, 0x1015u,
+        0x1041u, 2u, rp_ack,
+        0x1042u, 1u, &rp_len,
+        0x1044u, 4u, &fmt_3gpp);
+    if (tlv_len > 0 && (u32)tlv_len <= sizeof(tlv_buf)) {
+        if (send_fn(ipc, tlv_buf, (u32)tlv_len, 0u) == 0) {
+            if (mo_lock()) { ++mo_cache.synthesized; mo_unlock(); }
+        }
+    }
+    return rc;
+}
+
+/* Thumb BL replacements preserve the original arguments, 8-byte stack alignment
+ * and callee-saved registers. Every patched callsite in ims_rrm executes Thumb
+ * BL (not BLX), so every hook entry here must be a .thumb_func; ld.lld inserts
+ * Thumb->ARM interworking on internal bl instructions to C helpers.
  */
 __asm__(
     ".syntax unified\n.thumb\n"
@@ -230,6 +381,22 @@ __asm__(
     "mov r5,r0\n mov r6,r1\n bl sms_native_uri_setter\n"
     "mov r3,r4\n mov r0,r5\n mov r1,r10\n mov r2,r9\n bl sms_correlate\n"
     "pop {r4,r5,r6,pc}\n.fnend\n.size sms_tx_hook,.-sms_tx_hook\n"
+    ".section .text.sms_telecom_tx_hook,\"ax\",%progbits\n"
+    ".global sms_telecom_tx_hook\n.hidden sms_telecom_tx_hook\n.type sms_telecom_tx_hook,%function\n.thumb_func\n"
+    "sms_telecom_tx_hook:\n.fnstart\n.save {r4,r5,r6,lr}\n push {r4,r5,r6,lr}\n"
+    "mov r5,r0\n mov r6,r1\n bl sms_native_uri_setter\n"
+    "mov r3,r4\n mov r0,r5\n mov r1,r10\n mov r2,r9\n bl sms_correlate\n"
+    "mov r3,r4\n mov r0,r5\n mov r1,r10\n mov r2,r9\n bl sms_mo_capture\n"
+    "pop {r4,r5,r6,pc}\n.fnend\n.size sms_telecom_tx_hook,.-sms_telecom_tx_hook\n"
+    ".section .text.sms_mo_pop_hook,\"ax\",%progbits\n"
+    ".global sms_mo_pop_hook\n.hidden sms_mo_pop_hook\n.type sms_mo_pop_hook,%function\n.thumb_func\n"
+    "sms_mo_pop_hook:\n.fnstart\n.save {r4,lr}\n push {r4,lr}\n"
+    ".pad #8\n sub sp,#8\n ldr r4,[sp,#16]\n str r4,[sp,#0]\n"
+    "bl sms_mo_pop\n add sp,#8\n pop {r4,pc}\n.fnend\n.size sms_mo_pop_hook,.-sms_mo_pop_hook\n"
+    ".section .text.sms_mo_send_hook,\"ax\",%progbits\n"
+    ".global sms_mo_send_hook\n.hidden sms_mo_send_hook\n.type sms_mo_send_hook,%function\n.thumb_func\n"
+    "sms_mo_send_hook:\n.fnstart\n.save {r4,lr}\n push {r4,lr}\n"
+    "bl sms_mo_send\n pop {r4,pc}\n.fnend\n.size sms_mo_send_hook,.-sms_mo_send_hook\n"
 );
 
 /* r0/r1 are still the stock setter's arguments at entry to this helper. */

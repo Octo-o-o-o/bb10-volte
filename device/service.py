@@ -39,6 +39,8 @@ VOICE = '/pps/services/carrier_config/radio_common/cellular_protocol_configurati
 CDSC = '/pps/services/cds/cnice/status_persistent'
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
+BB_SERVICE = '/pps/system/navigator/status/bb_service'
+BB_SERVICE_ON = b'[n]dat:json:{"bb_service":{"state":"on"}}\n'
 DOMAIN = 'ims.mnc001.mcc460.3gppnetwork.org'
 UPDATES = {
     VOICE: {'voice_domain_preference_EUTRAN': 'n:3'},
@@ -50,6 +52,7 @@ UPDATES = {
 shutdown = False
 j = None
 child = None
+berry_fd = None
 event_seen = set()
 startup_handoff = {}
 startup_timing = {}
@@ -90,6 +93,69 @@ def live():
             'power': n.value(radio, 'power_status')}
 
 
+def close_berry_indicator():
+    global berry_fd
+    fd, berry_fd = berry_fd, None
+    if fd is not None:
+        try:
+            os.close(fd)
+        except Exception:
+            pass
+
+
+def set_cloexec(fd):
+    import fcntl
+    flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+    fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+
+
+def berry_ready(phase, observation):
+    return (not stopping() and child is not None and child.poll() is None and
+            j is not None and j.get('boot') == boot_token() and j.get('native_pid') == child.pid and
+            phase == 'running' and isinstance(observation, dict) and
+            observation.get('ims') == 'connected' and
+            observation.get('register_status') == '200 OK' and
+            observation.get('ran') in ('LTE', 'lte') and
+            observation.get('radio') == ['lte'] and
+            observation.get('power') == 'ON')
+
+
+def external_berry_active():
+    fd = os.open(BB_SERVICE, os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
+    try:
+        raw = os.read(fd, 4096)
+    finally:
+        os.close(fd)
+    dat = n.value(n.attrs(raw), 'dat')
+    return (isinstance(dat, dict) and isinstance(dat.get('bb_service'), dict) and
+            dat['bb_service'].get('state') == 'on')
+
+
+def sync_berry_indicator(phase, observation):
+    """Hold a QNX ?critical Navigator indicator descriptor only while registered."""
+    global berry_fd
+    try:
+        if not berry_ready(phase, observation):
+            close_berry_indicator()
+            return
+        if berry_fd is not None or not hasattr(os, 'uname') or os.uname()[0] != 'QNX' or external_berry_active():
+            return
+        fd = os.open(BB_SERVICE + '?critical', os.O_WRONLY)
+        try:
+            set_cloexec(fd)
+            if os.write(fd, BB_SERVICE_ON) != len(BB_SERVICE_ON):
+                raise IOError('short_bb_service_write')
+        except Exception:
+            try:
+                os.close(fd)
+            except Exception:
+                pass
+            raise
+        berry_fd = fd
+    except Exception:
+        close_berry_indicator()
+
+
 def status(phase, error=None, details=None, observation=None):
     global last_status_snapshot, last_status_write
     startup_timing.setdefault(phase, time.time())
@@ -102,10 +168,13 @@ def status(phase, error=None, details=None, observation=None):
               and j and j.get('native_pid') else 'system_status_only'}
     if details is not None:
         result['startup_wait'] = details
+    obs = None
     try:
-        result.update(live() if observation is None else observation)
+        obs = live() if observation is None else observation
+        result.update(obs)
     except Exception:
         result['native_status_unavailable'] = True
+    sync_berry_indicator(phase, obs)
     snapshot = dict(result)
     snapshot.pop('at')
     now = result['at']
@@ -373,6 +442,7 @@ def cleanup_vpn():
 
 def stop_native():
     global child
+    close_berry_indicator()
     pid = j.get('native_pid')
     if pid and j.get('boot') == boot_token() and pid in n.ims_pids():
         args = n.command(['/bin/pidin', '-p', str(pid), '-f', 'A']).decode('utf-8', 'replace')
@@ -469,7 +539,10 @@ def configure():
              vpn_before_uids=sorted(x.decode('ascii') for x in n.vpn_ids(n.vpn_configs())))
     save_journal()
     original = n.read('/radio/bin/ims_rrm')
-    changed, patches = temporary_binary(original, True, sms_ack=True)
+    telecom_mo_ack = (network.get('mcc') == '460' and network.get('mnc') in ('03', '11') and
+                      bool(ACTIVE_PROFILE['ims']['sms']))
+    changed, patches = (temporary_binary(original, True, sms_ack=True, telecom_mo_ack=True)
+                        if telecom_mo_ack else temporary_binary(original, True, sms_ack=True))
     write_owned(BIN, changed, 0o755)
     j['binary_patches'] = patches
     write_owned(APN, carrier_xml, 0o644)
@@ -795,6 +868,7 @@ def monitor_native():
             count += 1
         return True
     finally:
+        close_berry_indicator()
         waiter.close()
 
 
@@ -843,6 +917,7 @@ def serve():
             except Exception as cleanup_error:
                 status('cleanup_required', str(cleanup_error))
     finally:
+        close_berry_indicator()
         if os.path.exists(LOCK) and load(LOCK).get('pid') == os.getpid():
             os.unlink(LOCK)
         if os.path.exists(STOP):

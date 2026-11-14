@@ -37,7 +37,8 @@ class LegacyUpgradeCatalogTests(unittest.TestCase):
             return installer.probe()
 
     def test_verified_releases_are_upgradable_only_after_stop(self):
-        expected = {'r44': 'ef9208d0f19624f07d33512394c8337ec55c1072ad52310361e53539183bcd7d',
+        expected = {'r45': '8a101135e33cbe384c6c2c31b935b284e11b6a620ec33f336af4cebb9d805a6d',
+                    'r44': 'ef9208d0f19624f07d33512394c8337ec55c1072ad52310361e53539183bcd7d',
                     'r43': 'eedd9fe6e19b675219040231eb0298d1a8b7da750cfa7153a825843de43b1aff',
                     'r40': '3064c5836cac88a3cf3769e6ca882cd53b40b39a89fd62b30604af70e8bd8128',
                     'r37': '31e49226ef388bb1ba4d0070e78c3a270bdb67428c1f1d688b2a34eb6637deff',

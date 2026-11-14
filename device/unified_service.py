@@ -31,6 +31,7 @@ core_stopping = s.stopping
 core_configure = s.configure
 core_collect = s.collect_vpn_evidence
 core_status = s.status
+core_berry_ready = s.berry_ready
 notification_boot = None
 attention_boot = None
 sim_notice_boot = None
@@ -145,8 +146,18 @@ def setup():
     s.stopping, s.configure = stopping, configure
     s.collect_vpn_evidence = collect
     s.status = status
+    s.berry_ready = berry_ready
     s.live = live
     n.verify_stock = verify_native
+
+
+def berry_ready(phase, observation):
+    if not core_berry_ready(phase, observation):
+        return False
+    token = boot_token(False)
+    return (token is not None and os.path.isfile(BASE + '/enabled') and
+            isinstance(selected, dict) and selected.get('boot') == token and
+            ready_sim_hash(card()) == selected.get('sim_sha256'))
 
 
 def notification_ready(value):
@@ -504,6 +515,7 @@ def handoff():
 
 def restore(previous_boot=False):
     """Keep software crypto registered until the OS clears it on normal reboot."""
+    s.close_berry_indicator()
     assert s.j is not None and s.phone_idle()
     assert s.j['owner'] == 'q10-unicom-volte-v1' and s.j['original_voice_policy'] == 0
     if previous_boot:

@@ -19,11 +19,11 @@ END = '# END GENERATED SMS ACK SHIM\n'
 LINK_SCRIPT = '''ENTRY(sms_anchor)
 SECTIONS {
  . = 0x500000;
- .text : { KEEP(*(.text.anchor)) KEEP(*(.text.sms_rx_hook)) KEEP(*(.text.sms_tx_hook)) *(.text*) *(.rodata*) }
+ .text : { KEEP(*(.text.anchor)) KEEP(*(.text.sms_rx_hook)) KEEP(*(.text.sms_tx_hook)) KEEP(*(.text.sms_telecom_tx_hook)) KEEP(*(.text.sms_mo_pop_hook)) KEEP(*(.text.sms_mo_send_hook)) *(.text*) *(.rodata*) }
  .ARM.extab : { *(.ARM.extab*) }
  .ARM.exidx : { *(.ARM.exidx*) }
  . = 0x4a3000;
- .bss (NOLOAD) : { *(.bss*) *(COMMON) }
+ .bss (NOLOAD) : { KEEP(*(.bss.cache)) *(.bss*) *(COMMON) }
  /DISCARD/ : { *(.comment) *(.note*) }
 }
 '''
@@ -73,9 +73,15 @@ def build(compiler):
         # R_ARM_NONE link markers have no runtime relocation or code address.
         if name and section == 0 and name not in ('__aeabi_unwind_cpp_pr0', '__aeabi_unwind_cpp_pr1'):
             raise AssertionError('Unexpected external symbol: ' + name)
-        if name in ('sms_anchor', 'sms_rx_hook', 'sms_tx_hook', 'sms_capture', 'sms_correlate', 'cache'):
+        if name in ('sms_anchor', 'sms_rx_hook', 'sms_tx_hook', 'sms_telecom_tx_hook',
+                    'sms_mo_pop_hook', 'sms_mo_send_hook', 'sms_capture', 'sms_correlate',
+                    'sms_mo_capture', 'sms_mo_pop', 'sms_mo_send', 'cache', 'mo_cache'):
             exports[name] = value
     assert exports['sms_anchor'] == 0x500001
+    for hook in ('sms_rx_hook', 'sms_tx_hook', 'sms_telecom_tx_hook',
+                 'sms_mo_pop_hook', 'sms_mo_send_hook'):
+        assert exports[hook] & 1 == 1, 'Hook entry must be Thumb: ' + hook
+    assert exports['cache'] == table['.bss'][3], 'cache lock must remain first word of .bss'
     text = table['.text']
     extab = table.get('.ARM.extab')
     code_end = max(text[3] + text[5], (extab[3] + extab[5]) if extab else 0)
@@ -104,7 +110,10 @@ def render(value):
              'SMS_ACK_BSS_SIZE = ' + str(value['bss_size']) + '\n',
              'SMS_ACK_EXIDX_VA = ' + hex(value['exidx_va']) + '\n',
              'SMS_ACK_RX = ' + hex(value['symbols']['sms_rx_hook'] & ~1) + '\n',
-             'SMS_ACK_TX = ' + hex(value['symbols']['sms_tx_hook'] & ~1) + '\n']
+             'SMS_ACK_TX = ' + hex(value['symbols']['sms_tx_hook'] & ~1) + '\n',
+             'SMS_ACK_TELECOM_TX = ' + hex(value['symbols']['sms_telecom_tx_hook'] & ~1) + '\n',
+             'SMS_ACK_MO_POP = ' + hex(value['symbols']['sms_mo_pop_hook'] & ~1) + '\n',
+             'SMS_ACK_MO_SEND = ' + hex(value['symbols']['sms_mo_send_hook'] & ~1) + '\n']
     for name, field in (('SMS_ACK_CODE', 'code_hex'), ('SMS_ACK_EXIDX', 'exidx_hex')):
         lines.append(name + ' = bytes.fromhex(\n')
         lines.extend("    '" + value[field][i:i+96] + "'\n" for i in range(0, len(value[field]), 96))
