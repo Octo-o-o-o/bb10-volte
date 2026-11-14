@@ -18,7 +18,7 @@ import native as n
 import compatibility
 import profiles
 import device_info
-from ims_image import temporary_binary
+from ims_image import mt_voice_binary as temporary_binary
 from radio_api import set_voice_preference
 
 BASE = '/var/rootdata/q10_volte'

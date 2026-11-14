@@ -76,11 +76,13 @@ class ExactClassicNAScope(unittest.TestCase):
         self.assertIn(digest,unified_install.PREVIOUS_PAYLOADS)
         changes={name for name in before['files'] if before['files'][name]!=current['files'][name]}
         self.assertLessEqual(changes,set(unified_install.UPDATE_FILES))
-        self.assertNotIn('device/ims_image.py',changes)
-        # The r36 runtime/lifecycle work legitimately changed this service since r26.
-        # SQC100-3 admission must retain that reviewed parent service exactly.
+        self.assertIn('device/ims_image.py',changes)
+        # r44 retained the reviewed r36 parent service; r45 updates only the MT signaling image/service selection.
         parent=json.loads((ROOT/'materials/unified-payload-r36.json').read_text())
-        self.assertEqual(current['files']['device/unified_service.py'],parent['files']['device/unified_service.py'])
+        r44=json.loads((ROOT/'materials/unified-payload-r44.json').read_text())
+        self.assertEqual(r44['files']['device/unified_service.py'],parent['files']['device/unified_service.py'])
+        r45_changes={name for name in r44['files'] if r44['files'][name]!=current['files'][name]}
+        self.assertEqual(r45_changes,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
 
     def test_other_exact_model_carrier_admission_is_preserved(self):
         self.assertEqual(policy.VALIDATED_MNCS['SQW100-1'],('00','01','07','11'))

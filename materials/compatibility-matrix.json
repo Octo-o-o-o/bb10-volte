@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "as_of": "2026-11-08",
-  "release": "local-preview-sqc1005fix1110",
-  "mobile_version": "0.1.0.44",
+  "release": "v0.5.0-r45",
+  "mobile_version": "0.1.0.45",
   "admission": "All listed model/carrier combinations are open regardless of evidence status. Evidence is historical and version-specific, not new release acceptance.",
   "labels": {
     "passed": {

@@ -612,7 +612,7 @@ def prepare():
     s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, '460', s.ACTIVE_PROFILE['carrier']['mncs'][0])
     save(SELECTION, selected)
     notify_sim_change(previous, snapshot, after_reboot=True)
-    s.temporary_binary = ims_image.mobile_binary if selected['operator'] == 'mobile' else ims_image.temporary_binary
+    s.temporary_binary = ims_image.mt_voice_binary
     # Persist start intent before any modem/provider change. A crash cannot
     # trigger another native IMS attempt during this boot.
     save(ATTEMPT, {'owner': policy.OWNER, 'boot': boot_token(), 'at': time.time()})

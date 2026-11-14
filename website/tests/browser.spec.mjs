@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r44/bb10-volte-0.5.0-r44-windows-x64.exe';
+const windowsFallback = 'https://bb10-downloads.octoooo.com/v0.5.0-r45/bb10-volte-0.5.0-r45-windows-x64.exe';
 
 test('homepage renders real content, image and downloads without script errors', async ({ page }) => {
   const errors = [];
@@ -37,7 +37,7 @@ test('mobile installation guide works without JavaScript on small square screens
   for (const pathname of ['/mobile.html', '/en/mobile.html']) {
     await page.goto(pathname);
     await expect(page.locator('.mobile-nav')).toBeVisible();
-    await expect(page.locator('#release-status')).toContainText('r44');
+    await expect(page.locator('#release-status')).toContainText('r45');
     await page.locator('.mobile-contents a[href="#entry"]').click();
     await expect(page).toHaveURL(/#entry$/);
     await expect(page.locator('#entry-title')).toBeInViewport();
@@ -122,8 +122,8 @@ test('GitHub API failure preserves verified release downloads and star label', a
 });
 
 test('guide updates version, package names and checksum commands together', async ({ page }) => {
-  const tag = 'v0.5.0-r44';
-  const basename = 'bb10-volte-0.5.0-r44';
+  const tag = 'v0.5.0-r45';
+  const basename = 'bb10-volte-0.5.0-r45';
   const macName = 'bb10-volte-0.5.0-r43-macos-universal.dmg';
   const names = [
     `${basename}-windows-x64.exe`, `${basename}-windows-x64.exe.sha256`,

@@ -1,3 +1,7 @@
+# r45 / mobile 0.1.0.45
+
+Unifies incoming-call SIP/SDP signaling across Telecom, Unicom and Mobile (`MediaDialog.EarlySdp=0`, `MediaDialog.Omit200OkSdp=0`) for regional SBC/TAS and ringback platforms where incoming calls drop on ring, callers hear no ringback, or non-100rel / early-`UPDATE` answers omit SDP. Published r42–r44 services upgrade in place after stopping; regional handset confirmation is pending. Mobile is now 0.1.0.45. macOS stays at r43. See the [release notes](RELEASE-r45.en.md).
+
 # r44 / mobile 0.1.0.44
 
 Admitted models can start fresh when no known legacy service remains. Unknown models and legacy leftovers stay blocked, and another model's recovery directory is never reused. Mobile is now 0.1.0.44. macOS stays at r43. See the [release notes](RELEASE-r44.en.md).

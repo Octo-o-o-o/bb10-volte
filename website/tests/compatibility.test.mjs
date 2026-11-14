@@ -29,7 +29,7 @@ test('each exact candidate has standalone bilingual instructions and a complete 
     for (const language of ['zh', 'en']) {
       const text = await readFile(new URL(`../dist/trials/${model.variant}.${language}.txt`, import.meta.url), 'utf8');
       assert.equal(text, instructions(model, language));
-      for (const required of [model.variant, 'r44', '10.3.3.3216', 'Root', 'SSH', 'LTE', 'JSON', 'ZIP', 'IMSI', 'IMEI', 'ICCID']) assert.ok(text.includes(required));
+      for (const required of [model.variant, 'r45', '10.3.3.3216', 'Root', 'SSH', 'LTE', 'JSON', 'ZIP', 'IMSI', 'IMEI', 'ICCID']) assert.ok(text.includes(required));
       assert.match(text, /反馈表|FEEDBACK FORM/);
       assert.match(text, /停用并恢复|Disable and restore/);
       assert.match(text, /已送达|delivered/);

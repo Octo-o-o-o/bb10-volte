@@ -110,15 +110,19 @@ def elf_checks(stock, patched):
 def verify(stock):
     assert hashlib.sha256(stock).hexdigest() == image.STOCK_SHA, 'Unknown stock IMS image'
     defaults = {'mobile': image.mobile_binary(stock, True)[0],
-                'unicom': image.temporary_binary(stock, True)[0]}
+                'unicom': image.temporary_binary(stock, True)[0],
+                'mt_voice': image.mt_voice_binary(stock, True)[0]}
     expected = {'mobile': '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494',
-                'unicom': 'f388a23900d13d92c0390c662fc53e2de6d628bba2174973c0320416022a4438'}
+                'unicom': 'f388a23900d13d92c0390c662fc53e2de6d628bba2174973c0320416022a4438',
+                'mt_voice': '7479b023d634c1afddd46203251ec7613ab5170d8ea22d6e321c7dd7fc3e7411'}
     assert {key: hashlib.sha256(raw).hexdigest() for key, raw in defaults.items()} == expected
-    images = {'mobile': image.mobile_binary(stock, True, sms_ack=True)[0],
-              'unicom': image.temporary_binary(stock, True, sms_ack=True)[0]}
-    images['telecom'] = images['unicom']
-    checks = elf_checks(stock, images['unicom'])
-    elf_checks(stock, images['mobile'])
+    legacy_unicom = image.temporary_binary(stock, True, sms_ack=True)[0]
+    legacy_mobile = image.mobile_binary(stock, True, sms_ack=True)[0]
+    unified_mt = image.mt_voice_binary(stock, True, sms_ack=True)[0]
+    elf_checks(stock, legacy_unicom)
+    elf_checks(stock, legacy_mobile)
+    checks = elf_checks(stock, unified_mt)
+    images = {'mobile': unified_mt, 'unicom': unified_mt, 'telecom': unified_mt}
     matrix = []
     for variant, (family, board) in carrier_policy.MODELS.items():
         for mnc in carrier_policy.CARRIERS:

@@ -1,0 +1,10 @@
+# Desktop r45 / mobile 0.1.0.45: cross-region incoming-call SIP/SDP compatibility
+
+2026-11-14. macOS remains at **v0.5.0-r43**. This release has no new Mac package.
+
+- Unifies incoming-call SIP/SDP signaling across China Telecom, China Unicom and China Mobile in the temporary IMS runtime copy. `MediaDialog.EarlySdp` is now `0` for all three carriers so `180 Ringing` no longer re-sends SDP already negotiated in `183 Session Progress` or attaches unreliable preview SDP. This avoids immediate call cancellation on regional ZTE SBC/TAS nodes and silent caller ringback on provincial CAT AS (ringback tone) / SBC deployments when `180 Ringing` combines SDP with `P-Early-Media: inactive`.
+- Sets `MediaDialog.Omit200OkSdp` to `0` so `200 OK (INVITE)` keeps its mandatory RFC 3261 `application/sdp` answer whenever the incoming offer was not already answered in a reliable `18x` (`100rel`), including non-precondition interworking calls and early-dialog `UPDATE` flows. Standard precondition calls (`SDPState 0xd`) still take the existing empty-`200 OK` path unchanged.
+- Stock `/radio/bin/ims_rrm` remains untouched; only the hash-pinned temporary copy is modified and checked with offline ARM/Thumb instruction emulation. Published r42/r43/r44 service payloads remain eligible for checked in-place upgrade after stopping VoLTE, keeping existing backups and restoration intact.
+- **A phone that is already working does not need another firmware flash or a new Root.** If incoming calls in another province drop on ring, have silent ringback for the caller, or fail on answer, install mobile **0.1.0.45** (or update via Windows **r45**), stop the running VoLTE service in the app, apply the service update, and perform a normal restart before testing.
+
+This release is verified by offline native ARM/Thumb emulation and regression tests; regional field confirmation is still pending and is not claimed as hardware-accepted in advance. Historical per-device evidence and the known Telecom outgoing-SMS status issue remain unchanged. The Windows EXE still has no Authenticode publisher signature.

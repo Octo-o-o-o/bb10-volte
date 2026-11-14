@@ -30,6 +30,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r44/mobile44 before cross-carrier MT EarlySdp/Omit200OkSdp fix.
+                    'ef9208d0f19624f07d33512394c8337ec55c1072ad52310361e53539183bcd7d',
                     # r42/r43 shared backend before fresh-model migration fix.
                     'eedd9fe6e19b675219040231eb0298d1a8b7da750cfa7153a825843de43b1aff',
                     # r41/mobile42 before evidence-independent model admission.
