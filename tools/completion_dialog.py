@@ -79,7 +79,7 @@ class CompletionDialog(tk.Toplevel):
         self.coffee_button.pack(anchor='w')
         self.payment = tk.Frame(coffee, bg='white')
         self.build_payment()
-        self.label(coffee, tr('打赏完全自愿，金额随心；不影响任何功能。'),
+        self.label(coffee, tr('个人非商业使用免费，打赏完全自愿；商业用途须联系开发者获取付费授权（打赏不构成商业授权）。'),
                    color=MUTED, wrap=True).pack(anchor='w', pady=(12, 0))
 
         other_support = tk.Frame(self.content, bg=BG)

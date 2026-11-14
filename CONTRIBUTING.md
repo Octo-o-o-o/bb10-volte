@@ -23,4 +23,6 @@ Do not attach `private/`, Root images, SSH keys, raw SIP traces, phone numbers, 
 5. Keep public additions in the explicit allowlist in `tools/check_release.py`. Stage them, then run `python tools/check_release.py --check-git` before committing.
 6. Describe what changed, why, the validation performed and the remaining hardware limitations in the pull request.
 
-Contributions to original project code and documentation use the existing [MIT License](LICENSE). Retain third-party attribution; do not add proprietary firmware or device-specific credentials to the repository.
+Contributions to original project code and documentation are distributed to the public under the [PolyForm Noncommercial License 1.0.0](LICENSE). By submitting a pull request or contribution, you represent that you have the right to grant — and hereby grant to OctoLab — a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright and patent license (with the right to sublicense under both noncommercial and paid commercial terms) to use, modify, reproduce, and distribute your contribution as part of this project. Retain third-party attribution; do not add proprietary firmware or device-specific credentials to the repository.
+
+向本项目提交 PR 或代码/文档贡献，即表示你有权并同意授予项目维护者（OctoLab）永久、全球、非排他、免费、不可撤销的著作权与专利许可（含在非商业公开协议及独立付费商业授权下再许可的权利），以便项目统一维护与授权。请保留第三方署名，勿在仓库中加入专有原厂固件或设备专属凭据。

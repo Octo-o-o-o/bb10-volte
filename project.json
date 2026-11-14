@@ -6,6 +6,6 @@
   "management_protocol": 2,
   "state": "experimental_public_release",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scope": "All 16 catalog entries admit Mobile 460-00/07, Unicom 460-01 and Telecom 460-11 regardless of evidence status. Root, OS 10.3.3.3216, native ABI hashes, SIM identity, backup and recovery requirements remain. r46/mobile 0.1.0.46 fixes the China Telecom (460-03/460-11) outbound SMS-over-IMS local Sending... stall via telecom_mo_ack (local 3GPP RP-ACK completion after SIP 202 Accepted + 0x1014 IPC delivery) and automatically displays the system BlackBerry status-bar indicator (/pps/system/navigator/status/bb_service?critical) while VoLTE is actively registered on LTE in the current boot, clearing it immediately on registration loss, Airplane Mode, RAT fallback, stop, restore or process exit while preserving external BlackBerry Infrastructure state and all r45 cross-carrier incoming-call SIP/SDP signaling fixes. Verified on SQC100-2 (Telecom 460-11); previously published r42/r43/r44/r45 service payloads remain eligible for checked in-place upgrade after stopping VoLTE. Historical tested, untested and known-issue results stay version-specific; regional incoming-call compatibility awaits broader field feedback. macOS remains the frozen r43 build."
 }

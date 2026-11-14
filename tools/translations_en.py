@@ -417,7 +417,7 @@ ENGLISH = {
     '使用与恢复指南': 'Usage and recovery guide',
     '\n\n适用于 BlackBerry 10 设备。当前实机记录：Q10 SQN100-3 / BB10 10.3.3.3216 / 北京联通。\n其他设备与运营商需逐台验证。\n\n': '\n\nFor BlackBerry 10 devices. Current hardware record: Q10 SQN100-3 / BB10 10.3.3.3216 / China Unicom in Beijing.\nOther devices and carriers require individual validation.\n\n',
     ' · 桌面修订 ': ' · Desktop revision ',
-    '关于与开源许可': 'About and open-source licenses',
+    '关于与软件许可': 'About and software licenses',
     '操作进行中': 'Operation in progress',
     '请等待本次有界操作结束。强行退出不能撤销已经写入手机的步骤。': 'Wait for the current operation to finish. Forcing the app to quit cannot undo steps already written to the phone.',
     # diagnostic_details
@@ -994,7 +994,7 @@ ENGLISH.update({
     '请开发者喝杯咖啡': 'Buy the developer a coffee',
     '为了让这些老黑莓重新打上电话，我花了不少 Token，也熬了几个晚上。\n如果它帮到了你，愿意请我喝杯咖啡吗？随意就好，能让老手机继续陪伴你，我已经很开心。': 'Bringing calls back to these old BlackBerrys took plenty of AI tokens and several late nights.\nIf this helped you, would you like to buy me a coffee? No pressure. Seeing your old phone stay by your side already makes me happy.',
     '我想请你喝杯咖啡': 'I would like to buy you a coffee',
-    '打赏完全自愿，金额随心；不影响任何功能。': 'Entirely optional, at any amount. All features remain available.',
+    '个人非商业使用免费，打赏完全自愿；商业用途须联系开发者获取付费授权（打赏不构成商业授权）。': 'Free for personal noncommercial use; tips are optional and do not grant a commercial license (commercial use requires paid authorization).',
     '在 GitHub 点一颗 Star': 'Give the project a star on GitHub',
     '让更多老黑莓爱好者，\n发现它还能继续发光。': 'Help other BlackBerry fans discover\nwhat their old phones can still do.',
     '去 GitHub 加星': 'Star on GitHub',

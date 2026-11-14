@@ -50,7 +50,7 @@ Navigator dots are retained as an optional feature candidate. No monitor or Navi
 
 Upstream NOTICE states that no project-wide license has been chosen and the archive includes other contributors' material. The author explicitly permitted reuse in an [issue reply](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472554806); upstream has not added a project-wide license and separate contributor permissions remain unconfirmed. Our [confirmation request](https://github.com/Octo-o-o-o/bb10-volte/issues/1#issuecomment-6472384217) records questions about reusable files, licensing terms and contributed-material permissions.
 
-New code here is written for this project; evidence entries are independently summarized facts and source links. Upstream materials are not relicensed as MIT or redistributed. Any later code/binary reuse must retain the confirmed licenses, notices and attribution. Both READMEs acknowledge the project at the bottom.
+New code here is written for this project; evidence entries are independently summarized facts and source links. Upstream materials are not relicensed under this project's license or redistributed. Any later code/binary reuse must retain the confirmed licenses, notices and attribution. Both READMEs acknowledge the project at the bottom.
 
 ## Author clarification and autostart restriction
 

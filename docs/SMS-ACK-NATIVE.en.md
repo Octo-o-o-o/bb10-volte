@@ -39,7 +39,7 @@ Different Call-ID, gateway or RPDU for a live reference marks it ambiguous, incl
 
 ## ABI and ELF boundaries
 
-[device/ims_image.py](../device/ims_image.py) modifies only a hash-verified temporary copy. The shim is independently written MIT code; proprietary firmware is not distributed.
+[device/ims_image.py](../device/ims_image.py) modifies only a hash-verified temporary copy. The shim is independently written first-party code under [LICENSE](../LICENSE); proprietary firmware is not distributed.
 
 - RX hook `0x2eeff2`: replace `29 f7 51 f8` (`BL 0x218098`), capture, return the original `message + 0x20` body getter result.
 - TX hook `0x2ee3c6`: replace `c7 f6 c5 fc` (`BL 0x1b5d54`), run the original URI setter, then attempt correlation. r4–r11 and stack alignment are preserved.

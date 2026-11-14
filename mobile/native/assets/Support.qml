@@ -165,7 +165,7 @@ Page {
             }
             Label {
                 topMargin: 24
-                text: "BB10 VoLTE · " + volteController.version + " · MIT"
+                text: "BB10 VoLTE · " + volteController.version + " · PolyForm Noncommercial"
                 textStyle.fontSize: FontSize.Small
                 textStyle.color: Color.create("#627169")
                 textFormat: TextFormat.Plain

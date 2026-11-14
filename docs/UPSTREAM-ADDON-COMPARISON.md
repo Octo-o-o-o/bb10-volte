@@ -47,4 +47,4 @@
 
 ## 来源与许可
 
-上游 [README](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/README.md) 与 [LICENSE](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/LICENSE) 声明 GPL-3.0。本项目本次只归档自行整理的事实和来源链接，没有导入上游代码、XML、二进制或发行 ZIP，也未将上游材料重新声明为 MIT。后续如需代码复用或分发，须单独核对许可与第三方材料来源。
+上游 [README](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/README.md) 与 [LICENSE](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/LICENSE) 声明 GPL-3.0。本项目本次只归档自行整理的事实和来源链接，没有导入上游代码、XML、二进制或发行 ZIP，也未将上游材料重新声明为本项目许可证。后续如需代码复用或分发，须单独核对许可与第三方材料来源。

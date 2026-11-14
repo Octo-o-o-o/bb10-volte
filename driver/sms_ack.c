@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT
+/* SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
  * Correlate raw 3GPP MT reports in the hash-pinned BB10 10.3.3.3216 IMS image,
  * and synthesize local 3GPP MO RP-ACK after SIP 2xx on China Telecom (460-03/11)
  * where the IP-SM-GW returns 202 Accepted without a downstream SIP RP-ACK.

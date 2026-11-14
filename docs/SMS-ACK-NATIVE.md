@@ -45,7 +45,7 @@
 
 ## 二进制与 ABI 边界
 
-[device/ims_image.py](../device/ims_image.py) 仍从 SHA-256 受校验的原生文件构造临时副本。新增代码是本项目独立编写的 MIT 实现，没有在仓库中分发原厂固件或复制其他项目的 GPL 实现。
+[device/ims_image.py](../device/ims_image.py) 仍从 SHA-256 受校验的原生文件构造临时副本。新增代码是本项目独立编写的实现（按 [LICENSE](../LICENSE) 授权），没有在仓库中分发原厂固件或复制其他项目的 GPL 实现。
 
 - 接收 hook：`0x2eeff2` 原指令 `29 f7 51 f8`，即 `BL 0x218098`。保存寄存器、捕获上下文，返回原 getter 的 `message + 0x20`。
 - 报告 hook：`0x2ee3c6` 原指令 `c7 f6 c5 fc`，即 `BL 0x1b5d54`。先执行原 URI setter，再尝试补齐关联；保留 r4–r11 与栈对齐。

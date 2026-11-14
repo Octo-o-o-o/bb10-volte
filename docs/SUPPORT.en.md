@@ -13,7 +13,7 @@ The primary action is “Done. Enjoy my BlackBerry”. Secondary, optional actio
 
 The fixed footer includes a “Made by OctoLab” link to the [OctoLab website](https://octoooo.com/).
 
-There is no payment requirement, payment tracking, automatic charge or automatic star. Close, Escape and Done always dismiss the page. After completion, “More → Completion and support” reopens it during the current app session.
+Personal noncommercial use has no payment requirement, payment tracking, automatic charge or automatic star; voluntary coffee tips are personal appreciation only and do not grant a commercial license (commercial use requires a separate paid license via `octoooo@octoooo.com`). Close, Escape and Done always dismiss the page. After completion, “More → Completion and support” reopens it during the current app session.
 
 ## Receipt images
 

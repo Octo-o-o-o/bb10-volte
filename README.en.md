@@ -100,13 +100,15 @@ Source execution requires Python 3.14 with Tk. The original `/radio/bin/ims_rrm`
 
 Software tests, frozen-package checks, signatures/notarization and actual phone calls are separate evidence. Public packages use an explicit allowlist and privacy scan, excluding keys, raw communications logs, numbers and device identifiers. The bilingual website and its tests are included; see [website/README](website/README.md).
 
-[Windows](docs/WINDOWS-EXE.en.md) · [macOS](docs/MACOS.en.md) · [Build](docs/BUILD.en.md) · [Automatic carriers](docs/AUTO-CARRIERS.en.md) · [Contributing](CONTRIBUTING.md) · [MIT license](LICENSE)
+[Windows](docs/WINDOWS-EXE.en.md) · [macOS](docs/MACOS.en.md) · [Build](docs/BUILD.en.md) · [Automatic carriers](docs/AUTO-CARRIERS.en.md) · [Contributing](CONTRIBUTING.md) · [Noncommercial license / Commercial paid](LICENSE)
 
 Historical single-carrier restrictions remain in dated records; they do not replace the current unified workflow scope above. Share exact-model, redacted results in [Issues](https://github.com/Octo-o-o-o/bb10-volte/issues). Do not upload private keys, private directories or raw number logs.
 
-## Sharing and support
+## License and support
 
-After installation and verified registration, the completion page offers localized sharing, a GitHub Star link and optional coffee support. Sharing copies a message and the project website URL; you choose where to send it. Alipay and WeChat offer CNY 9.90 / 19.90 / 29.90 / a custom amount. All features remain available without contributing. See [Completion and support](docs/SUPPORT.en.md).
+This project is licensed under the **[PolyForm Noncommercial License 1.0.0](LICENSE) (free noncommercial + paid commercial dual licensing)**: personal use, hobbyist experimentation, unpaid community sharing, academic research, educational and charitable noncommercial uses are **completely free**. Any commercial or for-profit use — including **paid flashing, installation, activation or support services, selling phones pre-installed or bundled with this software, or paid redistribution** — requires a separate prior paid commercial license from OctoLab via `octoooo@octoooo.com`.
+
+After installation and verified registration, the completion page offers localized sharing, a GitHub Star link and optional coffee support. Sharing copies a message and the project website URL; you choose where to send it. Alipay and WeChat offer CNY 9.90 / 19.90 / 29.90 / a custom amount. Personal noncommercial use never requires payment; voluntary coffee tips are personal appreciation only and **do not grant a commercial license**. See [Completion and support](docs/SUPPORT.en.md).
 
 Public packages contain the program, sanitized evidence and explicit public assets. They exclude SSH private keys, raw device logs, personal phone numbers, original payment screenshots and stock firmware. Public receipt codes use the OctoLab icon and preserve their payment destination. Check the recipient and amount in your payment app.
 

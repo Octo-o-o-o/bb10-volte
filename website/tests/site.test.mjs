@@ -313,3 +313,14 @@ test('mobile guides describe optional call records and unfinished tasks', () => 
   assert.match(english, /automatic service starts with the phone/);
   assert.match(english, /when a task is unfinished, check and continue it/);
 });
+
+test('all pages declare PolyForm Noncommercial and paid commercial licensing without stale MIT claims', () => {
+  for (const [page, source] of Object.entries(html)) {
+    assert.doesNotMatch(source, /\bMIT\b/, `${page}: stale MIT license claim`);
+    if (!page.endsWith('404.html')) {
+      assert.match(source, /PolyForm Noncommercial/, `${page}: missing PolyForm Noncommercial declaration`);
+    }
+  }
+  assert.match(html['index.html'], /octoooo@octoooo\.com/);
+  assert.match(html['en/index.html'], /octoooo@octoooo\.com/);
+});

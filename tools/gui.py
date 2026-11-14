@@ -237,7 +237,7 @@ class App:
             tr('社区研究与适配进展'), ROOT / 'docs/COMMUNITY-RESEARCH.md'))
         self.completion_index = self.menu.index('end') + 1
         self.menu.add_command(label=tr('完成与支持'), command=self.show_completion, state='disabled')
-        self.menu.add_command(label=tr('关于与开源许可'), command=self.licenses)
+        self.menu.add_command(label=tr('关于与软件许可'), command=self.licenses)
         self.device_label = self.label(main, tr('BlackBerry 10 设备 · 等待连接'), 11, MUTED, anchor='w')
         self.device_label.pack(fill='x', pady=(5, 22))
         self.trial_notice = self.label(main, '', 11, AMBER, wraplength=950, justify='left')
@@ -998,7 +998,7 @@ class App:
         intro = ('bb10-volte ' + project['version'] + tr(' · 桌面修订 ') + str(project.get('desktop_revision', 1)) + tr('\n\n'
                  '适用于 BlackBerry 10 设备。当前实机记录：Q10 SQN100-3 / BB10 10.3.3.3216 / 北京联通。\n'
                  '其他设备与运营商需逐台验证。\n\n'))
-        self.show_document(tr('关于与开源许可'), path if path.is_file() else ROOT / 'NOTICE.md', intro)
+        self.show_document(tr('关于与软件许可'), path if path.is_file() else ROOT / 'NOTICE.md', intro)
 
     def show_document(self, title, path, intro=''):
         popup = tk.Toplevel(self.root)

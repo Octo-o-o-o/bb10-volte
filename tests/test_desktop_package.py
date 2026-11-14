@@ -172,6 +172,24 @@ class DesktopPackageTests(unittest.TestCase):
                          w.profiles.fingerprint(w.profiles.request(w.profiles.default(), False)))
         self.assertEqual(profile_editor.stored_label('Custom BB10 carrier', original), 'Custom BB10 carrier')
 
+    def test_project_license_enforces_noncommercial_and_commercial_dual_terms(self):
+        repo = Path(__file__).resolve().parents[1]
+        project = json.loads((repo / 'project.json').read_text(encoding='utf-8'))
+        self.assertEqual(project['license'], 'PolyForm-Noncommercial-1.0.0')
+        license_text = (repo / 'LICENSE').read_text(encoding='utf-8')
+        self.assertIn('# PolyForm Noncommercial License 1.0.0', license_text)
+        self.assertIn('<https://polyformproject.org/licenses/noncommercial/1.0.0>', license_text)
+        self.assertIn('Required Notice: Copyright (c) 2026 OctoLab', license_text)
+        self.assertIn('octoooo@octoooo.com', license_text)
+        self.assertNotIn('MIT License', license_text)
+        for rel in ('NOTICE.md', 'CONTRIBUTING.md', 'README.md', 'README.en.md'):
+            text = (repo / rel).read_text(encoding='utf-8')
+            self.assertIn('PolyForm Noncommercial License 1.0.0', text, rel)
+            self.assertNotIn('MIT License', text, rel)
+        support_qml = (repo / 'mobile/native/assets/Support.qml').read_text(encoding='utf-8')
+        self.assertIn('PolyForm Noncommercial', support_qml)
+        self.assertNotIn('· MIT"', support_qml)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -47,4 +47,4 @@ See the [design](DESIGN.md) for the existing Q10 patch scope, recovery journal a
 
 ## Attribution and license
 
-Upstream [README](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/README.md) and [LICENSE](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/LICENSE) declare GPL-3.0. This change records independently summarized facts and source links. No upstream source, carrier XML, binary or release ZIP was imported or relicensed as MIT. Any later code reuse or distribution needs a separate review of licensing and third-party provenance.
+Upstream [README](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/README.md) and [LICENSE](https://github.com/bb10root/bb10-volte/blob/8ac271b5b1170ae98c60dd248dc5c4485edf95f3/LICENSE) declare GPL-3.0. This change records independently summarized facts and source links. No upstream source, carrier XML, binary or release ZIP was imported or relicensed under this project's license. Any later code reuse or distribution needs a separate review of licensing and third-party provenance.
