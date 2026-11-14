@@ -28,10 +28,10 @@ A few BB10 phones lose apps or data and show a blue notification LED after a nor
 
 ## BlackBerry Passport on Android 11 (LineageOS 18.1)
 
-This repository (`bb10-volte`) targets stock **BlackBerry 10 (`OS 10.3.3.3216` / QNX)** only (SSH/BAR installer + `/radio/bin/ims_rrm` runtime). If your BlackBerry Passport has been flashed to **Android 11 (LineageOS 18.1)**, use our dedicated sister project instead:
+This repository (`bb10-volte`) targets stock **BlackBerry 10 (`OS 10.3.3.3216` / QNX)** only (SSH/BAR installer + `/radio/bin/ims_rrm` runtime). If your BlackBerry Passport has been flashed to **Android 11 (LineageOS 18.1)**, use our dedicated 32-bit Qualcomm Android 11 VoLTE/IMS stack sister project (`qcom32-volte`, with Passport `wolverine` as its first verified device profile):
 
-- Official website & direct downloads: [passport-volte.octoooo.com](https://passport-volte.octoooo.com/en/)
-- GitHub repository: [Octo-o-o-o/passport-android11-volte](https://github.com/Octo-o-o-o/passport-android11-volte)
+- Official website & direct downloads: [qcom32-volte.octoooo.com](https://qcom32-volte.octoooo.com/en/)
+- GitHub repository: [Octo-o-o-o/qcom32-volte](https://github.com/Octo-o-o-o/qcom32-volte)
 
 ## Downloads
 

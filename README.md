@@ -26,12 +26,12 @@
 
 少数 BB10 手机正常重启后会丢失应用或数据，并出现蓝色通知灯；这是手机系统/数据分区的历史问题，不是 VoLTE 激活造成的。历史修复工具、校验值和两台 Q10 的实测记录整理在 [bb10-blue-led-recovery](https://github.com/Octo-o-o-o/bb10-blue-led-recovery)。修复后请自己新建测试文件并正常重启确认，不能只凭工具提示“Fixed”就认为已经通过。
 
-## 已刷 Android 11 的黑莓 Passport
+## 已刷 Android 11 的黑莓 Passport（及高通 32 位 Android 11 平台）
 
-本仓库（`bb10-volte`）仅针对原装 **BlackBerry 10（OS 10.3.3.3216 / QNX）** 系统（SSH/BAR 安装器 + `/radio/bin/ims_rrm` 运行时）。如果你的黑莓 Passport 已刷入 **Android 11（LineageOS 18.1）**，架构、传输通道和用户态 IMS 栈均完全不同，请使用独立发布的姊妹项目：
+本仓库（`bb10-volte`）仅针对原装 **BlackBerry 10（OS 10.3.3.3216 / QNX）** 系统（SSH/BAR 安装器 + `/radio/bin/ims_rrm` 运行时）。如果你的黑莓 Passport 已刷入 **Android 11（LineageOS 18.1）**，架构、传输通道和用户态 IMS 栈均完全不同，请使用独立发布的高通 32 位 Android 11 原生 VoLTE/IMS 通话栈姊妹项目（首个已验证设备 Profile 即为 Passport `wolverine`）：
 
-- 项目官网与直接下载：[passport-volte.octoooo.com](https://passport-volte.octoooo.com/)
-- GitHub 开源仓库：[Octo-o-o-o/passport-android11-volte](https://github.com/Octo-o-o-o/passport-android11-volte)
+- 项目官网与直接下载：[qcom32-volte.octoooo.com](https://qcom32-volte.octoooo.com/)
+- GitHub 开源仓库：[Octo-o-o-o/qcom32-volte](https://github.com/Octo-o-o-o/qcom32-volte)
 
 ## 下载
 
