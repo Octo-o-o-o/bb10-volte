@@ -1,6 +1,7 @@
 """Regression tests for r48 / mobile 0.1.0.48 full-project hardening."""
 import builtins
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -241,7 +242,7 @@ class R48HardeningTests(unittest.TestCase):
 
     def test_entry_rejects_corrupt_deflate_and_worker_surfaces_specific_sim_diagnosis(self):
         with tempfile.TemporaryDirectory() as tmp:
-            bad_zip = Path(tmp) / 'corrupt.zip'
+            bad_zip = Path(os.path.realpath(tmp)) / 'corrupt.zip'
             with zipfile.ZipFile(bad_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
                 zf.writestr('manifest.json', b'{"hello": "world"}' * 20)
                 zf.writestr('manifest.sig.json', b'{"sig": "abc"}' * 10)
@@ -252,7 +253,7 @@ class R48HardeningTests(unittest.TestCase):
             raw[idx + 1] ^= 0xff
             bad_zip.write_bytes(bytes(raw))
             with self.assertRaises(mobile_entry.MobileError) as ctx:
-                mobile_entry.read_archive(str(bad_zip))
+                mobile_entry.read_archive(os.path.realpath(str(bad_zip)))
             self.assertEqual(str(ctx.exception), 'invalid_zip_archive')
 
         fake_manager = MagicMock()
