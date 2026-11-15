@@ -351,7 +351,21 @@ def prepare_activation_network(job, manager):
         # Durable intent also covers a lost acknowledgement or worker exit:
         # retry reads ON and rechecks SIM admission without another ON request.
         progress(job, 'enabling_mobile_network', mobile_network_requested=True)
-        result = manager.manage('prepare-network', operation_id=job['id'])
+        try:
+            result = manager.manage('prepare-network', operation_id=job['id'])
+        except Exception as error:
+            if str(error) in ('china_broadnet_unsupported', 'sim_route_unsupported',
+                              'downloaded_carrier_config_present', 'carrier_not_validated'):
+                base = getattr(manager, 'BASE', None)
+                job['resumable_failure'] = isinstance(base, str) and os.path.isfile(base + '/install-pending.json')
+                try:
+                    sim = manager.u.card()
+                    mcc, mnc = sim.get('mcc'), sim.get('mnc')
+                    if isinstance(mcc, str) and isinstance(mnc, str) and re.match(r'\A[0-9]{3}\Z', mcc) and re.match(r'\A[0-9]{2,3}\Z', mnc):
+                        job['public_result'] = {'sim_plmn': mcc + '-' + mnc}
+                except Exception:
+                    pass
+            raise
         e.require(mobile_radio_state() == 'ON', 'mobile_network_enable_unconfirmed')
         progress(job, 'mobile_network_ready', mobile_network=result.get('mobile_network'))
 
@@ -768,8 +782,11 @@ def diagnostic_job_summary(expected_job=None):
                       'mobile_network_enable_unconfirmed', 'mobile_network_state_unknown',
                       'mobile_network_enable_blocked', 'mobile_network_write_failed',
                       'call_active', 'operation_in_progress', 'state_persistence_unconfirmed',
-                      'update_version_mismatch', 'package_changed', 'rollback_component_too_old', 'backup_location_unavailable',
-                      'backup_readback_failed', 'preflight_or_recovery_check_failed')
+                      'update_version_mismatch', 'package_changed', 'invalid_zip_archive',
+                      'rollback_component_too_old', 'backup_location_unavailable',
+                      'backup_readback_failed', 'china_broadnet_unsupported', 'sim_route_unsupported',
+                      'downloaded_carrier_config_present', 'carrier_not_validated',
+                      'preflight_or_recovery_check_failed')
             if job.get('phase') is not None:
                 summary['phase'] = job['phase'] if job['phase'] in phases else 'other'
             if job.get('error_code'):
@@ -829,6 +846,18 @@ def job_response(job, request):
     if resume and job['state'] == 'failed':
         state = 'recovery_required'
     action = 'poll' if job['state'] in ('queued', 'running', 'waiting_reboot') else 'resume' if resume else 'status'
+    sim_errors = ('china_broadnet_unsupported', 'sim_route_unsupported',
+                  'downloaded_carrier_config_present', 'carrier_not_validated')
+    if job['state'] == 'failed' and job.get('error_code') in sim_errors:
+        public = dict(job.get('public_result') or {})
+        result = sim_unsupported_ui({'sim_reason': job['error_code'], 'sim_plmn': public.get('sim_plmn')},
+                                    request.get('language'), public, actions=[action, 'export', 'compatibility'])
+        result.update(ok=False, state=state, primary_action=action, job_id=job['id'], job=public_job(job))
+        if action == 'resume':
+            for lang, label in (('zh', '继续当前任务'), ('en', 'Continue task')):
+                result['display_i18n'][lang]['primary_label'] = label
+            result['display']['primary_label'] = result['display_i18n'][result['display_language']]['primary_label']
+        return result
     display_state = 'task_mobile_network_off' if resume and job['state'] == 'failed' and job.get('error_code') == 'mobile_network_off' else state
     if resume and job['state'] == 'failed' and job.get('error_code', '').startswith('mobile_network_') and job.get('error_code') != 'mobile_network_off':
         display_state = 'task_mobile_network_enable_failed'
@@ -985,8 +1014,11 @@ def profile_for(request, folder):
 
 def validate_legacy_target(profile, facts, action, folder):
     import profiles
+    import carrier_policy
     target = profiles.trial_target(profile)
     if target is None:
+        if action in ('legacy-stop', 'legacy-uninstall') and facts.get('variant') in carrier_policy.MODELS:
+            return
         # Generic historic profiles must not bypass exact trial identities or
         # the two extra native-image gates on newly exposed variants.
         e.require(facts.get('variant') in ('SQN100-3', 'SQC100-2', 'SQW100-4'),

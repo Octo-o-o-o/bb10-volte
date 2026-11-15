@@ -19,6 +19,7 @@ import stat
 import struct
 import subprocess
 import zipfile
+import zlib
 
 RELEASE_KEY = None  # substituted by tools/package_mobile.py
 RELEASE_VERSION = None  # substituted by tools/package_mobile.py
@@ -202,33 +203,36 @@ def read_archive(path, key=None, expected_sha256=None):
                 'invalid_update_expectation')
         require(digest(data) == expected_sha256, 'package_changed')
     bounded_directory(data)
-    with io.BytesIO(data) as stream:
-        with zipfile.ZipFile(stream) as archive:
-            members = archive.infolist()
-            require(len(members) <= MAX_MEMBERS + 2, 'too_many_members')
-            names = [item.filename for item in members]
-            require(len(set(names)) == len(names), 'duplicate_member')
-            require('manifest.json' in names and 'manifest.sig.json' in names, 'incomplete_package')
-            for item in members:
-                require(item.filename in ('manifest.json', 'manifest.sig.json') or valid_name(item.filename),
-                        'invalid_member')
-                mode = item.external_attr >> 16
-                require(not stat.S_ISLNK(mode) and (stat.S_IFMT(mode) in (0, stat.S_IFREG)), 'unsafe_member')
-                limit = 131072 if item.filename == 'manifest.json' else 4096 if item.filename == 'manifest.sig.json' else MAX_FILE
-                require(0 <= item.file_size <= limit and item.flag_bits & 1 == 0, 'invalid_member_size')
-                require(item.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED), 'unsupported_compression')
-            require(sum(item.file_size for item in members) <= MAX_TOTAL + 135168, 'package_too_large')
-            raw = bounded_member(archive, 'manifest.json', 131072)
-            signature = bounded_member(archive, 'manifest.sig.json', 4096)
-            manifest = validate_manifest(raw, signature, key)
-            require(set(names) == set(manifest['files']) | {'manifest.json', 'manifest.sig.json'}, 'unexpected_member')
-            blobs = {}
-            for name, item in manifest['files'].items():
-                require(archive.getinfo(name).file_size == item['size'], 'package_changed')
-                blob = bounded_member(archive, name, item['size'])
-                require(len(blob) == item['size'] and digest(blob) == item['sha256'], 'package_changed')
-                blobs[name] = blob
-                bridge_progress()
+    try:
+        with io.BytesIO(data) as stream:
+            with zipfile.ZipFile(stream) as archive:
+                members = archive.infolist()
+                require(len(members) <= MAX_MEMBERS + 2, 'too_many_members')
+                names = [item.filename for item in members]
+                require(len(set(names)) == len(names), 'duplicate_member')
+                require('manifest.json' in names and 'manifest.sig.json' in names, 'incomplete_package')
+                for item in members:
+                    require(item.filename in ('manifest.json', 'manifest.sig.json') or valid_name(item.filename),
+                            'invalid_member')
+                    mode = item.external_attr >> 16
+                    require(not stat.S_ISLNK(mode) and (stat.S_IFMT(mode) in (0, stat.S_IFREG)), 'unsafe_member')
+                    limit = 131072 if item.filename == 'manifest.json' else 4096 if item.filename == 'manifest.sig.json' else MAX_FILE
+                    require(0 <= item.file_size <= limit and item.flag_bits & 1 == 0, 'invalid_member_size')
+                    require(item.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED), 'unsupported_compression')
+                require(sum(item.file_size for item in members) <= MAX_TOTAL + 135168, 'package_too_large')
+                raw = bounded_member(archive, 'manifest.json', 131072)
+                signature = bounded_member(archive, 'manifest.sig.json', 4096)
+                manifest = validate_manifest(raw, signature, key)
+                require(set(names) == set(manifest['files']) | {'manifest.json', 'manifest.sig.json'}, 'unexpected_member')
+                blobs = {}
+                for name, item in manifest['files'].items():
+                    require(archive.getinfo(name).file_size == item['size'], 'package_changed')
+                    blob = bounded_member(archive, name, item['size'])
+                    require(len(blob) == item['size'] and digest(blob) == item['sha256'], 'package_changed')
+                    blobs[name] = blob
+                    bridge_progress()
+    except (zipfile.BadZipfile, zlib.error, struct.error, EOFError):
+        raise MobileError('invalid_zip_archive')
     return manifest, raw, signature, blobs
 
 
@@ -366,7 +370,7 @@ def snapshot(bundle, _return_proof=False):
     read_bundle(temporary)
     try:
         os.rename(temporary, folder)
-    except OSError:
+    except (IOError, OSError):
         if not os.path.isdir(folder):
             raise
         # A concurrent successful copy is usable; the uniquely owned staging

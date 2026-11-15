@@ -30,6 +30,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r47/mobile47 before OI-APN bootstrap, 12-MNC SE13 overlay, and Python 3.2 IOError hardening.
+                    'eb612b14ebdcd9fcd5265d83f3ff58e0450f4b86afa3a92ee7676b1faefa8f71',
                     # r46/mobile46 before full 12-MNC carrier fallback and Omit200OkSdp=1 MT voice fix.
                     '0a05a4f7d6cd27a477d845e4e77c6565b85f12bfaa01865fd2363772405db8ba',
                     # Pre-Telecom-MO-SMS-fix r46/mobile46 candidate read back on SQC100-2.
@@ -90,7 +92,8 @@ PREVIOUS_PAYLOADS = (
                      'b975409427c96fee16f10f7a271c53ebf181d37522b64e1b858cd1aeda3db777')
 UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
                 'device/device_info.py', 'device/unified_migrate.py',
-                'device/unified_service.py', 'device/carrier_policy.py', 'device/unified_own_number.py',
+                'device/unified_service.py', 'device/carrier_policy.py',
+                'device/unified_operator_name.py', 'device/unified_own_number.py',
                 'device/service.py', 'device/ims_image.py', 'device/profiles.py', 'device/compatibility.py')
 UPDATE_PENDING = BASE + '/update-pending.json'
 ADDON = '/var/addons/bb10-unified-volte'
@@ -167,7 +170,7 @@ def private_directory(path):
     if not os.path.lexists(path):
         try:
             os.mkdir(path, 0o700)
-        except OSError as error:
+        except (IOError, OSError) as error:
             if error.errno != errno.EEXIST:
                 raise
     info = os.lstat(path)
@@ -328,7 +331,7 @@ def root_kind(facts):
 
 def blocked_probe(observed, code):
     variant = observed.get('variant')
-    if not isinstance(variant, str) or not re.match(r'\ASQ[NCW]100-[0-9]{1,2}\Z', variant):
+    if not isinstance(variant, str) or not re.match(r'\ASQ[NCWK]100-[0-9]{1,2}\Z', variant):
         variant = 'unknown'
     return {'schema': 1, 'variant': variant, 'scope_error': code,
             'installed': False, 'can_install': False, 'can_update': False,

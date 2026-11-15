@@ -36,15 +36,13 @@ class AutoCarrierWindow:
         box.pack(fill='both', expand=True)
         help_row(box, self.window, lambda: 'acceptance' if status_view((self.report or {}).get('status', {}))['ready']
                  else 'restart' if (self.report or {}).get('installed') else 'install')
-        ttk.Label(box, text=tr('Q10 · Q20 · Passport'), font=('', 19, 'bold')).pack(anchor='w')
-        ttk.Label(box, text=tr('首次安装后，换卡并正常重启即可在手机上选择运营商。\n'
-            '支持当前验证范围：SQN100-3、SQC100-2、SQW100-4 / OS 10.3.3.3216。\n'
-            '移动 460-00、联通 460-01、电信 460-11；其他 SIM 类型待适配。\n'
-            'SQC100-4 另适配电信 460-11；发短信可能停在发送中并阻塞后续短信。\n'
-            'SQW100-1 另适配联通 460-01、移动 460-00／460-07、电信 460-11；电信短信仍有发送卡住和重复接收问题。携转卡按当前 SIM 归属网络识别。\n'
-            'Passport 保存入网策略后可能需要再正常重启一次。'),
+        ttk.Label(box, text=tr('Q10 · Q20 · Passport · P’9983'), font=('', 19, 'bold')).pack(anchor='w')
+        ttk.Label(box, text=tr('首次安装后，关机换卡再开机即可按当前 SIM 归属网络自动选择运营商。\n'
+            '支持 Q10、Q20 Classic、Passport 与 P’9983 全 16 个目录型号（OS 10.3.3.3216，无 ISIM 的普通 4G USIM）。\n'
+            '支持中国移动（460-00/02/04/07/08）、中国联通（460-01/06/09）、中国电信（460-03/05/11/12），含原厂回落 0.xml 的号段。\n'
+            '携转号码按当前 SIM 卡归属网络识别；Passport 在联通与移动／电信之间切换入网策略时需再正常重启一次。'),
             wraplength=680, justify='left').pack(anchor='w', pady=(16, 12))
-        ttk.Label(box, text=tr('SQW100-4 电信提示：短信可能已送达但仍显示“发送中”，后续短信可能排队。请勿重发已送达短信；VoLTE 仍可正常开启。'),
+        ttk.Label(box, text=tr('电信短信说明：r46 及以上版本已内置发信状态回执清理，不再长卡“发送中”；若旧版曾卡住，更新重启一次即可自动恢复。'),
                   wraplength=680, justify='left').pack(anchor='w', pady=(0, 8))
         self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机，程序将检查完整型号、系统和当前 SIM 的适配范围。'),
                                 wraplength=680, justify='left')

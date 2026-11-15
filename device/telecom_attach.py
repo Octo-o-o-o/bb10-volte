@@ -94,7 +94,7 @@ def observe(base=BASE):
         assert os.path.realpath(folder) == folder
         verified_backup_receipt(folder)
         result['backup_verified'] = True
-    except (OSError, ValueError, TypeError, KeyError, AssertionError):
+    except (IOError, OSError, ValueError, TypeError, KeyError, AssertionError):
         pass
     return result
 

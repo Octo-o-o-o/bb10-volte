@@ -1,26 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.0.47",
+  "version": "0.1.0.48",
   "identity": {
     "Package-Name": "com.octolab.bb10volte",
     "Package-Id": "testDev_b_bb10volte7b237e48",
     "Package-Author-Id": "gYAOctoLabBB10VoLTE20261102",
     "Package-Architecture": "armle-v7",
-    "Package-Version": "0.1.0.47",
+    "Package-Version": "0.1.0.48",
     "Application-Id": "testDev_b_bb10volte7b237e48",
-    "Application-Version": "0.1.0.47"
+    "Application-Version": "0.1.0.48"
   },
-  "filename": "bb10-volte-0.1.0.47.bar",
-  "bar_sha256": "c7564ca93a046773d7702c63caeb74051f0f873c34aae8b8dacf9b875a1ae6c3",
-  "bar_size": 673461,
-  "platform_manifest_sha256": "ef31dad78c4237470878209e374e197aff3187ed24bc8c279ada66a236d54a8f",
+  "filename": "bb10-volte-0.1.0.48.bar",
+  "bar_sha256": "ceee508696026975b6b60c821fd0712ca1276c99a5ef0a496e9bc01aa08518bc",
+  "bar_size": 666573,
+  "platform_manifest_sha256": "635c7dfd64dbb288ef5f0b1fa6a7fc7f1c28acb1551fee2d5ff7aab34459154d",
   "installed_files": {
     "META-INF/MANIFEST.MF": {
-      "sha256": "ef31dad78c4237470878209e374e197aff3187ed24bc8c279ada66a236d54a8f",
-      "size": 15986
+      "sha256": "635c7dfd64dbb288ef5f0b1fa6a7fc7f1c28acb1551fee2d5ff7aab34459154d",
+      "size": 12450
     },
     "native/bar-descriptor.build.xml": {
-      "sha256": "48f70d3e4f59537b27defaaf12bfefae5568d473ccf13e35f399e7532af8bccc",
+      "sha256": "f2569c64df92d529133404a44f54c63029ae0a74c5bdba3c9185956401a5c1b8",
       "size": 1058
     },
     "native/assets/support/wechat-29_90.png": {
@@ -76,7 +76,7 @@
       "size": 9118
     },
     "native/assets/manifest.sig.json": {
-      "sha256": "d63127e32c6947bc59e2a8d7aac76ead2d07193e7534fe6d99f950ae432b43bc",
+      "sha256": "92218ab71b603a8842b17b73b37fc3450528a5f200fd82397a8b7742e32c05e7",
       "size": 643
     },
     "native/assets/materials/sqw100-1-intake-2026-11-06.json": {
@@ -96,40 +96,12 @@
       "size": 41754
     },
     "native/assets/materials/compatibility-matrix.json": {
-      "sha256": "158b74ae2c2ecfbe71a268585148bb468af1ae8e5981524b12fcf8d17d63c6aa",
+      "sha256": "1681f213544faff8c5710d92941959d3a258a6ba7c81170b503d5068d5e9a074",
       "size": 20980
     },
     "native/assets/materials/sms-device-validation-2026-11-01.json": {
       "sha256": "6c3386ea290819e72e3242460981e9251888900971eaedfd6964a87659b6f6ed",
       "size": 6175
-    },
-    "native/assets/profiles/variant-trial-sqc100-1-unicom.json": {
-      "sha256": "b20b08fc18ec092a77d0595f9e0ae992af6e92f42d157af17f54d66ac66b97ee",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqn100-5-telecom.json": {
-      "sha256": "e3dcc409e952e7526a7d4c1dc30406735fa61dde1917173c7ab8fba8a23f0544",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqc100-3-mobile.json": {
-      "sha256": "d13876e3e237616d0ca3b5ad49265c7f4cd5a0020642d7bdefeb15075d30992d",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqw100-3-telecom.json": {
-      "sha256": "5ad72e1c8749409598777668f7ed6fcfa1087a5bca1eb91bf76460223eaed041",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqc100-1-telecom.json": {
-      "sha256": "089f864ac2e3b8f7b30e497881a828e274813b861c3c75a488b817ad2663e61c",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqw100-3-unicom.json": {
-      "sha256": "f15f904ef27cbaa71254e36ee7ba2008f637a256e5e953663ccf1c208ac4e7c6",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqc100-1-mobile.json": {
-      "sha256": "3a16abd0ed5fd80008def4258aacbbe357525cc961f125f326f787c6bcb6ea71",
-      "size": 425
     },
     "native/assets/profiles/china-telecom-46011.json": {
       "sha256": "86aa75491381ab3d841fb8d9d5b39156723fd72b3b7385008ad4bcee259120f1",
@@ -139,72 +111,28 @@
       "sha256": "6ae58eb2249004217136171f3dd26176725ec302298770ef3637b0ffac31518b",
       "size": 621
     },
-    "native/assets/profiles/variant-trial-sqc100-3-telecom.json": {
-      "sha256": "c9c2f7c9ac62ef0c28c646392309887604b8c2349e75779cd44753c08b09db1f",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqn100-1-telecom.json": {
-      "sha256": "ac20e5d87ce664a9a42a0e49377407e3ef77d800939de406b92658d892d30e47",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqw100-1-telecom.json": {
-      "sha256": "a221be36f3c45e8b6d1fa5c5d70843c6647d57fd3e8d35c6aabbcdc8318140ef",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqw100-3-mobile.json": {
-      "sha256": "0e99b9f4cce5d6bebad2e26a7ad39a82a79ddfc994beb946c2206e1395ff9f52",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqw100-1-unicom.json": {
-      "sha256": "d663bbcfa4d35ddf6e7e362b8e917db69cc35cb688e645e6a93b502956141912",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqc100-4-telecom.json": {
-      "sha256": "4d611cf571afbd9b054b25b262ca2fcd3546ccfc356fe17330cf06a0fdcb753b",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqc100-5-telecom.json": {
-      "sha256": "f80c20594f51def96e49ab4c639a735e0d1b9197202d5ce21b42c9296bdab1c5",
-      "size": 435
-    },
-    "native/assets/profiles/variant-trial-sqc100-4-unicom.json": {
-      "sha256": "a82c39914d3e1c6baeb798d8a08829208a52748377746a66ed98215b0a05fc56",
-      "size": 425
-    },
     "native/assets/profiles/china-telecom.json": {
       "sha256": "6c2584aee340f1b89e4cb442e0049fa90b8e0e2f0fdbe71102b1fd47fff8ebc7",
       "size": 610
     },
-    "native/assets/profiles/variant-trial-sqc100-3-unicom.json": {
-      "sha256": "f7e23a7653e5263a25681be92ad8d4299b69a907b471a68b1609b594fa28686b",
-      "size": 425
-    },
     "native/assets/profiles/china-mobile.json": {
       "sha256": "ee3b90cb4586b6f868beb468d5dd683bf813bf1b2c8ea857dae02cb0a4774967",
       "size": 620
-    },
-    "native/assets/profiles/variant-trial-sqc100-5-unicom.json": {
-      "sha256": "597202ca9f923378d736677855e4b4b95ca5aead4241165f5b617794fc1ca2f7",
-      "size": 425
-    },
-    "native/assets/profiles/variant-trial-sqc100-5-mobile.json": {
-      "sha256": "06683df62c29995c308e8c6aba239605f90e2dbca4a80e6e00f759a24e9eacde",
-      "size": 425
     },
     "native/assets/Pairing.qml": {
       "sha256": "bc1bdc6425ef338ed732bd8414867463875bcaf8d58748ebcc67d8653270fcc3",
       "size": 2788
     },
     "native/assets/manifest.json": {
-      "sha256": "3489f610b3baf1dfb68120321e858327cc7f45182f84a8c7c1777e0915463a62",
+      "sha256": "7fcd72194091a2eb3ef3be3ce2b49793f80a7b7f8a5e889861b933d3d1451f5c",
       "size": 5613
     },
     "native/assets/payload/payload-manifest.json": {
-      "sha256": "400fe8d435cfa1cdd6b6b58dfbe4c0fe126b50f428c90a0e5fa1ea014066ccaf",
+      "sha256": "3423626c34f81a834d420edaaf124e3bca68c484f274558168ed8d2097a1a09a",
       "size": 1737
     },
     "native/assets/payload/payload.json": {
-      "sha256": "1ad96c34d68ab0cd49fe787265fb1d69578a24e92d8651887330b2c4820406ce",
+      "sha256": "1129bdb4ee731cbf2451cc436484869941bebe39c1a9a701a7081a90a4ac57b7",
       "size": 1905
     },
     "native/assets/payload/device/install.py": {
@@ -212,36 +140,36 @@
       "size": 9655
     },
     "native/assets/payload/device/profiles.py": {
-      "sha256": "dc7ae1ddfc382eca85da8c8d75a67885ab159c52ceb34922ab74f748f6d4a4d3",
-      "size": 14798
+      "sha256": "eaa24e943944041b07c372a64f5502232fbab29b180a1436eb48631ad206f8f1",
+      "size": 15654
     },
     "native/assets/payload/device/telecom_attach.py": {
-      "sha256": "fe3946dbd745676271dc34623d7ea527dc5c69f8080d4ab2533b63af94fa1fc8",
-      "size": 11763
+      "sha256": "5c03203e5e40f797a1c1fbe2adcf514e53ef13cdab406c59979165b001883265",
+      "size": 11772
     },
     "native/assets/payload/device/run.sh": {
       "sha256": "3af90e97913804e78e9f65c3807698f875d8e83a8a8a83ae59f5d3a79f3587a1",
       "size": 602
     },
     "native/assets/payload/device/operator_name.py": {
-      "sha256": "cb4bcc38ac94b4df5861328373f53ec19a537826c036196f55985153ebc281c3",
-      "size": 11761
+      "sha256": "dfcb7d20f628941f09685b3612f5df1ed3569b46fe15117a000fab776ebff56b",
+      "size": 11801
     },
     "native/assets/payload/device/unified_operator_name.py": {
-      "sha256": "f9860de9f2893466c9c5dc7c2b4a6ae05c4c9859cfb19176f25b21a82b44eb90",
-      "size": 4533
+      "sha256": "1a1e03b48a59512ed6ef903b0950d403ef93e691b5c4d05d4e01bb537df917fc",
+      "size": 6468
     },
     "native/assets/payload/device/device_info.py": {
-      "sha256": "2789dd392fed99ff70413c8d819908d05032f99865851b55a1a3612cec436cef",
-      "size": 3625
+      "sha256": "08fbeb0476abd75cd50e34f6affbe354c00e2fa178728a14df7a74eeed84776e",
+      "size": 3681
     },
     "native/assets/payload/device/carrier_policy.py": {
       "sha256": "041374d1726bea21e14a19cf4da8f4f4e2c523c305c1183a1db26a8cf27177ef",
       "size": 5485
     },
     "native/assets/payload/device/unified_dca.py": {
-      "sha256": "a8d532285769dbd387297d47952126925fcb4cffb2aff4632cab34039842fe3f",
-      "size": 19092
+      "sha256": "90cee4c5bf93f816b11c4b26f0ddfdbf7ee1d061350553b59546c8fde730525b",
+      "size": 19123
     },
     "native/assets/payload/device/ims_image.py": {
       "sha256": "2b4287bf90e6d83899314f75fb084948861ff8bf6a39f4b9c699804489a80ed4",
@@ -256,12 +184,12 @@
       "size": 7918
     },
     "native/assets/payload/device/unified_service.py": {
-      "sha256": "e88bf190ad82e9c37c252a6204b7416bb022010c86d9972bb576ff7d17bd613f",
-      "size": 43990
+      "sha256": "67aa379593efa43f0bd40f40b4d8c26d2b7701cf05432290c9d7b99b312cdb72",
+      "size": 44078
     },
     "native/assets/payload/device/service.py": {
-      "sha256": "421422d58cf817c811b822688ffd907eac55e78814543c908aee0f5b141fbc16",
-      "size": 45461
+      "sha256": "d3782ca0b2e4b8d01a430f13b3fd769a7ee813abf3cc165e4fa2b17759234488",
+      "size": 45516
     },
     "native/assets/payload/device/telecom_dca.py": {
       "sha256": "5f4f1b4937d566d521e08ed2f68aa039135d1246dda64f4efa3f2cf059e9db55",
@@ -276,16 +204,16 @@
       "size": 961
     },
     "native/assets/payload/device/compatibility.py": {
-      "sha256": "7f91f09a4050a76947a6387ab0149fa9b78934950853db76ff58543cbae64865",
-      "size": 34993
+      "sha256": "a495575a13869dc705e65abda364a245e4b4ad60bc93195e7982932fdd75411c",
+      "size": 35422
     },
     "native/assets/payload/device/unified_install.py": {
-      "sha256": "7e9aaff0a552569cf3d2d073bc3464e11bec7d93fc451c8250f447eed8b7fda2",
-      "size": 72787
+      "sha256": "d18818aeea01f86b87b261f33e6dc353a56b01c26d78d0a159eb99058f0e3b1f",
+      "size": 73053
     },
     "native/assets/payload/device/autostart_evidence.py": {
-      "sha256": "e98fb694668ac4b9854814d61d4e07a86f8c05bb2ad205f6dab6611d2161d267",
-      "size": 5255
+      "sha256": "782ba81ff41ea4685f37f312015396f55fe960bee3567a4d54f9a60cdf048a85",
+      "size": 5264
     },
     "native/assets/payload/device/radio_api.py": {
       "sha256": "2e15258df789576edf1ae4f096f862cd40882af319c43f37b16fbd0fce1778e3",
@@ -308,12 +236,12 @@
       "size": 5264
     },
     "native/assets/runtime/worker.py": {
-      "sha256": "420b2fed059c784f80323a2a16406c8a5d1a7a41898eb69e599135d88298e57d",
-      "size": 93204
+      "sha256": "34abad556b198f7ec7c4eb96346cf4903e63ff52f887992ff332fc2b58eb299c",
+      "size": 95321
     },
     "native/assets/runtime/entry.py": {
-      "sha256": "d9309fac4ec90a86868dc8fb366c918bc40b919f047f9e537c34aec582e514d9",
-      "size": 27033
+      "sha256": "7d6d987ae2c4fa00818efe5552c140bc147401928299411314fc50c1e998d94f",
+      "size": 27291
     },
     "native/assets/runtime/job-launcher": {
       "sha256": "1c1dba7793459351915c54f699768acc1aa3e7c82adfa2149c80985ff1b544c0",
@@ -344,10 +272,10 @@
       "size": 7504
     },
     "native/bb10volte": {
-      "sha256": "c7fdacd276e34e7ecaffcecad2cffb9ff92da50cf1bce4c0bcd3bcdbb70d5e0b",
-      "size": 705988
+      "sha256": "1cfe2bc24ba149b5fb5a68863d51f5b1e32b11cb1af6ae385dd673d3b4549045",
+      "size": 709832
     }
   },
-  "helper_sha256": "d094ac9b74668cd157c517a02eca68ba310fd76fffe9368e80f5136a4895a8d3",
+  "helper_sha256": "33813d81f8dc282e664ae2150039336c27b2c742b1ef92e2061bedbb44b11409",
   "installer_sha256": "b5b98e0ad73c944810bd4d9135386f9d83b01a630fcbd077d9c2a2de9b65e740"
 }

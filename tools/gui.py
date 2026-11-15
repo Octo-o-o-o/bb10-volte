@@ -32,7 +32,8 @@ NAMES = {'model': tr('手机型号'), 'os': tr('系统版本'), 'root': tr('Root
          'lte': tr('4G 网络'), 'apn': tr('数据 APN'), 'carrier_config': tr('原厂数据配置'), 'experiment': tr('实测与试用'),
          'installation': tr('已装服务'), 'baseline': tr('安装前状态'), 'saved_profile': tr('已装配置'),
          'provider_lifecycle': tr('机型恢复验证'), 'autostart_policy': tr('开机启动验证')}
-NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'))
+NAMES.update(telecom_attach=tr('电信入网前置流程'), carrier_selection=tr('运营商配置选择'),
+             operator_support=tr('运营商准入'))
 NAMES.update(trial_target=tr('试测目标型号'), trial_native=tr('试测原生文件'))
 NOTES = {
     'trial_exact_variant_required': tr('本试测配置只适用于选定的完整后缀。实际手机不匹配时停止，不会自动套用同系列配置。'),
@@ -40,8 +41,13 @@ NOTES = {
     'unified_payload_verified': tr('三网自动适配文件及原始备份回执已核验。'),
     'unified_running': tr('本次开机自动选择的运营商已注册；双向通话仍需实机确认。'),
     'unified_waiting': tr('自动适配尚未完成注册。请按当前阶段的提示处理，再检查状态。'),
+    'unified_waiting_sms': tr('系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。'),
+    'unified_sim_changed': tr('SIM 卡已更换，请先用系统电源菜单正常重启并解锁，再重新检查状态。'),
     'unified_carrier_reboot_required': tr('入网策略已保存，还需一次正常重启；重启后重新检查注册。'),
     'unified_reboot_required': tr('需要正常重启手机，开机解锁后重新检查注册。'),
+    'data_apn_bootstrap_pending': tr('当前 SIM 原厂回落到通用 0.xml，数据 APN 将在安装启用配置后建立连接。'),
+    'downloaded_carrier_config_present': tr('检测到手机上存在已下载的运营商配置文件（OTA 覆盖），为保护现有设置未自动改写。请保留现场并导出报告。'),
+    'operator_not_supported': tr('当前 SIM 运营商不在中国移动、联通、电信支持范围内（例如中国广电 460-15），无法配置。'),
     'telecom_attach_manual_port': tr('Q10 电信手动移植待验收：先备份原始配置，再恢复正常 LTE 数据，最后配置 IMS。'),
     'telecom_attach_owned': tr('当前入网参数由本工具管理，原始配置及电脑备份回执均已核验。'),
     'telecom_recorded_acceptance': tr('这台 Q10、当前配置和 SIM 已有双向声音、LTE、正常重启及拔 USB 通话验收，关键运行文件散列一致。'),
@@ -914,8 +920,9 @@ class App:
                 add(title, tr('只读快照'), tr('是') if value is True else tr('否') if value is False else tr('未知'), value is not True)
         apn = network.get('observed_data_apn')
         if apn is not None:
+            import compatibility
             add(tr('手机报告的 APN'), tr('只读快照'),
-                apn if apn in ('ctnet', 'ctlte', 'cmnet', '3gnet') else
+                apn if apn in compatibility.PUBLIC_APNS else
                 tr('其他 APN（报告不保存原文）') if apn == 'other' else tr('未知'))
 
         for row in network_rows(report):
@@ -996,8 +1003,8 @@ class App:
         path = ROOT / 'licenses/THIRD-PARTY-NOTICES.txt'
         project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
         intro = ('bb10-volte ' + project['version'] + tr(' · 桌面修订 ') + str(project.get('desktop_revision', 1)) + tr('\n\n'
-                 '适用于 BlackBerry 10 设备。当前实机记录：Q10 SQN100-3 / BB10 10.3.3.3216 / 北京联通。\n'
-                 '其他设备与运营商需逐台验证。\n\n'))
+                 '适用于 BlackBerry 10（OS 10.3.3.3216）：Q10、Q20 Classic、Passport 与 P’9983 全 16 个目录型号已开放中国移动、中国联通、中国电信自动适配入口。\n'
+                 '各后缀的实机验收状态与频段说明见兼容性矩阵。\n\n'))
         self.show_document(tr('关于与软件许可'), path if path.is_file() else ROOT / 'NOTICE.md', intro)
 
     def show_document(self, title, path, intro=''):

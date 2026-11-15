@@ -157,7 +157,7 @@ def mobile_pair(encoded):
             try:
                 start_code = subprocess.call(['/usr/sbin/sshd', '-f', '/etc/ssh/sshd_config',
                     '-o', 'ListenAddress=169.254.0.1'], stdout=sink, stderr=sink)
-            except OSError:
+            except (IOError, OSError):
                 start_code = -1
         available = usb_ssh_available()
     return {'schema': 1, 'state': 'paired', 'request_id': request['request_id'],
@@ -210,7 +210,7 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
         # never infer equivalence from a similar name or matching contents.
         try:
             return os.path.isabs(path) and os.path.samefile(path, expected)
-        except (OSError, ValueError):
+        except (IOError, OSError, ValueError):
             return False
     if (not any(same_file(path, target) for path in authorized) or
             not any(same_file(path, host) for path in host_paths) or not os.path.isdir(root_dir)):
@@ -293,7 +293,7 @@ if __name__ == '__main__':
             print(json.dumps(mobile_pair(sys.argv[2]), sort_keys=True))
         else:
             main()
-    except (OSError, ValueError) as error:
+    except (IOError, OSError, ValueError) as error:
         if len(sys.argv) > 1 and sys.argv[1] == '--mobile-request':
             print(json.dumps({'schema': 1, 'state': 'error', 'error': str(error)}))
         else:

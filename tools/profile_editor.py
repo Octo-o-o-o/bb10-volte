@@ -18,6 +18,7 @@ def display_label(label):
     # Translate only known built-ins; preserve arbitrary user-authored labels.
     return {LEGACY_BASELINE_LABEL: BB10_BASELINE_LABEL,
             'China Unicom 01/09 - untested template': tr('中国联通（试用模板）'),
+            'China Unicom 01/06/09 - untested template': tr('中国联通（试用模板）'),
             'China Mobile - untested template': tr('中国移动（试用模板）'),
             'China Telecom 460-11 / Q10 manual port': tr('中国电信 460-11（Q10 手动移植待验收）'),
             'China Telecom - untested template': tr('中国电信（试用模板）')}.get(label, label)
@@ -26,6 +27,7 @@ def display_label(label):
 def picker_label(label):
     return {LEGACY_BASELINE_LABEL: tr('中国联通 460-01'),
             'China Unicom 01/09 - untested template': tr('中国联通（试用模板）'),
+            'China Unicom 01/06/09 - untested template': tr('中国联通（试用模板）'),
             'China Mobile - untested template': tr('中国移动（试用模板）'),
             'China Telecom 460-11 / Q10 manual port': tr('中国电信 460-11（Q10 手动移植待验收）'),
             'China Telecom - untested template': tr('中国电信（试用模板）')}.get(label, display_label(label))

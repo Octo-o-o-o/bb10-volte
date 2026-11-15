@@ -6,6 +6,7 @@ import re
 
 import compatibility
 import carrier_policy
+import profiles
 
 
 def _append(left, right):
@@ -48,7 +49,7 @@ def adaptation_note(report):
     carrier = profile.get('carrier') or {}
     facts = report.get('facts') or {}
     if (profile.get('id') == 'china-telecom' and carrier.get('mcc') == '460' and facts.get('mcc') == '460' and
-            facts.get('mnc') in ('03', '11') and not profile.get('lte_attach') and
+            facts.get('mnc') in profiles.TELECOM_MNCS and not profile.get('lte_attach') and
             any(row.get('id') in ('lte', 'apn') and row.get('status') != 'pass' for row in report.get('checks', []))):
         note = _append(note, tr('通用电信试用模板不包含此型号的入网修复，需单独适配；勾选实验试用不能解决当前入网阻断。'))
     return note

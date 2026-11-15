@@ -161,7 +161,7 @@ def incoming_diagnostics():
     def object_at(path):
         try:
             return n.attrs(n.read(path))
-        except (OSError, ValueError, TypeError):
+        except (IOError, OSError, ValueError, TypeError):
             return {}
 
     def field(attrs, key, allowed, kind):
@@ -198,7 +198,7 @@ def read_network(profile=None):
         result['mcc'], result['mnc'] = home.get('mcc'), home.get('mnc')
         restricted = n.attrs(n.read('/pps/services/cellular/uicc/card0/status_restricted'))
         result['identity_matches'] = profiles.identity_matches(str(n.value(restricted, 'imsi')), result['mcc'], result['mnc'])
-    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+    except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         result['sim_read_error'] = True
     try:
         radio = n.attrs(n.read(RADIO))
@@ -209,7 +209,7 @@ def read_network(profile=None):
                             ('lte_band_capability_mask', 'band_capability')):
             bands = n.value(radio, source, {})
             result[key] = bands.get('lte') if isinstance(bands, dict) else None
-    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+    except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         result['radio_read_error'] = result['network_read_error'] = True
     try:
         data = n.attrs(n.read(DATA))
@@ -222,28 +222,28 @@ def read_network(profile=None):
             value = internet.get(key)
             result['internet_' + key] = value if type(value) is bool else None
         apn = internet.get('apn')
-        norm_apn = apn.strip().lower() if isinstance(apn, str) else ''
+        norm_apn = profiles.normalize_apn(apn)
         present = bool(norm_apn)
         connected = internet.get('connected')
         profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
         result.update(apn_matches=norm_apn in profile_apns if present else None,
                       data_connected=connected if type(connected) is bool else None,
                       observed_data_apn=norm_apn if norm_apn in PUBLIC_APNS else 'other' if present else 'unknown')
-    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+    except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         result['data_read_error'] = result['network_read_error'] = True
     cdsc_xml = None
     try:
         settings = n.attrs(n.read(DATA_SETTINGS))
         result['data_service_mode'] = n.value(settings, 'data_service_mode')
         cdsc_xml = settings.get('cdsc_xml')
-    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+    except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         # An optional setting read cannot erase a successful live observation.
         result['data_settings_read_error'] = True
     result['stock_apn_bootstrap_eligible'] = False
     mcc, mnc = result.get('mcc'), result.get('mnc')
     if (not result.get('network_read_error') and not result.get('data_settings_read_error') and
-            not result.get('apn_matches') and result.get('observed_data_apn') == 'unknown' and
-            result.get('data_service_mode') == 'ON' and cdsc_xml in (None, ':') and
+            not result.get('apn_matches') and
+            result.get('data_service_mode') == 'ON' and cdsc_xml in (None, ':', '') and
             (mcc, mnc) in profiles.STOCK_FALLBACK_TEMPLATES and
             mcc == p['carrier']['mcc'] and mnc in p['carrier']['mncs']):
         try:
@@ -257,7 +257,7 @@ def read_network(profile=None):
                         not os.path.islink(preloaded) and
                         n.digest(n.read(preloaded)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
                     result['stock_apn_bootstrap_eligible'] = True
-        except (OSError, ValueError, TypeError, AttributeError, KeyError):
+        except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
             pass
     result.update(public_network_diagnostics(result))
     return result
@@ -367,7 +367,7 @@ def installed_state():
             if not journal.get('restore_completed'):
                 result['state'] = 'recovery_required'
         return result
-    except (OSError, ValueError, TypeError, KeyError):
+    except (IOError, OSError, ValueError, TypeError, KeyError):
         return {'state': 'conflict'}
 
 
@@ -382,11 +382,11 @@ def configuration_diagnostics():
                       ('probe_override_absent', '/pps/volte_probe')):
         try:
             result[key] = not os.path.lexists(path)
-        except OSError:
+        except (IOError, OSError):
             pass
     try:
         result['cdsc_directory_empty'] = not bool(os.listdir('/var/radio/cdsc'))
-    except OSError:
+    except (IOError, OSError):
         pass
     fields = {
         '/pps/services/carrier_config/radio_common/cellular_protocol_configuration':
@@ -404,7 +404,7 @@ def configuration_diagnostics():
             attrs = n.attrs(n.read(path))
             for key, label, allowed in entries:
                 result[label] = attrs.get(key) in allowed
-        except (OSError, ValueError, TypeError, AttributeError):
+        except (IOError, OSError, ValueError, TypeError, AttributeError):
             pass
     return result
 
@@ -420,7 +420,7 @@ def observe(profile=None):
     s['arm32_qnx'] = ctypes.sizeof(ctypes.c_void_p) == 4 and os.uname()[0] == 'QNX'
     try:
         s.update(device_info.read_identity())
-    except (OSError, ValueError, TypeError):
+    except (IOError, OSError, ValueError, TypeError):
         pass
     s['incoming_diagnostics'] = incoming_diagnostics()
     s['native_hashes'] = {}
@@ -430,7 +430,7 @@ def observe(profile=None):
             digest = n.digest(n.read(path))
             s['native_hashes'][path] = digest == expected
             s['native_sha256'][path] = digest
-        except OSError:
+        except (IOError, OSError):
             s['native_hashes'][path] = False
     if profiles.trial_target(p):
         import telecom_native
@@ -442,20 +442,22 @@ def observe(profile=None):
                 digest = n.digest(n.read(path))
                 s['trial_native_hashes'][path] = digest == expected
                 s['trial_native_sha256'][path] = digest
-            except (OSError, ValueError):
+            except (IOError, OSError, ValueError):
                 s['trial_native_hashes'][path] = False
         try:
             board = n.value(n.attrs(n.read('/pps/services/hw_info/inventory')), 'Board_Type')
             if isinstance(board, str) and re.match(r'\A[A-Z0-9_]{3,32}\Z', board):
                 s['trial_observed_board'] = board
-        except (OSError, ValueError, TypeError, AttributeError):
+        except (IOError, OSError, ValueError, TypeError, AttributeError):
             pass
     s['installation'] = installed_state()
     try:
         s['carrier_template'], _ = profiles.carrier_template(p, s.get('mcc'), s.get('mnc'))
         s['carrier_template_ready'] = True
-    except Exception:
+    except Exception as error:
         s['carrier_template_ready'] = False
+        if str(error) == 'downloaded_carrier_config_present':
+            s['carrier_template_error'] = 'downloaded_carrier_config_present'
     # Never call native ARM functions on a different build, host or privilege level.
     s['native_read_status'] = dict((key, 'not_checked') for key in NATIVE_BASELINE_FIELDS)
     trial_images_ready = (not profiles.trial_target(p) or
@@ -534,7 +536,10 @@ def evaluate(s, profile=None, allow_experimental=False):
         check('telecom_attach', attach_candidate or owned_attach,
               'telecom_attach_owned' if owned_attach else 'telecom_attach_manual_port' if attach_candidate
               else 'telecom_attach_needs_adaptation', 'adapt')
-    check('carrier_config', s.get('carrier_template_ready') is True, 'carrier_template_required', 'adapt')
+    carrier_config_code = ('downloaded_carrier_config_present'
+                           if s.get('carrier_template_error') == 'downloaded_carrier_config_present'
+                           else 'carrier_template_required')
+    check('carrier_config', s.get('carrier_template_ready') is True, carrier_config_code, 'adapt')
     telecom_authorized = attach and attach_facts.get('autostart_authorized') is True and device['variant'] == 'SQN100-3'
     experimental = trial is not None or not (autostart_supported(device, p) or telecom_authorized)
     recorded_code = 'telecom_recorded_acceptance' if telecom_authorized else 'recorded_baseline'

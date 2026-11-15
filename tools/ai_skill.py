@@ -174,8 +174,9 @@ def variant_entry(variant):
     special_notes = []
     if family == 'passport':
         special_notes.append(
-            'Passport entering or leaving China Telecom (460-11) requires one extra normal power-menu reboot '
-            'when phase is carrier_reboot_required; live io-pkt provider restart is intentionally disabled.'
+            'Passport switching between China Unicom (ue_usage=0) and China Mobile/Telecom (ue_usage=1) requires '
+            'one extra normal power-menu reboot when phase is carrier_reboot_required; live io-pkt provider restart '
+            'is intentionally disabled.'
         )
     if variant == 'SQK100-2':
         special_notes.append(
@@ -217,7 +218,11 @@ def sanitize_probe(raw):
     out = {key: raw[key] for key in SAFE_PROBE_KEYS if key in raw}
     if isinstance(raw.get('stock_template'), dict):
         tpl = raw['stock_template']
-        out['stock_template'] = {k: tpl[k] for k in ('path', 'sha256') if k in tpl}
+        out['stock_template'] = {
+            k: tpl[k]
+            for k in ('path', 'sha256', 'fallback_used', 'original_preloaded_config')
+            if k in tpl
+        }
     if isinstance(raw.get('status'), dict):
         out['status'] = public_status(raw['status'])
         view = status_view(out['status'])
@@ -309,8 +314,10 @@ def synthesize_next_step(usb, os_state, discovery, root_verified, ssh_error, pro
                     'code': 'install_mobile_app_or_prepare_sim',
                     'reason': probe.get('sim_reason'),
                     'summary': (
-                        'Root and OS 10.3.3.3216 are verified, so you can already run `mobile-app install` (0.1.0.47) '
-                        'for standalone on-phone management. Direct desktop `volte install` requires a ready China Mobile/Unicom/Telecom USIM (reason: '
+                        'Root and OS 10.3.3.3216 are verified, so you can already run `mobile-app install` ('
+                        + str(project_metadata().get('mobile_version', ''))
+                        + ') for standalone on-phone management. Direct desktop `volte install` requires a ready '
+                        'China Mobile/Unicom/Telecom USIM (reason: '
                         + str(probe.get('sim_reason')) + ').'
                     ),
                     'destructive': False,
@@ -954,7 +961,13 @@ def build_parser():
     p_pair_imp.add_argument('--non-recursive', action='store_true', help='Inspect only the top-level directory')
     p_pair_imp.add_argument('--confirm-host-key', action='store_true', help='Confirm pinning the discovered phone SSH host key')
 
-    p_app = sub.add_parser('mobile-app', parents=[common], help='Inspect or install the bundled native BB10 VoLTE phone app (0.1.0.46 BAR)')
+    p_app = sub.add_parser(
+        'mobile-app',
+        parents=[common],
+        help='Inspect or install the bundled native BB10 VoLTE phone app ('
+        + str(project_metadata().get('mobile_version', ''))
+        + ' BAR)',
+    )
     app_sub = p_app.add_subparsers(dest='app_action', required=True)
     for name in ('inspect', 'install'):
         sub_p = app_sub.add_parser(name, parents=[common])

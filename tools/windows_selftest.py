@@ -55,8 +55,19 @@ def run(output):
     manifest = verify_package()
     verify_diagnostics()
     import compatibility
+    import profile_editor
     telecom = next(profile for profile in presets() if profile['id'] == 'china-telecom')
     assert set(telecom['carrier']['data_apns']) == {'ctnet', 'ctlte'}
+    assert compatibility.profiles.normalize_apn('cmnet.mnc008.mcc460.gprs') == 'cmnet'
+    assert compatibility.profiles.normalize_apn('IMS.MNC011.MCC460.GPRS') == 'ims'
+    mobile_preset = next(profile for profile in presets() if profile['id'] == 'china-mobile')
+    bootstrap_snap = {'apn_matches': False, 'data_connected': True, 'observed_data_apn': 'other',
+                      'radio_on': True, 'lte': True, 'data_service_mode': 'ON',
+                      'network_service': 2098186, 'stock_apn_bootstrap_eligible': True}
+    assert compatibility.network_checks(bootstrap_snap, mobile_preset)[-1]['code'] == 'data_apn_bootstrap_pending'
+    for item in presets():
+        assert profile_editor.stored_label(profile_editor.display_label(item['label']), item['label']) == item['label']
+        assert not ('untested' in profile_editor.display_label(item['label']) and i18n.LANGUAGE == 'zh')
     snapshot = {'apn_matches': True, 'data_connected': False, 'observed_data_apn': 'ctlte',
                 'network_service': 2098186}
     assert compatibility.network_checks(snapshot, telecom)[-1]['code'] == 'data_apn_disconnected'

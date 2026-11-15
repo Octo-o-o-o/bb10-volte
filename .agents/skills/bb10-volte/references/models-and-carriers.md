@@ -26,10 +26,10 @@ All **16 models × 3 carriers = 48 entries** are **open for activation** (`admis
 | **Classic (Q20)** | `SQC100-3` | `CLASSICVZW` | B3 | `stock-classic` | Yes | Owner-confirmed 3-carrier basic calls, SMS, and data. |
 | **Classic (Q20)** | `SQC100-4` | `CLASSICNA` | B1, B5 | `stock-classic` | Yes | Windows Root prep adds `UseDNS=no` to `sshd_config` to avoid cellular DNS stalls. |
 | **Classic (Q20)** | `SQC100-5` | *(unpinned; `CLASSICVZWNC` observed)* | — | `stock-classic` | Yes | Fresh-device preflight verified (`r44+`); check local LTE coverage. |
-| **Passport (Q30)** | `SQW100-1` | `WINDERMEREEMEA` | B1, B3, B8 | `stock-passport` | Yes | Mobile (incl. `460-07`), Unicom, Telecom tested; extra reboot when entering/leaving Telecom. |
+| **Passport (Q30)** | `SQW100-1` | `WINDERMEREEMEA` | B1, B3, B8 | `stock-passport` | Yes | Mobile (incl. `460-07`), Unicom, Telecom tested; extra reboot when switching Unicom ↔ Mobile/Telecom. |
 | **Passport (Q30)** | `SQW100-2` | *(unconfirmed)* | — | `stock-passport` | Yes | Production identity unconfirmed in public filings; entry stays open. |
 | **Passport (Q30)** | `SQW100-3` | *(unpinned; `WINDERMERENA` observed)* | — | `stock-passport` | Yes | Stock `3216` upgrade, AutoRoot v4, and `0.1.0.44+` install verified on hardware. |
-| **Passport (Q30)** | `SQW100-4` | `WINDERMERE4ROW` | B1, B3, B8 | `stock-passport` | Yes | Mobile, Unicom, Telecom tested; extra reboot when entering/leaving Telecom. |
+| **Passport (Q30)** | `SQW100-4` | `WINDERMERE4ROW` | B1, B3, B8 | `stock-passport` | Yes | Mobile, Unicom, Telecom tested; extra reboot when switching Unicom ↔ Mobile/Telecom. |
 | **P'9983** | `SQK100-1` | `KHANE` | B3 | `stock-q10` | Yes | Shares `stock-q10` firmware; owner-confirmed 3-carrier calls, SMS, and data. |
 | **P'9983** | `SQK100-2` | *(unpinned)* | B5 | *(none bundled)* | **No** | Open for VoLTE & mobile app **when already rooted on `10.3.3.3216`** with matching native hashes; do **not** attempt first-time firmware flashing with unverified loaders. |
 
@@ -50,13 +50,14 @@ Verified by SHA-256 in [sources.json](../../../../materials/sources.json) before
 
 ---
 
-## 3. Carrier Selection & Runtime Architecture (`r47` / Mobile `0.1.0.47`)
+## 3. Carrier Selection & Runtime Architecture (`r48` / Mobile `0.1.0.48`)
 
 1. **Automatic Home-PLMN Selection**:
    - Reads the active USIM's home PLMN (`MCC=460`, no ISIM required; SIM `kind` must have USIM bit `2` set and ISIM bit `16` clear; China Broadnet `460-15` is explicitly reported as `china_broadnet_unsupported`):
-     - `460-00`, `02`, `04`, `07`, `08` → `mobile` (China Mobile, APN `cmnet` / `cmwap`, SHA-256-pinned stock fallback `404.xml` + empty-APN bootstrap when BB10 maps newer HPLMNs to `0.xml`)
+     - `460-00`, `02`, `04`, `07`, `08` → `mobile` (China Mobile, APN `cmnet` / `cmwap`, SHA-256-pinned stock fallback `404.xml` + OI-normalized empty/default-APN bootstrap when BB10 maps newer HPLMNs to `0.xml`)
      - `460-01`, `06`, `09` → `unicom` (China Unicom, APN `3gnet` / `wonet` / `uninet`, SHA-256-pinned stock fallback `36.xml`)
      - `460-03`, `05`, `11`, `12` → `telecom` (China Telecom, APN `ctnet` / `ctlte`, SHA-256-pinned stock fallback `446.xml` with dead `10.0.0.200:80` CTWAP proxy stripped)
+   - Also applies volatile SE.13 operator-name overlay and numeric `current_ons` display fallback (`中国移动` / `中国联通` / `中国电信`) across all 12 admitted MNCs without touching read-only `/base/etc/network/BBSE-se13-network-override-list.txt`.
 2. **Read-Only Stock Binary Integrity**:
    - `/radio/bin/ims_rrm` and the other 5 stock QNX radio/system binaries are **never modified on `/radio` or `/base`**.
    - The service verifies all 6 stock SHA-256 digests and runs a verified managed runtime copy under `/var/bb10_volte` with:

@@ -194,6 +194,10 @@ def prepare_assets(private_key, version=MOBILE_VERSION):
     prepare_support_assets(ROOT)
     blobs, manifest, signature, key = make_bundle(private_key, version)
     assets = ROOT / 'mobile/native/assets'
+    for sub in ('runtime', 'payload', 'profiles', 'materials'):
+        stale = assets / sub
+        if stale.exists():
+            shutil.rmtree(stale)
     for name, data in dict(blobs, **{'manifest.json': manifest, 'manifest.sig.json': signature}).items():
         destination = assets / name
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -220,9 +224,16 @@ def package(private_key, version=MOBILE_VERSION, bar=None):
             platform = parsed.read('META-INF/MANIFEST.MF')
             if b'com.octolab.bb10volte' not in platform or not any(name.endswith('entry.py') for name in names):
                 raise ValueError('BAR identity or runtime assets mismatch')
-            for name, data in dict(blobs, **{'manifest.json': manifest, 'manifest.sig.json': signature}).items():
-                if parsed.read('native/assets/' + name) != data:
+            expected_assets = {'native/assets/' + name: data
+                               for name, data in dict(blobs, **{'manifest.json': manifest, 'manifest.sig.json': signature}).items()}
+            for name, data in expected_assets.items():
+                if parsed.read(name) != data:
                     raise ValueError('BAR contains stale or different signed assets: ' + name)
+            extra_assets = [name for name in names
+                            if any(name.startswith('native/assets/' + sub + '/') for sub in ('runtime', 'payload', 'profiles', 'materials'))
+                            and not name.endswith('/') and name not in expected_assets]
+            if extra_assets:
+                raise ValueError('BAR contains unsigned extra runtime assets: ' + ', '.join(sorted(extra_assets)))
         out = destination / ('bb10-volte-' + version + '.bar')
         shutil.copyfile(bar, out)
         artifacts[out.name] = sha(out.read_bytes())

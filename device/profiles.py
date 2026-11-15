@@ -29,12 +29,23 @@ TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
 # does not assert that every possible location has incompatible radio coverage.
 # Historical failed trials are evidence, not an activation veto.
 UNSUPPORTED_OPERATORS = {}
+OPERATOR_MNCS = {
+    'mobile': ('00', '02', '04', '07', '08'),
+    'unicom': ('01', '06', '09'),
+    'telecom': ('03', '05', '11', '12'),
+}
 
 
 def carrier_adaptation_blocked(variant, mcc, mncs):
     return mcc == '460' and any(
-        operator in UNSUPPORTED_OPERATORS.get(variant, ()) and mnc in mncs
-        for operator, (mnc, unused_apns) in TRIAL_OPERATORS.items())
+        operator in UNSUPPORTED_OPERATORS.get(variant, ()) and any(mnc in mncs for mnc in operator_mncs)
+        for operator, operator_mncs in OPERATOR_MNCS.items())
+
+
+def normalize_apn(value):
+    """Normalize APN case/whitespace and strip any 3GPP TS 23.003 OI suffix."""
+    text = value.strip().lower() if isinstance(value, str) else ''
+    return re.sub(r'\.mnc[0-9]{2,3}\.mcc[0-9]{3}\.gprs\Z', '', text)
 
 
 # This original BB10 carrier file assigns the legacy CTWAP proxy to the
@@ -74,7 +85,7 @@ def trial_target(profile):
     value = profile.get('id', '')
     if not value.startswith(TRIAL_PREFIX):
         return None
-    found = re.match(r'\Avariant-trial-(sq[ncw]100-[1-5])-(mobile|unicom|telecom)\Z', value)
+    found = re.match(r'\Avariant-trial-(sq[ncwk]100-[1-5])-(mobile|unicom|telecom)\Z', value)
     if found is None:
         raise ValueError('Invalid trial profile identity')
     return {'variant': found.group(1).upper(), 'operator': found.group(2)}
@@ -275,6 +286,12 @@ def carrier_template(profile, mcc, mnc):
     fallback_sha = ''
     if p['carrier']['stock_config'] != 'auto':
         path = '/etc/carrier/config/' + p['carrier']['stock_config'] + '.xml'
+        if (preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH) and (mcc, mnc) in STOCK_FALLBACK_TEMPLATES and
+                STOCK_FALLBACK_TEMPLATES[(mcc, mnc)][0] == path):
+            if preloaded == STOCK_DEFAULT_CONFIG_PATH:
+                if os.path.islink(preloaded) or n.digest(n.read(preloaded)) != STOCK_DEFAULT_CONFIG_SHA256:
+                    raise ValueError('Default stock carrier file changed')
+            fallback_used = True
     elif preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH) and (mcc, mnc) in STOCK_FALLBACK_TEMPLATES:
         if preloaded == STOCK_DEFAULT_CONFIG_PATH:
             if os.path.islink(preloaded) or n.digest(n.read(preloaded)) != STOCK_DEFAULT_CONFIG_SHA256:

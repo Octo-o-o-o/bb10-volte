@@ -17,7 +17,7 @@ document.querySelectorAll('[data-copy-trial]').forEach(button => {
 
 function openLinkedVariant() {
   const id = location.hash.slice(1);
-  if (!/^(sqn|sqc|sqw)100-[1-5]$/.test(id)) return;
+  if (!/^(sqn|sqc|sqw|sqk)100-[1-5]$/.test(id)) return;
   const card = document.getElementById(id);
   const details = card?.querySelector('details');
   if (details) details.open = true;

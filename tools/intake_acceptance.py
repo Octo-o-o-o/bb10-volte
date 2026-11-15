@@ -82,7 +82,7 @@ def evaluate(manifest, evidence_root, admission=None):
     require(set(manifest) <= {'schema','scope','sources','checks','known_SMS_limitations'}, 'unknown_manifest_field')
     scope = manifest.get('scope')
     require(isinstance(scope, dict) and set(scope) == set(SCOPE_KEYS), 'invalid_exact_scope')
-    require(re.fullmatch(r'SQ[NCW]100-[1-5]', scope['variant']) is not None, 'invalid_variant')
+    require(re.fullmatch(r'SQ[NCWK]100-[1-5]', scope['variant']) is not None, 'invalid_variant')
     require(re.fullmatch(r'[A-Z0-9_]{3,40}', scope['board']) is not None, 'invalid_board')
     require(re.fullmatch(r'\d{2}\.\d\.\d\.\d{4}', scope['os_version']) is not None, 'invalid_os')
     require(re.fullmatch(r'460-\d{2,3}', scope['home_plmn']) is not None, 'invalid_home_plmn')

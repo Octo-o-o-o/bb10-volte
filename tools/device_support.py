@@ -86,6 +86,21 @@ def error_message(code, sim_plmn=None):
         'sim_not_ready': tr('SIM 尚未就绪。请解锁 SIM 并等待入网，再检查；暂不安装自动适配。'),
         'sim_identity_unavailable': tr('尚未核对 SIM 归属网络，暂不安装。请等待手机读卡完成后重新检查。'),
         'unified_preflight_blocked': tr('安装条件未通过。请先重新检查设备并处理显示的阻断原因。'),
+        'mobile_network_off': tr('手机移动网络已关闭。请在手机设置中打开移动网络（若飞行模式开启请先关闭），然后重新检查设备。'),
+        'mobile_network_rejected': tr('系统拒绝自动打开移动网络。请检查飞行模式和移动网络设置，然后重新检查设备。'),
+        'mobile_network_reply_timeout': tr('未收到打开移动网络的确认。请检查手机移动网络开关，然后重新检查设备。'),
+        'mobile_network_enable_unconfirmed': tr('未确认移动网络已开启。请检查手机移动网络开关，然后重新检查设备。'),
+        'mobile_network_state_unknown': tr('移动网络状态不明确。请检查手机系统设置，然后重新检查设备。'),
+        'mobile_network_enable_blocked': tr('当前状态不允许自动打开移动网络。请重新检查设备并按提示处理。'),
+        'mobile_network_write_failed': tr('打开移动网络的请求未完整提交。请检查手机系统开关，然后重新检查设备。'),
+        'unified_backup_not_verified': tr('原始配置电脑备份未完成读回校验，本次安装已停止。请检查磁盘空间和权限后重试。'),
+        'unified_update_needs_stop_and_reboot': tr('有适配更新。请先停用，待恢复后正常重启，再检查并更新。'),
+        'unified_already_installed': tr('手机已安装三网自动适配。请点击“检查设备”读取当前状态。'),
+        'unified_package_mismatch': tr('手机自动适配版本与程序不匹配。请保留当前安装并导出报告。'),
+        'restore_pending': tr('停用恢复仍在处理中。请稍候点击“检查设备”或“刷新状态”，待恢复完成后再正常重启。'),
+        'call_active': tr('检测到通话中或暂时无法确认通话空闲。请结束通话后再执行操作。'),
+        'root_scheme_not_supported': tr('当前手机 Root 启动入口不在已支持方案内（要求 AutoRoot v4，或 SQC100-2 已校验 AutoRoot v2）。'),
+        'root_boot_script_changed': tr('手机 Root 启动脚本与已知原版散列不一致，为安全起见已停止安装。请保留现场并导出报告。'),
     }.get(code)
 
 

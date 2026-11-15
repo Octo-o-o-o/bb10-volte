@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "as_of": "2026-11-08",
-  "release": "v0.5.0-r47",
-  "mobile_version": "0.1.0.47",
+  "as_of": "2026-11-15",
+  "release": "v0.5.0-r48",
+  "mobile_version": "0.1.0.48",
   "admission": "All listed model/carrier combinations are open regardless of evidence status. Evidence is historical and version-specific, not new release acceptance.",
   "labels": {
     "passed": {

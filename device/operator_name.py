@@ -86,7 +86,7 @@ def observe():
         if os.path.isfile(WORKER):
             worker = load(WORKER)
             result['worker_alive'] = worker['owner'] == OWNER and worker['boot'] == boot() and alive(worker['pid'])
-    except (OSError, ValueError, KeyError, TypeError, AssertionError):
+    except (IOError, OSError, ValueError, KeyError, TypeError, AssertionError):
         pass
     return result
 
@@ -94,7 +94,7 @@ def observe():
 def link_target():
     try:
         return os.readlink(STOCK)
-    except OSError:
+    except (IOError, OSError):
         return None
 
 
@@ -162,7 +162,7 @@ def restore():
 
 def alive(pid):
     try: os.kill(pid, 0); return True
-    except OSError: return False
+    except (IOError, OSError): return False
 
 
 def stop():
@@ -218,7 +218,7 @@ def watch():
             try:
                 receipt = authorized_receipt()
                 break
-            except (OSError, ValueError, KeyError, TypeError, AssertionError):
+            except (IOError, OSError, ValueError, KeyError, TypeError, AssertionError):
                 time.sleep(5)
         if receipt is None: return
         while os.path.isfile(BASE + '/enabled'):

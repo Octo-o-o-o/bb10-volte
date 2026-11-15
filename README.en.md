@@ -2,17 +2,17 @@
 
 **macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
 
-**Desktop r47 · mobile 0.1.0.47.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
+**Desktop r48 · mobile 0.1.0.48.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Model table](docs/COMPATIBILITY.md) · [Release notes](docs/RELEASE-r47.en.md)
+[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r48.en.md)
 
 ## What changed
 
-- Expand HPLMN admission across China Mobile (`460-00/02/04/07/08`), Unicom (`460-01/06/09`) and Telecom (`460-03/05/11/12`) with SHA-256-pinned stock read-only XML fallback (`404.xml`/`36.xml`/`446.xml`) and fail-closed empty-APN bootstrap so newer SIMs such as `460-08` no longer fail with “no matching template” when mapped to `0.xml`.
-- Fix the r45/r46 Passport (Q30) China Telecom incoming-call silent-audio regression by restoring `MediaDialog.Omit200OkSdp=1` while keeping `MediaDialog.EarlySdp=0`, avoiding duplicate `200 OK` SDP after `183`+`PRACK`/`UPDATE` while preserving Unicom/non-precondition `180` de-duplication and `200 OK` SDP.
-- Add clear rejection notes for China Broadnet `460-15`, ISIM-bearing 5G USIMs and downloaded OTA overrides, plus PII-redacted media diagnostics; retain r46 Telecom MO SMS completion (across all four Telecom MNCs) and the automatic status-bar BlackBerry icon, with in-place upgrade from r42–r46.
+- Harden 3GPP Operator Identifier suffix stripping (`.mncXX.mcc460.gprs`) and controlled MME-default APN (such as `cmiot`) bootstrap on `0.xml` fallback PLMNs, verifying `0.xml` hashes and preserving fallback provenance in service journals.
+- Extend volatile SE.13 operator-name overlays and numeric `current_ons` display fallback across all 12 commercial ranges on China Mobile (`460-00/02/04/07/08`), Unicom (`460-01/06/09`) and Telecom (`460-03/05/11/12`), and add QNX Python 3.2 `IOError` guards, 8-second bounded `slog2info` reads, and `SQW100-3` / P’9983 mapping.
+- Surface specific SIM rejection reasons (`460-15` China Broadnet, ISIM-bearing 5G USIMs, downloaded OTA overrides) on first mobile activation tap and cold reopen while rejecting unsigned orphan BAR assets; retain r46 Telecom MO SMS completion + BlackBerry icon and r47 12-MNC admission + Passport Telecom incoming-audio fixes, with in-place upgrade from r42–r47.
 
 ## How to use it
 
@@ -46,16 +46,16 @@ Startup has been tried on Windows 11 and Apple silicon. Windows 10 and Intel hav
 
 For excessive disk use after repeated preparation or failures, see [storage locations and manual cleanup](docs/DISK-CLEANUP.en.md). r43 includes preparation reuse and build cleanup fixes.
 
-A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r47 downloads below.
+A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r48 downloads below.
 
 If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same file. Check the SHA-256 before you run it.
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r48/bb10-volte-0.5.0-r48-windows-x64.exe) |
 | macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r47/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/SHA256SUMS.txt) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r48/bb10-volte-0.5.0-r48-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r48/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r48/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

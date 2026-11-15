@@ -34,7 +34,7 @@ class ExactVariantMobileLabelsTests(unittest.TestCase):
                     label,
                 )
                 self.assertIsNotNone(rendered, 'visible option must name its model and carrier')
-                device = re.fullmatch(r'\s*(SQ[NCW]100-[0-9]+)\s*/\s*', rendered.group('device'))
+                device = re.fullmatch(r'\s*(SQ[NCWK]100-[0-9]+)\s*/\s*', rendered.group('device'))
                 self.assertIsNotNone(device)
                 self.assertEqual(device.group(1), case['variant'])
                 self.assertEqual(rendered.group('operator'), case['operator'])

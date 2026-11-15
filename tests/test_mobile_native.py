@@ -169,6 +169,13 @@ class NativeDeliveryContracts(unittest.TestCase):
         experimental = (NATIVE / "assets/Experimental.qml").read_text(encoding="utf-8")
         self.assertEqual(set(re.findall(r'value: "(china-[^"]+)"', experimental)), set(profiles))
 
+    def test_cached_observation_preserves_waiting_sms_and_specific_sim_diagnosis(self):
+        source = (NATIVE / "src/mobilecontroller.cpp").read_text(encoding="utf-8")
+        self.assertGreaterEqual(source.count("waiting_sim,waiting_sms,waiting_ims"), 2)
+        self.assertIn('sim_broadnet_unsupported,sim_route_isim_unsupported,sim_downloaded_config_override,sim_carrier_unrecognized', source)
+        self.assertIn('state == "sim_unsupported" && codeState.startsWith("sim_")', source)
+        self.assertIn('bounded(m_model.value("title_code"), 80).startsWith("sim_")', source)
+
 
 if __name__ == "__main__":
     unittest.main()

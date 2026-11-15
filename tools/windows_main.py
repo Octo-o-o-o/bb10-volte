@@ -14,8 +14,9 @@ if __name__ == '__main__':
         folder.mkdir(parents=True, exist_ok=True)
         report = folder / 'startup-error.txt'
         report.write_text(traceback.format_exc(), encoding='utf-8')
-        import ctypes
-        ctypes.windll.user32.MessageBoxW(None, tr('程序未能启动。诊断信息保存在本机：\n') + str(report),
-                                         'bb10-volte', 0x10)
+        if '--self-test' not in sys.argv[1:]:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, tr('程序未能启动。诊断信息保存在本机：\n') + str(report),
+                                             'bb10-volte', 0x10)
         result = 1
     sys.exit(result)

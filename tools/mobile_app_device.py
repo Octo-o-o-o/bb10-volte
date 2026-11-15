@@ -253,7 +253,7 @@ def reconcile(job, release):
                 result = installed(release)
                 require(result.get('all_files_verified') is True, 'registered_app_mismatch')
                 job.update(state='completed', error=None, sud_success=True, all_files_verified=True)
-            except (InstallError, OSError, ValueError):
+            except (InstallError, IOError, OSError, ValueError):
                 job.update(state='conflict', error='registered_app_mismatch')
     job['updated'] = int(time.time())
     save(job_path(job['id']) + '/record.json', job)
@@ -263,7 +263,7 @@ def reconcile(job, release):
 def summary(release, device_id, job=None):
     try:
         app = installed(release)
-    except (InstallError, OSError, ValueError) as error:
+    except (InstallError, IOError, OSError, ValueError) as error:
         app = {'state': 'conflict', 'can_install': False,
                'error': str(error) if isinstance(error, InstallError) else 'app_read_failed'}
     if job and job['state'] != 'completed':
@@ -271,7 +271,7 @@ def summary(release, device_id, job=None):
     if app.get('can_install'):
         try:
             require(digest(regular(INSTALLER, 1048576)) == release['installer_sha256'], 'installer_unverified')
-        except (OSError, InstallError):
+        except (IOError, OSError, InstallError):
             app.update(state='error', error='installer_unverified', can_install=False)
     if job:
         app['job'] = dict((key, job.get(key)) for key in ('id', 'state', 'error', 'target_version', 'sud_success', 'all_files_verified'))
@@ -356,7 +356,7 @@ def provision(release, stage, identifier, expected_device):
                         break
                     time.sleep(0.25)
                 job['installer_exit'] = process.poll()
-            except (OSError, ValueError):
+            except (IOError, OSError, ValueError):
                 job['error'] = 'installer_start_unknown'
             save(directory + '/record.json', job)
         return summary(release, device, reconcile(job, release))

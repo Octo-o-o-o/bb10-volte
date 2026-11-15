@@ -13,7 +13,8 @@ FAMILIES = {
 # Public board names reported in the pinned community research. A board name
 # supplements the normal model number; it never grants compatibility by itself.
 RESEARCH_BOARDS = {'CLASSICROW': 'classic', 'CLASSICATT': 'classic', 'CLASSICVZW': 'classic', 'CLASSICNA': 'classic',
-                   'WINDERMERE4ROW': 'passport', 'WINDERMEREEMEA': 'passport', 'KHANE': 'p9983'}
+                   'WINDERMERE4ROW': 'passport', 'WINDERMEREEMEA': 'passport', 'WINDERMERENA': 'passport',
+                   'KHANE': 'p9983'}
 
 
 def read_identity():
@@ -23,7 +24,7 @@ def read_identity():
         value = n.value(n.attrs(n.read('/pps/services/hw_info/inventory')), 'Board_Type')
         if isinstance(value, str) and re.match(r'\A[A-Z0-9_]{1,64}\Z', value):
             board = value
-    except (OSError, ValueError, TypeError, AttributeError):
+    except (IOError, OSError, ValueError, TypeError, AttributeError):
         pass
     return {'model': n.value(props, 'modelname'), 'full_model': n.value(props, 'modelfullname'),
             'variant': n.value(props, 'modelnumber'),

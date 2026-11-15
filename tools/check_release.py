@@ -53,7 +53,7 @@ SENSITIVE = {
     'access token': re.compile(r'(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})'),
     'private key': re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
     'SSH public key': re.compile(r'(?:ssh-rsa|ssh-ed25519)\s+[A-Za-z0-9+/]{40,}'),
-    'IMSI': re.compile(r'(?<![A-Za-z0-9])4600[0-9]{11}(?![A-Za-z0-9])'),
+    'IMSI': re.compile(r'(?<![A-Za-z0-9])460[0-9]{12}(?![A-Za-z0-9])'),
     '15-digit device or SIM identifier': re.compile(r'(?<![A-Za-z0-9])[0-9]{15}(?![A-Za-z0-9])'),
     'device PIN field': re.compile(r'(?i)["\']pin["\']\s*:\s*["\'][0-9a-f]{8}["\']'),
     'ICCID': re.compile(r'(?<![A-Za-z0-9])8986[0-9]{14,18}(?![A-Za-z0-9])'),

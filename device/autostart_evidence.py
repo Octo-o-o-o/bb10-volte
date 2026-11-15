@@ -86,6 +86,6 @@ def observe(base, profile):
             assert manifest['files'][name] == expected
             assert not os.path.islink(base + '/' + name) and n.digest(n.read(base + '/' + name)) == expected
         result['autostart_authorized'] = True
-    except (OSError, ValueError, KeyError, TypeError, AssertionError):
+    except (IOError, OSError, ValueError, KeyError, TypeError, AssertionError):
         pass
     return result

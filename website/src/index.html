@@ -91,7 +91,7 @@
             </div>
             <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span class="button-copy"><span>下载 macOS 封板版 r43</span><small>Apple 芯片 macOS 11+ · Intel macOS 10.15+</small></span><svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
             <p class="hero-note"><strong>macOS 版已封板于 v0.5.0-r43。</strong>由于维护精力有限，后续不再维护或发布更新。保留该版下载；Windows 版和手机版不受影响。</p>
-            <p class="hero-note">手机版 0.1.0.47 · 桌面 r47。<a href="#variant-matrix">看适配表</a></p>
+            <p class="hero-note">手机版 0.1.0.48 · 桌面 r48。<a href="#variant-matrix">看适配表</a></p>
 
           </div>
 
@@ -113,15 +113,15 @@
 
     <section class="region" id="release" aria-labelledby="release-title">
       <div class="shell">
-        <div class="chapter"><span>00 / r47 · 0.1.0.47</span><span>只写这版新的变化。</span></div>
+        <div class="chapter"><span>00 / r48 · 0.1.0.48</span><span>只写这版新的变化。</span></div>
         <div class="section-heading">
           <h2 id="release-title">这版改了什么。</h2>
-          <p>补齐移动、联通、电信全量商用号段准入与原厂 0.xml 模板兜底，并修复 Passport 电信呼入接通无声。<br>手机版现为 0.1.0.47。</p>
+          <p>加固新号段默认 APN 引导、三网运营商名称显示与系统级异常防护，并完善手机端首次拒因提示与打包校验。<br>手机版现为 0.1.0.48。</p>
         </div>
         <div class="principles">
-          <article><span>全号段</span><h3>新发移动卡也能激活</h3><p>覆盖移动 460-00/02/04/07/08、联通 460-01/06/09、电信 460-03/05/11/12；当 460-08 等新号段被系统映射到空壳 0.xml 时自动校验选用原厂只读模板。</p></article>
-          <article><span>电信呼入</span><h3>修复 Passport 接通无声</h3><p>恢复 Omit200OkSdp=1 并保留 EarlySdp=0，消除电信 183+PRACK 后 200 OK 重复下发 SDP 引发的媒体重协商无声，同时保持联通等无前置条件呼入正常。</p></article>
-          <article><span>清晰诊断</span><h3>明确区分不支持卡型</h3><p>分别说明中国广电 460-15、含 ISIM 的新版 5G USIM 与 OTA 配置覆盖；完整保留电信发信完成补丁与状态栏黑莓标，r42–r46 停用后可直接升级。</p></article>
+          <article><span>APN 引导</span><h3>兼容完整后缀与默认 APN</h3><p>自动剥离 3GPP <code>.mncXX.mcc460.gprs</code> 后缀，并兼容基站在 <code>0.xml</code> 兜底前下发的默认承载 APN（如 <code>cmiot</code>），完整保留兜底来源审计记录。</p></article>
+          <article><span>三网显示与加固</span><h3>12 号段名称兜底与超时保护</h3><p>将内存态 SE.13 运营商表与纯数字 ONS 中文兜底扩展至移动、联通、电信全部 12 个号段，补齐 QNX Python 3.2 异常捕获与日志读取 8 秒超时上限。</p></article>
+          <article><span>手机端与升级</span><h3>首次点击即提示具体拒因</h3><p>手机端首次点击激活与冷启动重开均可直接展示广电、ISIM 5G 卡或 OTA 覆盖拒因；保留电信发信完成与 Passport 电信呼入语音修复，r42–r47 停用后可直接升级。</p></article>
         </div>
       </div>
     </section>
@@ -173,7 +173,7 @@
           <p>先确认 Root 与原生安装入口。<br>安装后，在手机内备份和开启；<br>最后用真实通话与短信确认。</p>
         </div>
         <div class="journey-grid">
-          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>等待 Root 生效</h3><p>开机解锁，等到 Root 成功提示，确认准确型号与系统。</p></div><span class="step-mark">首次 Root 是单独步骤</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>安装原生应用</h3><p>使用兼容 BAR 安装器或对应新版桌面辅助，核对实际安装版本。</p></div><span class="step-mark">当前手机版 0.1.0.47</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>在手机里备份、开启</h3><p>跟随应用完成备份与正常重启。Passport 策略切换可能还需再正常重启一次。</p></div><span class="step-mark">后续日常管理不需电脑</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>验证真实通话</h3><p>呼出、呼入、再呼出，各接通至少两分钟；确认双向声音、LTE 和短信。</p></div><span class="step-mark">保存当前 SIM 的验收记录</span></li></ol>
+          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>等待 Root 生效</h3><p>开机解锁，等到 Root 成功提示，确认准确型号与系统。</p></div><span class="step-mark">首次 Root 是单独步骤</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>安装原生应用</h3><p>使用兼容 BAR 安装器或对应新版桌面辅助，核对实际安装版本。</p></div><span class="step-mark">当前手机版 0.1.0.48</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>在手机里备份、开启</h3><p>跟随应用完成备份与正常重启。Passport 策略切换可能还需再正常重启一次。</p></div><span class="step-mark">后续日常管理不需电脑</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>验证真实通话</h3><p>呼出、呼入、再呼出，各接通至少两分钟；确认双向声音、LTE 和短信。</p></div><span class="step-mark">保存当前 SIM 的验收记录</span></li></ol>
 
           <article class="acceptance-paper">
             <div class="paper-heading"><span>FIELD CHECK / 3 MODELS</span><svg class="icon" aria-hidden="true"><use href="#icon-phone"/></svg></div>
@@ -209,7 +209,7 @@
         </figure>
         <div class="requirement-row"><span>都需要</span><strong>OS 10.3.3.3216</strong><strong>已开通 VoLTE 的 USIM</strong><strong>Root</strong><strong>原生文件能对上</strong></div>
         <div class="risk-banner" role="note"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>首次刷机会清空手机。</strong>先备份。不要把一个型号的镜像刷到另一个型号上。</p><a href="guide.html#prepare">准备和风险<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
-      <p class="compatibility-note" id="sms-evidence">电信短信送到了，手机仍可能显示“发送中”。别重发。</p>
+      <p class="compatibility-note" id="sms-evidence">r46 及后续版本已包含电信发信完成补丁（已在 SQC100-2 实测）；旧版或其他后缀若对方已收到但本地仍显示“发送中”，切勿重复发送。</p>
       </div>
       </section>
 
@@ -218,7 +218,7 @@
         <div class="chapter"><span>04 / DOWNLOAD</span><span>以下为桌面版下载；手机 BAR 请查看安装指南。</span></div>
         <div class="section-heading">
           <h2 id="download-title">你用哪种电脑？<br><em>下载对应版本就好。</em></h2>
-          <div class="release-summary"><p>当前下载版本<br><strong data-release-version>最新版</strong> · 实验版</p><a class="text-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r47" target="_blank" rel="noopener noreferrer">查看版本说明<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+          <div class="release-summary"><p>当前下载版本<br><strong data-release-version>最新版</strong> · 实验版</p><a class="text-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r48" target="_blank" rel="noopener noreferrer">查看版本说明<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
         </div>
         <div class="download-grid">
           <article class="download-card">
@@ -227,7 +227,7 @@
             <p class="platform-spec">Windows 10 / 11 · 64 位（x64）</p>
             <p class="platform-detail">不支持 Windows 7、8 / 8.1 及 32 位系统。</p>
             <p>下载后双击 EXE 即可打开，所需组件已包含在内。不用另装 Python 或 OpenSSH。</p>
-            <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 Windows 版</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 Windows 版</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
             <small class="package-note">EXE 没有发布者签名。用之前对一下校验码。</small>
           </article>
           <article class="download-card">
@@ -241,7 +241,7 @@
             <small class="package-note">已签名并公证。Apple 芯片试过启动，Intel 还没试。</small>
           </article>
         </div>
-        <div class="source-download"><p><strong>想从源码运行？</strong>安装 Python 3.14（含 Tk），然后运行 <code>python tools/gui.py</code>。</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip" target="_blank" rel="noopener noreferrer">源码 ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">源码校验码</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r47/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">全部文件校验码</a></div></div><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r47/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+        <div class="source-download"><p><strong>想从源码运行？</strong>安装 Python 3.14（含 Tk），然后运行 <code>python tools/gui.py</code>。</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-experimental.zip" target="_blank" rel="noopener noreferrer">源码 ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r48/bb10-volte-0.5.0-r48-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">源码校验码</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r48/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">全部文件校验码</a></div></div><div class="mirror-note"><p><strong>默认通过 Cloudflare R2 直接下载。</strong> 无需访问 GitHub。若这条线路不可用，可用下方 GitHub 备用下载；两处文件与 SHA-256 校验码完全一致。</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r48/bb10-volte-0.5.0-r48-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r48/bb10-volte-0.5.0-r48-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub 源码 ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r48/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
         <p class="download-guide-link"><a class="text-link" href="guide.html#verify">下载好了？先核对文件，再按指南操作<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></p>
       </div>
     </section>
@@ -263,7 +263,7 @@
         <div class="faq-layout">
           <div class="faq-intro"><h2 id="faq-title">你可能还想问。<br><em>答案在这里。</em></h2><p>想一步步跟着操作，<br>请打开完整使用指南。</p><a class="button button-secondary" href="guide.html">打开完整使用指南<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></div>
           <div class="faq-list">
-            <details><summary>所有黑莓手机都能用吗？<span aria-hidden="true"></span></summary><p>不是。Q10、Q20、Passport、P’9983 的目录型号能试，看上面的表。要 Root，系统 10.3.3.3216。卡是移动 460-00/07、联通 460-01 或电信 460-11。</p></details>
+            <details><summary>所有黑莓手机都能用吗？<span aria-hidden="true"></span></summary><p>不是。Q10、Q20、Passport、P’9983 的目录型号能试，看上面的表。要 Root，系统 10.3.3.3216。卡是移动 460-00/02/04/07/08、联通 460-01/06/09 或电信 460-03/05/11/12（无 ISIM 应用的 USIM）。</p></details>
             <details><summary>刷了 Android 11 的 Passport 能用这个工具吗？<span aria-hidden="true"></span></summary><p>不能。本项目只适用于原装 BlackBerry 10（OS 10.3.3.3216，QNX 架构）。如果你的黑莓 Passport 已刷入 Android 11（LineageOS 18.1），请前往高通 32 位 Android 11 VoLTE 姊妹项目 <a href="https://qcom32-volte.octoooo.com/" target="_blank" rel="noopener noreferrer">Qcom32 VoLTE 官网（qcom32-volte.octoooo.com）</a> 或 <a href="https://github.com/Octo-o-o-o/qcom32-volte" target="_blank" rel="noopener noreferrer">qcom32-volte 仓库</a>。</p></details>
             <details><summary>一定要 Root 吗？会不会丢数据？<span aria-hidden="true"></span></summary><p>要。已经 Root 就装手机版。还没有，用电脑准备；刷机会清空数据，先备份。连电脑时打开开发模式。</p></details>
             <details><summary>换卡或连不上怎么办？<span aria-hidden="true"></span></summary><p>换卡先关机。应用让你重启再重启。电脑认不到手机，先换能传数据的线。</p></details>

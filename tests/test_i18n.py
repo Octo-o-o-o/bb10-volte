@@ -70,9 +70,12 @@ class LanguageSelectionTests(unittest.TestCase):
                 continue
             tree = ast.parse(path.read_text(encoding='utf-8'))
             for node in ast.walk(tree):
-                if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and
-                        node.func.id == 'tr' and node.args and isinstance(node.args[0], ast.Constant) and
-                        isinstance(node.args[0].value, str)):
+                is_tr = (isinstance(node, ast.Call) and
+                         ((isinstance(node.func, ast.Name) and node.func.id == 'tr') or
+                          (isinstance(node.func, ast.Attribute) and node.func.attr == 'tr')) and
+                         node.args and isinstance(node.args[0], ast.Constant) and
+                         isinstance(node.args[0].value, str))
+                if not is_tr:
                     continue
                 source = node.args[0].value
                 with self.subTest(path=path.name, line=node.lineno):

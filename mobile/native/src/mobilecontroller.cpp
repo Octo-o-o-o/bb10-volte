@@ -316,6 +316,12 @@ QString MobileController::display(const QString &key, const QString &code) const
     const QString supplied = bounded(m_model.value("display").toMap().value(key));
     if (m_modelLanguage == m_language && !supplied.isEmpty()) return supplied;
     if (field >= 0) {
+        const QString codeState = bounded(m_model.value("title_code"), 80);
+        if (state == "sim_unsupported" && codeState.startsWith("sim_")) {
+            for (int i = 0; UI_STATE_STRINGS[i].state; ++i)
+                if (codeState == QLatin1String(UI_STATE_STRINGS[i].state))
+                    return QString::fromUtf8(m_language == "zh" ? UI_STATE_STRINGS[i].zh[field] : UI_STATE_STRINGS[i].en[field]);
+        }
         for (int i = 0; UI_STATE_STRINGS[i].state; ++i)
             if (state == QLatin1String(UI_STATE_STRINGS[i].state))
                 return QString::fromUtf8(m_language == "zh" ? UI_STATE_STRINGS[i].zh[field] : UI_STATE_STRINGS[i].en[field]);
@@ -372,7 +378,8 @@ QString MobileController::statusMessage() const
     if (reportInProgress()) return label("report_exporting_help");
     if (m_busy && !m_transfer.isEmpty()) return label("network_wait_help");
     if (m_runtimeError) {
-        if (m_error == "management_busy" && !display("message", "message_code").isEmpty()) return display("message", "message_code");
+        if ((m_error == "management_busy" || bounded(m_model.value("title_code"), 80).startsWith("sim_")) &&
+            !display("message", "message_code").isEmpty()) return display("message", "message_code");
         const QString reason = label(m_error);
         if (!reason.isEmpty()) return reason;
         if (!display("message", "message_code").isEmpty()) return display("message", "message_code");
@@ -388,7 +395,7 @@ QString MobileController::statusMessage() const
     if (state == "task_complete_status_unchecked") return display("message", "message_code");
     if (m_cachedStatus && state == "registered") return label("cached_registered_help");
     if (m_cachedStatus && state == "verified") return label("cached_verified_help");
-    if (m_cachedStatus && (state == "waiting" || state == "waiting_sim" ||
+    if (m_cachedStatus && (state == "waiting" || state == "waiting_sim" || state == "waiting_sms" ||
                            state == "waiting_ims" || state == "waiting_ims_apn"))
         return label("cached_wait_help");
     if (m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty()) return label("cached_general_help");
@@ -715,7 +722,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
     const QString state = bounded(cache.value("state"), 80);
     // Only informational states can be cached. In particular, never replay a
     // stale restart instruction, recovery decision, job or write authorization.
-    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_sms,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (cache.value("schema").toInt() != 1 || !states.contains(state)) return false;
     QVariantMap details;
     QVariantMap device;
@@ -748,6 +755,12 @@ bool MobileController::cachedModel(QVariantMap *model) const
     model->clear();
     model->insert("schema", 2);
     model->insert("state", state);
+    const QString titleCode = bounded(cache.value("title_code"), 80);
+    if (state == "sim_unsupported" &&
+        QString("sim_broadnet_unsupported,sim_route_isim_unsupported,sim_downloaded_config_override,sim_carrier_unrecognized").split(',').contains(titleCode)) {
+        model->insert("title_code", titleCode);
+        model->insert("message_code", titleCode);
+    }
     model->insert("primary_action", action);
     model->insert("actions", actions);
     model->insert("details", details);
@@ -758,7 +771,7 @@ bool MobileController::cachedModel(QVariantMap *model) const
 void MobileController::saveCachedModel(const QVariantMap &response)
 {
     const QString state = bounded(response.value("state"), 80);
-    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
+    const QStringList states = QString("ready_to_install,mobile_network_off,mobile_network_auto_enable,registered,verified,disabled,update_ready,waiting,waiting_sim,waiting_sms,waiting_ims,waiting_ims_apn,unsupported,sim_unsupported,uninstalled,ready_after_uninstall").split(',');
     if (!states.contains(state)) {
         m_settings.remove("last_observation_v1");
         return;
@@ -778,6 +791,10 @@ void MobileController::saveCachedModel(const QVariantMap &response)
     QVariantMap cache;
     cache.insert("schema", 1);
     cache.insert("state", state);
+    const QString titleCode = bounded(response.value("title_code"), 80);
+    if (state == "sim_unsupported" &&
+        QString("sim_broadnet_unsupported,sim_route_isim_unsupported,sim_downloaded_config_override,sim_carrier_unrecognized").split(',').contains(titleCode))
+        cache.insert("title_code", titleCode);
     cache.insert("details", safeDetails);
     const QString context = bounded(response.value("call_context"), 32);
     if (state == "registered" && QRegExp("^[a-f0-9]{32}$").exactMatch(context))

@@ -1,36 +1,28 @@
-# Compatibility preflight and customer information
-
-**Scope note (2026-11-02):** The historical text below primarily describes the legacy manual workflow. Current unified automatic support is defined by `device/carrier_policy.py` and `project.json`: SQN100-3, SQC100-2 and SQW100-4. See the [variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md) for r14 evidence and this branch's unpublished early checks. The old Passport hold does not describe the accepted SQW100-4 unified service.
+# Exact Models and Test Progress
 
 [简体中文](COMPATIBILITY.md)
 
-Version 0.3.3 attaches community evidence only for exact hardware/OS/actual MCC/MNC matches, alongside finite read-only incoming diagnostics. Evidence does not confer project acceptance. Passport automatic operations are paused; see [community research](COMMUNITY-RESEARCH.en.md).
+Desktop r42 / mobile 0.1.0.43 opened three-carrier activation across all 16 catalog entries. Desktop r44 / mobile 0.1.0.44 fixed fresh-phone preflight when no legacy service remains; desktop r45 / mobile 0.1.0.45 unified three-carrier incoming SIP/SDP signaling; desktop r46 / mobile 0.1.0.46 fixed China Telecom outbound SMS stalling on local "Sending..." and automatically lit the status-bar BlackBerry icon on LTE VoLTE registration (verified on SQC100-2 with Telecom); desktop r47 / mobile 0.1.0.47 expanded HPLMN admission across China Mobile (`460-00/02/04/07/08`), Unicom (`460-01/06/09`) and Telecom (`460-03/05/11/12`) with verified read-only stock `0.xml` fallback and fixed the Passport Telecom incoming-audio regression (restoring `Omit200OkSdp=1` while keeping `EarlySdp=0`); desktop r48 / mobile 0.1.0.48 hardened 3GPP OI-suffixed and MME-default APN bootstrap, extended 12-MNC SE.13/numeric ONS operator-name fallback, added QNX Python 3.2 `IOError` and bounded-log guards, and improved first-tap mobile SIM diagnostics and BAR asset hygiene. Historical evidence status does not block activation; working Root, OS `10.3.3.3216`, pinned native file hashes, a valid USIM without ISIM, verified backups and clean restoration remain required. The table below records historical version- and unit-specific evidence, not re-testing of every model on the newest build.
 
-v0.3.0 separates device recognition, operator profiles and native patch compatibility. GUI, CLI and the phone installer share `device/compatibility.py`. Preflight cannot establish subscriber provisioning or working calls.
+| Model | Mobile | Unicom | Telecom |
+| --- | --- | --- | --- |
+| SQN100-1 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQN100-2 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQN100-3 | Tested usable | Tested usable | Tested with issues |
+| SQN100-4 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQN100-5 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQC100-1 | Tested usable | Tested usable | Tested usable |
+| SQC100-2 | Tested usable | Tested usable | Tested usable |
+| SQC100-3 | Tested usable | Tested usable | Tested usable |
+| SQC100-4 | Tested unsuccessful | Tested unsuccessful | Tested with issues |
+| SQC100-5 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQW100-1 | Tested usable | Tested usable | Tested with issues |
+| SQW100-2 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQW100-3 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
+| SQW100-4 | Tested usable | Tested usable | Tested with issues |
+| SQK100-1 | Tested usable | Tested usable | Tested usable |
+| SQK100-2 | Theoretical / untested | Theoretical / untested | Theoretical / untested |
 
-| Combination | Result | Hardware evidence |
-|---|---|---|
-| Q10 SQN100-3 / OS 10.3.3.3216 / Unicom 460-01 / USIM without ISIM / 3gnet / LTE / matching hashes | Eligible after clean-state checks | One Beijing phone, short incoming/outgoing calls and normal reboot |
-| Another Unicom province with identical conditions | Eligible for individual acceptance; MCC/MNC does not identify province | No cross-province validation |
-| Classic / Q20 (SQC100-*), other Q10 variants | **Not hardware validated; experimental use available** with opt-in and all gates passing | No project hardware acceptance; community Q20 records are attributed separately |
-| Passport / Q30 (SQW100-*) | **Provider lifecycle needs validation**; automatic installation, update, start and restore paused regardless of opt-in | Contributed two-way call report also describes a network-stack restart on provider disable; not independently reproduced |
-| Other Unicom MNCs, Mobile, Telecom, custom profiles | Matching profile plus experimental opt-in and all technical gates required | Public-data templates only |
-| ISIM, unknown SIM type or different identity layout | Needs a different implementation; installation blocked | Untested |
-| Unknown/conflicting device identity, different OS or any native hash mismatch | Installation blocked; report export available | Opt-in cannot bypass these checks |
-| Root, SIM, LTE or data APN unavailable; existing installation not restored | Resolve and repeat preflight | Existing state is preserved |
+Per-model scope, known issues and provenance are recorded in the [shared compatibility matrix](../materials/compatibility-matrix.json), and deduplicated handset test progress is tracked in [manual progress](INTAKE-MANUAL-PROGRESS.md). `SQW100-2` has no verified production identity; `SQK100-2` is an officially certified variant without a local test unit or verified first-flash recipe.
 
-Computer connectivity has separate acceptance: on 2026-10-28, one Mac mini / Apple M6 / macOS 27.2 and the Q10 above passed built-in CDC-NCM USB networking, strict SSH/effective UID 0, existing-service reads, owner-operated calls with both audio directions/LTE and USB reconnection, without an added driver. Intel hardware, other macOS/USB modes, new authorization writes, Mac initial Root and a phone reboot in this run remain untested. Published r5 First use has a known false failure; source fixes are recorded separately from package acceptance. See the [Mac guide](MACOS.en.md) and [sanitized hardware record](../materials/macos-device-validation-2026-10-28.json).
-
-Identity comes from `/pps/services/deviceproperties`; full OS from `/etc/os.version`. The variant prefix identifies a device when its friendly name is absent, but conflicting identities fail closed. Official model examples: [Classic SQC100-2](https://www.att.com/support_static_files/manuals/BlackBerry_Classic_SQC100-2.pdf), [Passport SQW100-3](https://www.att.com/support_static_files/manuals/BlackBerry_Passport_SQW100-3.pdf). Recognition does not validate radio, drivers or IMS.
-
-Every trial requires **OS 10.3.3.3216, root, QNX ARM32 and all four exact native SHA-256 values**, matching SIM/profile, verifiable stock carrier configuration, active LTE/data APN and a clean baseline. Editing JSON or enabling trials cannot bypass native checks. Engine: `qnx-arm32-os3216-native-v1`; other hashes/builds need implementation and hardware acceptance.
-
-**Desktop `0.3.3-r8` downloads matching Q10, Q20, or Q30 firmware by exact hardware model. Automatic Root image building and flashing remain Q10-only.** Q20 / Q30 require their own matching Root and SSH materials; never flash Q10 images. Firmware downloads and rooted-phone VoLTE compatibility have separate validation scopes.
-
-P-CSCF comes from network PCO; no Beijing address is hardcoded. Province is not a code gate, but provisioning, terminal policies, bands, APNs and roaming affect results. See [profiles](PROFILES.en.md) and [research](CARRIER-RESEARCH.en.md).
-
-Ask customers for model/variant/full OS and root readiness; operator, home/current province and porting/roaming status; whether the same SIM supports two-way VoLTE in a supported phone; selected JSON and sanitized preflight; per-device call results/failure stage. Full phone numbers or SIM identities are unnecessary.
-
-Reports do not automatically collect full IMSI, IMEI, ICCID, PIN, SIM secrets, authentication material or SSH keys. Keep personal details out of profile labels. Configuration edits invalidate preflight; stop and restore before updating. Issues and PRs for other builds, models and carriers are welcome; see [reporting guidance](ISSUES.md).
-
-Experimental device/carrier combinations must also set runtime.autostart=false and use manual start. Opt-in cannot bypass this restriction after the author reported boot-animation hangs. The accepted Q10 baseline retains autostart.
+On 2026-11-10, an additional `SQN100-3` (`R085` / `10.3.3.3216`) with Telecom `460-11` and mobile `0.1.0.43` / desktop engine `r43` completed installation and reboot after blue-LED recovery, registered IMS, and passed owner-confirmed incoming/outgoing calls, two-way audio, basic SMS and in-call mobile web browsing; historical Telecom notes and detailed HTTP/HTTPS or message-count sub-items remain scoped as recorded in [manual progress](INTAKE-MANUAL-PROGRESS.md).

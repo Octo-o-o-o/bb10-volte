@@ -47,7 +47,7 @@ def mobile_radio_state():
             return 'OFF'
         if rows == ['power_status::ON']:
             return 'ON'
-    except (OSError, ValueError, TypeError, UnicodeError, AttributeError):
+    except (IOError, OSError, ValueError, TypeError, UnicodeError, AttributeError):
         pass
     return None
 
@@ -82,7 +82,7 @@ def enable_mobile_network():
                 continue
             try:
                 reply = n.attrs(os.read(fd, 65536))
-            except OSError as error:
+            except (IOError, OSError) as error:
                 if error.errno == errno.EAGAIN:
                     continue
                 raise
@@ -177,7 +177,7 @@ def request_mode(value):
                 break
             try:
                 reply = n.attrs(os.read(fd, 262144))
-            except OSError as error:
+            except (IOError, OSError) as error:
                 if error.errno == errno.EAGAIN:
                     continue
                 raise

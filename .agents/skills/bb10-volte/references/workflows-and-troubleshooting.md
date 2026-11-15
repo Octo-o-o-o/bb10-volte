@@ -74,4 +74,4 @@ git status -sb
 - Note: `python tools/package_release.py` (run automatically on clean checkouts in CI) writes `dist/bb10-volte-<version>-experimental.zip`; on a maintainer machine that keeps frozen release artifacts inside `dist/`, bump `desktop_revision` first or run in an isolated checkout before invoking `package_release.py`.
 
 - [check_release.py](../../../../tools/check_release.py) enforces an **exact bidirectional match** between `git ls-files` and the audited public allowlist (`TOP` + `PATTERNS`), verifies every payload/helper/BAR SHA-256 manifest, checks every relative Markdown link, rejects symlinks, and scans all text files for accidental tokens, keys, IMSI/ICCID, phone numbers, and local user paths.
-- Never overwrite immutable published release tags or binary assets (`v0.5.0-r46`, `0.1.0.46`, or frozen macOS `v0.5.0-r43`) unless explicitly cutting a new release revision authorized by the maintainer.
+- Never overwrite immutable published release tags or binary assets (`v0.5.0-r42`–`v0.5.0-r47`, `0.1.0.43`–`0.1.0.47`, or frozen macOS `v0.5.0-r43`) unless explicitly cutting a new release revision authorized by the maintainer.

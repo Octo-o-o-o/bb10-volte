@@ -409,7 +409,7 @@ def deliver_connection_notification(item, kind='connected'):
         fd = os.open('/pps/system/notify/control', os.O_RDWR | os.O_NONBLOCK)
         try:
             os.read(fd, 65536)
-        except OSError as error:
+        except (IOError, OSError) as error:
             if error.errno not in (errno.EAGAIN, errno.EWOULDBLOCK):
                 raise
         if os.write(fd, packet) != len(packet):
@@ -459,7 +459,7 @@ def live():
     def at(path):
         try:
             return n.attrs(n.read(path))
-        except OSError:
+        except (IOError, OSError):
             return {}
     public = at('/pps/services/ims/status_public')
     private = at('/pps/services/ims/cellular/status_private')
@@ -501,7 +501,7 @@ def handoff():
                 idle_stock(pids[0])
                 time.sleep(3)
                 idle_stock(pids[0])
-            except (AssertionError, OSError, ValueError):
+            except (AssertionError, IOError, OSError, ValueError):
                 time.sleep(3)
                 continue
             prior = {'boot': boot_token(), 'pid': pids[0], 'at': time.time()}
@@ -599,7 +599,7 @@ def prepare():
         assert not core_stopping(), 'stopped'
         try:
             snapshot = card()
-        except OSError:
+        except (IOError, OSError):
             snapshot = {'state': None}
         if snapshot['state'] == 'READY':
             try:
@@ -708,7 +708,7 @@ def reconcile_stale_sms_busy(facts, choice, previous):
     would recreate a false native state, so this is retained diagnostic evidence,
     not an owned carrier setting.
     """
-    models = {'SQW100-1': 'WINDERMEREEMEA', 'SQW100-4': 'WINDERMERE4ROW'}
+    models = {'SQW100-1': 'WINDERMEREEMEA', 'SQW100-3': 'WINDERMERENA', 'SQW100-4': 'WINDERMERE4ROW'}
     if (facts.get('variant') not in models or facts.get('board_type') != models[facts['variant']]
             or facts.get('os_version') != '10.3.3.3216'
             or choice.get('operator') not in ('mobile', 'unicom')):
@@ -840,12 +840,12 @@ def public_status():
         try:
             current_selection = policy.select(device_info.read_identity(), card())
             value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
-        except (OSError, ValueError, TypeError, KeyError):
+        except (IOError, OSError, ValueError, TypeError, KeyError):
             pass
     try:
         busy = n.value(n.attrs(n.read('/pps/services/cellular/sms/status')), 'smsServiceBusy')
         value['sms_service_busy'] = busy if type(busy) is bool else None
-    except (OSError, ValueError, TypeError):
+    except (IOError, OSError, ValueError, TypeError):
         value['sms_service_busy'] = None
     return value
 

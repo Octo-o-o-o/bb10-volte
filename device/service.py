@@ -80,7 +80,7 @@ def alive(pid):
     try:
         os.kill(pid, 0)
         return True
-    except OSError:
+    except (IOError, OSError):
         return False
 
 
@@ -295,7 +295,7 @@ def wait_for_ims_apn(expected_imsi):
             if sim_ready and current_usim() != expected_imsi:
                 raise RuntimeError('SIM changed while waiting for dedicated IMS APN')
             item = n.value(n.attrs(n.read(DATA)), 'ims', {})
-            ims_apn = (item.get('apn') or '').strip().lower() if isinstance(item.get('apn'), str) else ''
+            ims_apn = profiles.normalize_apn(item.get('apn'))
             if (sim_ready and network.get('radio_on') and network.get('lte') and
                     network.get('apn_matches') is not False and
                     ims_apn == ACTIVE_PROFILE['ims']['apn'].lower() and item.get('connected') is True):
@@ -412,7 +412,10 @@ def collect_vpn_evidence():
         stdout = n.read(path).decode('utf-8', 'replace')
         known.update(re.findall(r'^\s*uid \(string\) (' + n.UUID + r')\s*$', stdout, re.M))
     if j.get('native_pid') and j.get('boot') == boot_token():
-        data = subprocess.check_output(['/bin/slog2info', '-b', 'ims_rrm']).decode('utf-8', 'replace')
+        try:
+            data = n.command(['/bin/slog2info', '-b', 'ims_rrm'], 8).decode('utf-8', 'replace')
+        except (IOError, OSError, RuntimeError):
+            data = ''
         prefix = 'ims_rrm.' + str(j['native_pid']) + ' '
         own = '\n'.join(line for line in data.splitlines() if prefix in line)
         known.update(re.findall(r'vpn_login response: uid= (' + n.UUID + ')', own))
@@ -791,7 +794,7 @@ class MonitorWaiter:
         for fd in self.streams:
             try:
                 os.close(fd)
-            except OSError:
+            except (IOError, OSError):
                 pass
         self.streams = {}
 
