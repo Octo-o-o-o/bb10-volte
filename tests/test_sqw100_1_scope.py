@@ -26,9 +26,11 @@ class ExactPassportScope(unittest.TestCase):
                              ('os_version', '10.3.3.2205')):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 policy.select(dict(FACTS, **{field: value}), CARD)
-        for mnc in ('02', '08', '000', '001', '007'):
+        for mnc in ('20', '99', '000', '001', '007'):
             with self.subTest(mnc=mnc), self.assertRaisesRegex(ValueError, 'carrier_not_validated'):
-                policy.select(FACTS, dict(CARD, mnc=mnc, imsi='460' + mnc + '1234512345'))
+                policy.select(FACTS, dict(CARD, mnc=mnc, imsi='460' + mnc + '12345' * 2))
+        with self.assertRaisesRegex(ValueError, 'china_broadnet_unsupported'):
+            policy.select(FACTS, dict(CARD, mnc='15', imsi='460' + '15' + '12345' * 2))
         with self.assertRaisesRegex(ValueError, 'sim_route_unsupported'):
             policy.select(FACTS, dict(CARD, kind=18))
 
@@ -81,9 +83,10 @@ class ExactPassportScope(unittest.TestCase):
             policy.select(FACTS, dict(ported, imsi='460' + '01' + '12345' * 2))
 
     def test_46007_is_not_implicitly_enabled_on_previous_models(self):
+        expected_mncs = ('00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '11', '12')
         for variant in policy.MODELS:
             facts = dict(FACTS, variant=variant, board_type=policy.MODELS[variant][1])
-            self.assertEqual(policy.ADMITTED_MNCS[variant], ('00','01','07','11'))
+            self.assertEqual(policy.ADMITTED_MNCS[variant], expected_mncs)
             self.assertEqual(policy.select(facts, CARD)['operator'],'mobile')
 
     def test_unknown_legacy_installation_is_never_adopted_as_sqw100_4(self):
@@ -100,14 +103,15 @@ class ExactPassportScope(unittest.TestCase):
         self.assertFalse(device_info.provider_lifecycle_supported(identity))
 
     def test_desktop_and_phone_catalog_admit_observed_carriers_with_SMS_limits(self):
+        expected_plmns = ['460-' + m for m in ('00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '11', '12')]
         mobile = device_support.assess('SQW100-1', 'mobile')
         self.assertTrue(mobile['automatic_volte'])
-        self.assertEqual(mobile['validated_home_plmns'], ['460-00', '460-01', '460-07', '460-11'])
+        self.assertEqual(mobile['validated_home_plmns'], expected_plmns)
         self.assertIn('460-07', device_support.describe(mobile))
         self.assertTrue(device_support.assess('SQW100-1', 'telecom')['automatic_volte'])
         self.assertEqual(variant_trials.plan('SQW100-1', 'telecom')['route'], 'automatic_supported')
         self.assertEqual(mobile['evidence_status']['telecom'],'issues')
-        self.assertEqual(variant_trials.plan('SQW100-1', 'mobile')['validated_home_plmns'], ['460-00', '460-01', '460-07', '460-11'])
+        self.assertEqual(variant_trials.plan('SQW100-1', 'mobile')['validated_home_plmns'], expected_plmns)
         self.assertTrue(device_support.assess('SQW100-1', 'unicom')['automatic_volte'])
         self.assertEqual(variant_trials.plan('SQW100-1', 'unicom')['route'], 'automatic_supported')
 

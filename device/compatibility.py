@@ -32,11 +32,12 @@ DATA_SETTINGS = '/pps/services/cds/cnice/status_persistent'
 NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
                  'radio_read_error', 'data_read_error', 'network_read_error',
                  'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
-                 'data_settings_read_error', 'emergency_service', 'lte_data_service')
+                 'data_settings_read_error', 'emergency_service', 'lte_data_service',
+                 'stock_apn_bootstrap_eligible')
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
 NETWORK_ENUMS = ('data_services_status', 'data_service_mode')
-PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', '3gnet')
+PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', 'cmwap', '3gnet', 'wonet', 'uninet')
 CONFIGURATION_FLAGS = ('ims_override_absent', 'probe_override_absent', 'cdsc_directory_empty',
                        'voice_override_absent', 'ims_profiles_absent', 'ims_networks_absent',
                        'ims_services_absent', 'ims_domain_default', 'cdsc_selection_default')
@@ -221,18 +222,43 @@ def read_network(profile=None):
             value = internet.get(key)
             result['internet_' + key] = value if type(value) is bool else None
         apn = internet.get('apn')
-        present = isinstance(apn, str) and bool(apn)
+        norm_apn = apn.strip().lower() if isinstance(apn, str) else ''
+        present = bool(norm_apn)
         connected = internet.get('connected')
-        result.update(apn_matches=apn in p['carrier']['data_apns'] if present else None,
+        profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
+        result.update(apn_matches=norm_apn in profile_apns if present else None,
                       data_connected=connected if type(connected) is bool else None,
-                      observed_data_apn=apn if apn in PUBLIC_APNS else 'other' if present else 'unknown')
+                      observed_data_apn=norm_apn if norm_apn in PUBLIC_APNS else 'other' if present else 'unknown')
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         result['data_read_error'] = result['network_read_error'] = True
+    cdsc_xml = None
     try:
-        result['data_service_mode'] = n.value(n.attrs(n.read(DATA_SETTINGS)), 'data_service_mode')
+        settings = n.attrs(n.read(DATA_SETTINGS))
+        result['data_service_mode'] = n.value(settings, 'data_service_mode')
+        cdsc_xml = settings.get('cdsc_xml')
     except (OSError, ValueError, TypeError, AttributeError, KeyError):
         # An optional setting read cannot erase a successful live observation.
         result['data_settings_read_error'] = True
+    result['stock_apn_bootstrap_eligible'] = False
+    mcc, mnc = result.get('mcc'), result.get('mnc')
+    if (not result.get('network_read_error') and not result.get('data_settings_read_error') and
+            not result.get('apn_matches') and result.get('observed_data_apn') == 'unknown' and
+            result.get('data_service_mode') == 'ON' and cdsc_xml in (None, ':') and
+            (mcc, mnc) in profiles.STOCK_FALLBACK_TEMPLATES and
+            mcc == p['carrier']['mcc'] and mnc in p['carrier']['mncs']):
+        try:
+            cm = n.attrs(n.read('/pps/services/carriermanager/status_private'))
+            home = n.value(cm, 'true_home_carrier', {})
+            preloaded = home.get('preloadedConfigFile')
+            if (home.get('mcc') == int(mcc) and home.get('mnc') == int(mnc) and
+                    not home.get('downloadedConfigFile') and
+                    preloaded in (None, '', profiles.STOCK_DEFAULT_CONFIG_PATH)):
+                if preloaded != profiles.STOCK_DEFAULT_CONFIG_PATH or (
+                        not os.path.islink(preloaded) and
+                        n.digest(n.read(preloaded)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
+                    result['stock_apn_bootstrap_eligible'] = True
+        except (OSError, ValueError, TypeError, AttributeError, KeyError):
+            pass
     result.update(public_network_diagnostics(result))
     return result
 
@@ -267,9 +293,15 @@ def network_checks(s, profile=None):
     services_off = s.get('data_services_status') == 'OFF' or s.get('data_service_mode') == 'OFF'
     inactive = any(s.get(key) is False for key in
                    ('internet_present', 'internet_enabled', 'internet_connectable', 'internet_active'))
+    bootstrap = (s.get('stock_apn_bootstrap_eligible') is True and
+                 s.get('data_service_mode') == 'ON' and
+                 not s.get('network_read_error') and
+                 not s.get('data_settings_read_error') and
+                 online)
     data = (s.get('apn_matches') is True and s.get('data_connected') is True and
             not s.get('network_read_error') and not services_off and not inactive and radio_data)
     code = ('data_apn_ready' if data else
+            'data_apn_bootstrap_pending' if bootstrap else
             'data_apn_state_unknown' if s.get('network_read_error') else
             'data_services_off' if services_off else
             'data_internet_inactive' if inactive else
@@ -279,7 +311,7 @@ def network_checks(s, profile=None):
             'data_apn_profile_mismatch' if s.get('apn_matches') is False else
             'data_apn_disconnected' if s.get('apn_matches') is True and s.get('data_connected') is False else
             'data_apn_state_unknown')
-    add('apn', 'pass' if data else 'wait', code)
+    add('apn', 'pass' if (data or bootstrap) else 'wait', code)
     return checks
 
 

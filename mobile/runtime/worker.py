@@ -80,6 +80,14 @@ MESSAGES = {
                     'Further adaptation needed', 'Export a compatibility report. Recognizing a model does not establish support. Existing experimental routes are in Advanced.', 'Export compatibility'),
     'sim_unsupported': ('当前 SIM 尚未通过检查', '请检查 SIM、LTE 数据服务及运营商 VoLTE 开通状态，换卡请关机后操作。', '重新检查',
                         'SIM checks incomplete', 'Check the SIM, LTE data and carrier VoLTE provisioning. Power off before changing SIMs.', 'Check again'),
+    'sim_broadnet_unsupported': ('暂不支持中国广电 SIM', '检测到中国广电（460-15）SIM。黑莓 10 全系硬件不支持广电主力 700 MHz（Band 28）频段且归属网非三大运营商，当前无法开通 VoLTE。', '重新检查',
+                                 'China Broadnet SIM not supported', 'Detected a China Broadnet (460-15) SIM. BlackBerry 10 hardware lacks 700 MHz (Band 28) LTE and Broadnet is outside the supported three-carrier scope.', 'Check again'),
+    'sim_route_isim_unsupported': ('当前 SIM 含 ISIM 应用', '自动适配目前仅支持无 ISIM 的普通 4G USIM。部分新版 5G USIM 内置 ISIM 应用暂未适配；请换用普通 4G USIM 或导出诊断报告。', '重新检查',
+                                   'SIM contains an ISIM application', 'Automatic setup currently supports standard USIM cards without an ISIM applet. Some newer 5G USIM cards include ISIM and cannot be activated yet; use a standard USIM or export a report.', 'Check again'),
+    'sim_downloaded_config_override': ('检测到运营商配置覆盖', '系统存在已下载的运营商配置文件（OTA 覆盖），为保护现有设置未自动改写。请保留现场并导出诊断报告。', '重新检查',
+                                       'Downloaded carrier override present', 'A downloaded carrier configuration override is active on the phone, so automatic setup stopped safely without overwriting it. Export a diagnostic report.', 'Check again'),
+    'sim_carrier_unrecognized': ('当前 SIM 归属网络未识别', '当前 SIM 归属网络不在中国移动、联通、电信已支持的号段内。请核对 SIM 卡状态或导出诊断报告。', '重新检查',
+                                 'Unrecognized SIM home network', 'This SIM home network is outside the supported China Mobile, Unicom and Telecom PLMN ranges. Check the SIM or export a diagnostic report.', 'Check again'),
     'waiting_sim': ('等待 SIM 就绪', '手机正在读取 SIM 和运营商信息，稍后可点“立即检查”更新状态。如系统要求 SIM 密码，请先解锁；持续等待时请检查系统的移动网络设置。', '立即检查',
                     'Waiting for SIM readiness', 'The phone is reading the SIM and carrier details. Select Check now later to update the status. Unlock the SIM if prompted; if waiting persists, check the system mobile network settings.', 'Check now'),
     'recovery_required': ('需要检查上次操作', '请检查原任务；如已有原件备份，请保留。不要重复提交操作或删除文件。', '继续检查',
@@ -196,6 +204,31 @@ def ui(state, language, action='status', details=None, ok=True, actions=None, **
               'display_i18n': localized, 'call_context': ''}
     result.update(extra)
     return result
+
+
+def sim_unsupported_ui(result, language, details, actions=None):
+    reason = result.get('sim_reason')
+    if isinstance(reason, str) and re.match(r'\A[a-z][a-z0-9_]{0,63}\Z', reason):
+        details['sim_reason'] = reason
+    plmn = result.get('sim_plmn')
+    if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
+        details['sim_plmn'] = plmn
+    else:
+        plmn = None
+    key = {'china_broadnet_unsupported': 'sim_broadnet_unsupported',
+           'sim_route_unsupported': 'sim_route_isim_unsupported',
+           'downloaded_carrier_config_present': 'sim_downloaded_config_override',
+           'carrier_not_validated': 'sim_carrier_unrecognized'}.get(reason, 'sim_unsupported')
+    response = ui(key, language, details=details, actions=actions)
+    if key == 'sim_carrier_unrecognized' and plmn:
+        zh_msg = '当前 SIM 归属网络（' + plmn + '）不在中国移动、联通、电信已支持的号段内。请核对 SIM 卡状态或导出诊断报告。'
+        en_msg = ('This SIM home network (' + plmn +
+                  ') is outside the supported China Mobile, Unicom and Telecom PLMN ranges. Check the SIM or export a diagnostic report.')
+        response['display_i18n']['zh']['message'] = zh_msg
+        response['display_i18n']['en']['message'] = en_msg
+        response['display']['message'] = en_msg if language == 'en' else zh_msg
+    response['state'] = 'sim_unsupported'
+    return response
 
 
 def task_observation_unavailable(job, request, error):
@@ -391,8 +424,9 @@ def inspection_response(request, result, details, confirmed_context=None):
         if not result.get('sim_supported'):
             if result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable') and mobile_radio_state() == 'OFF':
                 return ui('mobile_network_off', language, 'status', details, actions=['status', 'compatibility'])
-            state = 'waiting_sim' if result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable') else 'sim_unsupported'
-            return ui(state, language, details=details)
+            if result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable'):
+                return ui('waiting_sim', language, details=details)
+            return sim_unsupported_ui(result, language, details)
         if result.get('can_install'):
             if mobile_radio_state() == 'OFF':
                 return ui('mobile_network_auto_enable', language, 'install', details, actions=['install', 'status', 'compatibility'])
@@ -431,8 +465,9 @@ def inspection_response(request, result, details, confirmed_context=None):
                 ('error', 'error_restored', 'cleanup_required', 'reboot_required', 'carrier_reboot_required') and
                 mobile_radio_state() == 'OFF'):
             return ui('mobile_network_off', language, 'status', details, actions=actions)
-        state = 'waiting_sim' if temporary else 'sim_unsupported'
-        return ui(state, language, details=details, actions=actions)
+        if temporary:
+            return ui('waiting_sim', language, details=details, actions=actions)
+        return sim_unsupported_ui(result, language, details, actions=actions)
     if not status.get('enabled'):
         actions = ['enable', 'update', 'export', 'compatibility', 'uninstall', 'status']
         if rollback_available:

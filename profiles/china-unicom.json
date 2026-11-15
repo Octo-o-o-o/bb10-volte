@@ -1,15 +1,18 @@
 {
   "schema": 1,
   "id": "china-unicom",
-  "label": "China Unicom 01/09 - untested template",
+  "label": "China Unicom 01/06/09 - untested template",
   "carrier": {
     "mcc": "460",
     "mncs": [
       "01",
+      "06",
       "09"
     ],
     "data_apns": [
-      "3gnet"
+      "3gnet",
+      "uninet",
+      "wonet"
     ],
     "stock_config": "auto",
     "stock_sha256": ""

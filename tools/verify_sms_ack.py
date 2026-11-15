@@ -128,7 +128,7 @@ def verify(stock):
                 'mt_voice': image.mt_voice_binary(stock, True)[0]}
     expected = {'mobile': '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494',
                 'unicom': 'f388a23900d13d92c0390c662fc53e2de6d628bba2174973c0320416022a4438',
-                'mt_voice': '7479b023d634c1afddd46203251ec7613ab5170d8ea22d6e321c7dd7fc3e7411'}
+                'mt_voice': '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494'}
     assert {key: hashlib.sha256(raw).hexdigest() for key, raw in defaults.items()} == expected
     legacy_unicom = image.temporary_binary(stock, True, sms_ack=True)[0]
     legacy_mobile = image.mobile_binary(stock, True, sms_ack=True)[0]

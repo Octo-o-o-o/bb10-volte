@@ -50,17 +50,17 @@ Verified by SHA-256 in [sources.json](../../../../materials/sources.json) before
 
 ---
 
-## 3. Carrier Selection & Runtime Architecture (`r46` / Mobile `0.1.0.46`)
+## 3. Carrier Selection & Runtime Architecture (`r47` / Mobile `0.1.0.47`)
 
 1. **Automatic Home-PLMN Selection**:
-   - Reads the active USIM's home PLMN (`MCC=460`, no ISIM required; SIM `kind` must have USIM bit `2` set and ISIM bit `16` clear):
-     - `460-00`, `460-07` → `mobile` (China Mobile, APN `cmnet`)
-     - `460-01` → `unicom` (China Unicom, APN `3gnet`)
-     - `460-11` → `telecom` (China Telecom, APN `ctnet` / `ctlte`)
+   - Reads the active USIM's home PLMN (`MCC=460`, no ISIM required; SIM `kind` must have USIM bit `2` set and ISIM bit `16` clear; China Broadnet `460-15` is explicitly reported as `china_broadnet_unsupported`):
+     - `460-00`, `02`, `04`, `07`, `08` → `mobile` (China Mobile, APN `cmnet` / `cmwap`, SHA-256-pinned stock fallback `404.xml` + empty-APN bootstrap when BB10 maps newer HPLMNs to `0.xml`)
+     - `460-01`, `06`, `09` → `unicom` (China Unicom, APN `3gnet` / `wonet` / `uninet`, SHA-256-pinned stock fallback `36.xml`)
+     - `460-03`, `05`, `11`, `12` → `telecom` (China Telecom, APN `ctnet` / `ctlte`, SHA-256-pinned stock fallback `446.xml` with dead `10.0.0.200:80` CTWAP proxy stripped)
 2. **Read-Only Stock Binary Integrity**:
    - `/radio/bin/ims_rrm` and the other 5 stock QNX radio/system binaries are **never modified on `/radio` or `/base`**.
    - The service verifies all 6 stock SHA-256 digests and runs a verified managed runtime copy under `/var/bb10_volte` with:
-     - **`mt_voice_binary`** (`r45+`, all 3 carriers): Sets `MediaDialog.EarlySdp=0` and `MediaDialog.Omit200OkSdp=0` to prevent incoming-call ring-and-drop / missing ringback issues across provincial IMS cores.
+     - **`mt_voice_binary`** (`r47+`, all 3 carriers): Sets `MediaDialog.EarlySdp=0` while preserving `MediaDialog.Omit200OkSdp=1` so precondition MT calls answered in reliable `183 Session Progress` omit illegal duplicate SDP in `200 OK (INVITE)` (fixing silent-audio regressions) while non-precondition MT calls still attach the mandatory RFC 3261 SDP answer.
      - **`sms_ack`** (all 3 carriers): Handles inbound SIP `MESSAGE` RP-ACK shimming.
-     - **`telecom_mo_ack`** (`r46+`, China Telecom `460-03`/`460-11`): Synthesizes local 3GPP `RP-ACK` (`03 <RP-MR>`) after SIP `202 Accepted` + `0x1014` IPC so `qct_rrm` releases the MO SMS slot instead of leaving delivered Telecom SMS stuck on `"Sending..."`.
+     - **`telecom_mo_ack`** (`r46+`, China Telecom `460-03`/`05`/`11`/`12`): Synthesizes local 3GPP `RP-ACK` (`03 <RP-MR>`) after SIP `202 Accepted` + `0x1014` IPC so `qct_rrm` releases the MO SMS slot instead of leaving delivered Telecom SMS stuck on `"Sending..."`.
      - **Classic 7-Dot BlackBerry Status-Bar Indicator** (`r46+`): Publishes to `/pps/system/navigator/status/bb_service?critical` while VoLTE is actively registered on LTE in the current boot, and clears immediately on loss of LTE/IMS, Airplane Mode, disable, rollback, or exit while preserving any real BlackBerry Infrastructure state.

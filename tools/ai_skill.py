@@ -92,6 +92,7 @@ SAFE_PROBE_KEYS = (
     'call_idle',
     'sim_supported',
     'sim_reason',
+    'sim_plmn',
     'operator',
     'stock_template_verified',
     'mobile_network_off',
@@ -308,7 +309,7 @@ def synthesize_next_step(usb, os_state, discovery, root_verified, ssh_error, pro
                     'code': 'install_mobile_app_or_prepare_sim',
                     'reason': probe.get('sim_reason'),
                     'summary': (
-                        'Root and OS 10.3.3.3216 are verified, so you can already run `mobile-app install` (0.1.0.46) '
+                        'Root and OS 10.3.3.3216 are verified, so you can already run `mobile-app install` (0.1.0.47) '
                         'for standalone on-phone management. Direct desktop `volte install` requires a ready China Mobile/Unicom/Telecom USIM (reason: '
                         + str(probe.get('sim_reason')) + ').'
                     ),

@@ -42,6 +42,28 @@ def carrier_adaptation_blocked(variant, mcc, mncs):
 # stock file observed on the affected device, not to arbitrary carrier files.
 TELECOM_446_BAD_PROXY_SHA256 = 'd94f9b7eaa664a9ac496475e706bb837c364635400dd1af9a79608337d57f407'
 TELECOM_446_BAD_PROXY = b'<HttpProxyV4>10.0.0.200:80</HttpProxyV4>'
+STOCK_DEFAULT_CONFIG_PATH = '/etc/carrier/config/0.xml'
+STOCK_DEFAULT_CONFIG_SHA256 = '5d13a0b15b30554b8230e2080ea03d9f00f3f36f33d72fa4d6ef8989cd59dadb'
+MOBILE_404_SHA256 = '01093873ac626da82ec30c45a2db18925af12f5f9dec1fdca63c7ef3c70f0598'
+UNICOM_36_SHA256 = '929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4'
+TELECOM_MNCS = ('03', '05', '11', '12')
+# Stock BB10 10.3.3.3216 carrierIds.xml predates newer China HPLMN allocations
+# (such as 460-08, 460-09, 460-04, 460-05, 460-12) and maps them to empty 0.xml.
+# Pin each admitted HPLMN to its exact verified read-only stock carrier file.
+STOCK_FALLBACK_TEMPLATES = {
+    ('460', '00'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '02'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '04'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '07'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '08'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '01'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
+    ('460', '06'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
+    ('460', '09'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
+    ('460', '03'): ('/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256),
+    ('460', '05'): ('/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256),
+    ('460', '11'): ('/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256),
+    ('460', '12'): ('/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256),
+}
 
 
 def trial_target(profile):
@@ -216,8 +238,8 @@ def patch_carrier(stock, profile):
 
 def fix_known_telecom_internet_proxy(data, path, stock_sha256, mcc, mnc):
     """Remove the known CTNET proxy from the generated copy, never stock/MMS."""
-    if (mcc, mnc, path, stock_sha256) != (
-            '460', '11', '/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256):
+    if not (mcc == '460' and mnc in TELECOM_MNCS and
+            (path, stock_sha256) == ('/etc/carrier/config/446.xml', TELECOM_446_BAD_PROXY_SHA256)):
         return data
     spans = []
     for found in re.finditer(br'<ServiceConfiguration>.*?</ServiceConfiguration>', data, re.S):
@@ -244,25 +266,42 @@ def carrier_template(profile, mcc, mnc):
     attrs = n.attrs(n.read('/pps/services/carriermanager/status_private'))
     home = n.value(attrs, 'true_home_carrier', {})
     if (not match(r'[0-9]{3}', mcc) or not match(r'[0-9]{2,3}', mnc) or
-            home.get('mcc') != int(mcc) or home.get('mnc') != int(mnc) or home.get('downloadedConfigFile')):
+            home.get('mcc') != int(mcc) or home.get('mnc') != int(mnc)):
         raise ValueError('Current stock carrier selection cannot be verified')
-    path = home.get('preloadedConfigFile')
+    if home.get('downloadedConfigFile'):
+        raise ValueError('downloaded_carrier_config_present')
+    preloaded = home.get('preloadedConfigFile')
+    fallback_used = False
+    fallback_sha = ''
     if p['carrier']['stock_config'] != 'auto':
         path = '/etc/carrier/config/' + p['carrier']['stock_config'] + '.xml'
+    elif preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH) and (mcc, mnc) in STOCK_FALLBACK_TEMPLATES:
+        if preloaded == STOCK_DEFAULT_CONFIG_PATH:
+            if os.path.islink(preloaded) or n.digest(n.read(preloaded)) != STOCK_DEFAULT_CONFIG_SHA256:
+                raise ValueError('Default stock carrier file changed')
+        path, fallback_sha = STOCK_FALLBACK_TEMPLATES[(mcc, mnc)]
+        fallback_used = True
+    else:
+        path = preloaded
     if not match(CONFIG_RE, path) or os.path.islink(path):
         raise ValueError('Only a regular stock carrier file is allowed')
     stock = n.read(path)
     digest = n.digest(stock)
-    expected = p['carrier']['stock_sha256']
+    expected = p['carrier']['stock_sha256'] or fallback_sha
     if expected and digest != expected:
         raise ValueError('Selected carrier file hash differs from profile')
     root = parse_xml(stock)
     internet = [node for node in root.iter('ServiceConfiguration') if node.findtext('Name') == 'internet']
-    apns = {node.text for entry in internet for node in entry.iter('APN')}
+    apns = set((node.text or '').strip().lower() for entry in internet for node in entry.iter('APN')
+               if (node.text or '').strip())
+    profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
     # Preserve the existing data APN. Never silently transplant Unicom's data
     # configuration to another carrier just because its IMS APN is also "ims".
-    if not apns.intersection(p['carrier']['data_apns']):
+    if not apns.intersection(profile_apns):
         raise ValueError('Stock data APN does not match selected profile')
     changed = patch_carrier(stock, p)
     changed = fix_known_telecom_internet_proxy(changed, path, digest, mcc, mnc)
-    return {'path': path, 'sha256': digest}, changed
+    info = {'path': path, 'sha256': digest}
+    if fallback_used:
+        info.update(fallback_used=True, original_preloaded_config=preloaded or '')
+    return info, changed

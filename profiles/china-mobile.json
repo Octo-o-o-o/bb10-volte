@@ -7,10 +7,13 @@
     "mncs": [
       "00",
       "02",
-      "07"
+      "04",
+      "07",
+      "08"
     ],
     "data_apns": [
-      "cmnet"
+      "cmnet",
+      "cmwap"
     ],
     "stock_config": "auto",
     "stock_sha256": ""

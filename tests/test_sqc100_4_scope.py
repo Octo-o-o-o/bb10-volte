@@ -77,19 +77,22 @@ class ExactClassicNAScope(unittest.TestCase):
         changes={name for name in before['files'] if before['files'][name]!=current['files'][name]}
         self.assertLessEqual(changes,set(unified_install.UPDATE_FILES))
         self.assertIn('device/ims_image.py',changes)
-        # r44 retained the reviewed r36 parent service; r45/r46 update only MT signaling, Telecom MO SMS completion, and status-bar indicator.
+        # r44 retained the reviewed r36 parent service; r47 expands 12-MNC fallback, bootstrap, and Omit200OkSdp=1 MT voice.
         parent=json.loads((ROOT/'materials/unified-payload-r36.json').read_text())
         r44=json.loads((ROOT/'materials/unified-payload-r44.json').read_text())
         r45=json.loads((ROOT/'materials/unified-payload-r45.json').read_text())
+        r46=json.loads((ROOT/'materials/unified-payload-r46.json').read_text())
         self.assertEqual(r44['files']['device/unified_service.py'],parent['files']['device/unified_service.py'])
-        r44_to_current={name for name in r44['files'] if r44['files'][name]!=current['files'][name]}
-        self.assertEqual(r44_to_current,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
-        r45_to_current={name for name in r45['files'] if r45['files'][name]!=current['files'][name]}
-        self.assertEqual(r45_to_current,{'device/ims_image.py','device/service.py','device/unified_install.py','device/unified_service.py'})
+        expected_r47_diff={'device/carrier_policy.py','device/compatibility.py','device/ims_image.py',
+                           'device/profiles.py','device/service.py','device/unified_install.py','device/unified_service.py'}
+        for prior in (r44, r45, r46):
+            diff={name for name in prior['files'] if prior['files'][name]!=current['files'][name]}
+            self.assertEqual(diff,expected_r47_diff)
 
     def test_other_exact_model_carrier_admission_is_preserved(self):
-        self.assertEqual(policy.VALIDATED_MNCS['SQW100-1'],('00','01','07','11'))
+        expected=('00','01','02','03','04','05','06','07','08','09','11','12')
+        self.assertEqual(policy.VALIDATED_MNCS['SQW100-1'],expected)
         for variant in ('SQN100-3','SQC100-2','SQW100-4'):
-            self.assertEqual(policy.VALIDATED_MNCS[variant],('00','01','07','11'))
+            self.assertEqual(policy.VALIDATED_MNCS[variant],expected)
 
 if __name__=='__main__':unittest.main()

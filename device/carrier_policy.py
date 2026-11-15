@@ -28,10 +28,20 @@ MODELS = {
     'SQK100-1': ('p9983', 'KHANE'),
     'SQK100-2': ('p9983', None),
 }
-CARRIERS = {'00': ('mobile', 'China Mobile', ['cmnet']),
-            '01': ('unicom', 'China Unicom', ['3gnet']),
-            '07': ('mobile', 'China Mobile', ['cmnet']),
-            '11': ('telecom', 'China Telecom', ['ctnet', 'ctlte'])}
+CARRIERS = {
+    '00': ('mobile', 'China Mobile', ['cmnet', 'cmwap']),
+    '01': ('unicom', 'China Unicom', ['3gnet', 'wonet', 'uninet']),
+    '02': ('mobile', 'China Mobile', ['cmnet', 'cmwap']),
+    '03': ('telecom', 'China Telecom', ['ctnet', 'ctlte']),
+    '04': ('mobile', 'China Mobile', ['cmnet', 'cmwap']),
+    '05': ('telecom', 'China Telecom', ['ctnet', 'ctlte']),
+    '06': ('unicom', 'China Unicom', ['3gnet', 'wonet', 'uninet']),
+    '07': ('mobile', 'China Mobile', ['cmnet', 'cmwap']),
+    '08': ('mobile', 'China Mobile', ['cmnet', 'cmwap']),
+    '09': ('unicom', 'China Unicom', ['3gnet', 'wonet', 'uninet']),
+    '11': ('telecom', 'China Telecom', ['ctnet', 'ctlte']),
+    '12': ('telecom', 'China Telecom', ['ctnet', 'ctlte']),
+}
 # Open trial admission is not evidence of completed functional tests.
 ADMITTED_MNCS = {variant: tuple(sorted(CARRIERS)) for variant in MODELS}
 # Legacy API spelling retained for old tooling; never treat this as acceptance.
@@ -58,9 +68,11 @@ def select(facts, card):
     if card.get('state') != 'READY':
         raise ValueError('sim_not_ready')
     kind = card.get('kind')
+    mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
+    if type(kind) is int and kind & 2 and mcc == '460' and mnc == '15':
+        raise ValueError('china_broadnet_unsupported')
     if type(kind) is not int or not kind & 2 or kind & 16:
         raise ValueError('sim_route_unsupported')
-    mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
     if profiles.carrier_adaptation_blocked(facts.get('variant'), mcc, (mnc,)):
         raise ValueError('operator_not_supported')
     if mcc != '460' or mnc not in ADMITTED_MNCS.get(facts.get('variant'), ()):

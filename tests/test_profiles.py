@@ -112,11 +112,99 @@ class ProfileTests(unittest.TestCase):
 
     def test_wrong_stock_apn_and_downloaded_override_are_blocked(self):
         home = {'mcc': 460, 'mnc': 1, 'preloadedConfigFile': '/etc/carrier/config/36.xml', 'downloadedConfigFile': ''}
-        for downloaded in ('', '/private/custom.xml'):
-            home['downloadedConfigFile'] = downloaded
-            with patch.object(n, 'read', side_effect=lambda path: {'true_home_carrier': 'json:' + json.dumps(home)} if path.endswith('status_private') else STOCK), \
-                 patch.object(n, 'attrs', side_effect=lambda value: value):
-                with self.assertRaises(ValueError): p.carrier_template(p.default(), '460', '01')
+        with patch.object(n, 'read', side_effect=lambda path: {'true_home_carrier': 'json:' + json.dumps(home)} if path.endswith('status_private') else STOCK), \
+             patch.object(n, 'attrs', side_effect=lambda value: value):
+            with self.assertRaisesRegex(ValueError, 'Stock data APN'):
+                p.carrier_template(p.default(), '460', '01')
+        home['downloadedConfigFile'] = '/private/custom.xml'
+        with patch.object(n, 'read', side_effect=lambda path: {'true_home_carrier': 'json:' + json.dumps(home)} if path.endswith('status_private') else STOCK), \
+             patch.object(n, 'attrs', side_effect=lambda value: value):
+            with self.assertRaisesRegex(ValueError, '^downloaded_carrier_config_present$'):
+                p.carrier_template(p.default(), '460', '01')
+
+    def test_stock_0_xml_fallback_pins_carrier_xml_and_strips_telecom_proxy(self):
+        zero_raw = b'<Carrier xmlns="urn:test:default"/>'
+        bad_proxy = p.TELECOM_446_BAD_PROXY
+        cases = [
+            ('china-mobile.json', '08', '/etc/carrier/config/404.xml', p.MOBILE_404_SHA256, b'cmnet', b''),
+            ('china-unicom.json', '09', '/etc/carrier/config/36.xml', p.UNICOM_36_SHA256, b'3gnet', b''),
+            ('china-telecom.json', '05', '/etc/carrier/config/446.xml', p.TELECOM_446_BAD_PROXY_SHA256, b'ctnet', bad_proxy),
+            ('china-telecom.json', '12', '/etc/carrier/config/446.xml', p.TELECOM_446_BAD_PROXY_SHA256, b'ctnet', bad_proxy),
+        ]
+        for filename, mnc, expected_path, expected_sha, apn, proxy in cases:
+            profile = p.read_json(str(ROOT / 'profiles' / filename))
+            fallback_raw = (
+                b'<Carrier xmlns="urn:test:carrier"><ServiceConfiguration><Name>internet</Name>'
+                b'<RadioAccessTechnology><APN>' + apn + b'</APN></RadioAccessTechnology>' + proxy +
+                b'</ServiceConfiguration>' + EMERGENCY + ALIAS + b'</Carrier>'
+            )
+            for preloaded in (p.STOCK_DEFAULT_CONFIG_PATH, ''):
+                home = {'mcc': 460, 'mnc': int(mnc), 'preloadedConfigFile': preloaded, 'downloadedConfigFile': ''}
+                attrs = {'true_home_carrier': 'json:' + json.dumps(home)}
+                files = {p.STOCK_DEFAULT_CONFIG_PATH: zero_raw, expected_path: fallback_raw}
+                digests = {zero_raw: p.STOCK_DEFAULT_CONFIG_SHA256, fallback_raw: expected_sha}
+                with self.subTest(mnc=mnc, preloaded=preloaded), \
+                     patch.object(n, 'read', side_effect=lambda path: attrs if path.endswith('status_private') else files[path]), \
+                     patch.object(n, 'attrs', side_effect=lambda value: value), \
+                     patch.object(n, 'digest', side_effect=lambda data: digests.get(data, 'f' * 64)), \
+                     patch.object(p.os.path, 'islink', return_value=False):
+                    info, changed = p.carrier_template(profile, '460', mnc)
+                self.assertEqual(info['path'], expected_path)
+                self.assertEqual(info['sha256'], expected_sha)
+                self.assertTrue(info['fallback_used'])
+                self.assertEqual(info['original_preloaded_config'], preloaded)
+                self.assertNotIn(bad_proxy, changed)
+                self.assertIn(b'<APN>' + apn + b'</APN>', changed)
+                # Tampered 0.xml or fallback hash must fail closed.
+                for bad_key in (zero_raw, fallback_raw):
+                    if bad_key == zero_raw and not preloaded:
+                        continue
+                    tampered = dict(digests)
+                    tampered[bad_key] = '0' * 64
+                    with patch.object(n, 'read', side_effect=lambda path: attrs if path.endswith('status_private') else files[path]), \
+                         patch.object(n, 'attrs', side_effect=lambda value: value), \
+                         patch.object(n, 'digest', side_effect=lambda data: tampered.get(data, 'f' * 64)), \
+                         patch.object(p.os.path, 'islink', return_value=False):
+                        with self.assertRaises(ValueError):
+                            p.carrier_template(profile, '460', mnc)
+
+    def test_empty_apn_bootstrap_and_case_insensitive_apn_matching(self):
+        mobile_prof = mobile()
+        facts = baseline()
+        facts.update(mcc='460', mnc='08', apn='', apn_matches=False,
+                     stock_apn_bootstrap_eligible=True, cdsc_xml=':', data_service_mode='ON')
+        report = c.evaluate(facts, mobile_prof, True)
+        self.assertTrue(report['can_install'])
+        apn_item = next(item for item in report['checks'] if item['id'] == 'apn')
+        self.assertEqual((apn_item['status'], apn_item['code']), ('pass', 'data_apn_bootstrap_pending'))
+        # Once cdsc_xml is already overridden, empty APN must NOT pass as bootstrap pending.
+        applied_facts = dict(facts, stock_apn_bootstrap_eligible=False, cdsc_xml=':/var/q10_volte/carrier.xml')
+        applied_report = c.evaluate(applied_facts, mobile_prof, True)
+        self.assertFalse(applied_report['can_install'])
+        apn_fail = next(item for item in applied_report['checks'] if item['id'] == 'apn')
+        self.assertNotEqual(apn_fail['status'], 'pass')
+        # Case-insensitive APN matching across uppercase SIM/network reporting.
+        upper_facts = baseline()
+        upper_facts.update(mcc='460', mnc='08', apn='cmnet', apn_matches=True)
+        self.assertTrue(c.evaluate(upper_facts, mobile_prof, True)['can_install'])
+
+    def test_ims_event_redaction_strips_pii_and_preserves_vpn_login_uuid(self):
+        phone = '+86' + '138' + '0013' + '8000'
+        imsi_like = '460' + '08' + '12345' * 2
+        uuid = '12345678-1234-1234-1234-123456789012'
+        sample = (
+            'MediaDialog EarlySdp=0 Omit200OkSdp=1 From: <sip:' + phone + '@ims.mnc008.mcc460.3gppnetwork.org> '
+            'To: tel:' + phone + ' Call-ID: secret-call-token@10.24.56.78 '
+            'peer=[2409:8080:100::abcd] sub=' + imsi_like + ' vpn_login response: uid= ' + uuid
+        )
+        cleaned = s.redact_ims_event_line(sample)
+        self.assertIn('vpn_login response: uid= ' + uuid, cleaned)
+        self.assertNotIn(phone, cleaned)
+        self.assertNotIn('138', cleaned)
+        self.assertNotIn(imsi_like, cleaned)
+        self.assertNotIn('secret-call-token', cleaned)
+        self.assertNotIn('10.24.56.78', cleaned)
+        self.assertNotIn('2409:8080', cleaned)
 
     def test_installed_profile_hash_binds_configuration_and_consent(self):
         with tempfile.TemporaryDirectory() as folder:

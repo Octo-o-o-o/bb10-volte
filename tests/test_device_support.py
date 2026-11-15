@@ -86,19 +86,38 @@ class PhoneProbeTests(unittest.TestCase):
             migration.assert_not_called()
 
     def test_sim_rejection_removes_install_permission_and_remains_read_only(self):
-        for reason in ('carrier_not_validated', 'sim_route_unsupported', 'sim_not_ready', 'sim_identity_unavailable'):
+        for reason in ('carrier_not_validated', 'china_broadnet_unsupported', 'downloaded_carrier_config_present',
+                       'sim_route_unsupported', 'sim_not_ready', 'sim_identity_unavailable'):
             with patch.object(installer, 'identity', return_value=(self.facts, 'classic')), \
                     patch.object(installer.s, 'phone_idle', return_value=True), \
                     patch.object(installer, 'root_kind', return_value='autoroot-v4'), \
                     patch.object(installer.migration, 'inspect', return_value=None), \
-                    patch.object(installer.u, 'card', return_value={}), \
+                    patch.object(installer.u, 'card', return_value={'mcc': '460', 'mnc': '15'}), \
                     patch.object(installer.policy, 'select', side_effect=ValueError(reason)), \
                     patch.object(installer.n, 'atomic') as write:
                 result = installer.probe()
             self.assertFalse(result['can_install'])
             self.assertFalse(result['sim_supported'])
             self.assertEqual(result['sim_reason'], reason)
+            self.assertEqual(result['sim_plmn'], '460-15')
             write.assert_not_called()
+
+    def test_broadnet_and_downloaded_override_report_notes_explain_exact_cause(self):
+        for kind in (2, 22):
+            card = {'state': 'READY', 'kind': kind, 'mcc': '460', 'mnc': '15', 'imsi': '460' + '15' + '12345' * 2}
+            with self.assertRaisesRegex(ValueError, '^china_broadnet_unsupported$'):
+                policy.select(self.facts, card)
+        zh_broadnet = support.report_note({'variant': 'SQC100-2', 'sim_supported': False,
+                                           'sim_reason': 'china_broadnet_unsupported', 'sim_plmn': '460-15'})
+        self.assertIn('中国广电', zh_broadnet)
+        self.assertIn('460-15', zh_broadnet)
+        zh_override = support.report_note({'variant': 'SQC100-2', 'sim_supported': False,
+                                           'sim_reason': 'downloaded_carrier_config_present'})
+        self.assertIn('已下载的运营商配置文件', zh_override)
+        zh_unknown = support.report_note({'variant': 'SQC100-2', 'sim_supported': False,
+                                          'sim_reason': 'carrier_not_validated', 'sim_plmn': '460-20'})
+        self.assertIn('460-20', zh_unknown)
+        self.assertIn('归属网络尚无自动配置模板', zh_unknown)
 
     def test_unknown_native_image_is_a_support_result_not_a_connection_failure(self):
         with patch.object(installer, 'identity', side_effect=AssertionError('unknown_native_image')):

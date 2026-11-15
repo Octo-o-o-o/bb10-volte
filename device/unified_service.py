@@ -617,11 +617,13 @@ def prepare():
     assert policy.transition(previous, selected, boot_token(),
         n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, attempt) != 'reboot_required', 'reboot_required'
     s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
-    template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, '460', s.ACTIVE_PROFILE['carrier']['mncs'][0])
+    sim_mcc = snapshot.get('mcc') or s.ACTIVE_PROFILE['carrier'].get('mcc', '460')
+    sim_mnc = snapshot.get('mnc') or s.ACTIVE_PROFILE['carrier']['mncs'][0]
+    template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
     selected = policy.bind_template(selected, template)
     selected.update(boot=boot_token(), selected_unix=time.time())
     s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
-    s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, '460', s.ACTIVE_PROFILE['carrier']['mncs'][0])
+    s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
     save(SELECTION, selected)
     notify_sim_change(previous, snapshot, after_reboot=True)
     s.temporary_binary = ims_image.mt_voice_binary

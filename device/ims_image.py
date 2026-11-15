@@ -230,9 +230,13 @@ def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=
     """Cross-carrier MT call signaling fix; only the temporary copy is changed.
 
     Suppresses repeated or unreliable preview SDP in 180 Ringing
-    (MediaDialog.EarlySdp=0) and preserves the RFC 3261 SDP answer in 200 OK
-    when no reliable 18x completed offer/answer (MediaDialog.Omit200OkSdp=0).
-    Precondition calls in SDPState 0xd still send an empty 200 OK via 0x1a8cfc.
+    (MediaDialog.EarlySdp=0) while keeping MediaDialog.Omit200OkSdp=1:
+    - Precondition MT calls answered in reliable 183 Session Progress stay in
+      SDPState 0xb (or 0xd) and omit illegal duplicate SDP in 200 OK (INVITE)
+      per RFC 3262 / RFC 3311 / RFC 6337 (preventing silent-audio regressions).
+    - Non-precondition MT calls without reliable 18x SDP have last_18x_present=0
+      and early_update_200_ok=0, so 0x1a9040..0x1a9060 still attaches the
+      mandatory RFC 3261 SDP answer in 200 OK (INVITE).
     """
     assert normal_voice is True
     assert type(sms_ack) is bool and type(telecom_mo_ack) is bool, 'SMS candidate opt-in must be explicit'
@@ -243,18 +247,14 @@ def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=
     assert changed[omit_offset:omit_offset + 4] == b'\x01\x21\x78\x44'
     assert changed[early_offset:early_offset + 4] == b'\x02\x21\x78\x44'
     result = bytearray(changed)
-    result[omit_offset] = 0
     result[early_offset] = 0
     result = bytes(result)
-    allowed = set((omit_offset, early_offset))
-    assert all(a == b or i in allowed for i, (a, b) in enumerate(zip(changed, result)))
-    assert hashlib.sha256(result).hexdigest() == '7479b023d634c1afddd46203251ec7613ab5170d8ea22d6e321c7dd7fc3e7411'
-    patches.append({'file_offset': omit_offset, 'bytes_before': '0121', 'bytes_after': '0021',
-                    'config_key': 'MediaDialog.Omit200OkSdp',
-                    'purpose': 'Keep RFC 3261 SDP answer in 200 OK when offer was not answered in reliable 18x'})
+    assert result[:early_offset] == changed[:early_offset] and result[early_offset + 1:] == changed[early_offset + 1:]
+    assert result[omit_offset:omit_offset + 4] == b'\x01\x21\x78\x44'
+    assert hashlib.sha256(result).hexdigest() == '647290caee0da86479ef7da7c42e68f98cd283fead8e9406f1c530a4a99c0494'
     patches.append({'file_offset': early_offset, 'bytes_before': '0221', 'bytes_after': '0021',
                     'config_key': 'MediaDialog.EarlySdp',
-                    'purpose': 'Suppress repeated or unreliable preview SDP in 180 Ringing'})
+                    'purpose': 'Suppress repeated or unreliable preview SDP in 180 Ringing while preserving Omit200OkSdp=1'})
     if not sms_ack:
         return result, patches
     return sms_ack_binary(result, patches, telecom_mo_ack=True) if telecom_mo_ack else sms_ack_binary(result, patches)

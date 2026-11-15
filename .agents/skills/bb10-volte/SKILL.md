@@ -13,7 +13,7 @@ description: >-
 
 # BB10 VoLTE Agent Skill (`bb10-volte`)
 
-Operate `bb10-volte` safely and deterministically across all **16 supported BlackBerry 10 hardware variants** (`SQN100-1..5`, `SQC100-1..5`, `SQW100-1..4`, `SQK100-1..2`) and **3 Chinese carriers** (`460-00`/`460-07` China Mobile, `460-01` China Unicom, `460-11` China Telecom) using the headless JSON CLI [ai_skill.py](../../../tools/ai_skill.py) (also callable via [bb10_skill.py](./scripts/bb10_skill.py)).
+Operate `bb10-volte` safely and deterministically across all **16 supported BlackBerry 10 hardware variants** (`SQN100-1..5`, `SQC100-1..5`, `SQW100-1..4`, `SQK100-1..2`) and **3 Chinese carriers** (`460-00/02/04/07/08` China Mobile, `460-01/06/09` China Unicom, `460-03/05/11/12` China Telecom) using the headless JSON CLI [ai_skill.py](../../../tools/ai_skill.py) (also callable via [bb10_skill.py](./scripts/bb10_skill.py)).
 
 ## 0. Scope & Non-Negotiable Safety Rules
 
@@ -35,7 +35,7 @@ Operate `bb10-volte` safely and deterministically across all **16 supported Blac
    - IMS `200 OK` registration is necessary but **not** final acceptance: always ask the human user to verify outbound + inbound native dialer calls (`>= 00:35` connected audio), LTE retention, and SMS.
 7. **License Boundary**:
    - Licensed under [PolyForm Noncommercial License 1.0.0](../../../LICENSE): free for personal/noncommercial use; paid flashing/installation services, pre-installed phone sales, or commercial redistribution require prior paid commercial licensing via `octoooo@octoooo.com`.
-   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r46`) and the native BB10 mobile app (`0.1.0.46`) continue to receive updates.
+   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r47`) and the native BB10 mobile app (`0.1.0.47`) continue to receive updates.
 
 ---
 
@@ -66,12 +66,12 @@ Read `recommended_next_step.code` from `detect` JSON output and follow the match
 
 Once Root SSH (`EUID == 0`), OS `10.3.3.3216`, and the 6 stock QNX native binary hashes are verified:
 
-1. **Install or Update the Standalone Native BB10 Phone App (`0.1.0.46`)** *(Recommended for all rooted users so they can manage, back up, activate, and switch SIMs directly on the phone without a computer)*:
+1. **Install or Update the Standalone Native BB10 Phone App (`0.1.0.47`)** *(Recommended for all rooted users so they can manage, back up, activate, and switch SIMs directly on the phone without a computer)*:
    ```bash
    python tools/ai_skill.py mobile-app inspect
    python tools/ai_skill.py mobile-app install
    ```
-2. **Install & Activate Unified 3-Carrier VoLTE Directly from Computer** *(Requires a ready China Mobile `460-00`/`07`, Unicom `460-01`, or Telecom `460-11` USIM without ISIM)*:
+2. **Install & Activate Unified 3-Carrier VoLTE Directly from Computer** *(Requires a ready China Mobile `460-00/02/04/07/08`, Unicom `460-01/06/09`, or Telecom `460-03/05/11/12` USIM without ISIM)*:
    ```bash
    python tools/ai_skill.py volte probe
    python tools/ai_skill.py volte install
@@ -148,10 +148,10 @@ Then have the user complete initial setup / enable Development Mode and run `fir
 
 ## 3. Lifecycle: Upgrade, SIM Swap, Disable, Rollback & Uninstall
 
-- **In-Place Payload Update (`r42`–`r45` → `r46`)**:
+- **In-Place Payload Update (`r42`–`r46` → `r47`)**:
   - If `probe.update_available == true` and `probe.can_update == false`, stop VoLTE first (`python tools/ai_skill.py volte disable`), have the user **restart normally via power menu**, then run `python tools/ai_skill.py volte install` and restart normally once more.
 - **Swapping SIM Cards**:
-  - Power off before swapping SIMs (hot-swapping is not supported). Boot normally; the unified service automatically selects China Mobile / Unicom / Telecom by home PLMN (`460-00`/`07`/`01`/`11`). Passport entering or leaving China Telecom (`460-11`) requires waiting ~5 minutes after boot and performing one extra normal restart.
+  - Power off before swapping SIMs (hot-swapping is not supported). Boot normally; the unified service automatically selects China Mobile / Unicom / Telecom by home PLMN (`460-00/02/04/07/08`, `460-01/06/09`, `460-03/05/11/12`). Passport entering or leaving China Telecom requires waiting ~5 minutes after boot and performing one extra normal restart.
 - **Temporarily Disable / Re-enable**:
   ```bash
   python tools/ai_skill.py volte disable

@@ -95,7 +95,7 @@ python tools/verify_sms_ack.py --native private/ims_rrm --report private/new-sms
 - `ims_rrm` 的 `ImsEngineSmsMgr::onSmsDeliverySuccess`（`0xdaa5e..0xdab48`）收到 `202 Accepted` 时，仅构造并发送 `NOTIFY_SMS_OUTGOING_RP_PDU_STATUS`（TLV `0x1014`：`(0x103d=0, 0x103e=tx_id)`）。
 - `qct_rrm` 的 `0xe5080..0xe6234` 在 3GPP 短信模式下仅将 `0x1014` 记为 SIP 传输层已接收，不推进出站短信状态机；必须继续收到 `NOTIFY_SMS_INCOMING_RP_PDU`（TLV `0x1015`）并经 `libradioutil.so.0.1` 的 `SmsDecode3gppSmRlPdu`（`0xf2cd`）解码出匹配 `RP-MR` 的 3GPP `RP-ACK`（2 字节 `03 <RP-MR>`），才完成出站事务并清除 Hub 的“发送中”。
 
-因此，r46 在同一固定 `ims_rrm` 临时副本上新增显式开关 `telecom_mo_ack=True`（仅 `460-03`／`460-11` 启用，移动／联通保持原 2 钩子 `sms_ack_binary` 不变）：
+因此，r46 在同一固定 `ims_rrm` 临时副本上新增显式开关 `telecom_mo_ack=True`（r46 覆盖 `460-03`／`460-11`，r47 扩展至电信全部四个商用号段 `460-03`／`05`／`11`／`12`；移动／联通保持原 2 钩子 `sms_ack_binary` 不变）：
 
 - `0x2ee3c6` 替换为 `sms_telecom_tx_hook`：对下行报告（`0x02`／`0x04`）保持原 `In-Reply-To` 关联；对上行 3GPP MO `RP-DATA`（`0x00`，长度 `>= 3`）读取 `msg+0x14` 处的 SIP `tx_id` 与 `rpdu[1]` 处的 `RP-MR` 记入独立 `mo_cache`（16 槽位，180 秒期限），缓存基址 `cache` 仍固定在 `0x4a3000` 以保持既有 `sms_busy_recovery` 偏移不变。
 - `0xdaae2`（替换 `BL 0x139084`）在构造 `0x1014` TLV 时按 `(engine=r5, tx_id=*(sp+0x20))` 匹配并弹出待完成 `RP-MR`；`0xdab44`（替换 `BL 0x11ec60`）先调用原发送器投递 `0x1014`，仅当原 IPC 返回 `>= 0` 且存在刚弹出的有效记录时，复用原厂 `0x139084` 与 `0x11ec60` 紧接补发 28 字节 `0x1015` TLV（`0x1041={0x03, RP-MR}`、`0x1042={0x02}`、`0x1044={0,0,0,0}`）。

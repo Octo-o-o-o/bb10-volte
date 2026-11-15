@@ -50,13 +50,17 @@ class TelecomInternetProxyTests(unittest.TestCase):
         carriers = {
             '00': ('404', b'cmnet', b'cmwap', mobile_wap),
             '01': ('36', b'3gnet', b'3gwap', mobile_wap),
+            '03': ('446', b'ctnet', b'ctwap', BAD),
+            '05': ('446', b'ctnet', b'ctwap', BAD),
             '11': ('446', b'ctnet', b'ctwap', BAD),
+            '12': ('446', b'ctnet', b'ctwap', BAD),
         }
         for variant, board in variants:
             for mnc, (config, apn, wap_apn, wap_proxy) in carriers.items():
                 with self.subTest(variant=variant, mnc=mnc):
-                    internet = service(b'internet', apn, BAD if mnc == '11' else b'')
-                    wap = service(b'internet', wap_apn, wap_proxy) if mnc != '11' else b''
+                    is_telecom = mnc in profiles.TELECOM_MNCS
+                    internet = service(b'internet', apn, BAD if is_telecom else b'')
+                    wap = service(b'internet', wap_apn, wap_proxy) if not is_telecom else b''
                     original = stock(internet, wap)
                     selected = policy.select(
                         {'variant': variant, 'board_type': board, 'os_version': policy.OS_VERSION},
@@ -66,7 +70,7 @@ class TelecomInternetProxyTests(unittest.TestCase):
                     home = {'mcc': 460, 'mnc': int(mnc),
                             'preloadedConfigFile': '/etc/carrier/config/' + config + '.xml'}
                     status = ('true_home_carrier:json:' + json.dumps(home) + '\n').encode('ascii')
-                    digest = profiles.TELECOM_446_BAD_PROXY_SHA256 if mnc == '11' else '0' * 64
+                    digest = profiles.TELECOM_446_BAD_PROXY_SHA256 if is_telecom else '0' * 64
                     with patch.object(n, 'read', side_effect=lambda path: status if path.endswith('status_private') else original), \
                             patch.object(n, 'digest', return_value=digest), \
                             patch.object(profiles.os.path, 'islink', return_value=False):
@@ -84,7 +88,8 @@ class TelecomInternetProxyTests(unittest.TestCase):
         good = ('/etc/carrier/config/446.xml', profiles.TELECOM_446_BAD_PROXY_SHA256, '460', '11')
         for args in [('/etc/carrier/config/445.xml', *good[1:]),
                      (good[0], 'f' * 64, *good[2:]),
-                     (good[0], good[1], '460', '03'),
+                     (good[0], good[1], '460', '00'),
+                     (good[0], good[1], '460', '01'),
                      (good[0], good[1], '461', '11')]:
             with self.subTest(args=args):
                 self.assertEqual(profiles.fix_known_telecom_internet_proxy(raw, *args), raw)

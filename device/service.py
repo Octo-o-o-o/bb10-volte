@@ -295,8 +295,10 @@ def wait_for_ims_apn(expected_imsi):
             if sim_ready and current_usim() != expected_imsi:
                 raise RuntimeError('SIM changed while waiting for dedicated IMS APN')
             item = n.value(n.attrs(n.read(DATA)), 'ims', {})
+            ims_apn = (item.get('apn') or '').strip().lower() if isinstance(item.get('apn'), str) else ''
             if (sim_ready and network.get('radio_on') and network.get('lte') and
-                    item.get('apn') == ACTIVE_PROFILE['ims']['apn'] and item.get('connected') is True):
+                    network.get('apn_matches') is not False and
+                    ims_apn == ACTIVE_PROFILE['ims']['apn'].lower() and item.get('connected') is True):
                 return
             status('waiting_for_ims_apn', details={'attempt': attempt, 'max_attempts': attempts,
                    'seconds_per_attempt': timeout, 'sim_ready': bool(sim_ready),
@@ -386,6 +388,22 @@ def crypto_command(option):
     n.command([mount, '-T', 'io-pkt', '-o', option, MODULE], 8)
 
 
+def redact_ims_event_line(line):
+    """Strip URIs, Call-ID, IP literals and numeric subscriber IDs; retain VPN UID proof."""
+    uids = re.findall(r'vpn_login response: uid= (' + n.UUID + ')', line)
+    for index, uid in enumerate(uids):
+        line = line.replace('vpn_login response: uid= ' + uid, 'vpn_login response: uid= __VPN_UID_%d__' % index)
+    line = re.sub(r'(?i)\b(?:sips?|tel):[^\s>;,"\'()<>]+', '[redacted-uri]', line)
+    line = re.sub(r'(?i)\b(Call-ID\s*:\s*)\S+', r'\1[redacted-call-id]', line)
+    line = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?![\w.])', '[redacted-ip]', line)
+    line = re.sub(r'\[[0-9a-fA-F:]+\](?::\d{1,5})?', '[redacted-ip]', line)
+    line = re.sub(r'(?i)(?<![\w:])(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{1,4}(?![\w:])', '[redacted-ip]', line)
+    line = re.sub(r'(?<!\d)\+?\d{11,20}(?!\d)', '[redacted-id]', line)
+    for index, uid in enumerate(uids):
+        line = line.replace('vpn_login response: uid= __VPN_UID_%d__' % index, 'vpn_login response: uid= ' + uid)
+    return line
+
+
 def collect_vpn_evidence():
     global event_seen
     known = set(j.get('known_vpn_uids', []))
@@ -400,8 +418,10 @@ def collect_vpn_evidence():
         known.update(re.findall(r'vpn_login response: uid= (' + n.UUID + ')', own))
         markers = ('vpn_new:', 'vpn_login response:', 'voice:', 'cellular RAT:',
                    'Domain is CS', 'incoming call is rejected', 'SIP/2.0 ', 'CSeq:',
-                   'ImsPhoneIfDial', 'selectDomainVoice', 'onRegistrationSuccessful')
-        events = [line for line in own.splitlines() if any(m in line for m in markers)]
+                   'ImsPhoneIfDial', 'selectDomainVoice', 'onRegistrationSuccessful',
+                   'MediaDialog', 'SDPState', 'RTPMediaSession', 'AudioMediaSession',
+                   'ImsAudio', 'setAudioQuality', 'startAudio', 'stopAudio')
+        events = [redact_ims_event_line(line) for line in own.splitlines() if any(m in line for m in markers)]
         fresh = [line for line in events if line not in event_seen]
         event_seen = set(events)
         if fresh:
@@ -539,7 +559,7 @@ def configure():
              vpn_before_uids=sorted(x.decode('ascii') for x in n.vpn_ids(n.vpn_configs())))
     save_journal()
     original = n.read('/radio/bin/ims_rrm')
-    telecom_mo_ack = (network.get('mcc') == '460' and network.get('mnc') in ('03', '11') and
+    telecom_mo_ack = (network.get('mcc') == '460' and network.get('mnc') in profiles.TELECOM_MNCS and
                       bool(ACTIVE_PROFILE['ims']['sms']))
     changed, patches = (temporary_binary(original, True, sms_ack=True, telecom_mo_ack=True)
                         if telecom_mo_ack else temporary_binary(original, True, sms_ack=True))

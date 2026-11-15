@@ -1168,3 +1168,10 @@ ENGLISH.update({
     '存储位置与磁盘清理': 'Storage locations and disk cleanup',
     '下载缓存：{}\n个人材料：{}\n\n先关闭所有本程序和刷写窗口。下载缓存可以删除，下次需要时会重新下载。\n\n确认只是电脑准备失败、从未开始手机刷写，或手机已正常启动、Root 和连接已确认且无需继续刷写或恢复时，可删除 root-kit 或 root-kit-* 内的 stock、images、stock-upgrade 子目录。\n\n不要删除整个 private 或 root-kit 目录；保留个人密钥、ssh_config、known_hosts、备份、日志和刷写记录。刷写中断或状态不明时先保留全部材料。': 'Download cache: {}\nPersonal materials: {}\n\nClose all copies of this application and all flashing windows first. The download cache can be deleted; required files will be downloaded again.\n\nIf only computer-side preparation failed and phone flashing never started, or the phone boots normally with Root and connectivity confirmed and no further flashing or recovery is needed, you may delete the stock, images and stock-upgrade subfolders inside root-kit or root-kit-*.\n\nKeep the private and root-kit folders themselves, personal keys, ssh_config, known_hosts, backups, logs and flash records. Preserve all materials if flashing was interrupted or its outcome is uncertain.',
 })
+
+ENGLISH.update({
+    '当前卡的归属网络尚无自动配置模板（{}）；已开放型号不因实测状态或频段说明而限制。': 'No automatic carrier template is available for this SIM home network ({}); open models are not blocked by test status or band notes.',
+    '检测到中国广电（460-15）SIM。黑莓 10 全系硬件不支持广电主力 700 MHz（Band 28）频段且归属网非三大运营商，暂不支持开通 VoLTE。': 'Detected a China Broadnet (460-15) SIM. BlackBerry 10 hardware lacks 700 MHz (Band 28) LTE and Broadnet is outside the supported three-carrier scope.',
+    '检测到手机上存在已下载的运营商配置文件（OTA 覆盖），为保护现有设置未自动改写。请保留现场并导出脱敏检查报告。': 'A downloaded carrier configuration override is active on the phone, so automatic setup stopped safely without overwriting it. Preserve the current state and export a redacted diagnostic report.',
+    '当前 SIM 类型尚未适配。自动流程只支持无 ISIM 的 USIM（部分新版 5G USIM 内置 ISIM 应用暂未适配）；请换用普通 4G USIM，或保留现有系统补充脱敏检查报告。': 'This SIM route is not supported yet. Automatic setup supports USIM cards without an ISIM applet (some newer 5G USIM cards include ISIM); use a standard 4G USIM or export a redacted report.',
+})

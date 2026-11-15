@@ -2,18 +2,17 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r43 · 手机版 0.1.0.43。** Q10、Q20、Passport、P’9983 的移动、联通、电信都能试。表里只标以前测得怎么样，不会因此拦住你。
+**桌面 r47 · 手机版 0.1.0.47。** Q10、Q20、Passport、P’9983 的移动、联通、电信都能试。表里只标以前测得怎么样，不会因此拦住你。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r43.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r47.md)
 
 ## 这版改了什么
 
-- 修复 Windows 打开、切页、拖动和缩放窗口时的明显卡顿；减少进度动画重绘。
-- 重复准备 Root 镜像、导入固件和准备驱动时复用已校验材料，减少失败后的大文件残留。
-- 增加存储位置与手动清理说明。手机版仍为 0.1.0.43，无需因桌面更新重新刷机或重装手机版。
-- 电信短信送到了，手机仍可能显示“发送中”。别重发。有办法欢迎提 [PR](https://github.com/Octo-o-o-o/bb10-volte/pulls) 或发 [Issue](https://github.com/Octo-o-o-o/bb10-volte/issues)。
+- 补齐移动（`460-00/02/04/07/08`）、联通（`460-01/06/09`）、电信（`460-03/05/11/12`）全部商用号段准入与原厂只读 XML（`404.xml`／`36.xml`／`446.xml`）SHA-256 固定兜底及两阶段空 APN 引导，解决新发移动 `460-08` 等 USIM 落入 `0.xml` 提示“没有对应的模板”的问题。
+- 修复 r45／r46 在 Passport（Q30）电信呼入接通后重复下发 `200 OK` SDP 导致的无声回归：恢复 `MediaDialog.Omit200OkSdp=1` 并保留 `MediaDialog.EarlySdp=0`，同时保持联通等无前置条件呼入的 `180` 去重与 `200 OK` 正常带 SDP。
+- 细化中国广电 `460-15`、含 ISIM 应用的新版 5G USIM、系统 OTA 运营商配置覆盖等拒因提示，补充脱敏媒体会话诊断；保留 r46 电信发信完成补丁（扩展至电信四号段）与状态栏黑莓图标自动点亮，r42–r46 停用后可直接升级。
 
 ## 怎么用
 
@@ -47,16 +46,16 @@ Windows 11 和 Apple 芯片试过启动。Windows 10 和 Intel 还没试。详�
 
 反复准备或失败后磁盘占用较大时，见[保存位置与手动清理说明](docs/DISK-CLEANUP.md)。r43 已包含缓存复用与构建残留清理修复。
 
-Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r46 下载中。
+Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r47 下载中。
 
 打不开 GitHub 时，用官网的 Cloudflare R2。两边是同一份文件，运行前对一下 SHA-256。
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r46/bb10-volte-0.5.0-r46-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r46/bb10-volte-0.5.0-r46-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r46/bb10-volte-0.5.0-r46-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r46/bb10-volte-0.5.0-r46-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r46/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r46/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/bb10-volte-0.5.0-r47-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r47/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r47/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

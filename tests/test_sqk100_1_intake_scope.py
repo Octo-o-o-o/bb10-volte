@@ -32,7 +32,8 @@ class SQKIntakeTests(unittest.TestCase):
         self.assertTrue(device_info.identify(dict(FACTS,variant='SQN100-3'))['identity_conflict'])
 
     def test_three_carriers_admitted_as_trials_without_fabricating_acceptance(self):
-        for mnc,operator in (('00','mobile'),('01','unicom'),('11','telecom')):
+        for mnc,operator in (('00','mobile'),('08','mobile'),('01','unicom'),('09','unicom'),
+                             ('03','telecom'),('11','telecom'),('12','telecom')):
             selected=policy.select(FACTS,card(mnc))
             self.assertEqual(selected['operator'],operator)
             self.assertEqual(selected['family'],'p9983')
@@ -47,7 +48,7 @@ class SQKIntakeTests(unittest.TestCase):
             with self.assertRaises(ValueError):policy.select(dict(FACTS,**changed),card('01'))
 
     def test_other_networks_and_bad_sim_identity_remain_blocked(self):
-        for changed in (card('03'),dict(card('01'),kind=18),dict(card('01'),kind=True),
+        for changed in (card('15'),card('99'),dict(card('01'),kind=18),dict(card('01'),kind=True),
                         dict(card('01'),state='ABSENT'),dict(card('01'),imsi='unknown')):
             with self.assertRaises(ValueError):policy.select(FACTS,changed)
 

@@ -30,6 +30,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r46/mobile46 before full 12-MNC carrier fallback and Omit200OkSdp=1 MT voice fix.
+                    '0a05a4f7d6cd27a477d845e4e77c6565b85f12bfaa01865fd2363772405db8ba',
                     # Pre-Telecom-MO-SMS-fix r46/mobile46 candidate read back on SQC100-2.
                     '1e52f431fbe8445a76d7f6fd6d9054535512216c3fc1287057d374287370c9b7',
                     # r45/mobile45 before automatic Navigator BlackBerry status-bar indicator.
@@ -410,10 +412,16 @@ def probe():
 def with_sim_status(result, facts):
     install_ready = bool(result.get('can_install'))
     try:
-        selection = policy.select(facts, u.card())
+        sim = u.card()
+        mcc, mnc = sim.get('mcc'), sim.get('mnc')
+        if profiles.match(r'[0-9]{3}', mcc) and profiles.match(r'[0-9]{2,3}', mnc):
+            result['sim_plmn'] = mcc + '-' + mnc
+        selection = policy.select(facts, sim)
         result['operator'] = selection['operator']
         profile = selection['request']['profile']
-        template, unused = profiles.carrier_template(profile, '460', profile['carrier']['mncs'][0])
+        template_mcc = mcc or profile['carrier'].get('mcc', '460')
+        template_mnc = mnc or profile['carrier']['mncs'][0]
+        template, unused = profiles.carrier_template(profile, template_mcc, template_mnc)
         result['stock_template_verified'] = True
         result['stock_template'] = template
         result['sim_supported'] = True

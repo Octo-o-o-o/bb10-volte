@@ -88,17 +88,22 @@ class MobileRuntimeTests(unittest.TestCase):
 
     def test_radio_hint_handles_only_transient_sim_reads_and_never_masks_recovery(self):
         for installed in (False, True):
-            for reason in ('sim_not_ready', 'sim_identity_unavailable', 'sim_route_unsupported'):
+            for reason in ('sim_not_ready', 'sim_identity_unavailable', 'sim_route_unsupported',
+                           'china_broadnet_unsupported', 'downloaded_carrier_config_present'):
                 for radio in ('OFF', 'ON', None):
                     result = {'installed': installed, 'sim_supported': False, 'sim_reason': reason,
+                              'sim_plmn': '460-15' if reason == 'china_broadnet_unsupported' else '460-20',
                               'status': {'enabled': False, 'phase': 'disabled'}}
                     with self.subTest(installed=installed, reason=reason, radio=radio), \
                          mock.patch.object(WORKER, 'mobile_radio_state', return_value=radio), \
                          mock.patch.object(WORKER, 'engine') as manager:
                         manager.return_value.BASE = '/absent'
-                        actual = WORKER.inspection_response({}, result, {})['state']
-                    expected = ('mobile_network_off' if radio == 'OFF' and reason != 'sim_route_unsupported' else
-                                'sim_unsupported' if reason == 'sim_route_unsupported' else 'waiting_sim')
+                        response = WORKER.inspection_response({}, result, {})
+                        actual = response['state']
+                    permanent = reason in ('sim_route_unsupported', 'china_broadnet_unsupported',
+                                           'downloaded_carrier_config_present')
+                    expected = ('mobile_network_off' if radio == 'OFF' and not permanent else
+                                'sim_unsupported' if permanent else 'waiting_sim')
                     self.assertEqual(actual, expected)
         result = {'installed': True, 'sim_supported': False, 'sim_reason': 'sim_not_ready',
                   'status': {'enabled': True, 'phase': 'error_restored'}}
@@ -106,6 +111,26 @@ class MobileRuntimeTests(unittest.TestCase):
              mock.patch.object(WORKER, 'engine') as manager:
             manager.return_value.BASE = '/absent'
             self.assertEqual(WORKER.inspection_response({}, result, {})['state'], 'recovery_required')
+
+    def test_sim_unsupported_ui_preserves_state_contract_and_explains_reason_bilingually(self):
+        cases = [
+            ('china_broadnet_unsupported', '460-15', '中国广电', 'China Broadnet'),
+            ('sim_route_unsupported', '460-00', 'ISIM', 'ISIM'),
+            ('downloaded_carrier_config_present', '460-08', '已下载的运营商配置', 'downloaded carrier configuration'),
+            ('carrier_not_validated', '460-20', '460-20', '460-20'),
+        ]
+        for reason, plmn, zh_hint, en_hint in cases:
+            probe = {'installed': False, 'sim_supported': False, 'sim_reason': reason, 'sim_plmn': plmn}
+            for lang in ('zh', 'en'):
+                with mock.patch.object(WORKER, 'mobile_radio_state', return_value='ON'), \
+                     mock.patch.object(WORKER, 'engine') as manager:
+                    manager.return_value.BASE = '/absent'
+                    response = WORKER.inspection_response({'language': lang}, probe, {'version': '0.1.0.47'})
+                self.assertEqual(response['state'], 'sim_unsupported')
+                self.assertEqual(response['details']['sim_reason'], reason)
+                self.assertEqual(response['details']['sim_plmn'], plmn)
+                self.assertIn(zh_hint, response['display_i18n']['zh']['message'])
+                self.assertIn(en_hint, response['display_i18n']['en']['message'])
 
     def test_busy_inspection_preserves_protocol_and_explains_a_confirmed_off_radio(self):
         job = {'id': 'a' * 32, 'action': 'enable', 'state': 'waiting_reboot'}

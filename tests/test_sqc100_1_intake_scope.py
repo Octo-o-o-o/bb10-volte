@@ -29,7 +29,7 @@ class SQC1IntakeScopeTests(unittest.TestCase):
             self.assertEqual(variant_trials.plan('SQC100-1',operator)['hardware_acceptance'],'not_established_by_this_plan')
 
     def test_other_mncs_and_isim_or_unready_identity_stay_rejected(self):
-        for changed in (card('03'),dict(card('01'),kind=18),dict(card('01'),state='PIN_REQUIRED'),
+        for changed in (card('15'),card('99'),dict(card('01'),kind=18),dict(card('01'),state='PIN_REQUIRED'),
                         dict(card('01'),imsi='not-an-identity'),dict(card('01'),kind=True)):
             with self.assertRaises(ValueError):policy.select(FACTS,changed)
 
@@ -51,7 +51,7 @@ class SQC1IntakeScopeTests(unittest.TestCase):
     def test_other_model_admission_not_expanded(self):
         self.assertEqual(set(policy.MODELS),set(device_support.catalog()))
         for variant in policy.MODELS:
-            self.assertEqual(policy.ADMITTED_MNCS[variant],('00','01','07','11'))
+            self.assertEqual(policy.ADMITTED_MNCS[variant],('00','01','02','03','04','05','06','07','08','09','11','12'))
 
     def test_new_suffix_never_guesses_another_suffix_legacy_recovery(self):
         with patch.object(migration.os.path,'lexists',return_value=False),patch.object(migration.s,'load') as read:

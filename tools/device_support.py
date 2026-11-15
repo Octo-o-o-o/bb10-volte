@@ -70,15 +70,19 @@ def root_scope_note(variant, platform):
     return tr('首次 Root：此电脑平台与硬件后缀尚无完整首刷验收，配方可生成不代表刷机加载器已验证。')
 
 
-def error_message(code):
+def error_message(code, sim_plmn=None):
+    if code == 'carrier_not_validated' and isinstance(sim_plmn, str) and profiles.match(r'[0-9]{3}-[0-9]{2,3}', sim_plmn):
+        return tr('当前卡的归属网络尚无自动配置模板（{}）；已开放型号不因实测状态或频段说明而限制。').format(sim_plmn)
     return {
         'operator_not_supported': tr('请更新手机服务：当前版本已开放所有目录型号的三网入口。'),
         'os_not_supported': tr('当前 OS 尚未适配。自动 VoLTE 要求 10.3.3.3216；请先查看系统升级说明，不能直接安装或自动降级。'),
         'unsupported_model_or_os': tr('当前硬件后缀或 OS 尚未纳入自动 VoLTE，无法安装。请查看机型支持范围；重新连接或重复刷机不会增加适配。'),
         'hardware_identity_conflict': tr('手机型号与主板身份不一致，已停止自动适配。请核对准确硬件版本。'),
         'unknown_native_image': tr('系统原生文件与已适配版本不一致，已停止安装。需要核对固件与补丁，不能靠更换运营商模板继续。'),
+        'china_broadnet_unsupported': tr('检测到中国广电（460-15）SIM。黑莓 10 全系硬件不支持广电主力 700 MHz（Band 28）频段且归属网非三大运营商，暂不支持开通 VoLTE。'),
+        'downloaded_carrier_config_present': tr('检测到手机上存在已下载的运营商配置文件（OTA 覆盖），为保护现有设置未自动改写。请保留现场并导出脱敏检查报告。'),
         'carrier_not_validated': tr('当前卡的归属网络尚无自动配置模板；已开放型号不因实测状态或频段说明而限制。'),
-        'sim_route_unsupported': tr('当前 SIM 类型尚未适配。自动流程只支持无 ISIM 的 USIM；请保留现有系统，补充脱敏检查报告。'),
+        'sim_route_unsupported': tr('当前 SIM 类型尚未适配。自动流程只支持无 ISIM 的 USIM（部分新版 5G USIM 内置 ISIM 应用暂未适配）；请换用普通 4G USIM，或保留现有系统补充脱敏检查报告。'),
         'sim_not_ready': tr('SIM 尚未就绪。请解锁 SIM 并等待入网，再检查；暂不安装自动适配。'),
         'sim_identity_unavailable': tr('尚未核对 SIM 归属网络，暂不安装。请等待手机读卡完成后重新检查。'),
         'unified_preflight_blocked': tr('安装条件未通过。请先重新检查设备并处理显示的阻断原因。'),
@@ -89,5 +93,6 @@ def report_note(report):
     if report.get('scope_error'):
         return error_message(report['scope_error']) or describe(assess(report.get('variant')))
     if report.get('sim_supported') is False:
-        return error_message(report.get('sim_reason')) or tr('当前 SIM 或原厂运营商模板未通过检查，暂不安装自动适配。')
+        return (error_message(report.get('sim_reason'), report.get('sim_plmn')) or
+                tr('当前 SIM 或原厂运营商模板未通过检查，暂不安装自动适配。'))
     return ''

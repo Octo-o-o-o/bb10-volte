@@ -81,7 +81,7 @@ On China Telecom (`460-03` / `460-11`), outbound `application/vnd.3gpp.sms` MO `
 - `ims_rrm` `ImsEngineSmsMgr::onSmsDeliverySuccess` (`0xdaa5e..0xdab48`) emits only `NOTIFY_SMS_OUTGOING_RP_PDU_STATUS` (`0x1014` with `0x103d=0`, `0x103e=tx_id`).
 - `qct_rrm` (`0xe5080..0xe6234`) in 3GPP mode treats `0x1014` as SIP transport acceptance only and keeps the MO slot busy ("Sending...") until `NOTIFY_SMS_INCOMING_RP_PDU` (`0x1015`) delivers a matching 2-byte 3GPP `RP-ACK` (`03 <RP-MR>`, decoded by `libradioutil.so.0.1` `SmsDecode3gppSmRlPdu` at `0xf2cd`).
 
-r46 adds explicit `telecom_mo_ack=True` (enabled solely for `460-03` / `460-11`; Mobile and Unicom keep the 2-hook `sms_ack_binary` image):
+r46 adds explicit `telecom_mo_ack=True` (enabled for `460-03` / `460-11` in r46 and extended to all four China Telecom MNCs `460-03` / `05` / `11` / `12` in r47; Mobile and Unicom keep the 2-hook `sms_ack_binary` image):
 
 - `0x2ee3c6` (`sms_telecom_tx_hook`) preserves downlink `In-Reply-To` correlation for `0x02`/`0x04` reports and records `(tx_id=*(msg+0x14), rp_ref=rpdu[1])` for outbound 3GPP MO `RP-DATA` (`0x00`, length `>= 3`) in a separate 16-slot `mo_cache` (180 s TTL), keeping `cache` pinned at `0x4a3000` so `sms_busy_recovery` offsets remain unchanged.
 - `0xdaae2` (`sms_mo_pop_hook`, replacing `BL 0x139084`) pops a matching `(engine=r5, tx_id=*(sp+0x20))` entry when building `0x1014`, and `0xdab44` (`sms_mo_send_hook`, replacing `BL 0x11ec60`) forwards `0x1014` first and — only when that IPC call returns `>= 0` for a matched live entry — synthesizes the 28-byte `0x1015` TLV (`0x1041={0x03, RP-MR}`, `0x1042={0x02}`, `0x1044={0,0,0,0}`) via stock `0x139084` + `0x11ec60`.
