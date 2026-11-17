@@ -104,7 +104,7 @@ def bind_template(selection, template):
 
 def transition(previous, selected, boot, provider_clear, attempt=None):
     """No native IMS restart after a SIM switch/provider activation in one boot."""
-    if attempt and attempt.get('boot') == boot:
+    if attempt and attempt.get('boot') == boot and attempt.get('stage') != 'pre_native':
         return 'reboot_required'
     if not provider_clear:
         return 'reboot_required'

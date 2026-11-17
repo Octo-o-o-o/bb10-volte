@@ -30,6 +30,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r48/mobile48 before external radio-mode reconciliation, pre-native retry and PLMN lock.
+                    'eb2abf8616c5c1f6fca74fe87848c70dc698e881fc570bfea6c1ac645f239975',
                     # r47/mobile47 before OI-APN bootstrap, 12-MNC SE13 overlay, and Python 3.2 IOError hardening.
                     'eb612b14ebdcd9fcd5265d83f3ff58e0450f4b86afa3a92ee7676b1faefa8f71',
                     # r46/mobile46 before full 12-MNC carrier fallback and Omit200OkSdp=1 MT voice fix.
@@ -428,9 +430,15 @@ def with_sim_status(result, facts):
         result['stock_template_verified'] = True
         result['stock_template'] = template
         result['sim_supported'] = True
+        try:
+            result['network_lock_enabled'] = network.configured_network_lock(selection['sim_sha256']) is not None
+        except Exception:
+            result['network_lock_enabled'] = None
     except ValueError as error:
         result['sim_supported'], result['sim_reason'] = False, str(error)
         result['can_install'] = False
+        result['network_lock_enabled'] = False
+    result['scan_mode'] = network.scan_mode_snapshot()
     result['mobile_network_off'] = network.mobile_radio_state() == 'OFF'
     status = result.get('status') or {}
     enable_ready = (result.get('installed') is True and status.get('enabled') is False and
@@ -444,6 +452,27 @@ def with_sim_status(result, facts):
         (install_ready or enable_ready) and (result.get('sim_supported') is True or
         result.get('sim_reason') in ('sim_not_ready', 'sim_identity_unavailable')))
     return result
+
+
+def lock_mobile_network():
+    facts, unused = identity()
+    assert os.path.isfile(BASE + '/payload.json') and not os.path.isfile(BASE + '/uninstalled.json'), 'installation_required'
+    u.setup()
+    u.verify()
+    selection = policy.select(facts, u.card())
+    profile = selection['request']['profile']
+    sim = u.card()
+    profiles.carrier_template(profile, sim.get('mcc'), sim.get('mnc'))
+    assert u.ready_sim_hash(sim) == selection['sim_sha256'], 'sim_changed'
+    return network.set_network_lock(selection)
+
+
+def unlock_mobile_network():
+    identity()
+    assert os.path.isfile(BASE + '/payload.json') and not os.path.isfile(BASE + '/uninstalled.json'), 'installation_required'
+    u.setup()
+    u.verify()
+    return network.clear_network_lock()
 
 
 def prepare_mobile_network():
@@ -965,6 +994,7 @@ def known_uninstall_member(name, payload):
              'owned-ims-events.log', 'boot.log', 'last-error.txt', 'selection.json', 'native-attempt.json',
              'stock-handoff.json', 'operator-name-status.json', 'operator-name-original.txt', 'operator-name.json',
              'own-number-display.json', 'own-number-status.json', 'dca.json', 'radio-mode.json',
+             'network-selection.json', 'network-lock.json',
              'connection-notification.json', 'attention-notification.json', 'sim-notification.json', 'sms-busy-recovery.json')
     if name.startswith('state/') and name[6:] in state:
         return True
@@ -1197,15 +1227,20 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 result = u.public_status()
     else:
         assert action in ('prepare', 'activate', 'record-backup', 'update', 'rollback',
-            'uninstall', 'start', 'enable', 'disable', 'cleanup-stage', 'prepare-network'), 'unknown_action'
+            'uninstall', 'start', 'enable', 'disable', 'cleanup-stage', 'prepare-network',
+            'lock-network', 'unlock-network'), 'unknown_action'
         with management_lock():
             if os.path.isfile(BASE + '/uninstall-pending.json'):
                 assert action in ('uninstall', 'cleanup-stage'), 'uninstall_pending'
-            if action in ('start', 'enable'):
+            if action in ('start', 'enable', 'lock-network', 'unlock-network'):
                 assert not any(os.path.isfile(BASE + '/' + name) for name in
                     ('install-pending.json', 'update-pending.json', 'rollback-pending.json', 'uninstalled.json')), 'management_transaction_pending'
             if action == 'prepare-network':
                 result = prepare_mobile_network()
+            elif action == 'lock-network':
+                result = lock_mobile_network()
+            elif action == 'unlock-network':
+                result = unlock_mobile_network()
             elif action == 'prepare':
                 result = prepare(stage)
             elif action == 'activate':

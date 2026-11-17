@@ -86,7 +86,8 @@ class AutoCarrierWindow:
             if report.get('scope_error') and action != 'probe':
                 allowed = False
             enabled = report.get('status', {}).get('enabled')
-            if action == 'enable' and enabled is not False or action == 'disable' and enabled is False:
+            retry = report.get('status', {}).get('pre_native_retry_available') is True
+            if action == 'enable' and enabled is not False and not retry or action == 'disable' and enabled is False:
                 allowed = False
             if action == 'enable' and report.get('status', {}).get('manager_alive'):
                 allowed = False
@@ -94,6 +95,7 @@ class AutoCarrierWindow:
         self.buttons['install'].configure(text=tr('更新自动适配') if report.get('update_available') else tr('备份并安装自动适配'))
         self.buttons['status'].configure(text=self.status_button_override or status_view(report.get('status', {}))['status_button'])
         self.buttons['probe'].configure(text=tr('重新检查连接') if self.reconnect_pending else tr('检查设备'))
+        self.buttons['enable'].configure(text=tr('重试连接') if report.get('status', {}).get('pre_native_retry_available') is True else tr('启用自动适配'))
 
     def run(self, action):
         if self.busy:
@@ -207,9 +209,14 @@ class AutoCarrierWindow:
                         details = tr('原始备份和旧版本文件仍保留，可用于恢复。')
                     elif action == 'enable':
                         self.report = dict(self.report or {}, status={'enabled': True})
-                        self.status.configure(text=tr('已启用自动适配，请正常重启。'))
-                        details = restart_guidance()
-                        self.status_button_override = tr('已重启，重新检查')
+                        if result.get('reboot_required') is False:
+                            self.status.configure(text=tr('正在等待本次开机的自动适配结果。请保持当前 SIM，稍后刷新状态；注册成功后再验收通话。'))
+                            details = tr('上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。')
+                            self.status_button_override = None
+                        else:
+                            self.status.configure(text=tr('已启用自动适配，请正常重启。'))
+                            details = restart_guidance()
+                            self.status_button_override = tr('已重启，重新检查')
                     else:
                         self.report = dict(self.report or {}, status=result)
                         title, details = status_text(result)

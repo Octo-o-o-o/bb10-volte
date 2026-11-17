@@ -941,6 +941,9 @@ ENGLISH = {
 
 # Unified carrier installation
 ENGLISH.update({
+    '可以重试连接，无需为上次等网重启': 'Ready to retry; the previous network wait does not require a reboot',
+    '上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。': 'The previous attempt stopped before IMS started and configuration was restored. Keep the same SIM and click “Retry connection”.',
+    '重试连接': 'Retry connection',
     '候选试测版，尚未实机验收': 'Candidate preview; no hardware acceptance',
     '仅安装并回读候选文件，不启动服务，不启用自启动。完成后可单独手动启动。': 'Install and verify candidate files only. The service and autostart remain off. Start manually in a separate step after installation.',
     '原版系统升级尚待真机验收。请先完成备份，只在可清空的测试手机上使用此候选流程。': 'Stock firmware upgrades still need physical-device acceptance. Back up first and use this candidate workflow only on a test phone that may be erased.',
@@ -1202,4 +1205,15 @@ ENGLISH.update({
     '电信短信说明：r46 及以上版本已内置发信状态回执清理，不再长卡“发送中”；若旧版曾卡住，更新重启一次即可自动恢复。': 'China Telecom SMS note: r46 and later include automatic MO SMS completion acknowledgement so messages no longer stay stuck in “Sending”; if an older build wedged the queue, update and restart once to clear it.',
     '用手机电源菜单正常重启，开机后解锁并等待约 3–5 分钟，再点击“已重启，重新检查”。\nPassport 改变移动／电信与联通之间的入网策略时可能还需一次正常重启，程序会根据手机状态提示。\n以后不连电脑换卡：先关机换卡再开机；Passport 在联通与移动／电信之间切换时，等待约 5 分钟后再正常重启一次。': 'Restart normally from the phone’s power menu, unlock and wait about 3–5 minutes, then click “Restarted — check again”.\nPassport may require one more normal restart when switching attach policy between Unicom and Mobile/Telecom; the app will prompt based on live phone state.\nSwapping SIMs later without a computer: power off first, swap SIMs and boot; on Passport when switching between Unicom and Mobile/Telecom, wait about 5 minutes and restart normally once more.',
     '检测到多台黑莓 USB 设备，请先拔掉其他黑莓手机，仅保留当前操作的一台后再运行 detect。': 'Multiple BlackBerry USB devices were detected. Unplug the extra BlackBerry phones so only the target device remains connected, then run detect again.',
+    '当前无线层报告漫游标志为是且数据漫游为 OFF。请核实实际驻留网络和系统漫游设置；工具不会自动更改数据漫游。': 'The radio reports roaming=true while Data Roaming is OFF. Check the actual serving network and system roaming setting; this tool does not change Data Roaming.',
+    '数据漫游设置': 'Data roaming setting',
+    '系统数据漫游开关状态；漫游标志为是且此项为 OFF 时会阻止移动数据。': 'System Data Roaming toggle; blocks mobile data when the radio roaming flag is true and this setting is OFF.',
+    '无线选网模式': 'Network selection mode',
+    'AUTO 为自动选网，MANUAL 为手动锁定选网。': 'AUTO selects networks automatically; MANUAL locks selection to the chosen PLMN.',
+    '驻留归属运营商集团': 'Camped on home carrier group',
+    '为“否”仅表示驻留 PLMN 不在当前 SIM 的运营商号段表内；共享网络和等效归属网需结合实际数据状态判断。': '“No” only means the serving PLMN is outside the SIM carrier group table; shared and equivalent home networks require actual data-state checks.',
+    '无线漫游标志': 'Radio roaming flag',
+    '无线层报告的漫游标志；不单独证明实际漫游或产生额外费用。': 'Radio-layer roaming flag; does not alone prove actual roaming or additional charges.',
+    '原始位图及解码频段，不单独证明正常入网或运营商归属。': 'Raw bitmap and decoded LTE bands; does not by itself prove normal registration or carrier ownership.',
+    '原始位图及解码频段；频段能力不证明当前地区覆盖或正常入网。': 'Raw bitmap and decoded LTE bands; capability does not prove local coverage or normal registration.',
 })

@@ -8,6 +8,8 @@
 
 [适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r48.md)
 
+未发布源码改进：[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。下方 r48 下载仍是原发行包，新逻辑尚待真机验收。
+
 ## 这版改了什么
 
 - 加固 3GPP 运营商标识后缀（`.mncXX.mcc460.gprs`）剥离与 `0.xml` 兜底前基站默认承载 APN（如 `cmiot`）受控引导，并在绑定原厂只读模板时完整校验 `0.xml` 哈希与保留审计元数据。

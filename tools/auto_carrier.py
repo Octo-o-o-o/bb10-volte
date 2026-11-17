@@ -166,7 +166,8 @@ class AutoClient:
         return result
 
     def action(self, action):
-        if action not in ('status', 'start', 'enable', 'disable', 'rollback', 'uninstall'):
+        if action not in ('status', 'start', 'enable', 'disable', 'rollback', 'uninstall',
+                          'lock-network', 'unlock-network'):
             raise WorkflowError('invalid_action')
         expected = verify_package()
         # The worker snapshot survives deletion/replacement of installed code.
@@ -184,10 +185,12 @@ class AutoClient:
         except (ValueError, TypeError, AttributeError):
             raise WorkflowError('unified_package_mismatch') from None
         if installed.get('files') != expected['files']:
-            if action in ('start', 'enable'):
+            if action in ('start', 'enable', 'lock-network', 'unlock-network'):
                 raise WorkflowError('unified_update_needs_stop_and_reboot')
             with self.stage() as stage:
                 return self.execute(stage, 'unified_install.py', (action,), 180)
+        if action in ('lock-network', 'unlock-network'):
+            return self.execute(BASE, 'unified_install.py', (action,), 180)
         if action == 'enable':
             state = self.execute(BASE, 'unified_service.py', ('status',), 180)
             if state.get('manager_alive'):
@@ -200,7 +203,7 @@ def main():
     import argparse
     from workflow import Client
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('manifest', 'probe', 'install', 'status', 'start', 'enable', 'disable', 'rollback', 'uninstall'))
+    parser.add_argument('action', choices=('manifest', 'probe', 'install', 'status', 'start', 'enable', 'disable', 'rollback', 'uninstall', 'lock-network', 'unlock-network'))
     parser.add_argument('--host', default='bb10-root')
     parser.add_argument('--ssh-config')
     args = parser.parse_args()

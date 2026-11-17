@@ -52,6 +52,12 @@ MESSAGES = {
                                 'Mobile network was off', 'Turn on Mobile Network in system settings and turn off Airplane Mode if needed. Then return to continue the original task.', 'Continue task'),
     'working': ('正在处理', '可以离开此应用；任务在手机后台继续。请保持电量充足。', '查看进度',
                 'Working', 'The task continues on the phone if you leave this app. Keep the battery charged.', 'Check progress'),
+    'working_update': ('正在更新手机服务组件', '正在替换并校验手机后台服务组件（不是重新激活），可在后台继续，请保持电量充足。', '查看进度',
+                       'Updating phone service', 'Replacing and verifying phone background service files (not re-activating). Keep the battery charged.', 'Check progress'),
+    'retry_ready': ('可以重试连接', '上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击重试，无需为这次等待重新启动手机。', '重试连接',
+                    'Ready to retry', 'The previous attempt stopped before IMS started and configuration was restored. Keep the same SIM and retry without rebooting for this wait.', 'Retry connection'),
+    'update_reboot_required': ('手机服务组件已更新，请正常重启', '后台服务载荷已完成升级并保留原始备份。请使用系统电源菜单正常重启手机并解锁，让新版服务生效。', '立即检查',
+                               'Service updated; restart normally', 'Background service files were updated and original backups are retained. Restart normally from the power menu and unlock to apply the update.', 'Check now'),
     'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁。已启用的自动服务会随开机启动，网络可能需要约 3–5 分钟。需要查看状态或继续未完成的任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
                         'Restart your phone normally', 'Restart from the power menu and unlock. An enabled automatic service starts with the phone; the network may take 3–5 minutes. To check the status or continue an unfinished task, wait for the Root success notification before opening the app. Do not repeatedly tap an unresponsive icon.', 'Check now'),
     'carrier_reboot_required': ('运营商配置已保存，请再重启一次', 'Passport 网络策略已变化，还需正常重启。已启用的自动服务会随开机启动。需要查看状态或继续任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
@@ -98,8 +104,8 @@ MESSAGES = {
                            'Restart state could not be confirmed', 'Restart normally from the system power menu, then check the original task. Export diagnostics if it remains unconfirmed.', 'Check task'),
     'task_status_unavailable': ('暂时无法核对原任务', '请稍后检查同一任务，不要重复提交或再次重启。', '查看任务进度',
                                 'Task status is temporarily unavailable', 'Check the same task again later. Do not resubmit it or restart again.', 'Check task progress'),
-    'task_service_busy': ('手机服务正在处理', '暂时无法核对原任务，请稍后查看任务进度；不要重新提交或再次重启。', '查看任务进度',
-                          'Phone service is busy', 'The original task cannot be checked yet. Check its progress later; do not resubmit or restart again.', 'Check task progress'),
+    'task_service_busy': ('手机服务正在处理', '后台正在执行任务、组件升级或开机交接，暂时无法核对原任务；请稍后查看任务进度，不要重新提交或再次重启。', '查看任务进度',
+                          'Phone service is busy', 'A background task, component update or startup handoff is in progress, so the original task cannot be checked yet. Check its progress later; do not resubmit or restart again.', 'Check task progress'),
     'task_service_busy_radio_off': ('手机服务正在处理，移动网络已关闭', '请在系统设置中打开移动网络；如开启了飞行模式请先关闭，然后回来查看原任务进度。', '查看任务进度',
                                     'Phone service is busy; mobile network is off', 'Turn on Mobile Network in system settings and disable Airplane Mode if needed. Then return to check the original task.', 'Check task progress'),
     'service_busy': ('手机服务正在处理', '暂时无法检查当前状态，请稍后再检查。', '重新检查',
@@ -509,6 +515,8 @@ def inspection_response(request, result, details, confirmed_context=None):
         return ui(state, language, 'status', details,
                   actions=actions + ['confirm-calls'], call_context=context['context'])
     if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
+        if status.get('pre_native_retry_available') is True:
+            return ui('retry_ready', language, 'enable', details, actions=actions + ['enable'])
         if (status.get('phase') == 'error_restored' and result.get('family') == 'passport' and
                 result.get('operator') == 'unicom'):
             import policy_hint
@@ -858,7 +866,9 @@ def job_response(job, request):
                 result['display_i18n'][lang]['primary_label'] = label
             result['display']['primary_label'] = result['display_i18n'][result['display_language']]['primary_label']
         return result
-    display_state = 'task_mobile_network_off' if resume and job['state'] == 'failed' and job.get('error_code') == 'mobile_network_off' else state
+    display_state = ('working_update' if state == 'working' and job.get('action') == 'update' else
+                     'update_reboot_required' if state == 'reboot_required' and job.get('action') == 'update' else
+                     'task_mobile_network_off' if resume and job['state'] == 'failed' and job.get('error_code') == 'mobile_network_off' else state)
     if resume and job['state'] == 'failed' and job.get('error_code', '').startswith('mobile_network_') and job.get('error_code') != 'mobile_network_off':
         display_state = 'task_mobile_network_enable_failed'
     result = ui(display_state, request.get('language'), action, job.get('public_result', {}),

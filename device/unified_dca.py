@@ -21,6 +21,8 @@ BASE = policy.BASE
 BACKUP = BASE + '/backup'
 RECORD = BASE + '/state/dca.json'
 MODE_RECORD = BASE + '/state/radio-mode.json'
+SELECTION_RECORD = BASE + '/state/network-selection.json'
+NETWORK_LOCK = BASE + '/state/network-lock.json'
 RADIO_CONTROL = '/pps/services/cellular/radioctrl/control'
 RADIO_PUBLIC = '/pps/services/cellular/radioctrl/status_public'
 RADIO_STATUS = '/pps/services/cellular/radioctrl/status_persistent'
@@ -28,6 +30,8 @@ MODE_STATUS = '/pps/services/radioctrl/modem0/status_persistent'
 CELLULAR_IMAGE = '/radio/bin/cellular-control'
 CELLULAR_HASH = '1fb9b34d9e4b401ce2e7add1dff20f1c8c08dc926d6f25b0ae6b586f122470ec'
 TECH_BITS = ((1, 'gsm'), (2, 'umts'), (4, 'cdma_1x'), (8, 'evdo'), (16, 'lte'))
+PRIMARY_LTE_MNCS = {'mobile': '00', 'unicom': '01', 'telecom': '11'}
+deferred_lte_lock = False
 
 
 def mobile_radio_state():
@@ -201,36 +205,286 @@ def request_mode(value):
     raise RuntimeError('network_mode_readback_failed')
 
 
-def ensure_lte_mode(selected):
-    """Use LTE only while enabled; retain the exact original for explicit stop."""
+def scan_mode_snapshot():
+    """Return AUTO/MANUAL when readable from cellular-control PPS status."""
+    for path in (RADIO_PUBLIC, RADIO_STATUS):
+        try:
+            mode = n.value(n.attrs(n.read(path)), 'scan_mode')
+            if isinstance(mode, str) and mode in ('AUTO', 'MANUAL'):
+                return mode
+        except (IOError, OSError, ValueError, TypeError, AttributeError):
+            pass
+    return None
+
+
+def serving_network_snapshot():
+    """Read current radio technology and serving PLMN without exposing cell IDs."""
+    try:
+        attrs = n.attrs(n.read(RADIO_PUBLIC))
+        serving = n.value(attrs, 'serving_network', {})
+        serving = serving if isinstance(serving, dict) else {}
+        mcc, mnc = serving.get('mcc'), serving.get('mnc')
+        service = n.value(attrs, 'network_service')
+        tech = n.value(attrs, 'network_technology')
+        return {
+            'power_on': n.value(attrs, 'power_status') == 'ON',
+            'lte': tech == ['lte'],
+            'mcc': str(mcc) if mcc is not None and profiles.match(r'[0-9]{3}', str(mcc)) else None,
+            'mnc': str(mnc) if mnc is not None and profiles.match(r'[0-9]{2,3}', str(mnc)) else None,
+            'emergency_only': bool(service & 0x1) and not bool(service & 0x200000) if type(service) is int and 0 <= service <= 0xffffffff else False,
+        }
+    except (IOError, OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def request_scan_mode(mode):
+    assert mode in ('AUTO', 'MANUAL'), 'invalid_scan_mode'
+    assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
+    identifier = 'bb10-auto-scan-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
+    request = ('msg::scan_mode\nid::' + identifier + '\ndat::' + mode + '\n').encode('ascii')
+    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
+    has_err = False
+    try:
+        assert os.write(fd, request) == len(request)
+        deadline = time.time() + 15
+        acknowledged = False
+        while time.time() < deadline:
+            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
+            if not ready:
+                break
+            try:
+                reply = n.attrs(os.read(fd, 262144))
+            except (IOError, OSError) as error:
+                if error.errno == errno.EAGAIN:
+                    continue
+                raise
+            if n.value(reply, 'id') != identifier:
+                continue
+            if 'res' in reply or 'err' in reply:
+                assert n.value(reply, 'res') == 'scan_mode', 'scan_mode_rejected'
+                has_err = 'err' in reply
+                acknowledged = True
+                break
+        assert acknowledged, 'scan_mode_reply_timeout'
+    finally:
+        os.close(fd)
+    # Global 3GPP+3GPP2 SKUs (e.g. SQC100-3) may report 3GPP2 manual-mode
+    # unsupported while 3GPP scan_mode transitions cleanly. Verify readback.
+    for unused in range(6):
+        if scan_mode_snapshot() == mode:
+            return
+        time.sleep(0.5)
+    raise RuntimeError('scan_mode_rejected' if has_err else 'scan_mode_readback_failed')
+
+
+def request_network_select(mcc, mnc, rat=16):
+    """Select an explicit 3GPP PLMN; cellular-control requires string MCC/MNC and int RAT."""
+    mcc, mnc = str(mcc), str(mnc)
+    assert profiles.match(r'[0-9]{3}', mcc) and profiles.match(r'[0-9]{2,3}', mnc), 'invalid_plmn'
+    assert type(rat) is int and rat == 16, 'invalid_rat'
+    assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
+    payload = json.dumps({'mcc': mcc, 'mnc': mnc, 'rat': rat}, separators=(',', ':'))
+    identifier = 'bb10-auto-plmn-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
+    request = ('msg::network_select\nid::' + identifier + '\ndat:json:' + payload + '\n').encode('ascii')
+    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
+    try:
+        assert os.write(fd, request) == len(request)
+        deadline = time.time() + 35
+        acknowledged = False
+        while time.time() < deadline:
+            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
+            if not ready:
+                break
+            try:
+                reply = n.attrs(os.read(fd, 262144))
+            except (IOError, OSError) as error:
+                if error.errno == errno.EAGAIN:
+                    continue
+                raise
+            if n.value(reply, 'id') != identifier:
+                continue
+            if 'res' in reply or 'err' in reply:
+                assert n.value(reply, 'res') == 'network_select' and 'err' not in reply, 'network_select_rejected'
+                acknowledged = True
+                break
+        assert acknowledged, 'network_select_reply_timeout'
+    finally:
+        os.close(fd)
+
+
+def configured_network_lock(sim_sha256=None):
+    if not os.path.isfile(NETWORK_LOCK):
+        return None
+    record = s.load(NETWORK_LOCK)
+    assert record.get('owner') == policy.OWNER, 'network_lock_owner_changed'
+    if sim_sha256 is not None and record.get('sim_sha256') != sim_sha256:
+        return None
+    return record
+
+
+def apply_network_selection(selected, mcc=None, mnc=None, reason='explicit'):
+    assert_policy_idle()
+    assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'network_mode_requires_fresh_boot'
+    assert mobile_radio_state() == 'ON', 'mobile_network_off'
+    operator = selected['operator']
+    target_mcc = str(mcc or '460')
+    target_mnc = str(mnc or PRIMARY_LTE_MNCS[operator])
+    assert target_mcc == '460' and target_mnc in profiles.OPERATOR_MNCS[operator], 'invalid_plmn'
+    from unified_service import card, ready_sim_hash
+    assert ready_sim_hash(card()) == selected['sim_sha256'], 'sim_changed'
+    previous = s.load(SELECTION_RECORD) if os.path.isfile(SELECTION_RECORD) else None
+    if previous:
+        assert previous.get('owner') == policy.OWNER
+        if previous.get('sim_sha256') != selected['sim_sha256'] and not previous.get('restored'):
+            restore_network_selection()
+            previous = None
+    current_scan = scan_mode_snapshot()
+    assert current_scan in ('AUTO', 'MANUAL'), 'scan_mode_unknown'
+    owned = previous and not previous.get('restored')
+    # A system-selected MANUAL PLMN is not recoverable from serving_network:
+    # an emergency camp may differ from the user's selected network. Preserve it.
+    assert owned or current_scan == 'AUTO', 'system_manual_selection_preserved'
+    before_scan = previous['before_scan_mode'] if owned else current_scan
+    assert before_scan == 'AUTO', 'network_selection_backup_unknown'
+    record = {
+        'owner': policy.OWNER,
+        'before_scan_mode': before_scan,
+        'target': {'mcc': target_mcc, 'mnc': target_mnc, 'rat': 16},
+        'operator': operator,
+        'sim_sha256': selected['sim_sha256'],
+        'reason': reason,
+        'boot': s.boot_token(),
+        'phase': 'applying',
+        'restored': False,
+        'at': time.time(),
+    }
+    n.atomic(SELECTION_RECORD, profiles.canonical(record))
+    try:
+        request_scan_mode('MANUAL')
+        assert_policy_idle()
+        assert ready_sim_hash(card()) == selected['sim_sha256'], 'sim_changed'
+        request_network_select(target_mcc, target_mnc, 16)
+    except Exception:
+        # Retain the applying receipt if rollback fails, so a later explicit
+        # unlock/disable can finish recovery instead of claiming success.
+        restore_network_selection()
+        raise
+    record['phase'] = 'ready'
+    n.atomic(SELECTION_RECORD, profiles.canonical(record))
+    return record
+
+
+def restore_network_selection(preserve_locked_sim=None):
+    has_lock = os.path.isfile(NETWORK_LOCK)
+    if has_lock:
+        lock = s.load(NETWORK_LOCK)
+        assert lock.get('owner') == policy.OWNER, 'network_lock_owner_changed'
+        if preserve_locked_sim is not None and lock.get('sim_sha256') == preserve_locked_sim:
+            return {'restored': False, 'locked_for_current_sim': True}
+    if not os.path.isfile(SELECTION_RECORD):
+        assert not has_lock, 'network_selection_backup_missing'
+        return {'restored': True, 'changed': False}
+    record = s.load(SELECTION_RECORD)
+    assert record.get('owner') == policy.OWNER
+    if record.get('restored'):
+        if has_lock:
+            os.unlink(NETWORK_LOCK)
+        return {'restored': True, 'changed': False}
+    assert s.phone_idle(), 'call_active'
+    changed = False
+    desired_scan = record.get('before_scan_mode')
+    assert desired_scan == 'AUTO', 'network_selection_backup_unknown'
+    if scan_mode_snapshot() != desired_scan:
+        assert mobile_radio_state() == 'ON', 'mobile_network_off'
+        assert not n.ims_pids() and not n.active_vpn_sessions(), 'startup_resources_busy'
+        request_scan_mode(desired_scan)
+        changed = True
+    record.update(phase='restored', restored=True, restored_at=time.time())
+    n.atomic(SELECTION_RECORD, profiles.canonical(record))
+    if has_lock:
+        os.unlink(NETWORK_LOCK)
+    return {'restored': True, 'changed': changed}
+
+
+def set_network_lock(selected, mcc=None, mnc=None):
+    operator = selected['operator']
+    target_mcc = str(mcc or '460')
+    serving = serving_network_snapshot()
+    current_home = (serving.get('mnc') if serving.get('mcc') == '460' and
+                    serving.get('mnc') in profiles.OPERATOR_MNCS[operator] else None)
+    target_mnc = str(mnc or current_home or PRIMARY_LTE_MNCS[operator])
+    assert profiles.match(r'[0-9]{3}', target_mcc) and profiles.match(r'[0-9]{2,3}', target_mnc), 'invalid_plmn'
+    applied = apply_network_selection(selected, target_mcc, target_mnc, reason='explicit_lock')
+    lock = {
+        'owner': policy.OWNER,
+        'operator': operator,
+        'sim_sha256': selected['sim_sha256'],
+        'mcc': target_mcc,
+        'mnc': target_mnc,
+        'at': time.time(),
+    }
+    n.atomic(NETWORK_LOCK, profiles.canonical(lock))
+    try:
+        ensure_lte_mode(selected)
+    except Exception:
+        restore_network_selection()
+        restore_lte_mode()
+        raise
+    return {'network_locked': True, 'operator': operator, 'target_plmn': target_mcc + '-' + target_mnc,
+            'lte_only_applied': True, 'scan_mode': scan_mode_snapshot(),
+            'phase': applied['phase']}
+
+
+def clear_network_lock():
+    assert_policy_idle()
+    result = restore_network_selection(preserve_locked_sim=None)
+    if not os.path.isfile(BASE + '/enabled'):
+        restore_lte_mode()
+    return {'network_locked': False, 'restored': result['restored'],
+            'changed': result.get('changed', False), 'scan_mode': scan_mode_snapshot()}
+
+
+def ensure_lte_mode(selected, allow_rplmn_attach=False):
+    """Use LTE only while enabled; reconcile wireless_manager mode shifts."""
+    global deferred_lte_lock
     assert_policy_idle()
     current = mode_snapshot()
     previous = s.load(MODE_RECORD) if os.path.isfile(MODE_RECORD) else None
     if previous:
         assert previous['owner'] == policy.OWNER
-        if previous.get('restored'):
-            assert same_mode(current, previous['before']), 'network_mode_changed'
-        else:
-            allowed = [previous['before'], previous['applied']]
-            if previous.get('phase') in ('applying', 'restoring') and 'transition_from' in previous:
-                allowed.append(previous['transition_from'])
-            assert any(same_mode(current, value) for value in allowed), 'network_mode_changed'
     target = {'enabled_technologies': 16, 'preferred_technologies': 0}
+    if allow_rplmn_attach:
+        serving = serving_network_snapshot()
+        if serving.get('power_on') is True and serving.get('lte') is False:
+            if current['enabled_technologies'] & 16:
+                deferred_lte_lock = not same_mode(current, target)
+                if not deferred_lte_lock and previous and not previous.get('restored') and previous.get('phase') != 'ready':
+                    previous.update(applied=target, phase='ready')
+                    n.atomic(MODE_RECORD, profiles.canonical(previous))
+                return
+            target = {'enabled_technologies': (current['enabled_technologies'] & 3) | 16, 'preferred_technologies': 0}
+            deferred_lte_lock = target['enabled_technologies'] != 16
+        else:
+            deferred_lte_lock = False
+    else:
+        deferred_lte_lock = False
     if same_mode(current, target):
         if previous and not previous.get('restored') and previous.get('phase') != 'ready':
-            assert same_mode(previous['applied'], target), 'network_mode_changed'
-            previous['phase'] = 'ready'
+            previous.update(applied=target, phase='ready')
             n.atomic(MODE_RECORD, profiles.canonical(previous))
         return
     assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'network_mode_requires_fresh_boot'
-    if previous:
-        if previous.get('restored'):
-            assert same_mode(current, previous['before']), 'network_mode_changed'
+    if previous and not previous.get('restored'):
         record = dict(previous)
+        owned = [previous['before'], previous['applied']]
+        if 'transition_from' in previous:
+            owned.append(previous['transition_from'])
+        if not any(same_mode(current, value) for value in owned):
+            record['external_mode_reconciled'] = dict(current)
     else:
         record = {'owner': policy.OWNER, 'before': current}
-    # Preserve both the original and previous owned target across an upgrade
-    # from the old additive-LTE policy. A lost reply is reconciled, not retried.
+    # Preserve the original pre-VoLTE mode across wireless_manager / Settings
+    # adjustments and interrupted replies; restore_lte_mode returns to before.
     record.update(applied=target, transition_from=current)
     record.update(boot=s.boot_token(), phase='applying', restored=False,
                   operator=selected['operator'], sim_sha256=selected['sim_sha256'])
@@ -242,6 +496,8 @@ def ensure_lte_mode(selected):
 
 
 def restore_lte_mode():
+    global deferred_lte_lock
+    deferred_lte_lock = False
     if not os.path.isfile(MODE_RECORD):
         return
     record = s.load(MODE_RECORD)
@@ -250,10 +506,15 @@ def restore_lte_mode():
         return
     assert_policy_idle()
     current = mode_snapshot()
-    allowed = [record['before'], record['applied']]
-    if record.get('phase') in ('applying', 'restoring') and 'transition_from' in record:
-        allowed.append(record['transition_from'])
-    assert any(same_mode(current, value) for value in allowed), 'network_mode_changed'
+    owned = [record['before'], record['applied']]
+    if 'transition_from' in record:
+        owned.append(record['transition_from'])
+    if not any(same_mode(current, value) for value in owned):
+        # Preserve an independent user or wireless_manager selection instead of
+        # overwriting it or aborting disable/uninstall into cleanup_required.
+        record.update(phase='restored', restored=True, external_mode_preserved=current)
+        n.atomic(MODE_RECORD, profiles.canonical(record))
+        return
     record['phase'] = 'restoring'
     n.atomic(MODE_RECORD, profiles.canonical(record))
     if not same_mode(current, record['before']):
@@ -385,9 +646,17 @@ def set_usage(desired, selected):
     return record
 
 
-def prepare(selected):
+def prepare(selected, allow_rplmn_attach=False):
     wait_policy_idle()
-    ensure_lte_mode(selected)
+    restore_network_selection(preserve_locked_sim=selected.get('sim_sha256'))
+    lock = configured_network_lock(selected.get('sim_sha256'))
+    if lock is not None and mobile_radio_state() == 'ON':
+        apply_network_selection(selected, lock.get('mcc'), lock.get('mnc'), reason='saved_lock')
+        ensure_lte_mode(selected)
+    elif allow_rplmn_attach:
+        ensure_lte_mode(selected, allow_rplmn_attach=True)
+    else:
+        ensure_lte_mode(selected)
     wait_policy_idle()
     # Q10/Mobile previously lost LTE after CS-domain rejection 18. Passport/
     # Mobile also lost its bearer and call after that rejection with usage=0,
@@ -417,5 +686,6 @@ def prepare(selected):
 
 def restore_original():
     result = set_usage(0, {'operator': 'original', 'sim_sha256': None})
+    restore_network_selection(preserve_locked_sim=None)
     restore_lte_mode()
     return result

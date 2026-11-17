@@ -90,7 +90,7 @@ Once Root SSH (`EUID == 0`), OS `10.3.3.3216`, and the 6 stock QNX native binary
 Do **not** reflash an already-rooted phone! Establish SSH trust instead:
 
 - **Case B1 (`ssh_error == "connection_refused"` on AutoRoot v4)**:
-  Ask the user to open **BlackBerry World** once on the phone and wait ~30 seconds (AutoRoot hooks its startup to launch `sshd` on `169.254.0.1:22`), then re-run `python tools/ai_skill.py detect`.
+  First ask the user to unlock and wait for Root services, especially when HTTP discovery works. If needed, open **BlackBerry World** once and wait ~30 seconds, then re-run `python tools/ai_skill.py detect`. Refusal alone proves neither missing Root nor a lock-screen cause. A unique dynamic USB `/30` link can reuse existing host-key trust; old source-address restrictions may still reject authentication.
 - **Case B2 (User has the previous Root kit folder on this PC)**:
   ```bash
   python tools/ai_skill.py pair import-ssh --folder <PATH_TO_KIT>
@@ -147,6 +147,8 @@ Then have the user complete initial setup / enable Development Mode and run `fir
 ---
 
 ## 3. Lifecycle: Upgrade, SIM Swap, Disable, Rollback & Uninstall
+
+For the unreleased post-r48 network-resilience changes, read [the network guide](../../../docs/NETWORK-RESILIENCE.en.md). While an enabled manager is waiting for LTE, let it continue; do not delete native-attempt receipts. `pre_native_retry_available=true` permits an explicit same-SIM `volte start` or the UI's Retry action after verified restoration. `volte lock-network` / `volte unlock-network` are optional owner-requested assistance, not automatic recovery steps; they require unused native resources and preserve an existing system MANUAL selection. Reboot requirements after native configuration or a Passport policy change still apply.
 
 - **In-Place Payload Update (`r42`–`r47` → `r48`)**:
   - If `probe.update_available == true` and `probe.can_update == false`, stop VoLTE first (`python tools/ai_skill.py volte disable`), have the user **restart normally via power menu**, then run `python tools/ai_skill.py volte install` and restart normally once more.

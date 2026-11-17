@@ -92,6 +92,7 @@ def public_status(raw):
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    result['pre_native_retry_available'] = raw.get('pre_native_retry_available') is True
     result['sms_service_busy'] = raw.get('sms_service_busy') if type(raw.get('sms_service_busy')) is bool else None
     if raw.get('management_schema') == 2:
         result['management_schema'] = 2

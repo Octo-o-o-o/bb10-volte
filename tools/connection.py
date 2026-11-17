@@ -1,5 +1,6 @@
 """Find user-owned BB10 SSH profiles without weakening device trust."""
 import json
+import ipaddress
 from pathlib import Path
 import shlex
 import sys
@@ -90,17 +91,69 @@ def candidate_connections():
     return result
 
 
+def dynamic_usb_link():
+    """Return (peer, source) when a single attached BB10 uses a non-0.1 /30 USB link."""
+    try:
+        import root_setup
+        usb = root_setup.local_usb_state()
+    except Exception:
+        return None
+    if type(usb.get('usb_count')) is not int or usb['usb_count'] != 1:
+        return None
+    peer = str(usb.get('usb_peer') or '')
+    source = str(usb.get('usb_source_address') or '')
+    try:
+        subnet = ipaddress.IPv4Network(source + '/30', strict=False)
+        first, second = list(subnet.hosts())
+        if (not ipaddress.IPv4Address(peer).is_link_local or
+                not ipaddress.IPv4Address(source).is_link_local or
+                peer != str(first) or source != str(second)):
+            return None
+    except ValueError:
+        return None
+    if peer == '169.254.0.1' or peer == source:
+        return None
+    return peer, source
+
+
+def _apply_dynamic_usb_peer(client, link):
+    if not link:
+        return client
+    peer, source = link
+    try:
+        effective = client.process([client.ssh, '-G'] + client.options + [client.host], 10)
+        values = dict(line.split(' ', 1) for line in effective.splitlines() if ' ' in line)
+        if (values.get('hostname') != '169.254.0.1' or values.get('user') != 'root' or
+                values.get('proxycommand', 'none') != 'none' or values.get('proxyjump', 'none') != 'none'):
+            return client
+    except WorkflowError:
+        return client
+    trust_alias = values.get('hostkeyalias', 'none')
+    if trust_alias == 'none':
+        trust_alias = '169.254.0.1'
+    client.options[:0] = ['-o', 'HostName=' + peer, '-o', 'BindAddress=' + source,
+                          '-o', 'ProxyCommand=none', '-o', 'ProxyJump=none',
+                          '-o', 'HostKeyAlias=' + trust_alias]
+    return client
+
+
 def resolve_connection(host, config, **client_options):
     client_options.setdefault('detect_managed', True)
     if config:
         choice = {'host': matching_alias(config, host), 'config': config}
-        return Client(choice['host'], choice['config'], **client_options), choice
+        client = Client(choice['host'], choice['config'], **client_options)
+        link = dynamic_usb_link() if choice['host'] in ALIASES else None
+        if link:
+            _apply_dynamic_usb_peer(client, link)
+        return client, choice
     candidates = candidate_connections()
     # A nonstandard alias was supplied explicitly: use the owner's system SSH
     # configuration rather than substituting a different device.
     if host not in ALIASES:
         return Client(host, None, **client_options), {'host': host, 'config': ''}
     errors = []
+    link = None
+    link_checked = False
     for choice in candidates:
         client = Client(choice['host'], choice['config'] or None, **client_options)
         try:
@@ -113,6 +166,19 @@ def resolve_connection(host, config, **client_options):
             if client.remote('echo BB10_CONNECTION_READY', timeout=12).strip() == 'BB10_CONNECTION_READY':
                 return client, {'host': choice['host'], 'config': choice['config']}
         except WorkflowError as error:
+            if error.code in ('connection_failed', 'connection_refused', 'connection_timeout_state_unknown'):
+                if not link_checked:
+                    link = dynamic_usb_link()
+                    link_checked = True
+                if link:
+                    retry_client = _apply_dynamic_usb_peer(
+                        Client(choice['host'], choice['config'] or None, **client_options), link)
+                    try:
+                        if retry_client.remote('echo BB10_CONNECTION_READY', timeout=12).strip() == 'BB10_CONNECTION_READY':
+                            return retry_client, {'host': choice['host'], 'config': choice['config']}
+                    except WorkflowError as retry_error:
+                        errors.append(retry_error.code)
+                        continue
             errors.append(error.code)
     if errors and all(code == 'host_key_mismatch' for code in errors):
         raise WorkflowError('host_key_mismatch')

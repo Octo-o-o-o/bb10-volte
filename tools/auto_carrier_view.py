@@ -4,6 +4,7 @@ from workflow import registered
 
 
 PHASES = {
+    'starting_handoff': '等待系统 IMS 初始化结束',
     'waiting_for_sim': '等待 SIM 就绪', 'waiting_for_lte_and_usim': '等待 SIM 和正常 LTE 数据服务',
     'registering': '正在注册 IMS', 'running': 'IMS 已连接，请验收双向通话',
     'reboot_required': '请使用手机电源菜单正常重启',
@@ -41,7 +42,12 @@ def status_view(state):
     phase = state.get('phase')
     button = tr('刷新状态')
     code = 'unified_waiting'
-    if phase in ('cleanup_required', 'error', 'error_restored', 'unsupported_sim'):
+    if state.get('pre_native_retry_available') is True:
+        ready = False
+        title = tr('可以重试连接，无需为上次等网重启')
+        guidance = tr('上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。')
+        code = 'unified_retry_available'
+    elif phase in ('cleanup_required', 'error', 'error_restored', 'unsupported_sim'):
         title = tr(PHASES[phase])
         guidance = tr('适配尚未完成。请保留当前状态，在主窗口导出报告后处理。')
     elif state.get('enabled') is False:

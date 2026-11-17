@@ -12,6 +12,13 @@ import workflow as w
 
 
 class ConnectionTests(unittest.TestCase):
+    def setUp(self):
+        # Profile tests must not inspect an attached phone. Dynamic USB behavior
+        # is covered separately with synthetic interface and discovery facts.
+        discovery = patch.object(c, 'dynamic_usb_link', return_value=None)
+        discovery.start()
+        self.addCleanup(discovery.stop)
+
     def test_first_use_kits_are_discovered_after_restart_and_verified_before_selection(self):
         with tempfile.TemporaryDirectory() as folder:
             base = Path(folder).resolve()

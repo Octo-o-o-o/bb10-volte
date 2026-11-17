@@ -94,6 +94,7 @@ class CarrierSelectionTests(unittest.TestCase):
         trace = []
         with ExitStack() as stack:
             patches = [patch.object(u, 'verify', return_value=facts()),
+                patch.object(u, 'boot_token', return_value=['test']),
                 patch.object(u.os.path, 'isfile', return_value=False),
                 patch.object(u.n, 'crypto_policy', return_value={'swcr_id': -1, 'crypto_support': 0}),
                 patch.object(u, 'handoff', side_effect=lambda: trace.append('handoff')),

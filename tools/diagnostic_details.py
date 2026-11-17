@@ -23,7 +23,10 @@ def data_service_note(report):
     if mode == 'OFF':
         return tr('手机记录的数据服务设置为 OFF。请在手机网络设置中开启数据服务，再重新检查。')
     if status == 'OFF' and mode == 'ON':
-        return tr('数据服务设置为 ON，实际状态为 OFF：开关已开，但服务尚未就绪。请先核实正常入网和实际移动数据；这不代表用户关闭了数据。')
+        note = tr('数据服务设置为 ON，实际状态为 OFF：开关已开，但服务尚未就绪。请先核实正常入网和实际移动数据；这不代表用户关闭了数据。')
+        if values.get('roaming') is True and values.get('data_roaming_mode') == 'OFF':
+            note = _append(note, tr('当前无线层报告漫游标志为是且数据漫游为 OFF。请核实实际驻留网络和系统漫游设置；工具不会自动更改数据漫游。'))
+        return note
     if status == 'OFF':
         return tr('数据服务实际状态为 OFF，设置状态未知。请核对手机的数据服务设置与入网状态，不能据此认定用户关闭了数据。')
     return tr('手机报告数据服务状态或设置为 OFF；检查详情可区分两者，不能仅凭状态认定手动关闭，也不能据此判断频段不支持。')
@@ -118,25 +121,42 @@ def network_rows(report):
     items = (
         ('data_services_status', tr('数据服务实际状态'), tr('OFF 表示本次状态未就绪，不等于用户手动关闭。')),
         ('data_service_mode', tr('数据服务设置'), tr('这是系统记录的模式；与实际状态分开核对。')),
+        ('data_roaming_mode', tr('数据漫游设置'), tr('系统数据漫游开关状态；漫游标志为是且此项为 OFF 时会阻止移动数据。')),
         ('internet_present', tr('系统含 internet 服务'), tr('服务存在不代表已建立数据连接。')),
         ('internet_enabled', tr('internet 已启用'), tr('启用不代表已连接。')),
         ('internet_connectable', tr('internet 可连接'), tr('不可连接时需先排查数据服务与入网状态。')),
         ('internet_active', tr('internet 已激活'), tr('激活不替代 APN 和 connected 检查。')),
+        ('scan_mode', tr('无线选网模式'), tr('AUTO 为自动选网，MANUAL 为手动锁定选网。')),
+        ('serving_home_operator', tr('驻留归属运营商集团'), tr('为“否”仅表示驻留 PLMN 不在当前 SIM 的运营商号段表内；共享网络和等效归属网需结合实际数据状态判断。')),
+        ('roaming', tr('无线漫游标志'), tr('无线层报告的漫游标志；不单独证明实际漫游或产生额外费用。')),
         ('network_service', tr('无线网络服务位图'), tr('这是组合位图；0x1 为紧急服务，0x200000 为 LTE 数据服务，需分别核对。')),
         ('emergency_service', tr('网络含紧急服务标志'), tr('为“是”时阻止安装；其他能力标志不能抵消这一标志。')),
         ('lte_data_service', tr('无线层有 LTE 数据服务'), tr('为“是”仍须结合 APN 连接和实际移动数据测试，不能代替通话验收。')),
-        ('lte_active_band_mask', tr('LTE 活跃频段位图'), tr('原始位图，不是频段编号，也不证明正常入网或运营商归属。')),
-        ('lte_band_capability_mask', tr('LTE 频段能力位图'), tr('原始位图，不证明现场覆盖或正常入网。')),
+        ('lte_active_band_mask', tr('LTE 活跃频段位图'), tr('原始位图及解码频段，不单独证明正常入网或运营商归属。')),
+        ('lte_band_capability_mask', tr('LTE 频段能力位图'), tr('原始位图及解码频段；频段能力不证明当前地区覆盖或正常入网。')),
     )
     rows = []
     for key, title, hint in items:
         if key not in raw and not (key in ('emergency_service', 'lte_data_service') and 'network_service' in raw):
             continue
         value = values[key]
-        actual = tr('未知') if value is None else tr('是') if value is True else tr('否') if value is False else str(value)
-        problem = (value is True if key == 'emergency_service' else
-                   values['emergency_service'] is True or values['lte_data_service'] is False
-                   if key == 'network_service' else value == 'OFF' or value is False)
+        if key in ('lte_active_band_mask', 'lte_band_capability_mask') and type(value) is int:
+            bands = values['lte_active_bands' if key == 'lte_active_band_mask' else 'lte_capability_bands']
+            actual = ('{} ({})'.format(value, '/'.join('B' + str(b) for b in bands)) if bands else str(value))
+        else:
+            actual = tr('未知') if value is None else tr('是') if value is True else tr('否') if value is False else str(value)
+        if key == 'emergency_service':
+            problem = value is True
+        elif key == 'network_service':
+            problem = values['emergency_service'] is True or values['lte_data_service'] is False
+        elif key == 'scan_mode':
+            problem = False
+        elif key == 'roaming':
+            problem = bool(value is True and values.get('data_roaming_mode') == 'OFF')
+        elif key == 'data_roaming_mode':
+            problem = bool(value == 'OFF' and values.get('roaming') is True)
+        else:
+            problem = value == 'OFF' or value is False
         rows.append({'title': title, 'state': tr('未知') if value is None else tr('只读快照'),
                      'detail': _append(tr('当前：{}。').format(actual), hint), 'problem': problem})
     return rows

@@ -59,14 +59,24 @@ class LteModeTests(unittest.TestCase):
         self.assertEqual(len(self.requests), 1)
         self.assertEqual(json.loads(self.files[d.MODE_RECORD])['phase'], 'ready')
 
-    def test_an_independent_mode_change_is_not_overwritten_on_boot_or_disable(self):
+    def test_system_19_mode_can_be_reconciled_while_retaining_original(self):
         d.ensure_lte_mode(self.selected)
-        self.current['enabled_technologies'] = 1
-        with self.assertRaisesRegex(AssertionError, 'network_mode_changed'):
-            d.ensure_lte_mode(self.selected)
-        with self.assertRaisesRegex(AssertionError, 'network_mode_changed'):
-            d.restore_lte_mode()
+        self.current['enabled_technologies'] = 19
+        d.ensure_lte_mode(self.selected)
+        self.assertEqual(self.current['enabled_technologies'], 16)
+        record = json.loads(self.files[d.MODE_RECORD])
+        self.assertEqual(record['before']['enabled_technologies'], 3)
+        self.assertEqual(record['external_mode_reconciled']['enabled_technologies'], 19)
+        d.restore_lte_mode()
+        self.assertEqual(self.current['enabled_technologies'], 3)
+
+    def test_disable_preserves_an_independent_mode_change(self):
+        d.ensure_lte_mode(self.selected)
+        self.current['enabled_technologies'] = 19
+        d.restore_lte_mode()
         self.assertEqual(len(self.requests), 1)
+        self.assertEqual(self.current['enabled_technologies'], 19)
+        self.assertTrue(json.loads(self.files[d.MODE_RECORD])['restored'])
 
     def test_existing_lte_mode_needs_no_write_or_invented_backup(self):
         self.current['enabled_technologies'] = 16

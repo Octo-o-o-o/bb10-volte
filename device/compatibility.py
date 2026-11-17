@@ -33,10 +33,10 @@ NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
                  'radio_read_error', 'data_read_error', 'network_read_error',
                  'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
                  'data_settings_read_error', 'emergency_service', 'lte_data_service',
-                 'stock_apn_bootstrap_eligible')
+                 'stock_apn_bootstrap_eligible', 'roaming', 'serving_home_operator')
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
-NETWORK_ENUMS = ('data_services_status', 'data_service_mode')
+NETWORK_ENUMS = ('data_services_status', 'data_service_mode', 'data_roaming_mode')
 PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', 'cmwap', '3gnet', 'wonet', 'uninet')
 CONFIGURATION_FLAGS = ('ims_override_absent', 'probe_override_absent', 'cdsc_directory_empty',
                        'voice_override_absent', 'ims_profiles_absent', 'ims_networks_absent',
@@ -73,6 +73,13 @@ def network_service_flags(value):
             'lte_data_service': bool(value & 0x200000) if valid else None}
 
 
+def decode_lte_bands(mask):
+    """Decode a validated 64-bit 3GPP LTE band bitmap into 1-indexed band numbers."""
+    if type(mask) is not int or not 0 < mask <= 0xffffffffffffffff:
+        return []
+    return [bit + 1 for bit in range(64) if mask & (1 << bit)]
+
+
 def public_network_diagnostics(values):
     values = values if isinstance(values, dict) else {}
     result = public_flags(values, NETWORK_FLAGS)
@@ -82,7 +89,11 @@ def public_network_diagnostics(values):
     for key in NETWORK_ENUMS:
         value = values.get(key)
         result[key] = value if isinstance(value, str) and value in ('ON', 'OFF') else None
+    scan_mode = values.get('scan_mode')
+    result['scan_mode'] = scan_mode if isinstance(scan_mode, str) and scan_mode in ('AUTO', 'MANUAL') else None
     result.update(network_service_flags(result['network_service']))
+    result['lte_active_bands'] = decode_lte_bands(result['lte_active_band_mask'])
+    result['lte_capability_bands'] = decode_lte_bands(result['lte_band_capability_mask'])
     apn = values.get('observed_data_apn')
     result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
     result['scope'] = 'snapshot_only_not_registration_or_band_proof'
@@ -205,6 +216,19 @@ def read_network(profile=None):
         result.update(radio_on=n.value(radio, 'power_status') == 'ON',
                       lte=n.value(radio, 'network_technology') == ['lte'])
         result['network_service'] = n.value(radio, 'network_service')
+        roaming = n.value(radio, 'roaming')
+        if type(roaming) is bool:
+            result['roaming'] = roaming
+        scan_mode = n.value(radio, 'scan_mode')
+        if isinstance(scan_mode, str) and scan_mode in ('AUTO', 'MANUAL'):
+            result['scan_mode'] = scan_mode
+        serving = n.value(radio, 'serving_network', {})
+        if isinstance(serving, dict) and result.get('mcc') == '460' and result.get('mnc'):
+            srv_mcc, srv_mnc = str(serving.get('mcc') or ''), str(serving.get('mnc') or '')
+            if profiles.match(r'[0-9]{3}', srv_mcc) and profiles.match(r'[0-9]{2,3}', srv_mnc):
+                home_group = next((mncs for mncs in profiles.OPERATOR_MNCS.values() if result['mnc'] in mncs), ())
+                if home_group:
+                    result['serving_home_operator'] = (srv_mcc == '460' and srv_mnc in home_group)
         for key, source in (('lte_active_band_mask', 'active_bands'),
                             ('lte_band_capability_mask', 'band_capability')):
             bands = n.value(radio, source, {})
@@ -235,6 +259,9 @@ def read_network(profile=None):
     try:
         settings = n.attrs(n.read(DATA_SETTINGS))
         result['data_service_mode'] = n.value(settings, 'data_service_mode')
+        roaming_mode = n.value(settings, 'data_roaming_mode')
+        if isinstance(roaming_mode, str) and roaming_mode in ('ON', 'OFF'):
+            result['data_roaming_mode'] = roaming_mode
         cdsc_xml = settings.get('cdsc_xml')
     except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         # An optional setting read cannot erase a successful live observation.

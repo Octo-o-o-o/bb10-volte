@@ -4,6 +4,7 @@ SIM identity stays on the phone. A SIM change never restarts native IMS in the
 same boot; the next normal boot selects a fresh profile without a desktop.
 """
 import binascii
+import contextlib
 import ctypes
 import json
 import os
@@ -443,16 +444,52 @@ def deliver_connection_notification(item, kind='connected'):
 
 
 def locked_prepare():
-    from unified_install import management_lock
-    with management_lock(blocking=True):
-        assert os.path.isfile(BASE + '/enabled'), 'automatic_service_disabled'
-        return prepare()
+    return prepare(managed_locking=True)
 
 
 def locked_restore(previous_boot=False):
     from unified_install import management_lock
     with management_lock(blocking=True):
         return restore(previous_boot)
+
+
+def pre_native_retryable(token, previous=None, current_sim_sha256=None):
+    """Allow a same-boot retry only when no native IMS/crypto resource was touched."""
+    if token is None:
+        return False
+    try:
+        if n.crypto_policy() != {'swcr_id': -1, 'crypto_support': 0}:
+            return False
+        if n.ims_pids() or n.active_vpn_sessions():
+            return False
+        if os.path.isfile(ATTEMPT):
+            attempt = s.load(ATTEMPT)
+            if attempt.get('owner') != policy.OWNER:
+                return False
+            if attempt.get('boot') == token and attempt.get('stage') != 'pre_native':
+                return False
+        if os.path.isfile(s.STATUS):
+            st = s.load(s.STATUS)
+            if st.get('boot') == token and (
+                    st.get('phase') == 'carrier_reboot_required' or
+                    st.get('error') == 'usage_restore_unconfirmed'):
+                return False
+        if os.path.isfile(s.JOURNAL):
+            jr = s.load(s.JOURNAL)
+            if jr.get('boot') == token:
+                if not (jr.get('owner') == 'q10-unicom-volte-v1' and
+                        jr.get('restore_completed') is True and
+                        jr.get('configuration_restored') is True and
+                        jr.get('managed_files') == {} and
+                        jr.get('native_pid') is None and
+                        jr.get('provider_retained_until_reboot') is False):
+                    return False
+        if (isinstance(previous, dict) and current_sim_sha256 is not None and
+                previous.get('boot') == token and previous.get('sim_sha256') != current_sim_sha256):
+            return False
+        return True
+    except (IOError, OSError, ValueError, TypeError, KeyError, AttributeError, AssertionError):
+        return False
 
 
 def live():
@@ -489,9 +526,12 @@ def idle_stock(pid):
 
 def handoff():
     """Only two current-PID idle proofs permit one SIGTERM, never SIGKILL."""
+    s.startup_timing['handoff_started'] = time.time()
     record = BASE + '/state/stock-handoff.json'
     prior = s.load(record) if os.path.isfile(record) else {}
     deadline = time.time() + 330
+    if n.ims_pids():
+        s.status('waiting_for_native_ims')
     while n.ims_pids() and time.time() < deadline:
         assert not core_stopping(), 'stopped'
         if prior.get('boot') != boot_token():
@@ -511,6 +551,7 @@ def handoff():
     assert not n.ims_pids(), 'stock_ims_not_idle'
     time.sleep(3)
     assert not n.ims_pids(), 'stock_ims_reappeared'
+    s.startup_timing['handoff_finished'] = time.time()
 
 
 def restore(previous_boot=False):
@@ -548,6 +589,12 @@ def restore(previous_boot=False):
     if s.BASE == BASE and not os.path.isfile(BASE + '/enabled'):
         import unified_dca
         unified_dca.restore_original()
+    elif s.BASE == BASE and not previous_boot and crypto['swcr_id'] == -1 and os.path.isfile(ATTEMPT):
+        attempt = s.load(ATTEMPT)
+        if attempt.get('boot') == boot_token() and attempt.get('stage') == 'pre_native':
+            import unified_dca
+            unified_dca.restore_network_selection()
+            unified_dca.restore_lte_mode()
     if s.BASE == BASE and selected is not None:
         try:
             import unified_operator_name
@@ -572,8 +619,12 @@ def reconcile():
     if not os.path.isfile(s.JOURNAL):
         return
     s.j = s.load(s.JOURNAL)
-    assert s.j.get('boot') != boot_token(), 'reboot_required'
-    restore(previous_boot=True)
+    token = boot_token()
+    if s.j.get('boot') == token:
+        assert pre_native_retryable(token), 'reboot_required'
+        assert not n.ims_pids() and n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
+    else:
+        restore(previous_boot=True)
     for path, expected in s.j['managed_files'].items():
         if path.startswith(s.RUNTIME + '/') and os.path.exists(path):
             assert not os.path.islink(path) and n.digest(n.read(path)) == expected
@@ -583,24 +634,89 @@ def reconcile():
     s.j = None
 
 
-def prepare():
+@contextlib.contextmanager
+def _phase_lock(managed_locking):
+    if not managed_locking:
+        yield
+        return
+    from unified_install import management_lock
+    with management_lock(blocking=True):
+        assert os.path.isfile(BASE + '/enabled'), 'automatic_service_disabled'
+        yield
+
+
+def wait_for_managed_network(facts, selected):
+    """Wait for home LTE/APN without holding management_lock; stand by on weak signal."""
+    import unified_dca
+    total = s.ACTIVE_PROFILE['runtime']['sim_wait_seconds']
+    first_window = min(45, total)
+    try:
+        return s.wait_for_network(first_window)
+    except RuntimeError as error:
+        if not str(error).startswith('Readiness timed out'):
+            raise
+    with _phase_lock(True):
+        assert not core_stopping(), 'stopped'
+        assert policy.select(facts, card())['sim_sha256'] == selected['sim_sha256'], 'sim_changed'
+        if unified_dca.deferred_lte_lock and s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions():
+            unified_dca.ensure_lte_mode(selected)
+    remaining = max(15, total - first_window)
+    try:
+        return s.wait_for_network(remaining)
+    except RuntimeError as error:
+        if not str(error).startswith('Readiness timed out'):
+            raise
+    waiter = s.MonitorWaiter()
+    try:
+        while not core_stopping() and os.path.isfile(BASE + '/enabled'):
+            try:
+                current_hash = ready_sim_hash(card())
+            except (IOError, OSError, ValueError, TypeError):
+                current_hash = None
+            if current_hash is not None and current_hash != selected['sim_sha256']:
+                raise RuntimeError('sim_changed')
+            snapshot = s.compatibility.read_network(s.ACTIVE_PROFILE)
+            state = s.compatibility.network_state(snapshot, s.ACTIVE_PROFILE)
+            if state == 'needs_adaptation':
+                raise RuntimeError('SIM/carrier needs adaptation; check the installed profile and USIM-without-ISIM route')
+            if state == 'ready':
+                return True
+            s.status('waiting_for_lte_and_usim')
+            waiter.wait(30)
+        s.status('stopped_before_configuration')
+        return False
+    finally:
+        waiter.close()
+
+
+def prepare(managed_locking=False):
     global selected
-    facts = verify()
-    attempt = s.load(ATTEMPT) if os.path.isfile(ATTEMPT) else None
-    assert not attempt or attempt.get('boot') != boot_token(), 'reboot_required'
-    assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
+    selected = None
+    with _phase_lock(managed_locking):
+        facts = verify()
+        token = boot_token()
+        attempt = s.load(ATTEMPT) if os.path.isfile(ATTEMPT) else None
+        assert not attempt or attempt.get('boot') != token or pre_native_retryable(token), 'reboot_required'
+        assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
     handoff()
-    import unified_migrate
-    unified_migrate.finish_previous_boot()
-    reconcile()
-    previous = s.load(SELECTION) if os.path.isfile(SELECTION) else None
+    with _phase_lock(managed_locking):
+        import unified_migrate
+        unified_migrate.finish_previous_boot()
+        reconcile()
+        previous = s.load(SELECTION) if os.path.isfile(SELECTION) else None
     deadline = time.time() + 300
+    snapshot = {'state': None}
     while time.time() < deadline:
         assert not core_stopping(), 'stopped'
         try:
             snapshot = card()
         except (IOError, OSError):
             snapshot = {'state': None}
+        if snapshot['state'] == 'READY':
+            break
+        s.status('waiting_for_sim')
+        time.sleep(3)
+    with _phase_lock(managed_locking):
         if snapshot['state'] == 'READY':
             try:
                 selected = policy.select(facts, snapshot)
@@ -610,38 +726,50 @@ def prepare():
                 s.status('unsupported_sim')
                 notify_sim_change(previous, snapshot, after_reboot=True)
                 return False
-            break
-        s.status('waiting_for_sim')
-        time.sleep(3)
-    assert selected is not None, 'sim_not_ready'
-    assert policy.transition(previous, selected, boot_token(),
-        n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, attempt) != 'reboot_required', 'reboot_required'
-    s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
-    sim_mcc = snapshot.get('mcc') or s.ACTIVE_PROFILE['carrier'].get('mcc', '460')
-    sim_mnc = snapshot.get('mnc') or s.ACTIVE_PROFILE['carrier']['mncs'][0]
-    template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
-    selected = policy.bind_template(selected, template)
-    selected.update(boot=boot_token(), selected_unix=time.time())
-    s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
-    s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
-    save(SELECTION, selected)
-    notify_sim_change(previous, snapshot, after_reboot=True)
-    s.temporary_binary = ims_image.mt_voice_binary
-    # Persist start intent before any modem/provider change. A crash cannot
-    # trigger another native IMS attempt during this boot.
-    save(ATTEMPT, {'owner': policy.OWNER, 'boot': boot_token(), 'at': time.time()})
-    s.init_journal()
-    s.j.update(boot=boot_token(), sim_sha256=selected['sim_sha256'], operator=selected['operator'])
-    s.save_journal()
-    import unified_dca
-    if not unified_dca.prepare(selected):
-        s.status('carrier_reboot_required')
+        assert selected is not None, 'sim_not_ready'
+        token = boot_token()
+        if attempt and attempt.get('boot') == token:
+            assert pre_native_retryable(token, previous, selected['sim_sha256']), 'reboot_required'
+        assert policy.transition(previous, selected, token,
+            n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, attempt) != 'reboot_required', 'reboot_required'
+        s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
+        sim_mcc = snapshot.get('mcc') or s.ACTIVE_PROFILE['carrier'].get('mcc', '460')
+        sim_mnc = snapshot.get('mnc') or s.ACTIVE_PROFILE['carrier']['mncs'][0]
+        template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
+        selected = policy.bind_template(selected, template)
+        selected.update(boot=token, selected_unix=time.time())
+        s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
+        s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
+        save(SELECTION, selected)
+        notify_sim_change(previous, snapshot, after_reboot=True)
+        s.temporary_binary = ims_image.mt_voice_binary
+        # Record pre-native stage first; advance to native_configured right
+        # before loading software crypto / launching owned ims_rrm.
+        save(ATTEMPT, {'owner': policy.OWNER, 'boot': token, 'at': time.time(), 'stage': 'pre_native'})
+        s.init_journal()
+        s.j.update(boot=token, sim_sha256=selected['sim_sha256'], operator=selected['operator'])
+        s.save_journal()
+        import unified_dca
+        prepared_dca = (unified_dca.prepare(selected, allow_rplmn_attach=True)
+                        if managed_locking else unified_dca.prepare(selected))
+        if not prepared_dca:
+            save(ATTEMPT, {'owner': policy.OWNER, 'boot': token, 'at': time.time(), 'stage': 'policy_reboot'})
+            s.status('carrier_reboot_required')
+            return False
+    network_ready = wait_for_managed_network(facts, selected) if managed_locking else s.wait_for_network()
+    if not network_ready and core_stopping():
         return False
-    assert s.wait_for_network(), 'network_not_ready'
-    assert policy.select(facts, card())['sim_sha256'] == selected['sim_sha256'], 'sim_changed'
-    reconcile_stale_sms_busy(facts, selected, previous)
-    s.configure()
-    assert not n.ims_pids()
+    assert network_ready, 'network_not_ready'
+    with _phase_lock(managed_locking):
+        assert not core_stopping(), 'stopped'
+        assert policy.select(facts, card())['sim_sha256'] == selected['sim_sha256'], 'sim_changed'
+        if managed_locking and unified_dca.deferred_lte_lock:
+            unified_dca.ensure_lte_mode(selected)
+            assert s.wait_for_network(30), 'network_not_ready'
+        reconcile_stale_sms_busy(facts, selected, previous)
+        save(ATTEMPT, {'owner': policy.OWNER, 'boot': boot_token(), 'at': time.time(), 'stage': 'native_configured'})
+        s.configure()
+        assert not n.ims_pids()
     return True
 
 
@@ -847,6 +975,11 @@ def public_status():
         value['sms_service_busy'] = busy if type(busy) is bool else None
     except (IOError, OSError, ValueError, TypeError):
         value['sms_service_busy'] = None
+    value['pre_native_retry_available'] = bool(
+        value.get('enabled') is True and value.get('manager_alive') is False and
+        value.get('status_from_current_boot') is True and value.get('selected_this_boot') is True and
+        value.get('current_sim_matches') is True and value.get('phase') in ('error_restored', 'stopped') and
+        os.path.isfile(ATTEMPT) and pre_native_retryable(boot_token(False)))
     return value
 
 
@@ -862,7 +995,14 @@ def launch():
         if lock.get('boot') == token and s.alive(lock['pid']):
             return {'already_running': True}
     if os.path.isfile(ATTEMPT) and s.load(ATTEMPT).get('boot') == token:
-        return {'reboot_required': True}
+        previous = s.load(SELECTION) if os.path.isfile(SELECTION) else None
+        sim_hash = None
+        try:
+            sim_hash = ready_sim_hash(card())
+        except Exception:
+            pass
+        if not pre_native_retryable(token, previous, sim_hash):
+            return {'reboot_required': True}
     if os.path.exists(s.STOP):
         os.unlink(s.STOP)
     pid = os.fork()
@@ -900,6 +1040,12 @@ def service_action(action):
             s.j = s.load(s.JOURNAL)
             if s.j.get('boot') == boot_token():
                 restore()
+        if not active:
+            # Explicit network assistance can precede the first IMS journal.
+            # Disabling still releases its owned selection and LTE mode.
+            import unified_dca
+            unified_dca.restore_network_selection()
+            unified_dca.restore_lte_mode()
         if not active and os.path.isfile(s.STOP):
             assert n.read(s.STOP) == b'disabled by owner\n', 'stop_request_changed'
             os.unlink(s.STOP)
@@ -908,6 +1054,9 @@ def service_action(action):
         verify()
         assert s.phone_idle(), 'call_active'
         assert not s.read_status().get('manager_alive'), 'restore_pending'
+        if os.path.isfile(BASE + '/enabled') and public_status().get('pre_native_retry_available') is True:
+            result = launch()
+            return dict(result, enabled=True, reboot_required=result.get('reboot_required', False))
         n.atomic(BASE + '/enabled', b'automatic SIM selection re-enabled by owner\n')
         result = {'enabled': True, 'reboot_required': True}
     else:

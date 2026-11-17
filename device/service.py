@@ -759,7 +759,8 @@ class MonitorWaiter:
     WATCHES = (
         ('/pps/services/ims/status_public', ('status', 'default_ran')),
         ('/pps/services/ims/cellular/status_private', ('register_status',)),
-        (RADIO, ('network_technology', 'power_status')),
+        (RADIO, ('network_technology', 'power_status', 'network_service')),
+        (DATA, ('internet',)),
         ('/pps/services/cellular/uicc/card0/status_private', ('uicc_state', 'hplmn')),
         ('/pps/services/cellular/uicc/card0/status_restricted', ('imsi',)),
     )
@@ -806,7 +807,7 @@ class MonitorWaiter:
         duplicate_events = 0
         try:
             while time.time() < deadline:
-                if stopping() or child.poll() is not None:
+                if stopping() or (child is not None and child.poll() is not None):
                     return
                 before = time.time()
                 readable = select.select(list(self.streams), [], [], min(30, deadline - before))[0]
@@ -914,7 +915,10 @@ def serve():
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGINT, terminate)
     try:
+        status('starting_handoff')
         if not prepare_connection():
+            if os.path.exists(STOP) and j is not None and not shutdown:
+                restore()
             return
         stdout_fd = os.open(STATE + '/native.log', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_APPEND, 0o600)
         with os.fdopen(stdout_fd, 'wb') as output:

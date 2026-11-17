@@ -8,6 +8,8 @@ The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. S
 
 [Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r48.en.md)
 
+Unreleased source changes: [continued network waiting, safe same-SIM retries and optional manual-selection assistance](docs/NETWORK-RESILIENCE.en.md). The r48 downloads below remain the original packages; the new behavior awaits device validation.
+
 ## What changed
 
 - Harden 3GPP Operator Identifier suffix stripping (`.mncXX.mcc460.gprs`) and controlled MME-default APN (such as `cmiot`) bootstrap on `0.xml` fallback PLMNs, verifying `0.xml` hashes and preserving fallback provenance in service journals.

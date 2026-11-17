@@ -96,6 +96,8 @@ SAFE_PROBE_KEYS = (
     'operator',
     'stock_template_verified',
     'mobile_network_off',
+    'scan_mode',
+    'network_lock_enabled',
     'reboot_required',
     'uninstalled',
     'root_kind',
@@ -390,19 +392,25 @@ def synthesize_next_step(usb, os_state, discovery, root_verified, ssh_error, pro
             'summary': 'BlackBerry USB hardware is present, but the USB network link is inactive. Unlock the phone; on Windows run `firmware prepare-driver` and `firmware install-driver` if drivers are missing.',
             'destructive': False,
         }
-    return {
+    screen_locked_hint = bool(discovery) and ssh_error == 'connection_refused'
+    result = {
         'code': 'connect_existing_root_or_prepare_first_root',
         'ssh_error': ssh_error,
         'summary': (
             'SSH Root session is not yet established (SSH failure NEVER proves the phone is unrooted). '
             'Ask the owner whether the phone is already rooted: '
-            '(1) If ALREADY ROOTED: if AutoRoot SSH is asleep (`connection_refused`), open BlackBerry World once on the phone and wait 30s; '
+            '(1) If ALREADY ROOTED: if port 22 returned `connection_refused` while USB HTTP discovery is open, '
+            'ask the owner to UNLOCK the phone screen first (AutoRoot SSH may not be ready yet), wait 15-30s, '
+            'or open BlackBerry World once on the phone and wait 30s; '
             'if this computer is not authorized yet, use `pair prepare` or `pair import-ssh`. '
             '(2) If NEVER ROOTED: warn that initial Root flashing wipes phone data, get explicit owner confirmation, '
             'then run `firmware prepare-root --variant <VARIANT>` followed by `firmware flash-root`.'
         ),
         'destructive': False,
     }
+    if screen_locked_hint:
+        result['phone_screen_likely_locked_or_sshd_asleep'] = True
+    return result
 
 
 def cmd_models(args):
@@ -747,7 +755,9 @@ def cmd_volte(args):
             ),
         }
     out = {'ok': True, 'action': 'volte.' + args.volte_action}
-    for key in ('variant', 'phase', 'enabled', 'restored', 'uninstalled', 'reboot_required'):
+    for key in ('variant', 'phase', 'enabled', 'restored', 'uninstalled', 'reboot_required',
+                'started_manager_pid', 'already_running', 'network_locked', 'operator',
+                'target_plmn', 'lte_only_applied', 'scan_mode', 'changed'):
         if key in raw:
             out[key] = raw[key]
     if isinstance(raw.get('status'), dict):
@@ -976,7 +986,8 @@ def build_parser():
 
     p_volte = sub.add_parser('volte', parents=[common], help='Operate the unified 3-carrier VoLTE service across all 16 supported BB10 models')
     volte_sub = p_volte.add_subparsers(dest='volte_action', required=True)
-    for name in ('verify-package', 'probe', 'install', 'status', 'start', 'enable', 'disable', 'rollback', 'uninstall'):
+    for name in ('verify-package', 'probe', 'install', 'status', 'start', 'enable', 'disable',
+                 'lock-network', 'unlock-network', 'rollback', 'uninstall'):
         sub_p = volte_sub.add_parser(name, parents=[common])
         if name != 'verify-package':
             sub_p.add_argument('--host', default='bb10-root')
