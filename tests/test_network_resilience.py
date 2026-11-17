@@ -279,6 +279,47 @@ class ManagedWaitingTests(unittest.TestCase):
 
 
 class PreparationBoundaryTests(unittest.TestCase):
+    def test_disable_during_handoff_restores_selection_before_first_journal(self):
+        import unified_install
+        with patch.object(u, 'prepare', side_effect=RuntimeError('stopped')), \
+                patch.object(u, 'verify'), patch.object(service, 'j', None), \
+                patch.object(service, 'shutdown', False), \
+                patch.object(u.os.path, 'isfile', side_effect=lambda p: p == service.STOP), \
+                patch.object(unified_install, 'management_lock', return_value=contextlib.nullcontext()), \
+                patch.object(d, 'restore_network_selection') as selection, \
+                patch.object(d, 'restore_lte_mode') as mode:
+            with self.assertRaisesRegex(RuntimeError, 'stopped'):
+                u.locked_prepare()
+        selection.assert_called_once()
+        mode.assert_called_once()
+
+    def test_handoff_stop_does_not_restore_on_shutdown_or_without_explicit_disable(self):
+        import unified_install
+        for shutdown, enabled, stop, journal in ((True, False, True, None),
+                (False, True, True, None), (False, False, False, None),
+                (False, False, True, {})):
+            with self.subTest(shutdown=shutdown, enabled=enabled, stop=stop, journal=journal), \
+                    patch.object(u, 'prepare', return_value=False), patch.object(u, 'verify'), \
+                    patch.object(service, 'j', journal), patch.object(service, 'shutdown', shutdown), \
+                    patch.object(u.os.path, 'isfile', side_effect=lambda p: (
+                        stop if p == service.STOP else enabled if p == u.BASE + '/enabled' else False)), \
+                    patch.object(unified_install, 'management_lock', return_value=contextlib.nullcontext()), \
+                    patch.object(d, 'restore_network_selection') as selection, \
+                    patch.object(d, 'restore_lte_mode') as mode:
+                self.assertFalse(u.locked_prepare())
+                selection.assert_not_called()
+                mode.assert_not_called()
+
+    def test_handoff_restore_failure_is_reported(self):
+        import unified_install
+        with patch.object(u, 'prepare', return_value=False), patch.object(u, 'verify'), \
+                patch.object(service, 'j', None), patch.object(service, 'shutdown', False), \
+                patch.object(u.os.path, 'isfile', side_effect=lambda p: p == service.STOP), \
+                patch.object(unified_install, 'management_lock', return_value=contextlib.nullcontext()), \
+                patch.object(d, 'restore_network_selection', side_effect=RuntimeError('restore_unconfirmed')):
+            with self.assertRaisesRegex(RuntimeError, 'restore_unconfirmed'):
+                u.locked_prepare()
+
     def test_disable_releases_explicit_lock_without_an_ims_journal(self):
         with patch.object(u, 'setup'), patch.object(u, 'verify'), \
                 patch.object(service, 'phone_idle', return_value=True), \

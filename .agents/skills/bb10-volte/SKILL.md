@@ -35,7 +35,7 @@ Operate `bb10-volte` safely and deterministically across all **16 supported Blac
    - IMS `200 OK` registration is necessary but **not** final acceptance: always ask the human user to verify outbound + inbound native dialer calls (`>= 00:35` connected audio), LTE retention, and SMS.
 7. **License Boundary**:
    - Licensed under [PolyForm Noncommercial License 1.0.0](../../../LICENSE): free for personal/noncommercial use; paid flashing/installation services, pre-installed phone sales, or commercial redistribution require prior paid commercial licensing via `octoooo@octoooo.com`.
-   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r48`) and the native BB10 mobile app (`0.1.0.48`) continue to receive updates.
+   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r49`) and the native BB10 mobile app (`0.1.0.49`) continue to receive updates.
 
 ---
 
@@ -66,7 +66,7 @@ Read `recommended_next_step.code` from `detect` JSON output and follow the match
 
 Once Root SSH (`EUID == 0`), OS `10.3.3.3216`, and the 6 stock QNX native binary hashes are verified:
 
-1. **Install or Update the Standalone Native BB10 Phone App (`0.1.0.48`)** *(Recommended for all rooted users so they can manage, back up, activate, and switch SIMs directly on the phone without a computer)*:
+1. **Install or Update the Standalone Native BB10 Phone App (`0.1.0.49`)** *(Recommended for all rooted users so they can manage, back up, activate, and switch SIMs directly on the phone without a computer)*:
    ```bash
    python tools/ai_skill.py mobile-app inspect
    python tools/ai_skill.py mobile-app install
@@ -148,9 +148,9 @@ Then have the user complete initial setup / enable Development Mode and run `fir
 
 ## 3. Lifecycle: Upgrade, SIM Swap, Disable, Rollback & Uninstall
 
-For the unreleased post-r48 network-resilience changes, read [the network guide](../../../docs/NETWORK-RESILIENCE.en.md). While an enabled manager is waiting for LTE, let it continue; do not delete native-attempt receipts. `pre_native_retry_available=true` permits an explicit same-SIM `volte start` or the UI's Retry action after verified restoration. `volte lock-network` / `volte unlock-network` are optional owner-requested assistance, not automatic recovery steps; they require unused native resources and preserve an existing system MANUAL selection. Reboot requirements after native configuration or a Passport policy change still apply.
+For the r49 network-resilience changes, read [the network guide](../../../docs/NETWORK-RESILIENCE.en.md). While an enabled manager is waiting for LTE, let it continue; do not delete native-attempt receipts. `pre_native_retry_available=true` permits an explicit same-SIM `volte start` or the UI's Retry action after verified restoration. `volte lock-network` / `volte unlock-network` are optional owner-requested assistance, not automatic recovery steps; they require unused native resources and preserve an existing system MANUAL selection. Reboot requirements after native configuration or a Passport policy change still apply.
 
-- **In-Place Payload Update (`r42`–`r47` → `r48`)**:
+- **In-Place Payload Update (`r42`–`r48` → `r49`)**:
   - If `probe.update_available == true` and `probe.can_update == false`, stop VoLTE first (`python tools/ai_skill.py volte disable`), have the user **restart normally via power menu**, then run `python tools/ai_skill.py volte install` and restart normally once more.
 - **Swapping SIM Cards**:
   - Power off before swapping SIMs (hot-swapping is not supported). Boot normally; the unified service automatically selects China Mobile / Unicom / Telecom by home PLMN (`460-00/02/04/07/08`, `460-01/06/09`, `460-03/05/11/12`). Passport switching between Unicom (`ue_usage=0`) and Mobile/Telecom (`ue_usage=1`) requires waiting ~5 minutes after boot and performing one extra normal restart.

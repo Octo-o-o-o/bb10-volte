@@ -2,7 +2,7 @@
 
 [中文](NETWORK-RESILIENCE.md) · [Three-carrier setup](AUTO-CARRIERS.en.md)
 
-These are **unreleased source changes after r48**, not features of the published r48/mobile 0.1.0.48 packages. Existing release assets and frozen macOS r43 are unchanged. A Classic owner's report informed the design; it is not acceptance for every variant, region or carrier.
+This guide describes **r49 / mobile 0.1.0.49**. Older r48 packages do not include these changes. Published older artifacts and the frozen macOS r43 package remain unchanged. A single Classic troubleshooting report is design input, not acceptance for every model, region or carrier.
 
 ## Default behavior
 

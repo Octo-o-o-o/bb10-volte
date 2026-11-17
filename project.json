@@ -1,11 +1,11 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 48,
-  "mobile_version": "0.1.0.48",
+  "desktop_revision": 49,
+  "mobile_version": "0.1.0.49",
   "management_protocol": 2,
   "state": "experimental_public_release",
   "repository": "https://github.com/Octo-o-o-o/bb10-volte",
   "license": "PolyForm-Noncommercial-1.0.0",
-  "scope": "All 16 catalog entries admit full China three-carrier HPLMNs (Mobile 460-00/02/04/07/08, Unicom 460-01/06/09, Telecom 460-03/05/11/12) regardless of evidence status. Root, OS 10.3.3.3216, native ABI hashes, SIM identity, backup and recovery requirements remain. r48/mobile 0.1.0.48 hardens 3GPP OI-suffixed and MME-default APN bootstrap on 0.xml fallback PLMNs while preserving fallback provenance in service journals, generalizes SE.13 operator-name overlay and numeric ONS fallback across all 12 three-carrier MNCs with clean r42-r47 upgrade/restore, hardens Python 3.2 IOError handling and bounded slog2info diagnostics on QNX, surfaces specific SIM rejection guidance on first-tap mobile activation and cold reopen, eliminates unsigned orphan assets in mobile BAR packaging, and completes bilingual desktop/CLI/website/documentation consistency. Previously published r42-r47 service payloads remain eligible for checked in-place upgrade after stopping VoLTE. Historical tested, untested and known-issue results stay version-specific; macOS remains the frozen r43 build."
+  "scope": "All 16 catalog entries admit the 12 China three-carrier HPLMNs, independently of historical evidence. Root, OS 10.3.3.3216, native ABI, current SIM and original recovery backups remain mandatory. r49/mobile 0.1.0.49 integrates continued pre-native network waiting, guarded same-SIM retries, LTE mode reconciliation, explicit reversible PLMN assistance and strict dynamic USB host-key reuse. Explicit disable also restores owned selection when startup handoff has not created an IMS journal. Includes offline call-rejection diagnostics; the reported repeated incoming-call UI remains unconfirmed and unfixed. Published r42-r48 payloads remain eligible for checked in-place upgrade after stopping VoLTE and any required normal reboot. No new device acceptance or measured battery claim. macOS remains the frozen r43 build."
 }

@@ -2,7 +2,7 @@
 
 Detailed reference guides in `docs/`:
 - Unified 3-carrier setup & SIM switching: [AUTO-CARRIERS.md](../../../../docs/AUTO-CARRIERS.md)
-- Unreleased post-r48 network waiting, safe retries and explicit PLMN assistance: [NETWORK-RESILIENCE.en.md](../../../../docs/NETWORK-RESILIENCE.en.md)
+- r49 network waiting, safe retries and explicit PLMN assistance: [NETWORK-RESILIENCE.en.md](../../../../docs/NETWORK-RESILIENCE.en.md)
 - First-time Root preparation & staged flashing: [FIRST-RUN.md](../../../../docs/FIRST-RUN.md)
 - Old-OS (`< 10.3.3.3216`) stock upgrade: [FIRMWARE-UPGRADE.md](../../../../docs/FIRMWARE-UPGRADE.md)
 - Pairing an already-rooted phone: [COMPUTER-PAIRING.md](../../../../docs/COMPUTER-PAIRING.md)

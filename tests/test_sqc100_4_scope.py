@@ -83,6 +83,7 @@ class ExactClassicNAScope(unittest.TestCase):
         r45=json.loads((ROOT/'materials/unified-payload-r45.json').read_text())
         r46=json.loads((ROOT/'materials/unified-payload-r46.json').read_text())
         r47=json.loads((ROOT/'materials/unified-payload-r47.json').read_text())
+        r48=json.loads((ROOT/'materials/unified-payload-r48.json').read_text())
         self.assertEqual(r44['files']['device/unified_service.py'],parent['files']['device/unified_service.py'])
         self.assertIn(hashlib.sha256(profiles.canonical(r47['files'])).hexdigest(),unified_install.PREVIOUS_PAYLOADS)
         expected_r48_diff={'device/carrier_policy.py','device/compatibility.py','device/device_info.py',
@@ -94,6 +95,10 @@ class ExactClassicNAScope(unittest.TestCase):
             self.assertEqual(diff,expected_r48_diff)
         r47_diff={name for name in r47['files'] if r47['files'][name]!=current['files'][name]}
         self.assertLessEqual(r47_diff,set(unified_install.UPDATE_FILES))
+        self.assertIn(hashlib.sha256(profiles.canonical(r48['files'])).hexdigest(),unified_install.PREVIOUS_PAYLOADS)
+        r48_diff={name for name in r48['files'] if r48['files'][name]!=current['files'][name]}
+        self.assertLessEqual(r48_diff,set(unified_install.UPDATE_FILES))
+        self.assertIn('device/unified_service.py',r48_diff)
 
     def test_other_exact_model_carrier_admission_is_preserved(self):
         expected=('00','01','02','03','04','05','06','07','08','09','11','12')

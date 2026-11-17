@@ -444,7 +444,20 @@ def deliver_connection_notification(item, kind='connected'):
 
 
 def locked_prepare():
-    return prepare(managed_locking=True)
+    try:
+        return prepare(managed_locking=True)
+    finally:
+        # Disable can arrive during handoff/SIM waiting, before init_journal.
+        # The live manager owns this cleanup; the disabling client only writes
+        # STOP while it is alive. Keep normal shutdown free of radio changes.
+        if (s.j is None and not s.shutdown and os.path.isfile(s.STOP) and
+                not os.path.isfile(BASE + '/enabled')):
+            from unified_install import management_lock
+            import unified_dca
+            with management_lock(blocking=True):
+                verify()
+                unified_dca.restore_network_selection()
+                unified_dca.restore_lte_mode()
 
 
 def locked_restore(previous_boot=False):

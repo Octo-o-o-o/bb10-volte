@@ -1,3 +1,12 @@
+# r49 / mobile 0.1.0.49
+
+- Wait for system network selection at boot, then keep observing network changes. Retry a pre-native failure only with the same SIM, fully restored configuration and unused native IMS resources.
+- Preserve original radio-mode recovery records and offer explicit, reversible network-selection assistance. Disable also restores owned selection during handoff before an IMS journal exists.
+- Keep the original host-key pin when the USB address changes; distinguish component updates from activation and add sanitized band, selection and roaming diagnostics.
+- Add offline call-rejection analysis and native-path regression tests. The repeated incoming-call UI report remains unreproduced and is not claimed fixed. No new hardware acceptance is established.
+
+[Release notes](RELEASE-r49.en.md)
+
 # r48 / mobile 0.1.0.48
 
 Hardens 3GPP `.mncXX.mcc460.gprs` OI-suffix normalization and MME-default APN (such as `cmiot`) bootstrap on `0.xml` fallback PLMNs while preserving fallback provenance in service journals; extends volatile SE.13 operator-name overlays and numeric `current_ons` display fallback across all 12 commercial Mobile, Unicom and Telecom MNCs (with clean `r42`–`r47` upgrade/restore); adds QNX Python 3.2 `IOError` guards, 8-second bounded `slog2info` reads, `SQW100-3`/P’9983 coverage and malformed update ZIP checks; surfaces specific SIM rejection guidance (`460-15` Broadnet, ISIM 5G USIM, downloaded OTA override) on first mobile activation tap and cold reopen while strictly rejecting unsigned orphan files in BAR asset directories; aligns desktop offline pairing host-key checks, English UI translations and the built-in AI Skill. Retains r46 Telecom MO SMS completion + BlackBerry icon and r47 12-MNC admission + Passport Telecom incoming-audio fixes; published r42–r47 services upgrade in place after stopping. Mobile is now 0.1.0.48. macOS stays at r43. See the [release notes](RELEASE-r48.en.md).

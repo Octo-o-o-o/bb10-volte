@@ -50,7 +50,7 @@ Verified by SHA-256 in [sources.json](../../../../materials/sources.json) before
 
 ---
 
-## 3. Carrier Selection & Runtime Architecture (`r48` / Mobile `0.1.0.48`)
+## 3. Carrier Selection & Runtime Architecture (`r49` / Mobile `0.1.0.49`)
 
 1. **Automatic Home-PLMN Selection**:
    - Reads the active USIM's home PLMN (`MCC=460`, no ISIM required; SIM `kind` must have USIM bit `2` set and ISIM bit `16` clear; China Broadnet `460-15` is explicitly reported as `china_broadnet_unsupported`):
