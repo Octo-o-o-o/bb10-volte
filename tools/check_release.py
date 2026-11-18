@@ -106,6 +106,8 @@ def check(check_git=False):
     verify_unified()
     from build_sms_ack import check_generated
     check_generated(ROOT)
+    from build_audio_tap import check_generated as check_audio_tap
+    check_audio_tap(ROOT)
     from mobile_i18n import check_generated as check_mobile_translations
     check_mobile_translations()
     diagnostics = json.loads((ROOT/'materials/desktop-diagnostics.json').read_text(encoding='utf-8'))

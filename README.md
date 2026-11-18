@@ -35,6 +35,13 @@
 - 项目官网与直接下载：[qcom32-volte.octoooo.com](https://qcom32-volte.octoooo.com/)
 - GitHub 开源仓库：[Octo-o-o-o/qcom32-volte](https://github.com/Octo-o-o-o/qcom32-volte)
 
+## 配套工具：BB10 纯离线通话录音（`bb10-call-recorder`）
+
+需要为已 Root 的 BlackBerry 10 手机开启自动通话录音时，可安装独立开源的配套应用 **[BB10 通话录音（bb10-call-recorder）](https://github.com/Octo-o-o-o/bb10-call-recorder)**（零联网权限、保存为 BB10 原生可直接播放的 `16 kHz` WAV，提供手机端 `.bar` 与自动复用本机配对的 Windows 一键助手）：
+
+- 官网下载区直达：[bb10-volte.octoooo.com/#recorder](https://bb10-volte.octoooo.com/#recorder)
+- GitHub 开源仓库：[Octo-o-o-o/bb10-call-recorder](https://github.com/Octo-o-o-o/bb10-call-recorder)
+
 ## 下载
 
 | 电脑 | 系统要求 |

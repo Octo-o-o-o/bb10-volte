@@ -542,6 +542,20 @@ def restore():
     status('stopped')
 
 
+def audio_tap_requested():
+    path = BASE + '/audio-tap.json'
+    try:
+        if os.path.islink(path) or not os.path.isfile(path):
+            return False
+        st = os.lstat(path)
+        if st.st_uid != 0 or (st.st_mode & 0o077) != 0 or st.st_size > 4096:
+            return False
+        value = json.loads(n.read(path).decode('utf-8'))
+        return isinstance(value, dict) and value.get('schema') == 1 and value.get('enabled') is True
+    except Exception:
+        return False
+
+
 def configure():
     assert ready(), 'SIM/network changed after preflight; recheck compatibility'
     imsi = current_usim()
@@ -564,8 +578,9 @@ def configure():
     original = n.read('/radio/bin/ims_rrm')
     telecom_mo_ack = (network.get('mcc') == '460' and network.get('mnc') in profiles.TELECOM_MNCS and
                       bool(ACTIVE_PROFILE['ims']['sms']))
-    changed, patches = (temporary_binary(original, True, sms_ack=True, telecom_mo_ack=True)
-                        if telecom_mo_ack else temporary_binary(original, True, sms_ack=True))
+    extra = {'audio_tap': True} if (audio_tap_requested() and bool(ACTIVE_PROFILE['ims']['sms'])) else {}
+    changed, patches = (temporary_binary(original, True, sms_ack=True, telecom_mo_ack=True, **extra)
+                        if telecom_mo_ack else temporary_binary(original, True, sms_ack=True, **extra))
     write_owned(BIN, changed, 0o755)
     j['binary_patches'] = patches
     write_owned(APN, carrier_xml, 0o644)

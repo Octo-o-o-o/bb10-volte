@@ -30,6 +30,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r49/mobile49 before opt-in VoLTE PCM ring buffer support.
+                    '994291d7482ffd63049d93369de8887df64e731640cc46ceeb647fa33aaee4cb',
                     # r48/mobile48 before external radio-mode reconciliation, pre-native retry and PLMN lock.
                     'eb2abf8616c5c1f6fca74fe87848c70dc698e881fc570bfea6c1ac645f239975',
                     # r47/mobile47 before OI-APN bootstrap, 12-MNC SE13 overlay, and Python 3.2 IOError hardening.

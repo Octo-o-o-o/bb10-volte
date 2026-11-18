@@ -60,6 +60,7 @@
         <a href="mobile.html">手机版</a>
         <a href="#compatibility">兼容性</a>
         <a href="#download">下载</a>
+        <a href="#recorder">通话录音</a>
       </nav>
       <div class="header-actions">
         <a class="language-switch" data-language-switch="en" href="en/index.html" lang="en" hreflang="en" aria-label="Switch to English">English</a>
@@ -246,6 +247,37 @@
       </div>
     </section>
 
+    <section class="region download-region" id="recorder" aria-labelledby="recorder-title">
+      <div class="shell">
+        <div class="chapter"><span>COMPANION / BB10 CALL RECORDER</span><span>纯本地离线通话录音 · 零联网权限 · 原生 BB10 直接播放。</span></div>
+        <div class="section-heading">
+          <h2 id="recorder-title">顺手装上<em>通话录音。</em><br>纯离线保存在本机。</h2>
+          <div class="release-summary"><p>独立配套开源项目<br><strong>v0.1.0-r1</strong> · BAR 0.1.0.1</p><a class="text-link" href="https://github.com/Octo-o-o-o/bb10-call-recorder" target="_blank" rel="noopener noreferrer">查看开源仓库<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+        </div>
+        <div class="download-grid">
+          <article class="download-card">
+            <div class="platform-heading"><svg class="platform-icon" aria-hidden="true"><use href="#icon-phone"/></svg><span>ON PHONE / 01</span></div>
+            <h3>手机端原生 BAR</h3>
+            <p class="platform-spec">已 Root 的 BB10 手机（OS 10.3.3.3216）</p>
+            <p class="platform-detail">不申请联网权限（零 <code>access_internet</code>），严格排除紧急呼叫。</p>
+            <p>用 Sachesi / Darcy BBTools 装入手机，打开「BB10 通话录音」点一次激活即可自动值守。录音保存为原生可播的 16 kHz WAV（<code>voice/bb10-call-recorder</code>）。</p>
+            <div class="download-actions"><a class="button button-primary" href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/bb10-call-recorder-0.1.0.1.bar" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载手机版 BAR</a><a class="checksum-link" href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/bb10-call-recorder-0.1.0.1.bar.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <small class="package-note">在 Q20 实测 VoLTE 通话录制与本机回放；请在遵守所在地知情同意法规前提下使用。</small>
+          </article>
+          <article class="download-card">
+            <div class="platform-heading"><svg class="platform-icon icon-fill" aria-hidden="true"><use href="#icon-windows"/></svg><span>ONE-CLICK HELPER / 02</span></div>
+            <h3>Windows 一键安装助手</h3>
+            <p class="platform-spec">Windows 10 / 11 · 64 位（x64）</p>
+            <p class="platform-detail">自动复用本机 BB10 VoLTE 已完成的手机配对记录。</p>
+            <p>无需第三方侧载工具，连上已配对手机后点击「一键安装」，约 20 秒同时装好黑莓桌面图标并开启自动录音服务。</p>
+            <div class="download-actions"><a class="button button-primary" href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/bb10-call-recorder-0.1.0-r1-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>下载 Windows 助手</a><a class="checksum-link" href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/bb10-call-recorder-0.1.0-r1-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">文件校验码（SHA-256）<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <small class="package-note">同样遵循 PolyForm Noncommercial 1.0.0（个人非商业免费 · 商用需授权）。</small>
+          </article>
+        </div>
+        <div class="source-download"><p><strong>源码与更多安装方式：</strong>含 AutoRoot 扩展包、技术架构说明与 GitHub 备用下载。</p><div><a href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/bb10-call-recorder-0.1.0.1-bootstrap.zip" target="_blank" rel="noopener noreferrer">Bootstrap ZIP</a><a href="https://bb10-downloads.octoooo.com/call-recorder/v0.1.0-r1/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">全部校验码</a><a href="https://github.com/Octo-o-o-o/bb10-call-recorder/releases/tag/v0.1.0-r1" target="_blank" rel="noopener noreferrer">GitHub Release</a></div></div>
+      </div>
+    </section>
+
     <section class="region open-region" aria-labelledby="open-title">
       <div class="shell">
         <div class="chapter"><span>05 / SOURCE AVAILABLE</span><span>代码公开，个人免费；商业用途请联系付费授权。</span></div>
@@ -281,7 +313,7 @@
   <footer class="footer">
     <div class="shell">
       <div class="footer-brand"><a class="brand" href="index.html"><img class="brand-mark" src="assets/icon.png" alt="" width="40" height="40"><span class="brand-name">BB10 VoLTE</span></a><p>让老黑莓再多用一阵。</p></div>
-      <div class="footer-links"><a href="guides.html">使用指南</a><a href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://qcom32-volte.octoooo.com/" target="_blank" rel="noopener noreferrer">Qcom32 Android 11 VoLTE<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a><a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+      <div class="footer-links"><a href="guides.html">使用指南</a><a href="#recorder">通话录音</a><a href="https://github.com/Octo-o-o-o/bb10-volte/releases" target="_blank" rel="noopener noreferrer">Releases</a><a href="https://github.com/Octo-o-o-o/bb10-volte" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://qcom32-volte.octoooo.com/" target="_blank" rel="noopener noreferrer">Qcom32 Android 11 VoLTE<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a><a href="https://octoooo.com" target="_blank" rel="noopener noreferrer">OctoLab<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
       <div class="footer-bottom"><span>© <span data-current-year>2026</span> OctoLab · <a href="https://github.com/Octo-o-o-o/bb10-volte/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">PolyForm Noncommercial（个人免费 · 商用需授权）</a></span><span>独立源码公开项目，与 BlackBerry 官方无关。</span></div>
     </div>
   </footer>

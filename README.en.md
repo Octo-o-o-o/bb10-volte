@@ -35,6 +35,13 @@ This repository (`bb10-volte`) targets stock **BlackBerry 10 (`OS 10.3.3.3216` /
 - Official website & direct downloads: [qcom32-volte.octoooo.com](https://qcom32-volte.octoooo.com/en/)
 - GitHub repository: [Octo-o-o-o/qcom32-volte](https://github.com/Octo-o-o-o/qcom32-volte)
 
+## Companion App: BB10 Offline Call Recorder (`bb10-call-recorder`)
+
+If you also want local call recording on your rooted BlackBerry 10 phone, check out our standalone companion project **[BB10 Call Recorder (`bb10-call-recorder`)](https://github.com/Octo-o-o-o/bb10-call-recorder)** — zero internet permissions, standard `16 kHz` WAV files playable natively on BB10, with both a native `.bar` and a one-click Windows helper:
+
+- Website download section: [bb10-volte.octoooo.com/en/#recorder](https://bb10-volte.octoooo.com/en/#recorder)
+- GitHub repository: [Octo-o-o-o/bb10-call-recorder](https://github.com/Octo-o-o-o/bb10-call-recorder)
+
 ## Downloads
 
 | Computer | System requirements |

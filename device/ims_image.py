@@ -167,18 +167,102 @@ def sms_ack_binary(image, patches=(), telecom_mo_ack=False):
     return result, list(patches) + [record]
 
 
-def temporary_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=False):
-    """Require callers to select the SMS shim explicitly.
+def audio_tap_binary(image, patches=()):
+    """Add an opt-in PCM capture ring buffer to a verified SMS-enabled IMS image."""
+    assert image[:7] == b'\x7fELF\x01\x01\x01'
+    header = struct.unpack_from('<16sHHIIIIIHHHHHH', image)
+    assert header[1:3] == (3, 40) and header[5] == 52 and header[9:11] == (32, 9)
+    phdr = [list(struct.unpack_from('<8I', image, 52 + i * 32)) for i in range(9)]
+    unwind, rx, rw = phdr[0], phdr[3], phdr[4]
+    assert unwind[0] == 0x70000001 and unwind[1] == unwind[2] >= SMS_ACK_CODE_VA
+    assert rw[0] == 1 and rw[6] == 6 and rw[2] + rw[5] == SMS_ACK_BSS_VA + SMS_ACK_BSS_SIZE
+    assert rx[:4] == [1, 0, 0, 0] and rx[4] == rx[5] == len(image) and rx[6:] == [5, 4096]
+    assert [entry[0] for entry in phdr].count(1) == 2
+    assert AUDIO_TAP_BSS_VA >= rw[2] + rw[5]
+    assert (AUDIO_TAP_BSS_VA + AUDIO_TAP_BSS_SIZE + 4095) & ~4095 <= SMS_ACK_CODE_VA
+    assert len(image) <= AUDIO_TAP_CODE_VA and len(AUDIO_TAP_CODE) < 8192
 
-    The service opts in after Q20/Unicom and Passport/Mobile acceptance.
-    Keep voice-only construction available for comparisons and legacy callers.
-    """
-    assert type(sms_ack) is bool and type(telecom_mo_ack) is bool, 'SMS candidate opt-in must be explicit'
+    entries = []
+    for table, address in ((image[unwind[1]:unwind[1] + unwind[4]], unwind[2]),
+                           (AUDIO_TAP_EXIDX, AUDIO_TAP_EXIDX_VA)):
+        assert len(table) % 8 == 0
+        for offset in range(0, len(table), 8):
+            first, second = struct.unpack_from('<II', table, offset)
+            target = _prel31(first, address + offset)
+            descriptor = second if second == 1 or second & 0x80000000 else _prel31(second, address + offset + 4)
+            entries.append((target, second == 1 or bool(second & 0x80000000), descriptor))
+    assert all(a[0] < b[0] for a, b in zip(entries, entries[1:])), 'Unexpected unwind ordering'
+    payload = bytearray(AUDIO_TAP_CODE)
+    payload.extend(b'\0' * (-len(payload) % 4))
+    table_offset, table_va = len(payload), AUDIO_TAP_CODE_VA + len(payload)
+    for index, (target, compact, descriptor) in enumerate(entries):
+        place = table_va + index * 8
+        payload.extend(struct.pack('<II', _relative31(target, place),
+                                   descriptor if compact else _relative31(descriptor, place + 4)))
+
+    file_offset = AUDIO_TAP_CODE_VA
+    changed = bytearray(image)
+    changed.extend(b'\0' * (file_offset - len(changed)))
+    changed.extend(payload)
+    rw[5] = AUDIO_TAP_BSS_VA + AUDIO_TAP_BSS_SIZE - rw[2]
+    rx[4] = rx[5] = len(changed)
+    unwind[1:6] = [file_offset + table_offset, table_va, table_va, len(entries) * 8, len(entries) * 8]
+    allowed = []
+    for index in (0, 3, 4):
+        start = 52 + index * 32
+        changed[start:start + 32] = struct.pack('<8I', *phdr[index])
+        allowed.append((start, start + 32))
+    shoff, size, count = header[6], header[11], header[12]
+    assert size == 40
+    found = 0
+    for index in range(count):
+        start = shoff + index * 40
+        section = list(struct.unpack_from('<10I', image, start))
+        if section[1] == 0x70000001:
+            section[3:6] = [table_va, file_offset + table_offset, len(entries) * 8]
+            changed[start:start + 40] = struct.pack('<10I', *section)
+            allowed.append((start, start + 40))
+            found += 1
+    assert found == 1
+    hooks = (
+        (0x7f7d8, b'\xdc\xf7\x76\xe8', AUDIO_TAP_MIC_PARAMS),
+        (0x7fa92, b'\xdb\xf7\x1a\xef', AUDIO_TAP_SPK_PARAMS),
+        (0x7fdac, b'\xdc\xf7\x7c\xed', AUDIO_TAP_WRITE),
+        (0x8078a, b'\xda\xf7\x4e\xec', AUDIO_TAP_READ),
+    )
+    for start, before, target in hooks:
+        assert image[start:start + 4] == before
+        changed[start:start + 4] = thumb_bl(start, target)
+        allowed.append((start, start + 4))
+    previous = 0
+    for start, end in sorted(allowed):
+        assert changed[previous:start] == image[previous:start]
+        previous = end
+    assert changed[previous:len(image)] == image[previous:]
+    result = bytes(changed)
+    record = {
+        'function': 'ImsAudioImpl passive PCM ring buffer',
+        'mic_params_offset': 0x7f7d8,
+        'spk_params_offset': 0x7fa92,
+        'write_offset': 0x7fdac,
+        'read_offset': 0x8078a,
+        'code_sha256': hashlib.sha256(AUDIO_TAP_CODE).hexdigest(),
+        'image_sha256': hashlib.sha256(result).hexdigest(),
+    }
+    return result, list(patches) + [record]
+
+
+def temporary_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=False, audio_tap=False):
+    """Require callers to select optional shims explicitly."""
+    assert type(sms_ack) is bool and type(telecom_mo_ack) is bool and type(audio_tap) is bool, 'Candidate opt-in must be explicit'
     assert not telecom_mo_ack or sms_ack, 'Telecom MO ACK requires SMS shim'
+    assert not audio_tap or sms_ack, 'Audio tap requires SMS-enabled runtime layout'
     changed, patches = _voice_binary(original, normal_voice)
     if not sms_ack:
         return changed, patches
-    return sms_ack_binary(changed, patches, telecom_mo_ack=True) if telecom_mo_ack else sms_ack_binary(changed, patches)
+    changed, patches = (sms_ack_binary(changed, patches, telecom_mo_ack=True)
+                        if telecom_mo_ack else sms_ack_binary(changed, patches))
+    return audio_tap_binary(changed, patches) if audio_tap else (changed, patches)
 
 
 def proven_owned_profiles(configs, original_ids, event_text, native_stdout, pid):
@@ -226,7 +310,7 @@ def mobile_binary(original, normal_voice=False, sms_ack=False):
     return sms_ack_binary(result, patches) if sms_ack else (result, patches)
 
 
-def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=False):
+def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=False, audio_tap=False):
     """Cross-carrier MT call signaling fix; only the temporary copy is changed.
 
     Suppresses repeated or unreliable preview SDP in 180 Ringing
@@ -239,8 +323,9 @@ def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=
       mandatory RFC 3261 SDP answer in 200 OK (INVITE).
     """
     assert normal_voice is True
-    assert type(sms_ack) is bool and type(telecom_mo_ack) is bool, 'SMS candidate opt-in must be explicit'
+    assert type(sms_ack) is bool and type(telecom_mo_ack) is bool and type(audio_tap) is bool, 'Candidate opt-in must be explicit'
     assert not telecom_mo_ack or sms_ack, 'Telecom MO ACK requires SMS shim'
+    assert not audio_tap or sms_ack, 'Audio tap requires SMS-enabled runtime layout'
     changed, patches = _voice_binary(original, normal_voice)
     omit_offset = 0xb8e9c
     early_offset = 0xb8eb0
@@ -257,7 +342,9 @@ def mt_voice_binary(original, normal_voice=False, sms_ack=False, telecom_mo_ack=
                     'purpose': 'Suppress repeated or unreliable preview SDP in 180 Ringing while preserving Omit200OkSdp=1'})
     if not sms_ack:
         return result, patches
-    return sms_ack_binary(result, patches, telecom_mo_ack=True) if telecom_mo_ack else sms_ack_binary(result, patches)
+    result, patches = (sms_ack_binary(result, patches, telecom_mo_ack=True)
+                       if telecom_mo_ack else sms_ack_binary(result, patches))
+    return audio_tap_binary(result, patches) if audio_tap else (result, patches)
 
 
 # BEGIN GENERATED SMS ACK SHIM
@@ -387,3 +474,39 @@ SMS_ACK_EXIDX = bytes.fromhex(
     'd4fcff7fb0af1a8000ffff7fb0b0b08018ffff7f01000000'
 )
 # END GENERATED SMS ACK SHIM
+
+
+# BEGIN GENERATED AUDIO TAP SHIM
+AUDIO_TAP_CODE_VA = 0x530000
+AUDIO_TAP_BSS_VA = 0x4b0000
+AUDIO_TAP_BSS_SIZE = 131152
+AUDIO_TAP_EXIDX_VA = 0x53035c
+AUDIO_TAP_MIC_PARAMS = 0x530022
+AUDIO_TAP_SPK_PARAMS = 0x53002a
+AUDIO_TAP_READ = 0x530032
+AUDIO_TAP_WRITE = 0x53003a
+AUDIO_TAP_CODE = bytes.fromhex(
+    '42423130415441500100000000004b0000000100100000003000010000000000704710b500f00ee810bd10b500f078e8'
+    '10bd10b500f0a2e810bd10b500f052e910bdd4d430482de90140a0e140109fe5a8280be301108fe0b22f4fe30110c1e3'
+    '022081e00410a0e132ff2fe10050a0e1000050e30400001a18009fe50410a0e100008fe0100080e2030000eb0500a0e1'
+    '3088bde8c5ffffff78fff7ff000051e31eff2f0110402de91ce081e242c204e30c409ee831c043e358109fe501109fe7'
+    '0c0051e10a00000a4c109fe50140a0e301108fe0084081e50148a0e30c4081e5414405e3414045e3044081e55bf07ff5'
+    '00c081e5102080e5083080e50ce080e55bf07ff5141090e5011081e2141080e51040bde81eff2fe13cfff7ff28fff7ff'
+    '30482de90140a0e144109fe5a8280be301108fe0b22f4fe30110c1e3022081e00410a0e132ff2fe10050a0e1000050e3'
+    '0500001a1c009fe50410a0e100008fe0300080e2010880e2cbffffeb0500a0e13088bde8e9feffff9cfef7ff70402de9'
+    '0150a0e15c109fe50240a0e108200be301108fe0b22f4fe30110c1e3023081e00510a0e10420a0e133ff2fe10060a0e1'
+    '000055e30900000a010056e3070000ba24009fe5040056e10640a0310510a0e100008fe00420a0e1100080e2030000eb'
+    '0600a0e17080bde889feffff28fef7ff000052e31eff2f01f0412de9d8709fe5423204e3010a52e3313043e3012aa023'
+    '07709fe7030057e10a00000abc709fe50160a0e307708fe0086087e50168a0e30c6087e5416405e3416045e3046087e5'
+    '5bf07ff5003087e5003090e50160a0e101c083e200c080e55bf07ff504e090e57e30ffe67e50f0e6018863e20230a0e1'
+    '020058e1205085e20830a0310370a0e10140d6e4017057e20140c5e4fbffff1a080052e10600009a034042e0031081e0'
+    '203080e20150d1e4014054e20150c3e4fbffff1a02108ee05bf07ff5041080e5181090e5011081e2181080e55bf07ff5'
+    '1cc080e5f041bde81eff2fe1e8fdf7ffd4fdf7ff70402de90150a0e160109fe50240a0e188280ce301108fe0b22f4fe3'
+    '0110c1e3023081e00510a0e10420a0e133ff2fe10060a0e1000055e30a00000a010056e3080000ba28009fe5040056e1'
+    '0640a0310510a0e100008fe00420a0e1300080e2010880e2a8ffffeb0600a0e17080bde821fdffffc0fcf7ff'
+)
+AUDIO_TAP_EXIDX = bytes.fromhex(
+    'c4fcff7f01000000befcff7fb0b0a880d8fcff7fb083848028fdff7fb0b0a880a4fdff7fb0838480f8fdff7fb0b0aa80'
+    '64feff7fb0b0ac8050ffff7fb0b0aa80c0ffff7f01000000'
+)
+# END GENERATED AUDIO TAP SHIM
