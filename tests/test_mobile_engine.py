@@ -200,6 +200,29 @@ class ActivationTests(unittest.TestCase):
             self.assertEqual(target.stat().st_ino, inode)
             self.assertEqual(target.read_bytes().count(i.HOOK), 1)
 
+    def test_v2_hook_recovers_an_interrupted_owned_write(self):
+        self.pending['root_kind'] = 'autoroot-v2'
+        self.write_pending()
+        target = self.root / 'btool'
+        original = b'#!/bin/sh\n. /base/scripts/sudtools.sh\nfinish\n'
+        target.write_bytes(original)
+        (self.base / 'backup/btool.original').write_bytes(original)
+        inode = target.stat().st_ino
+        write = i.persist
+        def fail(path, raw, mode=0o600):
+            if path == str(self.base) + '/boot-install.json':
+                complete = target.read_bytes()
+                cut = complete.index(i.HOOK) + 16
+                target.write_bytes(complete[:cut] + original[cut:])
+                raise OSError('interrupted in-place write')
+            return write(path, raw, mode)
+        with patch.object(i, 'BTOOL', str(target)):
+            with patch.object(i, 'persist', side_effect=fail), self.assertRaises(OSError):
+                i.activate()
+            self.assertTrue(i.activate()['installed'])
+        self.assertEqual(target.stat().st_ino, inode)
+        self.assertEqual(target.read_bytes().count(i.HOOK), 1)
+
 
 class PrepareTests(unittest.TestCase):
     def setUp(self):
@@ -332,6 +355,55 @@ class PrepareTests(unittest.TestCase):
         self.assertTrue(i.prepare(self.stage)['prepared'])
         self.assertEqual(self.directory_modes[i.BASE + '/runtime/carrier'], 0o755)
         self.assertEqual(self.directory_modes[i.BASE + '/backup'], 0o700)
+
+    def changed_candidate(self):
+        path = self.stage + '/payload.json'
+        manifest = json.loads(self.fs[path])
+        old_hash = i.n.digest(profiles.canonical(manifest['files']))
+        name = next(iter(manifest['files']))
+        raw = b'different verified payload'
+        manifest['files'][name] = i.n.digest(raw)
+        self.fs[self.stage + '/' + name] = raw
+        self.fs[path] = profiles.canonical(manifest)
+        return old_hash
+
+    def test_different_release_preserves_published_preparation_before_moving_on(self):
+        first = i.prepare(self.stage)
+        old_hash = self.changed_candidate()
+        def inventory(base=i.BASE):
+            return {name[len(base) + 1:]: i.n.digest(raw) for name, raw in self.fs.items()
+                    if name.startswith(base + '/')}
+        archive = i.MANAGEMENT + '/retained-' + first['installation_id']
+        with patch.object(i, 'PREVIOUS_PAYLOADS', (old_hash,)), patch.object(i, 'inventory', side_effect=inventory), \
+             patch.object(i, 'unlinked_path', return_value=True):
+            second = i.prepare(self.stage)
+        self.assertNotEqual(second['installation_id'], first['installation_id'])
+        self.assertEqual(self.fs[archive + '/backup/ims.original'], b'original')
+        self.assertEqual(self.fs[i.BASE + '/payload.json'], self.fs[self.stage + '/payload.json'])
+
+    def test_different_release_finishes_existing_activation_with_same_backup(self):
+        first = i.prepare(self.stage)
+        path = i.BASE + '/install-pending.json'
+        self.fs[path] = profiles.canonical(dict(json.loads(self.fs[path]), phase='activating'))
+        old_hash = self.changed_candidate()
+        with patch.object(i, 'PREVIOUS_PAYLOADS', (old_hash,)):
+            second = i.prepare(self.stage)
+        self.assertEqual(first, second)
+        self.assertNotEqual(self.fs[i.BASE + '/payload.json'], self.fs[self.stage + '/payload.json'])
+
+    def test_different_release_retains_unpublished_install_intent(self):
+        self.fail_publish = True
+        with self.assertRaises(OSError):
+            i.prepare(self.stage)
+        path = i.MANAGEMENT + '/install-intent.json'
+        old_intent = json.loads(self.fs[path])
+        old_hash = self.changed_candidate()
+        self.fail_publish = False
+        with patch.object(i, 'PREVIOUS_PAYLOADS', (old_hash,)):
+            result = i.prepare(self.stage)
+        self.assertNotEqual(result['installation_id'], old_intent['installation_id'])
+        retained = i.MANAGEMENT + '/prepare-intent-' + old_intent['operation_id'] + '.json'
+        self.assertEqual(json.loads(self.fs[retained]), old_intent)
 
 
 class RollbackTests(unittest.TestCase):

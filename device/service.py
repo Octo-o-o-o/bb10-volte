@@ -911,18 +911,26 @@ def monitor_native():
         waiter.close()
 
 
-def serve():
-    global child, shutdown, j
-    startup_timing['manager_started'] = time.time()
+def claim_service_lock(atomic=False):
     token = boot_token()
     if os.path.exists(LOCK):
         old = load(LOCK)
         if old.get('boot') == token and alive(old['pid']):
             raise RuntimeError('Service is already running')
-        os.unlink(LOCK)
+        if not atomic:
+            os.unlink(LOCK)
+    if atomic:
+        n.atomic(LOCK, json.dumps({'pid': os.getpid(), 'boot': token}).encode('ascii'))
+        return
     fd = os.open(LOCK, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, 'wb') as f:
         f.write(json.dumps({'pid': os.getpid(), 'boot': token}).encode('ascii'))
+
+
+def serve():
+    global child, shutdown, j
+    startup_timing['manager_started'] = time.time()
+    claim_service_lock()
     signal.signal(signal.SIGHUP, signal.SIG_IGN)
     def terminate(signum, frame):
         global shutdown

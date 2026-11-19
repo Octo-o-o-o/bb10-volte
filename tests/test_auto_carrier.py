@@ -2,7 +2,9 @@
 import copy
 import hashlib
 import json
+import stat
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 import unittest
 from contextlib import ExitStack
@@ -115,7 +117,8 @@ class DcaTransactionTests(unittest.TestCase):
         self.files = {}
         self.sources = {name: d.dca.HEADER for name in d.dca.SOURCES}
         self.original = dict(self.sources)
-        self.meta = {name: {'path': d.dca.source_path(name)} for name in self.sources}
+        self.meta = {name: {'path': d.dca.source_path(name), 'identity': [index, 0o600, 0, 0]}
+                     for index, name in enumerate(self.sources, 1)}
         self.usage, self.token, self.fail_after = 0, ['first'], None
         self.writes = []
         self.selected = p.select(facts(), card())
@@ -127,10 +130,15 @@ class DcaTransactionTests(unittest.TestCase):
             return self.sources[path.split('/')[4]]
         def atomic(path, blob):
             self.files[path] = blob
+        def lstat(path):
+            inode, mode, uid, gid = self.meta[path.split('/')[4]]['identity']
+            return SimpleNamespace(st_ino=inode, st_mode=stat.S_IFREG | mode, st_uid=uid, st_gid=gid)
         def write(path, before, after, item):
             name = next(name for name in self.sources if path == d.dca.source_path(name))
             self.assertEqual(self.sources[name], before)
             if self.fail_after is not None and len(self.writes) == self.fail_after:
+                cut = min(len(after), len(d.dca.HEADER) + 5)
+                self.sources[name] = after[:cut] + before[cut:]
                 raise OSError('simulated interruption')
             self.sources[name] = after
             self.writes.append(name)
@@ -143,6 +151,7 @@ class DcaTransactionTests(unittest.TestCase):
             return {}
         patches = [patch.object(d, 'ensure_lte_mode'), patch.object(d, 'wait_policy_idle'),
             patch.object(d, 'originals', return_value=(self.meta, self.original)),
+            patch.object(d.os, 'lstat', side_effect=lstat), patch.object(d.os.path, 'islink', return_value=False),
             patch.object(d.os.path, 'isfile', side_effect=exists), patch.object(d.s, 'load', side_effect=load),
             patch.object(d.s, 'phone_idle', return_value=True), patch.object(d.s, 'boot_token', side_effect=lambda: self.token),
             patch.object(d.n, 'ims_pids', return_value=[]), patch.object(d.n, 'active_vpn_sessions', return_value=[]),
@@ -184,11 +193,25 @@ class DcaTransactionTests(unittest.TestCase):
         with self.assertRaises(OSError):
             d.set_usage(1, self.selected)
         self.assertEqual(json.loads(self.files[d.RECORD])['phase'], 'applying')
+        self.assertIn('source_write', json.loads(self.files[d.RECORD]))
         self.assertEqual(len(self.writes), 2)
         self.fail_after, self.token = None, ['second']
         d.set_usage(1, self.selected)
         self.assertEqual(self.usage, 1)
         self.assertEqual(len(self.writes), 4)
+        self.assertNotIn('source_write', json.loads(self.files[d.RECORD]))
+
+    def test_legacy_partial_source_is_preserved_without_per_file_intent(self):
+        self.fail_after = 0
+        with self.assertRaises(OSError):
+            d.set_usage(1, self.selected)
+        record = json.loads(self.files[d.RECORD])
+        record.pop('source_write')
+        self.files[d.RECORD] = json.dumps(record)
+        self.fail_after = None
+        with self.assertRaisesRegex(AssertionError, 'dca_source_changed'):
+            d.set_usage(0, {'operator': 'original', 'sim_sha256': None})
+        self.assertFalse(self.writes)
 
     def test_external_source_edit_is_never_overwritten(self):
         self.sources['omadm'] = b'externally customized source'

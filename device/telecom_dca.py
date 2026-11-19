@@ -31,6 +31,14 @@ def payload(original, usage):
     return (original or HEADER) + ('ue_usage_setting::' + usage + '\n').encode('ascii')
 
 
+def interrupted_write_matches(actual, before, after):
+    if actual in (before, after):
+        return True
+    limit = min(len(actual), len(after))
+    prefix = next((index for index in range(limit) if actual[index] != after[index]), limit)
+    return actual == after[:prefix] + before[prefix:]
+
+
 def write_existing(path, before, after, item):
     assert not os.path.islink(path) and q.n.read(path) == before, 'Concurrent DCA source edit'
     info = os.stat(path)
@@ -41,7 +49,11 @@ def write_existing(path, before, after, item):
         assert (opened.st_ino, opened.st_mode & 0o7777, opened.st_uid, opened.st_gid) == tuple(item['identity'])
         assert os.read(fd, 4096) == before, 'Concurrent DCA edit after open'
         os.lseek(fd, 0, os.SEEK_SET)
-        assert os.write(fd, after) == len(after)
+        written = 0
+        while written < len(after):
+            count = os.write(fd, after[written:])
+            assert count > 0, 'dca_source_write_failed'
+            written += count
         os.ftruncate(fd, len(after))
         os.fsync(fd)
     finally:

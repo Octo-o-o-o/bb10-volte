@@ -1233,7 +1233,8 @@ class MobileRuntimeTests(unittest.TestCase):
         manager = mock.Mock(BASE='/owned')
         manager.management_lock.return_value = contextlib.nullcontext()
         manager.manage.return_value = {'installed': True, 'reboot_required': True, 'already_committed': True}
-        job = {'id': 'a' * 32, 'action': 'install', 'request': {}, 'bundle': '/verified'}
+        job = {'id': 'a' * 32, 'action': 'install', 'phase': 'activating', 'request': {}, 'bundle': '/verified'}
+        manager.verify_backup_receipt.return_value = {'source': 'mobile', 'operation_id': job['id']}
         existing = {'/owned/activation.json', '/owned/payload.json'}
         with mock.patch.object(ENTRY, 'private_directory'), mock.patch.object(ENTRY, 'read_bundle'), \
              mock.patch.object(WORKER, 'engine', return_value=manager), \
@@ -1244,6 +1245,36 @@ class MobileRuntimeTests(unittest.TestCase):
         self.assertTrue(result['already_committed'])
         manager.manage.assert_called_once_with('activate', operation_id=job['id'])
         stage.assert_not_called()
+
+    def test_interrupted_install_can_reconcile_without_replacing_active_job(self):
+        job = {'id': 'a' * 32, 'schema': 2, 'action': 'install', 'phase': 'activating',
+               'worker_safety': WORKER.SAFE_JOB_GUARD, 'state': 'interrupted',
+               'commit_outcome_unknown': True, 'bundle': '/old', 'request': {}}
+        self.assertEqual(WORKER.job_response(job, {})['primary_action'], 'resume')
+        with mock.patch.object(WORKER, 'job_lock', return_value=contextlib.nullcontext()), \
+             mock.patch.object(WORKER, 'require_current_selection'), \
+             mock.patch.object(ENTRY, 'read_bundle', return_value=({'capabilities': [WORKER.SAFE_JOB_GUARD]},)), \
+             mock.patch.object(WORKER, 'load', return_value=job), \
+             mock.patch.object(WORKER, 'active_job', return_value=job), \
+             mock.patch.object(WORKER, 'boot', return_value=['new-boot']), \
+             mock.patch.object(WORKER, 'save'), mock.patch.object(WORKER, 'spawn') as spawn:
+            result = WORKER.resume({'job_id': job['id']}, '/new')
+        spawn.assert_called_once_with(job)
+        self.assertEqual(result['job_id'], job['id'])
+        self.assertEqual(job['phase'], 'activating')
+        self.assertEqual(job['bundle'], '/new')
+
+    def test_install_recovery_cannot_replace_another_operations_backup_receipt(self):
+        manager = mock.Mock(BASE='/owned')
+        manager.management_lock.return_value = contextlib.nullcontext()
+        manager.verify_backup_receipt.return_value = {'source': 'desktop', 'operation_id': 'b' * 32}
+        job = {'id': 'a' * 32, 'action': 'install', 'phase': 'activating', 'request': {}, 'bundle': '/verified'}
+        with mock.patch.object(ENTRY, 'private_directory'), mock.patch.object(ENTRY, 'read_bundle'), \
+             mock.patch.object(WORKER, 'engine', return_value=manager), \
+             mock.patch.object(WORKER.os.path, 'isfile', side_effect=lambda path: path == '/owned/install-pending.json'):
+            with self.assertRaisesRegex(ENTRY.MobileError, 'activation_receipt_changed'):
+                WORKER.run_operation(job)
+        manager.manage.assert_not_called()
 
     def test_backup_failure_can_resume_same_job_with_explicit_new_destination(self):
         job = {'id': 'a' * 32, 'action': 'install', 'phase': 'exporting_original_backup',

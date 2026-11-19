@@ -56,6 +56,14 @@ MESSAGES = {
                        'Updating phone service', 'Replacing and verifying phone background service files (not re-activating). Keep the battery charged.', 'Check progress'),
     'retry_ready': ('可以重试连接', '上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击重试，无需为这次等待重新启动手机。', '重试连接',
                     'Ready to retry', 'The previous attempt stopped before IMS started and configuration was restored. Keep the same SIM and retry without rebooting for this wait.', 'Retry connection'),
+    'boot_start_available': ('本次开机的后台尚未启动', '保持当前 SIM。重试时会重新核验原始备份和电话状态，再启动后台。', '重试连接',
+                             'Service has not started on this boot', 'Keep the current SIM. Retry checks the original backup and phone state before starting the service.', 'Retry connection'),
+    'waiting_for_root': ('等待 Root 就绪', '请解锁手机，等待 Root 成功提示，再刷新状态。', '重新检查',
+                         'Waiting for Root', 'Unlock the phone and wait for the Root success notice, then check again.', 'Check again'),
+    'resume_prepared_install': ('上次安装可以继续', '会核验上次的安装记录和原始备份，再继续安装。', '继续安装',
+                                'Installation can continue', 'The previous installation record and original backups will be checked before continuing.', 'Continue installation'),
+    'reconcile_install_job': ('检查上次安装', '会读取手机上的安装回执。只有满足恢复条件才继续，已有备份会保留。', '检查并继续',
+                              'Check the previous installation', 'The phone checks its installation records and proceeds only when it can recover safely. Existing backups are kept.', 'Check and continue'),
     'update_reboot_required': ('手机服务组件已更新，请正常重启', '后台服务载荷已完成升级并保留原始备份。请使用系统电源菜单正常重启手机并解锁，让新版服务生效。', '立即检查',
                                'Service updated; restart normally', 'Background service files were updated and original backups are retained. Restart normally from the power menu and unlock to apply the update.', 'Check now'),
     'reboot_required': ('请正常重启手机', '使用电源菜单重启并解锁。已启用的自动服务会随开机启动，网络可能需要约 3–5 分钟。需要查看状态或继续未完成的任务时，先等 Root 成功提示，再打开应用检查；图标无反应时不要连续点击。', '立即检查',
@@ -455,6 +463,8 @@ def inspection_response(request, result, details, confirmed_context=None):
     details['management_schema'] = result.get('installed_management_schema')
     details['bundled_update_available'] = result.get('can_update') is True
     if result.get('installation_pending') or result.get('update_pending'):
+        if result.get('installation_pending') and result.get('sim_supported') is True and result.get('can_install') is True:
+            return ui('resume_prepared_install', language, 'install', details, actions=['install', 'compatibility'])
         return ui('recovery_required', language, details=details, actions=['status', 'compatibility'])
     status = result.get('status') or {}
     sim_changed = (status.get('status_from_current_boot') is True and
@@ -497,6 +507,10 @@ def inspection_response(request, result, details, confirmed_context=None):
         if status.get('phase') not in ('error', 'error_restored', 'cleanup_required', 'reboot_required', 'carrier_reboot_required') and mobile_radio_state() == 'OFF':
             return ui('mobile_network_auto_enable', language, 'enable', details, actions=actions)
         return ui('disabled', language, 'enable', details, actions=actions)
+    if status.get('phase') == 'boot_start_available' and not result.get('update_available'):
+        return ui('boot_start_available', language, 'enable', details, actions=actions + ['enable'])
+    if status.get('phase') == 'waiting_for_root':
+        return ui('waiting_for_root', language, 'status', details, actions=actions)
     if sim_changed or status.get('phase') in (
             'reboot_required', 'carrier_reboot_required', 'native_exited'):
         state = ('sim_changed' if sim_changed else
@@ -627,7 +641,7 @@ def export_blobs(blobs, location, operation_id):
         os.close(read_fd)
 
 
-def backup_originals(request, prepared=None):
+def backup_originals(request, prepared=None, export_id=None):
     m = engine()
     raw = e.regular(m.BASE + '/backup/manifest.json', 131072)
     manifest = e.json_bytes(raw)
@@ -645,7 +659,7 @@ def backup_originals(request, prepared=None):
                   prepared['backup_manifest_sha256'] == e.digest(raw) and prepared['backup_files'] == hashes,
                   'backup_preparation_changed')
     location = request.get('backup_location', 'internal')
-    destination = export_blobs(blobs, location, request['operation_id'])
+    destination = export_blobs(blobs, location, export_id or request['operation_id'])
     if prepared is None:
         # A manual export cannot change an activation receipt or the retained
         # inventory after uninstall. Historic r14 backups remain exportable
@@ -740,6 +754,16 @@ def unknown_job_outcome(job):
 
 def protected_job(job):
     return resumable_job(job) or unknown_job_outcome(job)
+
+
+def install_job_can_recover(job):
+    return (job.get('schema') == 2 and job.get('worker_safety') == SAFE_JOB_GUARD and
+            job.get('action') == 'install' and job.get('phase') in ('checking', 'enabling_mobile_network',
+                'mobile_network_ready', 'checking_and_preparing', 'exporting_original_backup', 'activating'))
+
+
+def install_job_needs_reconciliation(job):
+    return install_job_can_recover(job) and unknown_job_outcome(job)
 
 
 def job_path(job_id):
@@ -838,6 +862,9 @@ def recover_job(job, folder=None):
 
 
 def job_response(job, request):
+    if install_job_needs_reconciliation(job):
+        return ui('reconcile_install_job', request.get('language'), 'resume',
+                  actions=['resume', 'poll', 'export', 'compatibility'], job_id=job['id'], job=public_job(job))
     if unknown_job_outcome(job):
         return ui('job_outcome_unknown', request.get('language'), 'export',
                   actions=['poll', 'export', 'compatibility'], job_id=job['id'], job=public_job(job))
@@ -1091,25 +1118,53 @@ def run_operation(job):
             # An activation can commit immediately before power loss. Consult
             # its durable receipt before ever trying to prepare a second time.
             activation = m.BASE + '/activation.json'
-            if (os.path.isfile(activation) and os.path.isfile(m.BASE + '/payload.json')
-                    and not os.path.isfile(m.BASE + '/uninstalled.json')
-                    and not os.path.isfile(m.BASE + '/install-pending.json')):
+            pending = os.path.isfile(m.BASE + '/install-pending.json')
+            if job.get('phase') == 'activating':
                 job['commit_outcome_unknown'] = True
+                e.require(pending or (os.path.isfile(activation) and os.path.isfile(m.BASE + '/payload.json') and
+                          not os.path.isfile(m.BASE + '/uninstalled.json')), 'activation_recovery_required')
+                receipt = m.verify_backup_receipt()
+                e.require(receipt.get('source') == 'mobile' and receipt.get('operation_id') == job['id'],
+                          'activation_receipt_changed')
+                if job.get('installation_id') is not None:
+                    e.require(receipt.get('installation_id') == job['installation_id'], 'activation_receipt_changed')
+                if pending:
+                    if mobile_radio_state() == 'OFF':
+                        report = m.manage('prepare-network', operation_id=job['id'])['probe']
+                    else:
+                        report = m.manage('probe')
+                    e.require(report.get('can_install') is True and report.get('sim_supported') is True,
+                              report.get('sim_reason') or 'activation_recovery_required')
                 return m.manage('activate', operation_id=job['id'])
+            if job.get('reconcile_install') and pending:
+                # A pre-activation job cannot take over a later activation or another writer's receipt.
+                e.require(not os.path.lexists(activation) and not os.path.lexists(activation + '.new'),
+                          'activation_receipt_changed')
+                if os.path.isfile(m.BASE + '/backup-receipt.json'):
+                    receipt = m.verify_backup_receipt()
+                    e.require(receipt.get('source') == 'mobile' and receipt.get('operation_id') == job['id'],
+                              'activation_receipt_changed')
             prepare_activation_network(job, m)
+            stage = stage_payload(folder, job.get('attempt', job['id']))
             progress(job, 'checking_and_preparing')
-            stage = stage_payload(folder, job['id'])
             job['commit_outcome_unknown'] = True
-            prepared = m.manage('prepare', stage=stage, operation_id=job['id'])
+            try:
+                prepared = m.manage('prepare', stage=stage, operation_id=job['id'])
+            finally:
+                # The locked, synchronous prepare no longer uses this fully checked stage.
+                try:
+                    m.cleanup_stage(stage)
+                except (IOError, OSError, ValueError, AssertionError):
+                    pass
             # The prepared transaction has returned a verified receipt. A
             # backup-export failure can safely resume this same preparation.
             job['commit_outcome_unknown'] = False
             progress(job, 'exporting_original_backup')
-            path = backup_originals(request, prepared)
+            path = backup_originals(request, prepared, job.get('attempt', job['id']))
             # Preparation and export can take time. Preserve their verified
             # receipt and this job if the owner turned the radio off meanwhile.
             e.require(mobile_radio_state() != 'OFF', 'mobile_network_off')
-            progress(job, 'activating')
+            progress(job, 'activating', installation_id=prepared.get('installation_id'))
             job['commit_outcome_unknown'] = True
             result = m.manage('activate', operation_id=job['id'])
         result['path'] = path
@@ -1235,6 +1290,9 @@ def run_operation(job):
                     os.path.isfile(m.BASE + '/uninstalled.json')) if action == 'uninstall' else
                     before_enabled != os.path.isfile(m.BASE + '/enabled'))
                 raise
+        if action == 'enable' and result.get('retry_blocked') is True:
+            job.update(commit_outcome_unknown=False, resumable_failure=False)
+            raise e.MobileError('retry_not_available')
         if action == 'disable' and result.get('restoration_pending'):
             progress(job, 'restoring')
             deadline = time.time() + 180
@@ -1381,9 +1439,10 @@ def resume(request, folder=None):
         e.require(job.get('id') == requested_id, 'operation_id_reused')
         current = active_job()
         e.require(current is not None and current['id'] == job['id'], 'operation_in_progress')
-        e.require(not unknown_job_outcome(job), 'operation_unknown')
+        reconcile_install = install_job_needs_reconciliation(job)
+        e.require(reconcile_install or not unknown_job_outcome(job), 'operation_unknown')
         e.require(job['action'] in ('install', 'update', 'rollback', 'uninstall', 'enable', 'disable', 'legacy-install'), 'manual_recovery_required')
-        e.require(resumable_job(job), 'job_not_resumable')
+        e.require(reconcile_install or resumable_job(job), 'job_not_resumable')
         if job['state'] == 'waiting_reboot':
             old_boot = job.get('boot')
             e.require(valid_boot(old_boot), 'reboot_state_unconfirmed')
@@ -1422,6 +1481,12 @@ def resume(request, folder=None):
                 return job_response(job, request)
         # Already committed single-phase reboot jobs were settled above.
         # Any path that can spawn must use a signed, guarded job snapshot.
+        if folder is not None and install_job_can_recover(job) and job.get('bundle') != folder:
+            job['bundle'] = folder
+            job['fallback_manifest_sha'] = getattr(e, 'FALLBACK_MANIFEST_SHA', os.path.basename(folder))
+            job['reconcile_install'] = True
+        if reconcile_install:
+            job['reconcile_install'] = True
         e.require(job.get('worker_safety') == SAFE_JOB_GUARD, 'legacy_job_requires_review')
         e.require(supports_job_guard(e.read_bundle(job['bundle'])[0]), 'legacy_job_requires_review')
         if ((job['action'] == 'install' and job['phase'] == 'exporting_original_backup') or

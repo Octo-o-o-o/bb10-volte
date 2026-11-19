@@ -551,6 +551,43 @@ def originals():
     return files, values
 
 
+def source_versions(original):
+    return {'original': original, 'data': dca.payload(original, 'data_centric'),
+            'voice': dca.payload(original, 'voice_centric')}
+
+
+def write_source(record, name, before, after, files, versions):
+    choices = versions[name]
+    record['source_write'] = {
+        'name': name, 'identity': list(files[name]['identity']),
+        'before': next(key for key in choices if choices[key] == before),
+        'after': next(key for key in choices if choices[key] == after)}
+    n.atomic(RECORD, profiles.canonical(record))
+    dca.write_existing(dca.source_path(name), before, after, files[name])
+    del record['source_write']
+
+
+def finish_source_write(record, files, versions):
+    pending = record.get('source_write')
+    if pending is None:
+        return
+    assert record['phase'] in ('applying', 'republishing_original', 'republishing_data'), 'dca_write_phase_changed'
+    name = pending['name']
+    assert name in files and pending['identity'] == list(files[name]['identity']), 'dca_write_identity_changed'
+    before, after = (versions[name][pending[key]] for key in ('before', 'after'))
+    assert before != after, 'dca_write_invalid'
+    path = dca.source_path(name)
+    info = os.lstat(path)
+    assert not os.path.islink(path) and [info.st_ino, info.st_mode & 0o7777, info.st_uid, info.st_gid] == pending['identity'], 'dca_write_identity_changed'
+    current = n.read(path)
+    assert dca.interrupted_write_matches(current, before, after), 'dca_source_changed'
+    # A full readback may follow an interruption before the source was synced.
+    dca.write_existing(path, current, after, files[name])
+    del record['source_write']
+    n.atomic(RECORD, profiles.canonical(record))
+    return name, after
+
+
 def set_usage(desired, selected):
     assert desired in (0, 1)
     context()
@@ -558,19 +595,29 @@ def set_usage(desired, selected):
     assert_policy_idle()
     files, values = originals()
     previous = s.load(RECORD) if os.path.isfile(RECORD) else None
+    versions = {name: source_versions(raw) for name, raw in values.items()}
     if previous is not None:
         assert previous['owner'] == policy.OWNER
     current_usage = radio.ue_usage_policy()
     assert current_usage in (0, 1)
     current = {name: n.read(dca.source_path(name)) for name in dca.SOURCES}
+    pending_name = (previous or {}).get('source_write', {}).get('name')
     for name, raw in current.items():
-        allowed = (values[name], dca.payload(values[name], 'data_centric'), dca.payload(values[name], 'voice_centric'))
-        assert raw in allowed, 'dca_source_changed'
+        assert name == pending_name or raw in versions[name].values(), 'dca_source_changed'
         if raw != values[name] or current_usage != 0:
             assert previous is not None, 'unowned_dca_policy'
-    targets = {name: dca.payload(raw, 'data_centric') if desired else raw for name, raw in values.items()}
+    if pending_name is not None:
+        name, raw = finish_source_write(previous, files, versions)
+        current[name] = raw
+    targets = {name: choices['data' if desired else 'original'] for name, choices in versions.items()}
     changed = current_usage != desired or current != targets
     if not changed:
+        if previous and previous.get('phase') in ('applying', 'republishing_original', 'republishing_data'):
+            assert 'error_type' not in dca.publish(BACKUP, 'auto-usage'), 'dca_publish_failed'
+            assert radio.ue_usage_policy() == desired, 'usage_readback_failed'
+            assert all(n.read(dca.source_path(name)) == targets[name] for name in dca.SOURCES), 'dca_source_changed'
+            previous.update(phase='ready', desired=desired)
+            n.atomic(RECORD, profiles.canonical(previous))
         return previous or {'owner': policy.OWNER, 'desired': desired, 'phase': 'ready', 'boot': None}
     token = s.boot_token()
     policy_boot = None
@@ -588,7 +635,7 @@ def set_usage(desired, selected):
     n.atomic(RECORD, profiles.canonical(record))
     for name in dca.SOURCES:
         if current[name] != targets[name]:
-            dca.write_existing(dca.source_path(name), current[name], targets[name], files[name])
+            write_source(record, name, current[name], targets[name], files, versions)
     record['publish'] = dca.publish(BACKUP, 'auto-usage')
     assert 'error_type' not in record['publish'], 'dca_publish_failed'
     if desired == 0 and radio.ue_usage_policy() != 0:
@@ -596,7 +643,7 @@ def set_usage(desired, selected):
         record.update(policy_changed_boot=token, source_repair_only=False)
         n.atomic(RECORD, profiles.canonical(record))
         for name in dca.SOURCES:
-            dca.write_existing(dca.source_path(name), targets[name], dca.payload(values[name], 'voice_centric'), files[name])
+            write_source(record, name, targets[name], versions[name]['voice'], files, versions)
         result = dca.publish(BACKUP, 'auto-explicit-original')
         assert 'error_type' not in result, 'dca_publish_failed'
         for unused in range(8):
@@ -605,7 +652,7 @@ def set_usage(desired, selected):
             time.sleep(3)
         assert radio.ue_usage_policy() == 0, 'usage_restore_unconfirmed'
         for name in dca.SOURCES:
-            dca.write_existing(dca.source_path(name), dca.payload(values[name], 'voice_centric'), targets[name], files[name])
+            write_source(record, name, versions[name]['voice'], targets[name], files, versions)
         result = dca.publish(BACKUP, 'auto-original-files')
         assert 'error_type' not in result, 'dca_publish_failed'
     for unused in range(8):
@@ -622,16 +669,14 @@ def set_usage(desired, selected):
                       source_repair_only=False)
         n.atomic(RECORD, profiles.canonical(record))
         for name in dca.SOURCES:
-            dca.write_existing(dca.source_path(name), targets[name],
-                               dca.payload(values[name], 'voice_centric'), files[name])
+            write_source(record, name, targets[name], versions[name]['voice'], files, versions)
         result = dca.publish(BACKUP, 'auto-republish-original')
         assert 'error_type' not in result and radio.ue_usage_policy() == 0, 'usage_baseline_unconfirmed'
         assert s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions()
         record['phase'] = 'republishing_data'
         n.atomic(RECORD, profiles.canonical(record))
         for name in dca.SOURCES:
-            dca.write_existing(dca.source_path(name), dca.payload(values[name], 'voice_centric'),
-                               targets[name], files[name])
+            write_source(record, name, versions[name]['voice'], targets[name], files, versions)
         result = dca.publish(BACKUP, 'auto-republish-data')
         assert 'error_type' not in result, 'dca_publish_failed'
         for unused in range(8):

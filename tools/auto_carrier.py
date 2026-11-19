@@ -97,6 +97,8 @@ class AutoClient:
         with self.stage() as stage:
             report = self.execute(stage, 'unified_install.py', ('probe',))
         self.variant = report['variant'] if report['variant'] in policy.MODELS else None
+        if report.get('update_available') and report.get('status'):
+            report['status']['payload_update_required'] = True
         return report
 
     def install(self):
@@ -154,8 +156,9 @@ class AutoClient:
                        'destination': {'type': 'desktop', 'id': str(folder)}}
             receipt_file = folder / 'backup-receipt.json'
             receipt_file.write_bytes(policy.profiles.canonical(receipt))
-            self.upload(receipt_file, stage + '/backup-receipt.json')
-            self.execute(stage, 'unified_install.py', ('record-backup', stage + '/backup-receipt.json'))
+            if prepared.get('backup_already_verified') is not True:
+                self.upload(receipt_file, stage + '/backup-receipt.json')
+                self.execute(stage, 'unified_install.py', ('record-backup', stage + '/backup-receipt.json'))
             # Do not turn the radio on a second time if it was switched off
             # during backup. Keep the prepared transaction for explicit retry.
             check = self.execute(stage, 'unified_install.py', ('probe',))
@@ -188,7 +191,10 @@ class AutoClient:
             if action in ('start', 'enable', 'lock-network', 'unlock-network'):
                 raise WorkflowError('unified_update_needs_stop_and_reboot')
             with self.stage() as stage:
-                return self.execute(stage, 'unified_install.py', (action,), 180)
+                result = self.execute(stage, 'unified_install.py', (action,), 180)
+            if action == 'status':
+                result['payload_update_required'] = True
+            return result
         if action in ('lock-network', 'unlock-network'):
             return self.execute(BASE, 'unified_install.py', (action,), 180)
         if action == 'enable':
@@ -196,7 +202,10 @@ class AutoClient:
             if state.get('manager_alive'):
                 raise WorkflowError('restore_pending')
             self.execute(BASE, 'unified_install.py', ('prepare-network',), 120)
-        return self.execute(BASE, 'unified_service.py', (action,), 180)
+        result = self.execute(BASE, 'unified_service.py', (action,), 180)
+        if result.get('retry_blocked') is True:
+            raise WorkflowError('unified_retry_blocked')
+        return result
 
 
 def main():

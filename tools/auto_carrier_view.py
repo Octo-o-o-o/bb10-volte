@@ -36,13 +36,31 @@ def restart_guidance():
               '以后不连电脑换卡：先关机换卡再开机；Passport 在联通与移动／电信之间切换时，等待约 5 分钟后再正常重启一次。')
 
 
+def retry_available(state):
+    return not state.get('payload_update_required') and (
+        state.get('pre_native_retry_available') is True or state.get('phase') == 'boot_start_available')
+
+
 def status_view(state):
     """No desktop step counter: reconnecting/reopening resumes from phone facts."""
     ready = registration_ready(state)
     phase = state.get('phase')
     button = tr('刷新状态')
     code = 'unified_waiting'
-    if state.get('pre_native_retry_available') is True:
+    if state.get('enabled') is True and state.get('payload_update_required') and phase in ('boot_start_available', 'error_restored'):
+        ready = False
+        title = tr('请先更新自动适配')
+        guidance = tr('请按手机状态提示停用和更新，再检查本次开机状态。')
+    elif phase == 'boot_start_available':
+        ready = False
+        title = tr('本次开机的后台尚未启动')
+        guidance = tr('保持当前 SIM，点击“重试连接”，后台会重新核验配置后继续。')
+        code = 'unified_retry_available'
+    elif phase == 'waiting_for_root':
+        ready = False
+        title = tr('等待 Root 就绪')
+        guidance = tr('请解锁手机，等待 Root 成功提示，再刷新状态。')
+    elif state.get('pre_native_retry_available') is True:
         ready = False
         title = tr('可以重试连接，无需为上次等网重启')
         guidance = tr('上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。')

@@ -2,20 +2,19 @@
 
 **macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
 
-**Desktop r49 · mobile 0.1.0.49.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
+**Desktop r50 · mobile 0.1.0.50.** Q10, Q20, Passport and P’9983 can try Mobile, Unicom and Telecom. The table shows earlier results and does not block you.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r49.en.md)
+[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r50.en.md)
 
-Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r49; device validation remains pending.
+Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r50; device validation remains pending.
 
 ## What changed
 
-- Wait for system network selection at boot, then keep observing network changes. Retry a pre-native failure only with the same SIM, fully restored configuration and unused native IMS resources.
-- Preserve original radio-mode recovery records and offer explicit, reversible network-selection assistance. Disable also restores owned selection during handoff before an IMS journal exists.
-- Keep the original host-key pin when the USB address changes; distinguish component updates from activation and add sanitized band, selection and roaming diagnostics.
-- Add offline call-rejection analysis and native-path regression tests. The repeated incoming-call UI report remains unreproduced and is not claimed fixed. No new hardware acceptance is established.
+- Boot handoff retries a transient native probe timeout and obtains fresh evidence. If the service did not start on this boot, the app can offer a checked retry.
+- Interrupted mobile installation can check its receipt and continue. A new release can archive a verified earlier preparation before system changes, or continue an already-started activation using its verified payload and original backups.
+- DCA carrier configuration records each file write before touching it. An attributable interrupted write can be resumed. Conflicts with uncertain ownership are preserved.
 
 ## How to use it
 
@@ -56,16 +55,16 @@ Startup has been tried on Windows 11 and Apple silicon. Windows 10 and Intel hav
 
 For excessive disk use after repeated preparation or failures, see [storage locations and manual cleanup](docs/DISK-CLEANUP.en.md). r43 includes preparation reuse and build cleanup fixes.
 
-A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r49 downloads below.
+A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r50 downloads below.
 
 If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same file. Check the SHA-256 before you run it.
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r49/bb10-volte-0.5.0-r49-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r49/bb10-volte-0.5.0-r49-windows-x64.exe) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r50/bb10-volte-0.5.0-r50-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r50/bb10-volte-0.5.0-r50-windows-x64.exe) |
 | macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r49/bb10-volte-0.5.0-r49-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r49/bb10-volte-0.5.0-r49-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r49/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r49/SHA256SUMS.txt) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r50/bb10-volte-0.5.0-r50-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r50/bb10-volte-0.5.0-r50-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r50/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r50/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

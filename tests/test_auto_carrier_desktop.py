@@ -127,7 +127,7 @@ class UnifiedDesktopTests(unittest.TestCase):
         auto.execute = Mock(return_value={'enabled': True})
         with patch.object(auto, 'stage') as stage:
             stage.return_value.__enter__.return_value = '/var/bb10_auto_stage_123456789abc'
-            self.assertEqual(auto.action('status'), {'enabled': True})
+            self.assertEqual(auto.action('status'), {'enabled': True, 'payload_update_required': True})
         stage.assert_called_once_with()
         auto.execute.assert_called_once_with('/var/bb10_auto_stage_123456789abc',
                                              'unified_install.py', ('status',), 180)

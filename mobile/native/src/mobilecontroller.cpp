@@ -1204,6 +1204,21 @@ bool MobileController::acceptResponse(const QVariantMap &response)
     const QString topId = bounded(response.value("job_id"), 96);
     const QString responseId = response.contains("job_id") ? topId : nestedId;
     const bool pending = !m_jobId.isEmpty() || !m_operationId.isEmpty();
+    const QString responseState = response.value("state").toString();
+    const QString jobState = responseJob.value("state").toString();
+    const QStringList installRecoveryPhases = QString("checking,enabling_mobile_network,mobile_network_ready,checking_and_preparing,exporting_original_backup,activating").split(',');
+    const bool installReconciliation = responseState == "reconcile_install_job" &&
+        response.value("schema").toInt() == 2 && safeId(nestedId) && topId == nestedId &&
+        responseJob.value("action").toString() == "install" &&
+        (jobState == "failed" || jobState == "interrupted") &&
+        installRecoveryPhases.contains(responseJob.value("phase").toString()) &&
+        response.value("primary_action").toString() == "resume" &&
+        response.value("actions").toList().contains(QVariant("resume")) &&
+        response.value("ok").type() == QVariant::Bool && response.value("ok").toBool();
+    if (responseState == "reconcile_install_job" && !installReconciliation) {
+        fail("operation_unknown");
+        return false;
+    }
     const QString observationError = bounded(response.value("error").toMap().value("code"), 80);
     if (pending && readAction(m_action) && response.value("schema").toInt() == 2 &&
         response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool() &&
@@ -1214,7 +1229,7 @@ bool MobileController::acceptResponse(const QVariantMap &response)
         return false;
     }
     if (pending && m_model.value("state").toString() == "job_outcome_unknown" &&
-        (response.value("state").toString() != "job_outcome_unknown" || responseJob.isEmpty() || responseId.isEmpty() ||
+        ((responseState != "job_outcome_unknown" && !installReconciliation) || responseJob.isEmpty() || responseId.isEmpty() ||
          (response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool()))) {
         // A failed or identity-free observation cannot settle an already
         // established unknown outcome, even if the Root entry responded.
@@ -1243,7 +1258,6 @@ bool MobileController::acceptResponse(const QVariantMap &response)
     }
     if (!preDispatch && !responseJob.isEmpty()) {
         const QVariant ok = response.value("ok");
-        const QString jobState = responseJob.value("state").toString();
         const QStringList runningStates = QString("queued,running,pending,starting,waiting_reboot,interrupted").split(',');
         const bool success = jobState == "complete" || jobState == "completed" || jobState == "succeeded" || jobState == "done";
         const bool failed = jobState == "failed" || jobState == "cancelled";
@@ -1255,7 +1269,7 @@ bool MobileController::acceptResponse(const QVariantMap &response)
             response.value("state").toString() == "error" &&
             QRegExp("^[a-z0-9_-]{1,80}$").exactMatch(probeError);
         if (ok.type() != QVariant::Bool || (!success && !failed && !runningStates.contains(jobState)) ||
-            (success && !ok.toBool() && !completedProbeFailure) || (failed && ok.toBool() && !unknownOutcome) ||
+            (success && !ok.toBool() && !completedProbeFailure) || (failed && ok.toBool() && !unknownOutcome && !installReconciliation) ||
             (runningStates.contains(jobState) && !ok.toBool())) {
             fail("operation_unknown");
             return false;

@@ -40,7 +40,7 @@ class TelecomInternetProxyTests(unittest.TestCase):
         self.assertEqual(changed, {'device/profiles.py', 'device/unified_install.py',
             'device/carrier_policy.py', 'device/device_info.py', 'device/unified_migrate.py',
             'device/unified_service.py', 'device/compatibility.py', 'device/service.py',
-            'device/unified_dca.py', 'device/ims_image.py', 'device/unified_operator_name.py'})
+            'device/unified_dca.py', 'device/ims_image.py', 'device/unified_operator_name.py', 'device/telecom_dca.py'})
         self.assertLessEqual(changed, set(unified_install.UPDATE_FILES))
 
     def test_supported_models_and_carriers_keep_their_own_data_and_mms(self):

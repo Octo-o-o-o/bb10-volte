@@ -21,6 +21,9 @@ import unified_dca as network
 import telecom_dca as dca
 import telecom_native as radio
 
+if __name__ == '__main__':
+    sys.modules['unified_install'] = sys.modules[__name__]
+
 BASE = policy.BASE
 MANAGEMENT = '/var/bb10_volte-management'
 MANAGEMENT_SCHEMA = 2
@@ -94,7 +97,7 @@ PREVIOUS_PAYLOADS = (
                      '523e323bbeb2b1a020995a0db6149c13b136f10b908b47f97fb3c4cf045a3df0',
                      # The r18 phone payload shipped unchanged in desktop r20.
                      'b975409427c96fee16f10f7a271c53ebf181d37522b64e1b858cd1aeda3db777')
-UPDATE_FILES = ('device/unified_dca.py', 'device/unified_install.py',
+UPDATE_FILES = ('device/unified_dca.py', 'device/telecom_dca.py', 'device/unified_install.py',
                 'device/device_info.py', 'device/unified_migrate.py',
                 'device/unified_service.py', 'device/carrier_policy.py',
                 'device/unified_operator_name.py', 'device/unified_own_number.py',
@@ -266,7 +269,7 @@ def validate_backup_receipt(receipt, backup, manifest_hash, installation_id=None
     return receipt
 
 
-def verify_backup_receipt():
+def verified_originals():
     raw = n.read(BASE + '/backup/manifest.json')
     backup = json.loads(raw.decode('ascii'))
     assert backup['owner'] == policy.OWNER
@@ -276,15 +279,20 @@ def verify_backup_receipt():
         assert re.match(r'\A(?:ims|ims_defaults|omadm|test|btool)\.original\Z', name), 'backup_member_invalid'
         assert not os.path.islink(BASE + '/backup/' + name)
         assert n.digest(n.read(BASE + '/backup/' + name)) == expected, 'original_backup_changed'
+    return backup, n.digest(raw)
+
+
+def verify_backup_receipt():
+    backup, manifest_hash = verified_originals()
     path = BASE + '/backup-receipt.json'
     if os.path.lexists(path):
         assert not os.path.islink(path), 'backup_receipt_changed'
         value = s.load(path)
         assert value.get('schema') == 2, 'backup_schema_unsupported'
         identity_value = management_identity({'variant': backup['variant']})
-        return validate_backup_receipt(value, backup, n.digest(raw), identity_value['installation_id'])
+        return validate_backup_receipt(value, backup, manifest_hash, identity_value['installation_id'])
     # Historic receipts are read under their actual desktop name and provenance.
-    return validate_backup_receipt(s.load(BASE + '/desktop-backup-receipt.json'), backup, n.digest(raw))
+    return validate_backup_receipt(s.load(BASE + '/desktop-backup-receipt.json'), backup, manifest_hash)
 
 
 def record_backup_receipt(receipt):
@@ -436,14 +444,16 @@ def with_sim_status(result, facts):
             result['network_lock_enabled'] = network.configured_network_lock(selection['sim_sha256']) is not None
         except Exception:
             result['network_lock_enabled'] = None
-    except ValueError as error:
-        result['sim_supported'], result['sim_reason'] = False, str(error)
+    except (IOError, OSError, ValueError) as error:
+        result['sim_supported'] = False
+        result['sim_reason'] = str(error) if isinstance(error, ValueError) else 'sim_not_ready'
         result['can_install'] = False
         result['network_lock_enabled'] = False
     result['scan_mode'] = network.scan_mode_snapshot()
     result['mobile_network_off'] = network.mobile_radio_state() == 'OFF'
     status = result.get('status') or {}
-    enable_ready = (result.get('installed') is True and status.get('enabled') is False and
+    enable_ready = (result.get('installed') is True and
+        (status.get('enabled') is False or status.get('phase') == 'boot_start_available') and
         not status.get('manager_alive') and result.get('call_idle') is True and
         not result.get('installation_pending') and not result.get('update_pending') and
         not result.get('update_available') and status.get('phase') not in
@@ -699,6 +709,41 @@ def original_source(name, legacy):
     return original
 
 
+def pending_install(facts, candidate):
+    assert os.path.realpath(BASE) == BASE and not os.path.islink(BASE), 'installation_path_changed'
+    pending = s.load(BASE + '/install-pending.json')
+    assert pending['owner'] == policy.OWNER and pending['variant'] == facts['variant']
+    assert pending['phase'] in ('awaiting_desktop_backup', 'awaiting_backup', 'activating')
+    manifest = s.load(BASE + '/payload.json')
+    assert manifest['owner'] == policy.OWNER and manifest['schema'] == 1
+    assert set(manifest['files']) == set(u.PAYLOAD_FILES)
+    assert manifest == candidate or n.digest(profiles.canonical(manifest['files'])) in PREVIOUS_PAYLOADS, 'pending_payload_differs'
+    for name, expected in manifest['files'].items():
+        path = BASE + '/' + name
+        assert os.path.realpath(path) == path and not os.path.islink(path) and n.digest(n.read(path)) == expected, 'installed_payload_changed'
+    backup, backup_hash = verified_originals()
+    assert backup['variant'] == facts['variant'], 'backup_device_changed'
+    if pending.get('schema') == 2:
+        binding = management_identity(facts)
+        for key in ('device', 'installation_id'):
+            assert pending[key] == binding[key], 'installation_device_changed'
+    return pending, manifest, backup, backup_hash
+
+
+def archive_prepared(facts, pending, manifest, backup):
+    assert pending.get('schema') == 2 and pending['phase'] == 'awaiting_backup'
+    assert root_kind(facts) == pending['root_kind'], 'root_scheme_changed'
+    files = inventory()
+    expected = set(manifest['files']) | {'payload.json', 'management.json', 'install-pending.json', 'backup/manifest.json'}
+    expected.update('backup/' + name for name in backup['files'])
+    if 'backup-receipt.json' in files:
+        verify_backup_receipt()
+        expected.add('backup-receipt.json')
+    assert set(files) == expected, 'prepared_contents_changed'
+    # No activation journal, hook publication, or runtime writes occurred.
+    retain_installation(pending['installation_id'], files)
+
+
 def prepare(stage):
     facts, family = identity()
     assert s.phone_idle(), 'call_active'
@@ -712,27 +757,36 @@ def prepare(stage):
     if os.path.isfile(BASE + '/uninstalled.json'):
         retire_uninstalled()
     if os.path.lexists(BASE):
-        assert os.path.realpath(BASE) == BASE and not os.path.islink(BASE), 'installation_path_changed'
-        pending = s.load(BASE + '/install-pending.json')
-        assert pending['owner'] == policy.OWNER and pending['phase'] in ('awaiting_desktop_backup', 'awaiting_backup', 'activating')
-        assert s.load(BASE + '/payload.json') == manifest, 'pending_payload_differs'
-        for name, expected in manifest['files'].items():
-            assert not os.path.islink(BASE + '/' + name) and n.digest(n.read(BASE + '/' + name)) == expected
-        backup = s.load(BASE + '/backup/manifest.json')
-        assert backup['owner'] == policy.OWNER and backup['variant'] == facts['variant']
-        for name, expected in backup['files'].items():
-            assert '/' not in name and n.digest(n.read(BASE + '/backup/' + name)) == expected
-        identity_value = management_identity(facts, create=True)
-        if pending.get('schema') == 2:
-            runtime_directory_permissions(BASE)
-        return {'prepared': True, 'installation_id': identity_value['installation_id'],
-                'backup_manifest_sha256': n.digest(n.read(BASE + '/backup/manifest.json')), 'backup_files': backup['files']}
+        pending, installed, backup, backup_hash = pending_install(facts, manifest)
+        if (installed != manifest and pending.get('schema') == 2 and pending['phase'] == 'awaiting_backup' and
+                not os.path.lexists(BASE + '/activation.json') and not os.path.lexists(BASE + '/activation.json.new')):
+            archive_prepared(facts, pending, installed, backup)
+        else:
+            identity_value = management_identity(facts, create=True)
+            if pending.get('schema') == 2:
+                runtime_directory_permissions(BASE)
+            result = {'prepared': True, 'installation_id': identity_value['installation_id'],
+                      'backup_manifest_sha256': backup_hash, 'backup_files': backup['files']}
+            if os.path.lexists(BASE + '/backup-receipt.json'):
+                verify_backup_receipt()
+                result['backup_already_verified'] = True
+            return result
     # Build the complete owned directory before publishing it as BASE. A crash
     # never exposes an empty BASE with no ownership record to the old desktop.
     private_directory(MANAGEMENT)
     intent_path = MANAGEMENT + '/install-intent.json'
     intent = s.load(intent_path) if os.path.isfile(intent_path) else None
     if intent is not None and intent.get('phase') == 'retired':
+        intent = None
+    if intent is not None and intent['manifest'] != manifest:
+        assert intent['owner'] == policy.OWNER and intent['phase'] == 'preparing-v2', 'pending_payload_differs'
+        assert intent['variant'] == facts['variant'] and intent['device'] == device_binding(), 'installation_device_changed'
+        assert n.digest(profiles.canonical(intent['manifest']['files'])) in PREVIOUS_PAYLOADS, 'pending_payload_differs'
+        retained_intent = MANAGEMENT + '/prepare-intent-' + safe_id(intent['operation_id']) + '.json'
+        if os.path.lexists(retained_intent):
+            assert not os.path.islink(retained_intent) and s.load(retained_intent) == intent, 'prepared_contents_changed'
+        else:
+            persist(retained_intent, profiles.canonical(intent))
         intent = None
     if intent is None:
         kind, legacy = root_kind(facts), migration.inspect(facts)
@@ -817,7 +871,11 @@ def activate():
         assert installed['owner'] == policy.OWNER and installed['phase'] == 'active_next_boot'
         u.setup()
         u.verify()
-        return {'installed': True, 'reboot_required': True, 'already_committed': True}
+        journal = s.load(BASE + '/activation.json')
+        assert journal['owner'] == policy.OWNER and journal['phase'] == 'committed'
+        check_activation_hook(installed, journal)
+        return {'installed': True, 'reboot_required': s.load(BASE + '/migration.json')['installed_boot'] == u.boot_token(),
+                'already_committed': True}
     pending = s.load(BASE + '/install-pending.json')
     assert pending['owner'] == policy.OWNER and pending['phase'] in ('awaiting_desktop_backup', 'awaiting_backup', 'activating')
     assert pending['variant'] == facts['variant'] and s.phone_idle()
@@ -854,11 +912,10 @@ def activate():
     if journal['phase'] == 'committed' and os.path.isfile(BASE + '/enabled'):
         installed = s.load(BASE + '/installation.json')
         assert installed['owner'] == policy.OWNER and installed['phase'] == 'active_next_boot'
-        target = BTOOL if pending['root_kind'] == 'autoroot-v2' else ADDON + '/init/start.sh'
-        expected = journal['after_sha256'] if pending['root_kind'] == 'autoroot-v2' else journal['script_sha256']
-        assert not os.path.islink(target) and n.digest(n.read(target)) == expected, 'root_hook_changed'
+        check_activation_hook(pending, journal)
         os.unlink(BASE + '/install-pending.json')
-        return {'installed': True, 'already_committed': True, 'reboot_required': True, 'backup_verified': True}
+        return {'installed': True, 'already_committed': True, 'backup_verified': True,
+                'reboot_required': s.load(BASE + '/migration.json')['installed_boot'] == u.boot_token()}
     if journal['phase'] == 'quiescing':
         journal['legacy'] = migration.quiesce(backup.get('legacy'))
         journal['phase'] = 'installing_hook'
@@ -880,13 +937,13 @@ def activate():
             assert (opened.st_ino, opened.st_mode, opened.st_uid, opened.st_gid) == (
                 info.st_ino, info.st_mode, info.st_uid, info.st_gid)
             actual = output.read()
-            assert actual in (before, after), 'root_hook_changed'
-            if actual == before:
+            assert dca.interrupted_write_matches(actual, before, after), 'root_hook_changed'
+            if actual != after:
                 output.seek(0)
                 assert output.write(after) == len(after)
                 output.truncate(len(after))
-                output.flush()
-                os.fsync(output.fileno())
+            output.flush()
+            os.fsync(output.fileno())
         assert n.read(BTOOL) == after and os.stat(BTOOL).st_ino == info.st_ino
         persist(BASE + '/boot-install.json', profiles.canonical({'owner': policy.OWNER,
             'before_sha256': n.digest(before), 'after_sha256': n.digest(after)}))
@@ -921,6 +978,14 @@ def activate():
     os.unlink(BASE + '/install-pending.json')
     return {'installed': True, 'reboot_required': True, 'automatic_carrier_selection': True,
             'backup_verified': True, 'legacy_payload_retained': entry is not None}
+
+
+def check_activation_hook(installed, journal):
+    root_scheme = installed['root_kind']
+    assert root_scheme in ('autoroot-v2', 'autoroot-v4') and journal['root_kind'] == root_scheme, 'root_scheme_changed'
+    target = BTOOL if root_scheme == 'autoroot-v2' else ADDON + '/init/start.sh'
+    expected = journal['after_sha256'] if root_scheme == 'autoroot-v2' else journal['script_sha256']
+    assert not os.path.islink(target) and n.digest(n.read(target)) == expected, 'root_hook_changed'
 
 
 def cleanup_stage(stage):
@@ -1045,10 +1110,14 @@ def retire_uninstalled():
     actual = inventory()
     actual.pop('uninstalled.json')
     assert actual == record['retained_files'], 'retained_data_changed'
-    destination = MANAGEMENT + '/retained-' + safe_id(record['installation_id'])
+    return retain_installation(record['installation_id'], inventory())
+
+
+def retain_installation(installation_id, files):
+    destination = MANAGEMENT + '/retained-' + safe_id(installation_id)
     assert not os.path.lexists(destination), 'retained_archive_exists'
     persist(MANAGEMENT + '/retire-intent.json', profiles.canonical({'owner': policy.OWNER, 'phase': 'moving',
-        'installation_id': record['installation_id'], 'destination': destination, 'files': inventory()}))
+        'installation_id': installation_id, 'destination': destination, 'files': files}))
     os.rename(BASE, destination)
     recover_retirement()
     return destination

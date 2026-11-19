@@ -557,6 +557,24 @@ int main(int argc, char **argv)
             CHECK(!c.allowed("enable")); settingsClearPending();
         }
         {
+            settingsClearPending(); QSettings settings;
+            settings.setValue("pending_job", OPERATION); settings.setValue("pending_operation", OPERATION);
+            settings.setValue("pending_operation_action", "install"); settings.sync();
+            MobileController c(&parent); c.initialize(); c.m_model.insert("state", "job_outcome_unknown");
+            QVariantMap job; job.insert("id", OPERATION); job.insert("action", "install");
+            job.insert("state", "failed"); job.insert("phase", "activating");
+            QVariantMap r; r.insert("schema", 2); r.insert("ok", true); r.insert("state", "reconcile_install_job");
+            r.insert("job_id", OPERATION); r.insert("job", job); r.insert("primary_action", "resume");
+            r.insert("actions", QVariantList() << "resume" << "poll" << "export");
+            QVariantMap wrong = r; wrong.insert("job_id", QString(32, 'b'));
+            response(wrong); c.refresh(); finish(c);
+            CHECK(c.model().value("state").toString() == "job_outcome_unknown" && !c.allowed("resume"));
+            response(r); c.refresh(); finish(c);
+            CHECK(c.model().value("state").toString() == "reconcile_install_job" && c.primaryAction() == "resume");
+            CHECK(c.m_jobId == OPERATION && c.m_operationId == OPERATION);
+            settingsClearPending();
+        }
+        {
             // A safely refused component rollback still offers diagnostics,
             // without making another service write available.
             settingsClearPending(); QSettings settings;

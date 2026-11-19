@@ -86,6 +86,7 @@ def error_message(code, sim_plmn=None):
         'sim_not_ready': tr('SIM 尚未就绪。请解锁 SIM 并等待入网，再检查；暂不安装自动适配。'),
         'sim_identity_unavailable': tr('尚未核对 SIM 归属网络，暂不安装。请等待手机读卡完成后重新检查。'),
         'unified_preflight_blocked': tr('安装条件未通过。请先重新检查设备并处理显示的阻断原因。'),
+        'unified_retry_blocked': tr('手机状态已变化，请重新检查后按提示操作。'),
         'mobile_network_off': tr('手机移动网络已关闭。请在手机设置中打开移动网络（若飞行模式开启请先关闭），然后重新检查设备。'),
         'mobile_network_rejected': tr('系统拒绝自动打开移动网络。请检查飞行模式和移动网络设置，然后重新检查设备。'),
         'mobile_network_reply_timeout': tr('未收到打开移动网络的确认。请检查手机移动网络开关，然后重新检查设备。'),

@@ -1,3 +1,11 @@
+# r50 / mobile 0.1.0.50
+
+- Boot handoff retries a transient native probe timeout and obtains fresh evidence. If the service did not start on this boot, the app can offer a checked retry.
+- Interrupted mobile installation can check its receipt and continue. A new release can archive a verified earlier preparation before system changes, or continue an already-started activation using its verified payload and original backups.
+- DCA carrier configuration records each file write before touching it. An attributable interrupted write can be resumed. Conflicts with uncertain ownership are preserved.
+
+[Release notes](RELEASE-r50.en.md)
+
 # r49 / mobile 0.1.0.49
 
 - Wait for system network selection at boot, then keep observing network changes. Retry a pre-native failure only with the same SIM, fully restored configuration and unused native IMS resources.

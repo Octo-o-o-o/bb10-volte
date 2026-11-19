@@ -9,7 +9,7 @@ from auto_carrier import AutoClient
 from connection import resolve_connection
 from completion_dialog import CompletionDialog
 from i18n import tr
-from auto_carrier_view import status_view, restart_guidance
+from auto_carrier_view import status_view, restart_guidance, retry_available
 import device_support
 
 
@@ -86,7 +86,7 @@ class AutoCarrierWindow:
             if report.get('scope_error') and action != 'probe':
                 allowed = False
             enabled = report.get('status', {}).get('enabled')
-            retry = report.get('status', {}).get('pre_native_retry_available') is True
+            retry = retry_available(report.get('status', {}))
             if action == 'enable' and enabled is not False and not retry or action == 'disable' and enabled is False:
                 allowed = False
             if action == 'enable' and report.get('status', {}).get('manager_alive'):
@@ -95,7 +95,7 @@ class AutoCarrierWindow:
         self.buttons['install'].configure(text=tr('更新自动适配') if report.get('update_available') else tr('备份并安装自动适配'))
         self.buttons['status'].configure(text=self.status_button_override or status_view(report.get('status', {}))['status_button'])
         self.buttons['probe'].configure(text=tr('重新检查连接') if self.reconnect_pending else tr('检查设备'))
-        self.buttons['enable'].configure(text=tr('重试连接') if report.get('status', {}).get('pre_native_retry_available') is True else tr('启用自动适配'))
+        self.buttons['enable'].configure(text=tr('重试连接') if retry_available(report.get('status', {})) else tr('启用自动适配'))
 
     def run(self, action):
         if self.busy:
@@ -189,7 +189,10 @@ class AutoCarrierWindow:
                                            installation_pending=False, update_pending=False, update_available=False,
                                            status=result.get('status') or {})
                         enabled = self.report['status'].get('enabled')
-                        if enabled is True:
+                        if enabled is True and result.get('reboot_required') is False:
+                            title, details = status_text(self.report['status'])
+                            self.status_button_override = None
+                        elif enabled is True:
                             title = (tr('自动适配已更新，旧版本已备份。请正常重启。') if result.get('updated') else
                                      tr('原始配置已备份，自动适配已安装。请用手机电源菜单正常重启，再刷新状态。'))
                             details = restart_guidance()

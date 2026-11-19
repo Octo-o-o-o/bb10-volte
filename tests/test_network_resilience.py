@@ -20,6 +20,35 @@ import unified_service as u
 import workflow
 
 
+class BootRecoveryTests(unittest.TestCase):
+    def test_root_readiness_and_no_current_native_attempt_gate_boot_retry(self):
+        token = ['current']
+        files = {u.ATTEMPT: {'owner': policy.OWNER, 'boot': ['previous'], 'stage': 'native_configured'}}
+        state = {'phase': 'error', 'manager_alive': False, 'error': 'stock_ims_not_idle'}
+        with patch.object(u.os.path, 'isfile', side_effect=lambda path: path in files), \
+             patch.object(u.os.path, 'lexists', return_value=False), patch.object(u.s, 'load', side_effect=files.get), \
+             patch.object(u.s, 'phone_idle', return_value=True), patch.object(u.n, 'active_vpn_sessions', return_value=[]), \
+             patch.object(u.n, 'crypto_policy', return_value={'swcr_id': -1, 'crypto_support': 0}), \
+             patch.object(u, 'card'), patch.object(u.device_info, 'read_identity'), patch.object(u.policy, 'select'):
+            self.assertEqual(u.boot_start_state(token, state), 'waiting_for_root')
+            files['/tmp/root.done'] = True
+            self.assertEqual(u.boot_start_state(token, state), 'boot_start_available')
+            self.assertIsNone(u.boot_start_state(token, dict(state, manager_alive=True)))
+            files[u.ATTEMPT]['boot'] = token
+            self.assertIsNone(u.boot_start_state(token, state))
+
+    def test_transient_stock_probe_timeout_requires_two_fresh_proofs(self):
+        with patch.object(u.n, 'ims_pids', side_effect=[[42], [42], [42], [42], [42], [], [], []]), \
+             patch.object(u, 'idle_stock', side_effect=[RuntimeError('Command timed out'), None, None]) as idle, \
+             patch.object(u.os.path, 'isfile', return_value=False), patch.object(u, 'boot_token', return_value=['current']), \
+             patch.object(u, 'core_stopping', return_value=False), patch.object(u.time, 'sleep'), \
+             patch.object(u.s, 'status'), patch.object(u, 'save') as save, patch.object(u.os, 'kill') as kill:
+            u.handoff()
+        self.assertEqual([call.args for call in idle.call_args_list], [(42,), (42,), (42,)])
+        save.assert_called_once()
+        kill.assert_called_once_with(42, u.signal.SIGTERM)
+
+
 class RetryTests(unittest.TestCase):
     def setUp(self):
         self.token = ['test', 'a' * 48]

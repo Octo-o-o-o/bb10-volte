@@ -33,9 +33,11 @@ core_configure = s.configure
 core_collect = s.collect_vpn_evidence
 core_status = s.status
 core_berry_ready = s.berry_ready
+core_claim_service_lock = s.claim_service_lock
 notification_boot = None
 attention_boot = None
 sim_notice_boot = None
+launch_manifest_sha = None
 
 # Only terminal, actionable outcomes are alerts. Network/SIM waits, opaque
 # errors, registration timeouts and native exit during shutdown stay silent.
@@ -149,7 +151,18 @@ def setup():
     s.status = status
     s.berry_ready = berry_ready
     s.live = live
+    s.claim_service_lock = claim_service_lock
     n.verify_stock = verify_native
+
+
+def claim_service_lock():
+    from unified_install import management_lock
+    with management_lock(blocking=True):
+        assert os.path.isfile(BASE + '/enabled') and not os.path.lexists(s.STOP), 'automatic_service_disabled'
+        assert not any(os.path.isfile(BASE + '/' + name) for name in ('install-pending.json',
+            'update-pending.json', 'rollback-pending.json', 'uninstall-pending.json', 'uninstalled.json'))
+        assert launch_manifest_sha == n.digest(n.read(BASE + '/payload.json')), 'startup_payload_changed'
+        core_claim_service_lock(atomic=True)
 
 
 def berry_ready(phase, observation):
@@ -527,7 +540,10 @@ def idle_stock(pid):
     assert all(n.value(attrs, key) in (None, []) for key in ('IMS_profiles', 'IMS_profilesV2'))
     rows = [line.strip().split() for line in n.command(
         ['/bin/pidin', '-p', str(pid), '-f', 'A']).decode('ascii').splitlines() if line.strip()]
-    assert rows == [['Arguments'], ['/radio/bin/ims_rrm', '-U', '453:31,80,387,427,521,1001']]
+    assert len(rows) == 2 and rows[0] == ['Arguments'] and len(rows[1]) == 3
+    executable, option, credentials = rows[1]
+    assert executable.startswith('/') and [part for part in executable.split('/') if part] == ['radio', 'bin', 'ims_rrm']
+    assert (option, credentials) == ('-U', '453:31,80,387,427,521,1001')
     rows = [line.strip() for line in n.command(
         ['/bin/pidin', '-p', str(pid), '-F', '%80N']).decode('ascii').splitlines() if line.strip()]
     assert len(rows) == 2 and rows[0] == 'name' and posixpath.normpath('/' + rows[1].lstrip('/')) == '/radio/bin/ims_rrm'
@@ -537,7 +553,7 @@ def idle_stock(pid):
     assert not re.search(r'CSeq:\s*\d+\s+(?:REGISTER|INVITE)\b', own)
 
 
-def handoff():
+def handoff(managed_locking=False):
     """Only two current-PID idle proofs permit one SIGTERM, never SIGKILL."""
     s.startup_timing['handoff_started'] = time.time()
     record = BASE + '/state/stock-handoff.json'
@@ -553,13 +569,19 @@ def handoff():
                 assert len(pids) == 1
                 idle_stock(pids[0])
                 time.sleep(3)
-                idle_stock(pids[0])
-            except (AssertionError, IOError, OSError, ValueError):
+            except (AssertionError, IOError, OSError, ValueError, RuntimeError):
                 time.sleep(3)
                 continue
-            prior = {'boot': boot_token(), 'pid': pids[0], 'at': time.time()}
-            save(record, prior)
-            os.kill(pids[0], signal.SIGTERM)
+            with _phase_lock(managed_locking):
+                assert not core_stopping(), 'stopped'
+                try:
+                    idle_stock(pids[0])
+                except (AssertionError, IOError, OSError, ValueError, RuntimeError):
+                    continue
+                assert not core_stopping(), 'stopped'
+                prior = {'boot': boot_token(), 'pid': pids[0], 'at': time.time()}
+                save(record, prior)
+                os.kill(pids[0], signal.SIGTERM)
         time.sleep(1)
     assert not n.ims_pids(), 'stock_ims_not_idle'
     time.sleep(3)
@@ -711,7 +733,10 @@ def prepare(managed_locking=False):
         attempt = s.load(ATTEMPT) if os.path.isfile(ATTEMPT) else None
         assert not attempt or attempt.get('boot') != token or pre_native_retryable(token), 'reboot_required'
         assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
-    handoff()
+    if managed_locking:
+        handoff(managed_locking=True)
+    else:
+        handoff()
     with _phase_lock(managed_locking):
         import unified_migrate
         unified_migrate.finish_previous_boot()
@@ -960,12 +985,50 @@ def stopping():
         return False
 
 
+def boot_start_state(token, raw):
+    if raw.get('manager_alive') or os.path.lexists(s.STOP):
+        return None
+    phase = raw.get('phase')
+    early_error = phase == 'error' and raw.get('error') in (
+        'stock_ims_not_idle', 'stock_ims_reappeared', 'sim_not_ready')
+    if phase not in (None, 'not_started', 'not_started_this_boot', 'starting_handoff',
+                     'waiting_for_native_ims', 'waiting_for_sim') and not early_error:
+        return None
+    try:
+        if not (os.path.isfile('/tmp/root.done') or os.path.isfile(BASE + '/root-v2')):
+            return 'waiting_for_root'
+        migration = s.load(BASE + '/migration.json') if os.path.isfile(BASE + '/migration.json') else {}
+        if token is not None and migration.get('installed_boot') == token and not migration.get('completed'):
+            return None
+        if os.path.isfile(ATTEMPT):
+            attempt = s.load(ATTEMPT)
+            if attempt.get('owner') != policy.OWNER or attempt.get('boot') == token:
+                return None
+        if os.path.isfile(s.JOURNAL):
+            journal = s.load(s.JOURNAL)
+            if journal.get('owner') != 'q10-unicom-volte-v1' or not journal.get('boot') or journal.get('boot') == token:
+                return None
+        if not s.phone_idle() or n.crypto_policy() != {'swcr_id': -1, 'crypto_support': 0} or n.active_vpn_sessions():
+            return None
+        # Stock IMS may be present. launch() still applies the full dual-proof handoff.
+        policy.select(device_info.read_identity(), card())
+        return 'boot_start_available'
+    except (IOError, OSError, ValueError, TypeError, KeyError, AssertionError, RuntimeError):
+        return None
+
+
 def public_status():
     verify()
-    raw = s.read_status() if boot_token(False) is not None else {}
+    token = boot_token(False)
+    raw = s.read_status() if token is not None else {}
     value = {k: raw.get(k) for k in ('phase', 'enabled', 'manager_alive', 'native_alive',
                                     'status_from_current_boot', 'current')}
     value['enabled'] = os.path.isfile(BASE + '/enabled')
+    if value['enabled']:
+        bootstrap = boot_start_state(token, raw)
+        if bootstrap:
+            value['phase'] = bootstrap
+            value['manager_alive'] = False
     value['variant'] = device_info.read_identity()['variant']
     value['automatic_carrier_selection'] = True
     value['normal_reboot_after_sim_change'] = True
@@ -977,7 +1040,7 @@ def public_status():
     if os.path.isfile(SELECTION):
         saved = s.load(SELECTION)
         value['selected_operator'] = saved['operator']
-        value['selected_this_boot'] = saved['boot'] == boot_token(False)
+        value['selected_this_boot'] = saved['boot'] == token
         try:
             current_selection = policy.select(device_info.read_identity(), card())
             value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
@@ -992,11 +1055,12 @@ def public_status():
         value.get('enabled') is True and value.get('manager_alive') is False and
         value.get('status_from_current_boot') is True and value.get('selected_this_boot') is True and
         value.get('current_sim_matches') is True and value.get('phase') in ('error_restored', 'stopped') and
-        os.path.isfile(ATTEMPT) and pre_native_retryable(boot_token(False)))
+        os.path.isfile(ATTEMPT) and pre_native_retryable(token))
     return value
 
 
 def launch():
+    global launch_manifest_sha
     verify()
     assert os.path.isfile(BASE + '/enabled'), 'automatic_service_disabled'
     token = boot_token()
@@ -1018,6 +1082,7 @@ def launch():
             return {'reboot_required': True}
     if os.path.exists(s.STOP):
         os.unlink(s.STOP)
+    launch_manifest_sha = n.digest(n.read(BASE + '/payload.json'))
     pid = os.fork()
     if pid:
         return {'started_manager_pid': pid, 'independent_of_usb': True}
@@ -1067,9 +1132,12 @@ def service_action(action):
         verify()
         assert s.phone_idle(), 'call_active'
         assert not s.read_status().get('manager_alive'), 'restore_pending'
-        if os.path.isfile(BASE + '/enabled') and public_status().get('pre_native_retry_available') is True:
-            result = launch()
-            return dict(result, enabled=True, reboot_required=result.get('reboot_required', False))
+        if os.path.isfile(BASE + '/enabled'):
+            current = public_status()
+            if current.get('pre_native_retry_available') is True or current.get('phase') == 'boot_start_available':
+                result = launch()
+                return dict(result, enabled=True, reboot_required=result.get('reboot_required', False))
+            return {'enabled': True, 'reboot_required': False, 'retry_blocked': True}
         n.atomic(BASE + '/enabled', b'automatic SIM selection re-enabled by owner\n')
         result = {'enabled': True, 'reboot_required': True}
     else:

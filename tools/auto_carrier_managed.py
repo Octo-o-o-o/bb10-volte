@@ -2,7 +2,7 @@
 import time
 from auto_carrier import AutoClient, policy
 from workflow import WorkflowError
-from auto_carrier_view import registration_ready, status_view
+from auto_carrier_view import registration_ready, status_view, retry_available
 
 
 class Adapter:
@@ -36,7 +36,7 @@ class Adapter:
                 'installation': {'state': 'busy' if alive else 'stopped',
                                  'payload_verified': True, 'enabled': state.get('enabled') is True},
                 'can_install': False, 'can_update': False, 'can_start': False,
-                'can_enable': (not state.get('enabled') or state.get('pre_native_retry_available') is True) and not alive, 'can_restore': True,
+                'can_enable': (not state.get('enabled') or retry_available(state)) and not alive, 'can_restore': True,
                 'automatic_carrier_selection': True,
                 'normal_reboot_after_sim_change': True,
                 'hardware_validation': 'unified_candidate_see_per_device_acceptance',
