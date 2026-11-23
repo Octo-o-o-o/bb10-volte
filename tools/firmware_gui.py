@@ -48,7 +48,15 @@ class FirmwareDialog(tk.Toplevel):
         self.support_notice = ttk.Label(body, wraplength=790, justify='left')
         self.support_notice.pack(fill='x', pady=(8, 0))
         self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
+        self.flash_lock_bar = ttk.Frame(body)
+        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=580, justify='left',
+                                          text=tr('检测到上次刷写处于暂停状态，升级与重新准备已锁定（仍可安装 Windows 驱动）。'))
+        self.flash_lock_label.pack(side='left', fill='x', expand=True, padx=(0, 10))
+        self.unlock_flash_button = ttk.Button(self.flash_lock_bar, text=tr('查看刷写日志并解除暂停…'),
+                                              command=self.review_flash_lock)
+        self.unlock_flash_button.pack(side='right')
         page, content = scrolled_page(body, padding=12)
+        self.page_frame = page
         page.pack(fill='both', expand=True, pady=12)
         self.facts = ttk.Label(content, wraplength=710, justify='left')
         self.facts.pack(anchor='w', pady=(0, 12))
@@ -155,14 +163,20 @@ class FirmwareDialog(tk.Toplevel):
         target_valid = target_valid and not scope_blocker
         def state(button, allowed):
             button.configure(state='normal' if allowed and not self.busy else 'disabled')
+        locked = root.root_lock_path().exists()
+        if locked:
+            if not self.flash_lock_bar.winfo_manager():
+                self.flash_lock_bar.pack(fill='x', before=self.page_frame, pady=(8, 0))
+            self.unlock_flash_button.configure(state='disabled' if self.busy else 'normal')
+        elif self.flash_lock_bar.winfo_manager():
+            self.flash_lock_bar.pack_forget()
         state(self.detect_button, True)
-        state(self.prepare_button, target_valid and not self.kit and sys.platform in ('win32', 'darwin') and version.state not in ('newer', 'ready'))
+        state(self.prepare_button, target_valid and not locked and (not self.kit or self.stage == 'uncertain') and sys.platform in ('win32', 'darwin') and version.state not in ('newer', 'ready'))
         state(self.import_local_button, target_valid)
         state(self.download_button, True)
         state(self.resume_button, bool(self.history))
         device_ready = (self.usb.get('usb_count') == 1 and target_valid and version.state == 'upgrade'
                         and (sys.platform != 'darwin' or self.usb.get('usb_address_ready') is True))
-        locked = root.root_lock_path().exists()
         state(self.upgrade_button, self.stage == 'prepared' and device_ready and self.ack.get() and not locked)
         state(self.verify_button, self.stage in ('awaiting_reboot', 'os_verified'))
         state(self.root_button, self.stage == 'os_verified')
@@ -175,7 +189,7 @@ class FirmwareDialog(tk.Toplevel):
         elif version.state in ('newer', 'ready') and not self.kit:
             reason = MESSAGES['firmware_downgrade_blocked' if version.state == 'newer' else 'firmware_already_current']
         elif self.stage == 'prepared' and locked:
-            reason = tr('存在未结束的刷写记录。请保留现场与日志，不要重复刷写。')
+            reason = tr('存在未结束的刷写记录。请点击上方“查看刷写日志并解除暂停…”核对记录；不要盲目重复刷写。')
         elif self.stage == 'prepared' and not device_ready:
             reason = tr('刷写前须只连接一台对应型号的手机，并读到低于目标版本的 OS。请解锁手机并重新检测。')
         elif self.stage == 'prepared' and not self.ack.get():
@@ -298,8 +312,25 @@ class FirmwareDialog(tk.Toplevel):
         # Recheck even when a stale button or old successful journal is reused.
         self.start('root_ready', lambda _: (upgrade.verify_boot(self.kit), root.prepared_images(self.kit)))
 
+    def review_flash_lock(self):
+        if self.busy:
+            return
+        from setup_wizard import review_flash_lock
+        if review_flash_lock(self):
+            if self.stage == 'uncertain':
+                self.kit = None
+                self.stage = 'none'
+                self.ack.set(False)
+            self.status.configure(text=tr('已解除刷写暂停，原有升级记录与镜像仍已保留。请确认驱动与连接后再继续。'))
+            self.refresh()
+
     def show_error(self, error):
         from setup_wizard import MESSAGES as root_messages
+        if error == 'flash_state_unknown':
+            lock_info = root.inspect_flash_lock()
+            if lock_info and lock_info.get('writing_started') is False:
+                self.status.configure(text=tr('升级未进入写入阶段（可能缺少 BlackBerry USB 驱动、连接超时或密码提示中断）。可先安装 Windows 驱动，再点击上方“查看刷写日志并解除暂停…”核对后重试。'))
+                return
         message = MESSAGES.get(error) or root_messages.get(error)
         self.status.configure(text=message or tr('操作未完成。请保留材料与日志，重新核对设备和下载来源。'))
 

@@ -1,7 +1,9 @@
 """Native-console autoloader stage; passwords never pass through GUI arguments."""
 import argparse
 import ctypes
+import io
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -16,12 +18,21 @@ def writing_complete_line(text):
                 re.search(r'\bwriting\b.*\b100(?:\.0+)?\s*%', text))
 
 
+def writing_started_line(text):
+    """Detect whether the autoloader actually began writing/erasing partitions."""
+    text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text).strip().lower()
+    return bool(writing_complete_line(text) or
+                re.search(r'(?:\[\s*writing\b|\b(?:writing|erasing|flashing|formatting)\b)', text))
+
+
 def classify_output(phase, exit_code, writing_complete, failed_to_load, security_error, done,
-                    unexpected_error=False):
+                    unexpected_error=False, writing_started=False):
     expected = (phase == 'os' and exit_code == 73 and writing_complete and
                 failed_to_load and security_error and not unexpected_error)
     error_seen = failed_to_load or security_error or unexpected_error
-    return {'stage': phase, 'exit_code': exit_code, 'writing_complete': bool(writing_complete),
+    started = bool(writing_started or writing_complete)
+    return {'stage': phase, 'exit_code': exit_code, 'writing_started': started,
+            'writing_complete': bool(writing_complete),
             'done': bool(done), 'error_seen': bool(error_seen),
             'expected_v4_os_security_result': bool(expected),
             'completed': bool(expected or phase in ('os', 'radio') and exit_code == 0 and
@@ -30,11 +41,12 @@ def classify_output(phase, exit_code, writing_complete, failed_to_load, security
 
 class RootFlashEvidence:
     def __init__(self):
-        self.flags = dict(writing_complete=False, failed_to_load=False,
+        self.flags = dict(writing_started=False, writing_complete=False, failed_to_load=False,
                           security_error=False, done=False, unexpected_error=False)
 
     def line(self, raw):
         lower = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', raw).strip().lower()
+        self.flags['writing_started'] |= writing_started_line(lower)
         self.flags['writing_complete'] |= writing_complete_line(lower)
         self.flags['done'] |= self.flags['writing_complete'] and lower == 'done.'
         expected_errors = {'error: failed to load images.': 'failed_to_load',
@@ -112,6 +124,17 @@ def run_stage(folder, phase, token):
         json.dump(result, file, indent=2)
     temporary.replace(output)
     print(tr('\n请返回 bb10-volte。状态未知或失败的阶段会保持暂停；不要重复运行。'), flush=True)
+    if not result['completed']:
+        print(tr('刷写工具退出码：{}（是否已进入写入：{}）').format(
+            result['exit_code'], tr('是') if result.get('writing_started') else tr('否')), flush=True)
+        if not result.get('writing_started'):
+            print(tr('未检测到进入写入阶段。常见原因：Windows 缺少 BlackBerry USB（Bootrom）驱动、未识别连接超时或密码提示中断。'), flush=True)
+            print(tr('可在应用“Windows 驱动”页安装驱动，并通过“查看刷写日志并解除暂停”核对后重试。'), flush=True)
+        if isinstance(sys.stdin, io.TextIOBase) and sys.stdin.isatty() and not os.environ.get('BB10_FLASH_NO_PAUSE'):
+            try:
+                input(tr('请先查看上方输出，再按回车键关闭此窗口…'))
+            except (EOFError, OSError):
+                pass
     return 0 if result['completed'] else 1
 
 

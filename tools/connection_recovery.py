@@ -62,6 +62,17 @@ def protect(path, directory=False):
         path.chmod(0o700 if directory else 0o600)
 
 
+def read_public_key_file(path):
+    """Read an OpenSSH .pub file even when a non-ASCII username/host comment exists."""
+    path = Path(path)
+    if not path.is_file() or path.is_symlink() or path.is_junction() or path.stat().st_size > 16384:
+        raise RecoveryError('pairing_result_invalid')
+    try:
+        return public_key(path.read_text(encoding='utf-8', errors='replace'))
+    except (OSError, ValueError, UnicodeError):
+        raise RecoveryError('pairing_result_invalid') from None
+
+
 def fingerprint(key):
     data = base64.b64decode(public_key(key).split()[1])
     return 'SHA256:' + base64.b64encode(hashlib.sha256(data).digest()).decode('ascii').rstrip('=')
@@ -205,7 +216,7 @@ def prepare_pairing():
     folder = new_folder()
     request_id = folder.name.removeprefix('recovery-')
     identity = folder / 'identity'
-    run_keygen(['-q', '-t', 'rsa', '-b', '3072', '-m', 'PEM', '-N', '', '-f', str(identity)])
+    run_keygen(['-q', '-t', 'rsa', '-b', '3072', '-m', 'PEM', '-N', '', '-C', '', '-f', str(identity)])
     output = folder / ('bb10-pair-' + request_id + '.py')
     refresh_pairing_script(output)
     save_pairing_step(output, 1)
@@ -225,7 +236,7 @@ def refresh_pairing_script(script):
     identity = folder / 'identity'
     if not identity.is_file() or identity.is_symlink() or identity.with_suffix('.pub').is_symlink():
         raise RecoveryError('pairing_result_invalid')
-    key = public_key(identity.with_suffix('.pub').read_text(encoding='ascii'))
+    key = read_public_key_file(identity.with_suffix('.pub'))
     template = (resource_root() / 'tools/phone_pairing.py').read_text(encoding='utf-8')
     content = template.replace('PAIR_PUBLIC_KEY = None', 'PAIR_PUBLIC_KEY = ' + repr(key), 1)
     content = content.replace('PAIR_REQUEST_ID = None', 'PAIR_REQUEST_ID = ' + repr(request_id), 1)
@@ -260,7 +271,7 @@ def pending_pairings():
         if not all(path.is_file() and not path.is_symlink() for path in (script, folder / 'identity', folder / 'identity.pub')):
             continue
         try:
-            public_key((folder / 'identity.pub').read_text(encoding='ascii'))
+            read_public_key_file(folder / 'identity.pub')
         except (OSError, ValueError, UnicodeError):
             continue
         try:
@@ -292,7 +303,7 @@ def read_pairing_result(path):
                 not re.fullmatch(r'[a-f0-9]{12}', request_id)):
             raise ValueError()
         folder = private_root() / ('recovery-' + request_id)
-        own_key = public_key((folder / 'identity.pub').read_text(encoding='ascii'))
+        own_key = read_public_key_file(folder / 'identity.pub')
         if public_key(data['computer_public_key']) != own_key or not (folder / 'identity').is_file():
             raise ValueError()
         host_key = public_key(data['host_public_key'])

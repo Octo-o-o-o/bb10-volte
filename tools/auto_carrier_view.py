@@ -75,6 +75,10 @@ def status_view(state):
     elif phase in ('cleanup_required', 'error', 'error_restored', 'unsupported_sim'):
         title = tr(PHASES[phase])
         guidance = tr('适配尚未完成。请保留当前状态，在主窗口导出报告后处理。')
+        if phase in ('cleanup_required', 'error', 'error_restored') and state.get('enabled') is True:
+            guidance += '\n' + tr('若手机当前无信号或一直搜索网络（Searching），请先点击“停用自动适配”并按提示正常重启，以恢复系统原有 4G/3G/2G 选网模式。')
+        if state.get('error_code'):
+            guidance += '\n' + tr('诊断错误码：{}').format(state['error_code'])
     elif state.get('enabled') is False:
         ready = False
         if state.get('manager_alive'):
@@ -108,8 +112,11 @@ def status_view(state):
         code = 'unified_reboot_required'
     elif ready:
         title = tr('本次开机注册成功，请验收通话')
-        guidance = tr('当前 SIM 已自动选择，IMS 注册与 LTE 已确认。请断开 USB，用系统拨号器检查呼出、呼入和双向声音。')
+        guidance = tr('当前 SIM 已自动选择，IMS 注册与 LTE 已确认。请断开 USB，用系统拨号器检查呼出、呼入和双向声音。通话期间请勿进入或切换“设置 → 移动网络”，以免系统重配基带导致断话。')
         code = 'unified_running'
+    elif phase == 'waiting_for_lte_and_usim':
+        title = tr(PHASES[phase])
+        guidance = tr('当前仍在等待正常 4G/LTE 数据网络就绪，尚未进入 IMS 注册阶段（并非 IMS 失败）。请确认手机移动网络已开启、关闭飞行模式、顶部出现 4G/LTE 且能正常打开网页，再点击“刷新状态”。')
     elif phase == 'registering' and state.get('sms_service_busy') is True:
         title = tr('等待短信服务空闲')
         guidance = tr('系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。无需重复启用或连续重启。')

@@ -594,7 +594,7 @@ def cmd_pair(args):
         pairing_instructions.export_pairing_files(script, export_dir)
         connection_recovery.save_pairing_step(script, 2)
         request_id = script.stem.removeprefix('bb10-pair-')
-        pub_key = (script.parent / 'identity.pub').read_text(encoding='ascii')
+        pub_key = connection_recovery.read_public_key_file(script.parent / 'identity.pub')
         return 0, {
             'ok': True,
             'action': 'pair.prepare',

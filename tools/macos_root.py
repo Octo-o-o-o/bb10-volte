@@ -204,12 +204,12 @@ def prepare_identity(kit):
                       if not line.startswith('removeapp ') and not line.startswith('#sys.')) + '\n'
     (work / 'patch-owner.txt').write_text(patch, encoding='ascii')
     for name in ('q10_root_rsa', 'q10_host_rsa'):
-        subprocess.run(['/usr/bin/ssh-keygen', '-q', '-t', 'rsa', '-b', '3072', '-m', 'PEM', '-N', '', '-f', str(kit / name)],
+        subprocess.run(['/usr/bin/ssh-keygen', '-q', '-t', 'rsa', '-b', '3072', '-m', 'PEM', '-N', '', '-C', '', '-f', str(kit / name)],
                        check=True, capture_output=True, timeout=45)
         protect(kit / name)
     ssh = work / 'patchdata/var/etc/ssh'
     ssh.mkdir(parents=True, exist_ok=True)
-    key = (kit / 'q10_root_rsa.pub').read_text().strip()
+    key = ' '.join((kit / 'q10_root_rsa.pub').read_text(encoding='utf-8', errors='replace').split()[:2])
     (ssh / 'authorized_keys2').write_text('from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ' + key + '\n', encoding='ascii')
     shutil.copyfile(kit / 'q10_host_rsa', ssh / 'ssh_host_rsa_key')
     shutil.copyfile(kit / 'q10_host_rsa.pub', ssh / 'ssh_host_rsa_key.pub')
@@ -221,7 +221,7 @@ def prepare_identity(kit):
     if 'PasswordAuthentication=no' not in config:
         fail('tool_hash_mismatch')
     (ssh / 'sshd_config').write_text(config, encoding='ascii')
-    host = ' '.join((kit / 'q10_host_rsa.pub').read_text().split()[:2])
+    host = ' '.join((kit / 'q10_host_rsa.pub').read_text(encoding='utf-8', errors='replace').split()[:2])
     (kit / 'known_hosts').write_text('169.254.0.1 ' + host + '\n', encoding='ascii')
     def quoted(path):
         value = path.as_posix().replace('%', '%%')

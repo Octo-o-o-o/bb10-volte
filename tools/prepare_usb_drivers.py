@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import struct
 import subprocess
@@ -11,6 +12,15 @@ from fetch_materials import sha
 from desktop_paths import resource_root, private_root, download_root
 
 ROOT=resource_root()
+
+
+def _windows_powershell():
+    system_root = os.environ.get('SystemRoot')
+    if system_root:
+        candidate = Path(system_root) / 'System32/WindowsPowerShell/v1.0/powershell.exe'
+        if candidate.is_file():
+            return str(candidate)
+    return shutil.which('powershell.exe') or shutil.which('pwsh.exe')
 
 
 def main(argv=None):
@@ -32,10 +42,12 @@ def main(argv=None):
     bundle=kit/'package/BlackBerry-USBDrivers-5.0.0.2.exe'
     assert sha(bundle)==spec['bundle_sha256']
     def signature(path):
-        powershell=shutil.which('pwsh.exe') or shutil.which('powershell.exe')
+        powershell=_windows_powershell()
         assert powershell,'A Windows PowerShell host is required for Authenticode validation'
-        return json.loads(subprocess.check_output([powershell,'-NoProfile','-File',
-            str(ROOT/'tools/verify_signature.ps1'),'-Path',str(path)],text=True))
+        return json.loads(subprocess.check_output([powershell,'-NoProfile','-NonInteractive',
+            '-ExecutionPolicy','Bypass','-File',
+            str(ROOT/'tools/verify_signature.ps1'),'-Path',str(path)],text=True,
+            stderr=subprocess.PIPE,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0)))
     signed=signature(bundle)
     extract(bundle,kit/'bootstrapper')
     tree=ET.parse(kit/'bootstrapper/0')

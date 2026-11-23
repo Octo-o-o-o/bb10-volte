@@ -109,7 +109,7 @@ def run_preparation(command, folder, **kwargs):
 
 
 @contextmanager
-def preparation_lock(private):
+def preparation_lock(private, check_flash_lock=True):
     """An OS lock is released after crashes, unlike a persistent busy flag."""
     from root_setup import SetupError, root_lock_path
     private = Path(private)
@@ -123,7 +123,7 @@ def preparation_lock(private):
             if error.code == 'download_busy':
                 raise SetupError('preparation_busy') from None
             raise
-        if root_lock_path().exists():
+        if check_flash_lock and root_lock_path().exists():
             raise SetupError('flash_state_unknown')
         yield
 
@@ -216,10 +216,12 @@ def legacy_record(folder, variant, platform):
     if (work / 'patch-owner.txt').read_text() != patch:
         raise ValueError('Changed legacy patch recipe')
     ssh = work / 'patchdata/var/etc/ssh'
-    public = (folder / 'q10_root_rsa.pub').read_text().strip()
-    expected_key = 'from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ' + public + '\n'
+    public_raw = (folder / 'q10_root_rsa.pub').read_text(encoding='utf-8', errors='replace').strip()
+    public_key_only = ' '.join(public_raw.split()[:2])
+    prefix = 'from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding '
+    expected_keys = {prefix + public_raw + '\n', prefix + public_key_only + '\n'}
     config = (ssh / 'sshd_config').read_text()
-    if ((ssh / 'authorized_keys2').read_text() != expected_key
+    if ((ssh / 'authorized_keys2').read_text(encoding='utf-8', errors='replace') not in expected_keys
             or sha(ssh / 'ssh_host_rsa_key') != sha(folder / 'q10_host_rsa')
             or 'PasswordAuthentication=no' not in config
             or platform == 'win32' and variant == 'SQC100-4' and 'UseDNS=no' not in config):

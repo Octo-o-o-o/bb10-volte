@@ -2,6 +2,8 @@
 
 **简体中文** | [English](COMMUNITY-RESEARCH.en.md)
 
+> **历史档案说明**：本文记录 0.3.3 阶段旧版单卡引擎的社区研究整合与早期 Passport 暂缓策略。自 r42 起，统一引擎（顶部「三网自动适配」及手机端 App）已采用「重启保留软件加密提供器」生命周期并开放 Q10、Q20、Passport（含 SQW100-1/3/4）及 P’9983 全 16 个目录型号；Passport 用户请直接使用「三网自动适配」或手机应用，而非旧版单卡预检入口。
+
 本次整合来自 [imqinyu/BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch)，由 [issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) 提供。引用固定在提交 [376f492](https://github.com/imqinyu/BB10DeviceVoLTEResearch/tree/376f492ade10efad371dca64d49fe39549820844)，日期为 2026-10-28。机器可读的来源、证据等级、限制和待验证项目见 [community-research.json](../materials/community-research.json)。
 
 2026-10-29 发布的 bb10root VoLTE Addon 已另作[源码与方案对照](UPSTREAM-ADDON-COMPARISON.md)。该记录属于源码观察，不加入这里的硬件成功案例，也不改变兼容性或恢复门槛。

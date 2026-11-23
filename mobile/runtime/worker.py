@@ -256,6 +256,20 @@ def sim_unsupported_ui(result, language, details, actions=None):
     return response
 
 
+def recovery_required_ui(language, details, actions):
+    response = ui('recovery_required', language, details=details, actions=actions)
+    err_code = details.get('error_code')
+    zh_extra = '若手机无信号或持续搜索网络，请先在“管理与恢复”停用服务并正常重启以恢复原 4G/3G/2G 选网，并导出诊断报告。'
+    en_extra = 'If the phone has no signal or stays on Searching, disable the service in Manage & restore and restart normally to restore 4G/3G/2G mode, then export diagnostics.'
+    if err_code:
+        zh_extra = '诊断错误码：' + err_code + '。' + zh_extra
+        en_extra = 'Diagnostic code: ' + err_code + '. ' + en_extra
+    response['display_i18n']['zh']['message'] = response['display_i18n']['zh']['message'] + '\n' + zh_extra
+    response['display_i18n']['en']['message'] = response['display_i18n']['en']['message'] + '\n' + en_extra
+    response['display']['message'] = response['display_i18n'][response['display_language']]['message']
+    return response
+
+
 def task_observation_unavailable(job, request, error):
     code = safe_error(error)
     if code == 'management_busy':
@@ -449,9 +463,44 @@ def inspection_response(request, result, details, confirmed_context=None):
         elif result.get('installed_stage') == 'uninstalled' or result.get('legacy_detected') is False:
             details['service_state'] = 'absent'
     if result.get('scope_error'):
-        details['error_code'] = result['scope_error']
-        return ui('unsupported', language, 'compatibility', details,
-                  actions=['status', 'compatibility', 'legacy-inspect'])
+        scope_code = result['scope_error']
+        details['error_code'] = scope_code
+        response = ui('unsupported', language, 'compatibility', details,
+                      actions=['status', 'compatibility', 'legacy-inspect'])
+        scope_copy = {
+            'unvalidated_legacy_installation': (
+                '检测到旧版安装残留',
+                '检测到旧版独立 VoLTE 安装目录（如 /var/rootdata/q10_volte），当前型号未启用自动旧版迁移。请先在“管理与恢复 → 高级维护 → 实验适配”停用并卸载旧服务、正常重启后再开启，或导出报告。',
+                'Legacy installation detected',
+                'A legacy standalone VoLTE directory was found and automatic migration is not enabled for this variant. Open Manage & restore -> Advanced -> Experimental to stop and uninstall the legacy service, restart normally, then try again, or export a report.',
+            ),
+            'root_scheme_not_supported': (
+                '当前 Root 方案暂未支持',
+                '自动适配要求 AutoRoot v4（或 SQC100-2 已校验 AutoRoot v2）。请核对 Root 启动入口或导出兼容性报告。',
+                'Root boot scheme unsupported',
+                'Automatic setup requires AutoRoot v4 (or verified AutoRoot v2 on SQC100-2). Check the Root boot scheme or export a compatibility report.',
+            ),
+            'root_boot_script_changed': (
+                'Root 启动脚本校验不符',
+                '手机 Root 启动脚本与已知原版散列不一致，为保护系统已停止安装。请保留现场并导出兼容性报告。',
+                'Root boot script changed',
+                'The Root boot script does not match the known baseline hash, so setup stopped safely. Keep the current state and export a compatibility report.',
+            ),
+            'legacy_payload_changed': (
+                '旧版安装文件已变更',
+                '检测到旧版 VoLTE 文件与原始清单不一致，已暂停自动迁移。请保留现场并导出兼容性报告。',
+                'Legacy installation modified',
+                'Existing legacy VoLTE files differ from their recorded manifest, so automatic migration paused safely. Keep the current state and export a report.',
+            ),
+        }.get(scope_code)
+        if scope_copy:
+            response['display_i18n']['zh']['title'] = scope_copy[0]
+            response['display_i18n']['zh']['message'] = scope_copy[1]
+            response['display_i18n']['en']['title'] = scope_copy[2]
+            response['display_i18n']['en']['message'] = scope_copy[3]
+            response['display']['title'] = response['display_i18n'][response['display_language']]['title']
+            response['display']['message'] = response['display_i18n'][response['display_language']]['message']
+        return response
     if result.get('installed_stage') == 'pending' and result.get('phase') in (
             'stop_requested', 'awaiting_reboot', 'awaiting_final_reboot', 'removing_hook', 'removing_payload'):
         details['phase'] = result['phase']
@@ -490,6 +539,8 @@ def inspection_response(request, result, details, confirmed_context=None):
     sim_changed = (status.get('status_from_current_boot') is True and
                    status.get('selected_this_boot') is True and status.get('current_sim_matches') is False)
     details['phase'] = status.get('phase', 'unknown')
+    if status.get('error_code'):
+        details['error_code'] = safe_error(status['error_code'])
     for field in ('sim_plmn', 'serving_plmn'):
         plmn = status.get(field)
         if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
@@ -514,7 +565,7 @@ def inspection_response(request, result, details, confirmed_context=None):
                          'carrier_reboot_required' if status.get('phase') == 'carrier_reboot_required' else 'reboot_required')
                 return ui(state, language, details=details, actions=actions)
             if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
-                return ui('recovery_required', language, details=details, actions=actions)
+                return recovery_required_ui(language, details, actions)
         if (temporary and not result.get('can_update') and status.get('phase') not in
                 ('error', 'error_restored', 'cleanup_required', 'reboot_required', 'carrier_reboot_required') and
                 mobile_radio_state() == 'OFF'):
@@ -569,7 +620,7 @@ def inspection_response(request, result, details, confirmed_context=None):
             if hint:
                 details['policy_restart_suggestion_used'] = True
                 return ui(hint, language, details=details, actions=['status', 'export', 'compatibility'])
-        return ui('recovery_required', language, details=details, actions=actions)
+        return recovery_required_ui(language, details, actions)
     if status.get('phase') == 'registering':
         if status.get('sms_service_busy') is True:
             return ui('waiting_sms', language, details=details, actions=actions)

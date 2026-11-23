@@ -1,26 +1,26 @@
 {
   "schema": 1,
-  "version": "0.2.0.0",
+  "version": "0.2.1.0",
   "identity": {
     "Package-Name": "com.octolab.bb10volte",
     "Package-Id": "testDev_b_bb10volte7b237e48",
     "Package-Author-Id": "gYAOctoLabBB10VoLTE20261102",
     "Package-Architecture": "armle-v7",
-    "Package-Version": "0.2.0.0",
+    "Package-Version": "0.2.1.0",
     "Application-Id": "testDev_b_bb10volte7b237e48",
-    "Application-Version": "0.2.0.0"
+    "Application-Version": "0.2.1.0"
   },
-  "filename": "bb10-volte-0.2.0.0.bar",
-  "bar_sha256": "e6d8eda1fc8c33f30a1e9a8a7b829e3247de9aa593c807e53efc32dcb3acf4ac",
-  "bar_size": 693852,
-  "platform_manifest_sha256": "10f9373528c13951f9d94cf4e58fcd1c759c3ccf5cff9e0cc83007f1f0d8ab17",
+  "filename": "bb10-volte-0.2.1.0.bar",
+  "bar_sha256": "22249684bd6dd697696c36e2a64c4e1b8c8b1c63db8afaafd40d2d698c25e31f",
+  "bar_size": 695759,
+  "platform_manifest_sha256": "dfd3974d387717c60375dbafa397f25b35a4513bc5b926fef4c85d1ac1b2ddd6",
   "installed_files": {
     "META-INF/MANIFEST.MF": {
-      "sha256": "10f9373528c13951f9d94cf4e58fcd1c759c3ccf5cff9e0cc83007f1f0d8ab17",
+      "sha256": "dfd3974d387717c60375dbafa397f25b35a4513bc5b926fef4c85d1ac1b2ddd6",
       "size": 12448
     },
     "native/bar-descriptor.build.xml": {
-      "sha256": "ea624d581e5817d2a293551008e639bd20ad04d6084db05fca0b69942a6e6abe",
+      "sha256": "c1b4ca21dcb8921d6fded2c8591236974b544f9ac481e05de42cd7bcbd1be4a9",
       "size": 1057
     },
     "native/assets/CallCheck.qml": {
@@ -44,11 +44,11 @@
       "size": 10233
     },
     "native/assets/manifest.json": {
-      "sha256": "0f2f61ea731fd51e39aa9a2880571865dfb636cee3f9ea632c37be0190ff2904",
+      "sha256": "95c02214f77c720c25f96ef0b533e884b5e56a646e5e4942d56e32302c917034",
       "size": 5613
     },
     "native/assets/manifest.sig.json": {
-      "sha256": "2de927dabb5ab7eaa0c5b7bc0de63003a3e181331be0932c25b68adaf10b6467",
+      "sha256": "ad4ff100420baac392a7c509185df7d96ee5fa617170acad650264e43d3bddcd",
       "size": 643
     },
     "native/assets/materials/compatibility-matrix.json": {
@@ -156,8 +156,8 @@
       "size": 33685
     },
     "native/assets/payload/device/unified_install.py": {
-      "sha256": "5d36c6e5aea9fa18f080e42ab0799587aa21d212af6ef8591fe59ed005c983c2",
-      "size": 81661
+      "sha256": "fc63bdde5b74cc141db8f76a077f2fe832bf163ca111d72566e03940bec6464e",
+      "size": 82254
     },
     "native/assets/payload/device/unified_migrate.py": {
       "sha256": "99e578c193f2838433f59c818bbbad1503d2b523db3917d6c78fb6d101504e9a",
@@ -172,8 +172,8 @@
       "size": 6443
     },
     "native/assets/payload/device/unified_service.py": {
-      "sha256": "a803f9f7b9dadc49860efea7910e8a2a2d99900c932ea5a173ddb610820c281a",
-      "size": 56243
+      "sha256": "bdf4754941dd95ebea12bed5c5799d9395d59745c339e59a44d57f94bed0b29d",
+      "size": 59351
     },
     "native/assets/payload/driver/devnp-volte_swcrypto_probe.so": {
       "sha256": "504a6f5bdfb55f03aaf64b1a73f423e1a802e4786433f2621cd701c993224254",
@@ -184,7 +184,7 @@
       "size": 1737
     },
     "native/assets/payload/payload.json": {
-      "sha256": "89b6f63bfde58a96fa3b25241e882f17c8278e5265a1f6fc239a9395c08863a8",
+      "sha256": "dd4a4a4770bc42739ff36616356843371396864547b96e0b5b7dd0ca720ca891",
       "size": 1905
     },
     "native/assets/profiles/china-mobile.json": {
@@ -208,7 +208,7 @@
       "size": 1290
     },
     "native/assets/runtime/entry.py": {
-      "sha256": "80177a0b6376ec5a9e0be22b12de107300a76e1ed9aa6339accf00f5e37187f0",
+      "sha256": "44f0fa8eabbd3651239fce1e05be5dac12e13ca4b049f1c5aa703d788ac6e481",
       "size": 27290
     },
     "native/assets/runtime/job-launcher": {
@@ -228,8 +228,8 @@
       "size": 14286
     },
     "native/assets/runtime/worker.py": {
-      "sha256": "08784a1ed12252eeacc39661635ba7cd45eeec49e77de5e2f7599de6ce8362fe",
-      "size": 104722
+      "sha256": "ac6bc6fb3da082b3e279cba690e7b262c09107c4a2bcab42f77500e8a912a663",
+      "size": 108519
     },
     "native/assets/support/alipay-19_90.png": {
       "sha256": "ac61ce94f79108b084d44b6c942c9973b8ce2554414d4cf6df3cf7777ec213bb",
@@ -272,7 +272,7 @@
       "size": 7504
     },
     "native/bb10volte": {
-      "sha256": "59d3a9bd6f9488026236303ad1125da82e6cb0bf78f32c1c318c3e2ce7437754",
+      "sha256": "2e170326f37bfbaa2b56e4d714ae5b3689f36d7c7bad1d61bfcaa57affcbfc41",
       "size": 744284
     }
   },

@@ -24,7 +24,8 @@ def scrub(value):
     text = re.sub(r'-----BEGIN [^-]*(?:PRIVATE KEY)[^-]*-----.*?(?:-----END [^-]+-----|$)',
                   '[private key removed]', text, flags=re.S)
     text = re.sub(r'(?im)^.*(?:password|passwd|passphrase|secret|api[_ -]?key|authorization|'
-                  r'access[_ -]?token|private[_ -]?key|密码|口令|密钥).*$', '[credential removed]', text)
+                  r'access[_ -]?token|private[_ -]?key).*$', '[credential removed]', text)
+    text = re.sub(r'(?im)^.*(?:密码|口令|密钥)\s*[:=：为是]\s*\S+.*$', '[credential removed]', text)
     text = re.sub(r'\b(?:ssh-rsa|ssh-ed25519)\s+\S+(?:[^\r\n]*)', '[key removed]', text)
     text = re.sub(r'(?i)\b(?:Bearer|Basic)\s+\S+', '[credential removed]', text)
     text = re.sub(r'(?i)\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b', '[token removed]', text)
@@ -51,7 +52,7 @@ BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'can_install', 'can_upd
                'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot', 'operator_trial', 'sim_has_isim', 'radio_lte', 'lte_data_connected',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
                'sim_supported', 'automatic_start', 'fallback_used', 'stock_apn_bootstrap_eligible'}
-CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'status_error', 'selected_operator',
+CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'error_code', 'status_error', 'selected_operator',
                'managed_adapter', 'registration', 'ims', 'ran', 'ims_observation_scope',
                'scope_error', 'sim_reason'}
 CONTAINERS = {'preflight', 'checks', 'device', 'usb', 'installation', 'current', 'startup_wait', 'status',
@@ -132,6 +133,53 @@ def build_failure_excerpt(folder):
         return '\n'.join(failures[-16:])[:TEXT_LIMIT]
     except OSError:
         return ''
+
+
+def flash_failure_excerpt(folder, prefix='flash', phase=None):
+    """Read bounded, scrubbed receipt and log tail for a flash or upgrade stage."""
+    folder = Path(folder)
+    try:
+        if folder.is_symlink() or folder.is_junction() or not folder.is_dir():
+            return ''
+    except OSError:
+        return ''
+    if prefix == 'upgrade':
+        phases = (phase,) if phase in ('stock', 'stock_os', 'stock_radio') else ('stock_radio', 'stock_os', 'stock')
+    else:
+        phases = (phase,) if phase in ('os', 'radio') else ('radio', 'os')
+    parts = []
+    for name in phases:
+        receipt_path = folder / (prefix + '-' + name + '.json')
+        log_path = folder / (prefix + '-' + name + '.log')
+        found = False
+        try:
+            if receipt_path.is_file() and not receipt_path.is_symlink() and receipt_path.stat().st_size <= 65536:
+                raw = json.loads(receipt_path.read_text(encoding='utf-8'))
+                if isinstance(raw, dict):
+                    summary = {}
+                    for key in ('stage', 'exit_code', 'writing_started', 'writing_complete', 'done', 'error_seen', 'completed'):
+                        if key in raw and isinstance(raw[key], (bool, int, str)):
+                            summary[key] = raw[key]
+                    if summary:
+                        parts.append(prefix + '-' + name + '.json: ' + json.dumps(summary, ensure_ascii=True, sort_keys=True))
+                        found = True
+        except (OSError, ValueError, TypeError):
+            pass
+        try:
+            if log_path.is_file() and not log_path.is_symlink():
+                with log_path.open('rb') as stream:
+                    stream.seek(0, 2)
+                    stream.seek(max(0, stream.tell() - 32768))
+                    lines = stream.read(32768).decode('utf-8', errors='replace').splitlines()
+                tail = [scrub(line) for line in lines if line.strip()][-16:]
+                if tail:
+                    parts.append(prefix + '-' + name + '.log:\n' + '\n'.join(tail))
+                    found = True
+        except OSError:
+            pass
+        if found and phase is None:
+            break
+    return '\n'.join(parts)[:TEXT_LIMIT]
 
 
 class Journal:

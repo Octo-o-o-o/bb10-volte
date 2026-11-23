@@ -2,6 +2,8 @@
 
 [简体中文](COMMUNITY-RESEARCH.md) | **English**
 
+> **Historical archive note**: This document records the 0.3.3 community research integration and the early Passport hold in the legacy single-carrier engine. Since r42, the unified engine (**Automatic carrier setup** and the BB10 mobile app) uses the safe `retain-provider-until-reboot` lifecycle and opens all 16 catalog variants across Q10, Q20 Classic, Passport (including SQW100-1/3/4), and P’9983. Passport users should use Automatic carrier setup or the mobile app rather than the legacy single-carrier preflight path.
+
 [Issue #1](https://github.com/Octo-o-o-o/bb10-volte/issues/1) introduced [imqinyu/BB10DeviceVoLTEResearch](https://github.com/imqinyu/BB10DeviceVoLTEResearch). This integration pins commit [376f492](https://github.com/imqinyu/BB10DeviceVoLTEResearch/tree/376f492ade10efad371dca64d49fe39549820844), reviewed on October 28, 2026. [community-research.json](../materials/community-research.json) records provenance, evidence levels, limitations and research candidates.
 
 The bb10root VoLTE Addon published on October 29, 2026 has a separate [source and design comparison](UPSTREAM-ADDON-COMPARISON.en.md). It records source observations only, adds no successful hardware cases to this catalog and changes no compatibility or restoration gates.

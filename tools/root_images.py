@@ -4,11 +4,23 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import time
 
 from desktop_paths import resource_root
 from fetch_materials import sha
 
 ROOT = resource_root()
+
+
+def _sha_retry(path, attempts=5, delay=0.5):
+    """Retry briefly on Windows Defender post-extract read locks."""
+    for attempt in range(attempts):
+        try:
+            return sha(path)
+        except PermissionError:
+            if attempt + 1 >= attempts:
+                raise
+            time.sleep(delay * (attempt + 1))
 
 
 def fail(code='image_not_verified'):
@@ -50,7 +62,7 @@ def extract_stock(stock, archive, destination, seven_zip):
                                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
         if result.returncode:
             fail()
-    if original.is_symlink() or not original.is_file() or sha(original) != stock['extracted_sha256']:
+    if original.is_symlink() or not original.is_file() or _sha_retry(original) != stock['extracted_sha256']:
         fail()
     return original
 

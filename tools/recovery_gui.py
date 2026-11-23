@@ -206,7 +206,8 @@ class RecoveryDialog(tk.Toplevel):
         if self.pair_script:
             description = tr('当前文件：') + self.pair_script.stem + '-request.json'
             try:
-                description += '\n' + tr('电脑公钥指纹：') + '\n' + fingerprint((self.pair_script.parent / 'identity.pub').read_text(encoding='ascii'))
+                from connection_recovery import read_public_key_file
+                description += '\n' + tr('电脑公钥指纹：') + '\n' + fingerprint(read_public_key_file(self.pair_script.parent / 'identity.pub'))
             except (OSError, ValueError, UnicodeError):
                 description += '\n' + tr('本次公钥暂时不可读，请先恢复原授权文件。')
         self.pair_hint.configure(text=description +

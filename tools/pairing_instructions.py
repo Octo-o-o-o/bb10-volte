@@ -41,7 +41,7 @@ def public_instructions(name):
 
 def export_pairing_files(script, directory):
     """Preflight both exports before creating anything. Never replace a file/link."""
-    from connection_recovery import RecoveryError
+    from connection_recovery import RecoveryError, read_public_key_file
     script, directory = Path(script), Path(directory)
     outputs = {script.name: script.read_bytes(),
                script.stem + '-instructions.txt': public_instructions(script.name).encode('utf-8')}
@@ -49,10 +49,7 @@ def export_pairing_files(script, directory):
     from phone_pairing import pairing_request
     phone_commands(script.name)  # strict filename/request identifier check
     key_file = script.parent / 'identity.pub'
-    if (not key_file.is_file() or key_file.is_symlink() or key_file.is_junction() or
-            key_file.stat().st_size > 16384):
-        raise RecoveryError('pairing_result_invalid')
-    request = pairing_request(key_file.read_text(encoding='ascii'), script.stem[len('bb10-pair-'):])
+    request = pairing_request(read_public_key_file(key_file), script.stem[len('bb10-pair-'):])
     outputs[script.stem + '-request.json'] = (json.dumps(request, sort_keys=True, indent=2) + '\n').encode('ascii')
     for name, data in outputs.items():
         target = directory / name

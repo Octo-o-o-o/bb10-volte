@@ -52,10 +52,10 @@ def main(argv=None):
     patch='\n'.join(line for line in original.splitlines() if not line.startswith('removeapp ') and not line.startswith('#sys.'))+'\n'
     (work/'patch-owner.txt').write_text(patch,encoding='ascii')
     for name in ['q10_root_rsa','q10_host_rsa']:
-        subprocess.run([str(args.ssh_keygen),'-q','-t','rsa','-b','3072','-m','PEM','-N','','-f',str(kit/name)],check=True,
+        subprocess.run([str(args.ssh_keygen),'-q','-t','rsa','-b','3072','-m','PEM','-N','','-C','','-f',str(kit/name)],check=True,
                        creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     sshdir=work/'patchdata/var/etc/ssh'
-    pub=(kit/'q10_root_rsa.pub').read_text().strip()
+    pub=' '.join((kit/'q10_root_rsa.pub').read_text(encoding='utf-8',errors='replace').split()[:2])
     (sshdir/'authorized_keys2').write_text('from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding '+pub+'\n',encoding='ascii')
     shutil.copyfile(kit/'q10_host_rsa',sshdir/'ssh_host_rsa_key')
     shutil.copyfile(kit/'q10_host_rsa.pub',sshdir/'ssh_host_rsa_key.pub')
@@ -68,7 +68,7 @@ def main(argv=None):
         assert not any(line.strip().lower().startswith('usedns') for line in config.splitlines())
         config = config.rstrip() + '\nUseDNS=no\n'
     (sshdir/'sshd_config').write_text(config,encoding='ascii')
-    host=(kit/'q10_host_rsa.pub').read_text().split()
+    host=(kit/'q10_host_rsa.pub').read_text(encoding='utf-8',errors='replace').split()
     (kit/'known_hosts').write_text('169.254.0.1 '+' '.join(host[:2])+'\n',encoding='ascii')
     (kit/'ssh_config').write_text('Host bb10-root q10-root\n    HostName 169.254.0.1\n    User root\n'
         +'    IdentityFile "'+(kit/'q10_root_rsa').as_posix()+'"\n'

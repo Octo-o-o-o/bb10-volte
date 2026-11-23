@@ -2,7 +2,9 @@
 
 [简体中文](AUTO-CARRIERS.md) · [Windows](WINDOWS-EXE.en.md) · [macOS](MACOS.en.md)
 
-The current release baseline is **0.5.0-r14**. Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash. This branch's early variant checks remain unpublished; see the [variant plan (Chinese)](ALL-VARIANTS-COVERAGE-PLAN.md). Read historical acceptance statements below together with r14 SMS and first-Root records.
+> **r42+ update**: All **16 catalog variants** across Q10, Classic (Q20), Passport, and P’9983—including all 12 China Mobile / Unicom / Telecom MNCs and stock `0.xml` fallback—are now open in Automatic carrier setup and the mobile app (using the safe retain-provider-until-reboot lifecycle). See [compatibility-matrix.json](../materials/compatibility-matrix.json) for per-variant test evidence. **Do not open or change Settings -> Network and Connections -> Mobile Network during an active VoLTE call**, as BB10 may reconfigure radio mode and drop the call. Historical r14 baseline notes are preserved below.
+
+Historical baseline (**0.5.0-r14**): Windows and Mac use the same installer and phone payload. The phone generates configuration from the current SIM during normal startup; later powered-off SIM changes need no computer or flash. Read historical acceptance statements below together with the current variant matrix and device records.
 
 ## Scope and acceptance
 

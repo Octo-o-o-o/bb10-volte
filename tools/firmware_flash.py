@@ -1,5 +1,6 @@
 """Native console for one confirmed stock stage; never accepts Root-only errors."""
 import ctypes
+import io
 import json
 import os
 from pathlib import Path
@@ -12,32 +13,43 @@ import time
 from desktop_paths import frozen, resource_root
 from i18n import tr
 from root_setup import SetupError, root_lock_path
-from root_flash import writing_complete_line
+from root_flash import writing_complete_line, writing_started_line
 
 
 class StockFlashEvidence:
     def __init__(self):
+        self.writing_started = False
         self.writing_complete = False
         self.done = False
         self.error_seen = False
 
     def line(self, raw):
         lower = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', raw).strip().lower()
+        self.writing_started |= writing_started_line(lower)
         self.writing_complete |= writing_complete_line(lower)
         self.done |= self.writing_complete and lower == 'done.'
         self.error_seen |= re.search(r'\b(?:error|failed|failure|exception|aborted|cancelled|canceled)\b', lower) is not None
 
     def result(self, phase, code):
-        return {'stage': phase, 'exit_code': code, 'writing_complete': self.writing_complete,
+        return {'stage': phase, 'exit_code': code,
+                'writing_started': bool(self.writing_started or self.writing_complete),
+                'writing_complete': self.writing_complete,
                 'done': self.done, 'error_seen': self.error_seen,
                 'completed': code == 0 and self.writing_complete and self.done and not self.error_seen}
+
+
+def _unknown_flash(folder, phase):
+    from feedback import flash_failure_excerpt
+    error = SetupError('flash_state_unknown')
+    error.feedback_log = flash_failure_excerpt(folder, prefix='upgrade', phase=phase)
+    return error
 
 
 def launch_stage(folder, phase, token, timeout=3600):
     folder = Path(folder)
     result_path = folder / ('upgrade-' + phase + '.json')
     if result_path.exists():
-        raise SetupError('flash_state_unknown')
+        raise _unknown_flash(folder, phase)
     command = ([sys.executable, '--firmware-stage', phase, '--root-kit', str(folder), '--flash-token', token]
                if frozen() else [sys.executable, str(resource_root() / 'tools/firmware_flash.py'),
                                   '--stage', phase, '--kit', str(folder), '--token', token])
@@ -47,9 +59,9 @@ def launch_stage(folder, phase, token, timeout=3600):
             code = child.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             # Never kill a loader that could still be writing to the phone.
-            raise SetupError('flash_state_unknown') from None
+            raise _unknown_flash(folder, phase) from None
         if code:
-            raise SetupError('flash_state_unknown')
+            raise _unknown_flash(folder, phase)
     elif sys.platform == 'darwin':
         script = folder / ('upgrade-' + phase + '.command')
         pidfile = folder / ('upgrade-' + phase + '.pid')
@@ -82,10 +94,10 @@ def launch_stage(folder, phase, token, timeout=3600):
     else:
         raise SetupError('root_platform_mismatch')
     if not result_path.is_file() or result_path.is_symlink() or result_path.stat().st_size > 65536:
-        raise SetupError('flash_state_unknown')
+        raise _unknown_flash(folder, phase)
     value = json.loads(result_path.read_text(encoding='utf-8'))
     if not isinstance(value, dict) or value.get('stage') != phase or value.get('completed') is not True:
-        raise SetupError('flash_state_unknown')
+        raise _unknown_flash(folder, phase)
     return value
 
 
@@ -142,6 +154,18 @@ def run_stage(folder, phase, token):
         json.dump(result, stream, indent=2)
     temporary.replace(output)
     print(tr('请返回应用。必须重新检测开机后的系统版本，才能继续 Root。'), flush=True)
+    if not result['completed']:
+        print(tr('刷写工具退出码：{}（是否已进入写入：{}）').format(
+            result['exit_code'], tr('是') if result.get('writing_started') else tr('否')), flush=True)
+        if not result.get('writing_started'):
+            print(tr('未检测到进入写入阶段。常见原因：Windows 缺少 BlackBerry USB（Bootrom）驱动、未识别连接超时或密码提示中断。'), flush=True)
+            print(tr('可在应用“Windows 驱动”页安装驱动，并通过“查看刷写日志并解除暂停”核对后重试。'), flush=True)
+        if (sys.platform == 'win32' and isinstance(sys.stdin, io.TextIOBase) and
+                sys.stdin.isatty() and not os.environ.get('BB10_FLASH_NO_PAUSE')):
+            try:
+                input(tr('请先查看上方输出，再按回车键关闭此窗口…'))
+            except (EOFError, OSError):
+                pass
     return 0 if result['completed'] else 1
 
 

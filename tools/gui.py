@@ -58,7 +58,7 @@ NOTES = {
     'q20_boot_hook_changed': tr('Q20 开机入口与已验收版本不同，自动恢复需要复核；请保留当前配置并导出报告。'),
     'carrier_selection_conflict': tr('配置选择路径与当前服务的文件不一致。保留现场，核对 XML 内容与运营商，避免套用其他运营商数据配置。'),
     'device_identified': tr('已自动识别型号和硬件变体；实测状态见顶部'),
-    'passport_provider_lifecycle_unvalidated': tr('Passport 有停用后网络栈重启的社区报告；恢复策略验证前暂停安装、启动及自动恢复，实验试用不能绕过。见社区研究说明。'),
+    'passport_provider_lifecycle_unvalidated': tr('旧版单卡引擎暂停了 Passport 操作；请改用顶部“三网自动适配”或“安装手机应用”（已开放 Passport 全后缀并采用重启保留提供器方案）。'),
     'device_identity_unknown': tr('型号未知或与硬件变体冲突，请导出报告协助适配'),
     'os_3216_required': tr('要求 BB10 OS 10.3.3.3216'),
     'root_qnx_arm32_required': tr('要求 AutoRoot 已就绪、有效 root 和 QNX ARM32'),
@@ -538,7 +538,7 @@ class App:
         elif trial_blocker:
             detail = self.check_note(trial_blocker, report)
         elif report.get('can_restore') is False:
-            detail = tr('此机型的自动操作暂缓。请保留当前状态、导出报告，并查看“社区研究与适配进展”。')
+            detail = tr('旧版单卡引擎暂停了 Passport 操作；请改用顶部“三网自动适配”或“安装手机应用”：已开放 Q10、Q20、Passport 与 P’9983 全 16 个目录型号并采用安全的重启保留提供器方案。若已有旧版安装，请保留现场并导出报告。')
         elif state == 'busy':
             detail = tr('已有服务正在运行或持有锁。更新前请先停用并恢复；本次不会覆盖安装。')
         elif report.get('can_install') or report.get('can_update'):
@@ -564,6 +564,12 @@ class App:
         scope_note = adaptation_note(report)
         if scope_note:
             detail += '\n' + scope_note
+        if (report.get('managed_adapter') != 'unified_carriers' and
+                report.get('can_restore') is not False and
+                report.get('installation', {}).get('state') == 'absent'):
+            import device_support
+            if device_support.assess(device.get('variant')).get('automatic_volte'):
+                detail += '\n' + tr('提示：该机型已开放“三网自动适配”，推荐使用顶部“三网自动适配”或“安装手机应用”自动识别移动／联通／电信，无需在此手选单卡模板。')
         research = report.get('community_research', {})
         if research.get('records'):
             detail += tr(' 有相同硬件与运营商的社区研究记录，尚不代表本工具已验收；可在“更多”查看。')

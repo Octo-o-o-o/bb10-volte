@@ -33,6 +33,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r53/r54 / mobile 0.2.0.0 before probe legacy-blocker, cleanup-stage and error_code fixes.
+                    '1b1227074c90fc5794e19b5a2f0df06cb6d3307db5082679fc7e5914047b5c65',
                     # r52/mobile52 before experimental ISIM/0.xml carrier trial support.
                     'f1ab846b5a37e5a6a50cb4e0a6cba219f57e0ff056a2465413bb18f9c8ae061c',
                     # Empty-overlay candidate before experimental stock carriers.
@@ -423,8 +425,15 @@ def probe():
             if result['installed_management_schema'] == 1 and os.path.isfile(BASE + '/enabled'):
                 result['can_update'] = False
     else:
-        result['root_kind'] = root_kind(facts)
-        entry = migration.inspect(facts)
+        try:
+            result['root_kind'] = root_kind(facts)
+            entry = migration.inspect(facts)
+        except AssertionError as error:
+            if str(error) in ('root_scheme_not_supported', 'root_boot_script_changed',
+                              'unvalidated_legacy_installation', 'legacy_directory_changed',
+                              'legacy_payload_changed', 'unknown_legacy_owner', 'unfinished_nas_trial'):
+                return blocked_probe(facts, str(error))
+            raise
         result['legacy_detected'] = entry is not None
         result['can_install'] = result['call_idle']
     return with_sim_status(result, facts)
@@ -1339,9 +1348,11 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
     if sys.flags.optimize or sys.flags.inspect:
         raise RuntimeError('unsafe_python_environment')
     identifier = safe_id(operation_id) if operation_id is not None else nonce()
-    if action in ('probe', 'status'):
+    if action in ('probe', 'status', 'cleanup-stage'):
         if action == 'probe':
             result = probe()
+        elif action == 'cleanup-stage':
+            result = cleanup_stage(stage)
         else:
             pending_name = next((name for name in ('uninstall-pending.json', 'uninstalled.json',
                 'install-pending.json', 'update-pending.json', 'rollback-pending.json') if os.path.isfile(BASE + '/' + name)), None)
@@ -1359,11 +1370,11 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 result = u.public_status()
     else:
         assert action in ('prepare', 'activate', 'record-backup', 'update', 'rollback',
-            'uninstall', 'start', 'enable', 'disable', 'cleanup-stage', 'prepare-network',
+            'uninstall', 'start', 'enable', 'disable', 'prepare-network',
             'lock-network', 'unlock-network'), 'unknown_action'
         with management_lock():
             if os.path.isfile(BASE + '/uninstall-pending.json'):
-                assert action in ('uninstall', 'cleanup-stage'), 'uninstall_pending'
+                assert action == 'uninstall', 'uninstall_pending'
             if action in ('start', 'enable', 'lock-network', 'unlock-network'):
                 assert not any(os.path.isfile(BASE + '/' + name) for name in
                     ('install-pending.json', 'update-pending.json', 'rollback-pending.json', 'uninstalled.json')), 'management_transaction_pending'
@@ -1405,8 +1416,6 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 result = rollback(archive)
             elif action == 'uninstall':
                 result = uninstall()
-            elif action == 'cleanup-stage':
-                result = cleanup_stage(stage)
             else:
                 result = u.service_action(action)
     result = dict(result)

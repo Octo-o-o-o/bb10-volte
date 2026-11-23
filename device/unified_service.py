@@ -457,20 +457,38 @@ def deliver_connection_notification(item, kind='connected'):
 
 
 def locked_prepare():
+    failed = False
     try:
         return prepare(managed_locking=True)
+    except Exception:
+        failed = True
+        raise
     finally:
         # Disable can arrive during handoff/SIM waiting, before init_journal.
         # The live manager owns this cleanup; the disabling client only writes
         # STOP while it is alive. Keep normal shutdown free of radio changes.
-        if (s.j is None and not s.shutdown and os.path.isfile(s.STOP) and
-                not os.path.isfile(BASE + '/enabled')):
-            from unified_install import management_lock
-            import unified_dca
-            with management_lock(blocking=True):
-                verify()
-                unified_dca.restore_network_selection()
-                unified_dca.restore_lte_mode()
+        # If prepare fails before init_journal, also release any owned LTE-only
+        # or network-selection lock while pre-native resources are idle.
+        if s.j is None and not s.shutdown:
+            if os.path.isfile(s.STOP) and not os.path.isfile(BASE + '/enabled'):
+                from unified_install import management_lock
+                import unified_dca
+                with management_lock(blocking=True):
+                    verify()
+                    unified_dca.restore_network_selection()
+                    unified_dca.restore_lte_mode()
+            elif failed:
+                try:
+                    from unified_install import management_lock
+                    import unified_dca
+                    if (s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions() and
+                            n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}):
+                        with management_lock(blocking=True):
+                            verify()
+                            unified_dca.restore_network_selection()
+                            unified_dca.restore_lte_mode()
+                except Exception:
+                    pass
 
 
 def locked_restore(previous_boot=False):
@@ -1017,6 +1035,49 @@ def boot_start_state(token, raw):
         return None
 
 
+STATUS_ERROR_CODES = (
+    'stock_ims_not_idle', 'stock_ims_reappeared', 'sim_not_ready', 'sim_changed',
+    'network_not_ready', 'reboot_required', 'call_active', 'stopped',
+    'automatic_service_disabled', 'network_mode_readback_failed',
+    'network_mode_rejected', 'network_mode_restore_unconfirmed',
+    'network_mode_requires_fresh_boot', 'network_scan_mode_rejected',
+    'network_select_rejected', 'usage_restore_unconfirmed',
+    'mobile_network_off', 'mobile_network_rejected', 'mobile_network_reply_timeout',
+    'mobile_network_enable_unconfirmed', 'mobile_network_state_unknown',
+    'mobile_network_enable_blocked', 'mobile_network_write_failed',
+    'china_broadnet_unsupported', 'sim_route_unsupported',
+    'downloaded_carrier_config_present', 'carrier_not_validated',
+    'experimental_stock_template_unavailable', 'unsupported_model_or_os',
+    'unknown_native_image', 'root_scheme_not_supported',
+    'unvalidated_legacy_installation', 'existing_apn_overlay', 'existing_ims_override',
+)
+
+
+def classify_status_error(raw_error):
+    """Map known runtime errors to bounded codes; never export raw exceptions."""
+    if not isinstance(raw_error, str) or not raw_error:
+        return None
+    text = raw_error.strip()
+    if text in STATUS_ERROR_CODES:
+        return text
+    exact = {
+        'Existing APN overlay': 'existing_apn_overlay',
+        'Existing IMS override': 'existing_ims_override',
+        'Service is already running': 'service_already_running',
+    }
+    if text in exact:
+        return exact[text]
+    if text.startswith('Readiness timed out'):
+        return 'network_readiness_timeout'
+    if text.startswith('SIM/carrier needs adaptation'):
+        return 'sim_or_carrier_needs_adaptation'
+    if 'voice_policy' in text.lower() or 'voice policy' in text.lower():
+        return 'voice_policy_failed'
+    if 'Original radio configuration' in text or 'DCA' in text:
+        return 'radio_config_check_failed'
+    return 'internal_error'
+
+
 def public_status():
     import unified_dca
     verify()
@@ -1043,6 +1104,11 @@ def public_status():
         value['serving_plmn'] = serving['mcc'] + '-' + serving['mnc']
     if raw.get('status_from_current_boot') is True and raw.get('error') == 'Existing APN overlay':
         value['startup_blocker'] = 'existing_apn_overlay'
+    if (raw.get('status_from_current_boot') is True and
+            value.get('phase') in ('error', 'error_restored', 'cleanup_required')):
+        err_code = classify_status_error(raw.get('error'))
+        if err_code:
+            value['error_code'] = err_code
     saved = s.load(SELECTION) if os.path.isfile(SELECTION) else None
     if saved is not None:
         value['selected_operator'] = saved['operator']

@@ -100,6 +100,10 @@ def public_status(raw):
         result['operator_trial'] = True
     if result['status_from_current_boot'] and raw.get('startup_blocker') == 'existing_apn_overlay':
         result['startup_blocker'] = 'existing_apn_overlay'
+    err_code = raw.get('error_code')
+    if (result['status_from_current_boot'] and isinstance(err_code, str) and
+            re.fullmatch(r'[a-z][a-z0-9_]{0,63}', err_code)):
+        result['error_code'] = err_code
     result['pre_native_retry_available'] = raw.get('pre_native_retry_available') is True
     if raw.get('payload_update_required') is True:
         result['payload_update_required'] = True

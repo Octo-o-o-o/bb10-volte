@@ -194,7 +194,7 @@ def cmd_restore(args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Experimental ISIM + stock 0.xml carrier trial runner')
-    parser.add_argument('--host', default='bb10-q10', help='Saved SSH host alias or IP (default: bb10-q10)')
+    parser.add_argument('--host', default='bb10-root', help='Saved SSH host alias or IP (default: bb10-root)')
     parser.add_argument('--ssh-config', default='', help='Optional path to SSH config file')
     sub = parser.add_subparsers(dest='command', required=True)
 

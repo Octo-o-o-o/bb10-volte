@@ -126,7 +126,8 @@ def main():
         powershell = str(Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
         for name in ('ssh.exe', 'scp.exe', 'ssh-keygen.exe', 'libcrypto.dll'):
             signatures[name] = json.loads(subprocess.check_output([
-                powershell, '-NoProfile', '-File', str(ROOT / 'tools/verify_signature.ps1'),
+                powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                '-File', str(ROOT / 'tools/verify_signature.ps1'),
                 '-Path', str(vendor / name)], text=True))
     work = ROOT / 'build/windows'
     work.mkdir(parents=True, exist_ok=True)

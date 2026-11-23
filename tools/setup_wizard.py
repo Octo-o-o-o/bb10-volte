@@ -17,6 +17,7 @@ from profile_editor import FONT
 from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh,
                         prepared_kit_history, prepared_images, root_lock_path,
+                        inspect_flash_lock, clear_flash_lock,
                         stock_firmware, import_stock_firmware, download_stock_firmware,
                         find_downloaded_firmware, stock_firmware_cached,
                         firmware_variants, selected_firmware_variant)
@@ -56,7 +57,8 @@ MESSAGES = {
     'tool_hash_mismatch': tr('工具文件校验失败，已停止。请保留现场并重新获取正确材料。'),
     'image_not_verified': tr('镜像校验未通过，已禁止刷写。'),
     'device_model_not_verified': tr('未能核对唯一连接手机的型号。请解锁手机，只保留这一台 USB 设备后重试。'),
-    'flash_state_unknown': tr('刷写状态未确认，自动流程已暂停。请保留镜像与现场，核对手机和刷写窗口结果，不要重复刷写。'),
+    'flash_state_unknown': tr('刷写状态未确认，自动流程已暂停。请点击上方“查看刷写日志并解除暂停…”核对上次刷写记录，或先在“Windows 驱动”页安装驱动。'),
+    'flash_process_running': tr('检测到另一个刷写进程仍在运行，请等待其结束后再检查，不要解除暂停。'),
     'driver_install_incomplete': tr('驱动安装未完成。可能取消了管理员确认，或已有进程需要处理；请查看驱动指南后重试。'),
     'host_key_mismatch': tr('手机主机密钥与当前配置不符。请使用这台设备原来的可信配置，不要关闭主机校验。'),
     'connection_setup_required': tr('尚未找到可用的个人配置。已有 Root 请导入原配置；首次使用请按下方手机步骤准备。'),
@@ -64,6 +66,47 @@ MESSAGES = {
     'connection_failed': tr('尚未连通手机。检查 USB、手机解锁、Root 启动状态后重新检测。'),
     'connection_refused': tr('手机尚未提供 SSH。已有 AutoRoot 可打开一次 BlackBerry World 等待启动；仍不恢复时，从手机电源菜单正常重启后重试。'),
 }
+
+
+def review_flash_lock(parent):
+    """Show scrubbed flash-lock facts and require explicit confirmation to clear."""
+    info = inspect_flash_lock()
+    if info is None:
+        messagebox.showinfo(tr('刷写暂停状态'), tr('当前没有未解除的刷写暂停记录。'), parent=parent)
+        return True
+    if info.get('process_running'):
+        messagebox.showwarning(tr('刷写仍在进行'), MESSAGES['flash_process_running'], parent=parent)
+        return False
+    op_label = tr('原版系统升级') if info.get('operation') == 'stock-upgrade' else tr('首次 Root 刷写')
+    lines = [tr('上次操作：{}').format(op_label)]
+    if info.get('kit_name'):
+        lines.append(tr('记录目录：{}').format(info['kit_name']))
+    if info.get('stage'):
+        lines.append(tr('记录阶段：{}').format(info['stage']))
+    if info.get('exit_code') is not None:
+        lines.append(tr('工具退出码：{}').format(info['exit_code']))
+    if info.get('writing_started') is False:
+        lines.append('')
+        lines.append(tr('判断结果：未检测到进入写入阶段。常见原因为 Windows 缺少 BlackBerry USB（Bootrom）驱动、刷写窗口连接超时或密码提示中断。'))
+        lines.append(tr('建议先在“Windows 驱动”页安装驱动，然后解除暂停再重试；原有镜像与日志仍会保留。'))
+    else:
+        lines.append('')
+        lines.append(tr('判断结果：未能排除刷写工具已开始写入。请先确认手机能够正常开机并保留日志，再决定是否解除暂停。'))
+    excerpt = (info.get('excerpt') or '').strip()
+    if excerpt:
+        lines.append('')
+        lines.append(tr('脱敏日志摘录：'))
+        lines.append('\n'.join(excerpt.splitlines()[-10:]))
+    lines.append('')
+    lines.append(tr('确认已核对手机状态并解除暂停吗？（不会删除已有镜像、密钥或日志）'))
+    if not messagebox.askyesno(tr('核对上次刷写记录并解除暂停'), '\n'.join(lines), parent=parent):
+        return False
+    try:
+        clear_flash_lock(confirmed=True)
+    except SetupError as error:
+        messagebox.showwarning(tr('未能解除暂停'), MESSAGES.get(str(error), str(error)), parent=parent)
+        return False
+    return True
 
 
 class SetupWizard(tk.Toplevel):
@@ -100,6 +143,13 @@ class SetupWizard(tk.Toplevel):
         self.support_notice = ttk.Label(body, wraplength=790, justify='left')
         self.support_notice.pack(fill='x', pady=(0, 12))
         self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
+        self.flash_lock_bar = ttk.Frame(body)
+        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=580, justify='left',
+                                          text=tr('检测到上次刷写处于暂停状态，刷写与重新准备已锁定（仍可安装 Windows 驱动）。'))
+        self.flash_lock_label.pack(side='left', fill='x', expand=True, padx=(0, 10))
+        self.unlock_flash_button = ttk.Button(self.flash_lock_bar, text=tr('查看刷写日志并解除暂停…'),
+                                              command=self.review_flash_lock)
+        self.unlock_flash_button.pack(side='right')
         self.tabs = ttk.Notebook(body)
         self.tabs.pack(fill='both', expand=True)
         connection_page, connection = scrolled_page(self.tabs, padding=20)
@@ -268,10 +318,10 @@ class SetupWizard(tk.Toplevel):
         self.proxy_entry = ttk.Entry(network, textvariable=self.proxy)
         self.proxy_entry.pack(side='left', fill='x', expand=True)
 
-        ttk.Label(drivers, text=tr('只有 Windows 未识别手机或没有 USB 网络时，才需要安装驱动。'),
+        ttk.Label(drivers, text=tr('若 Windows 未识别手机、没有 USB 网络，或刷写 Root／系统时连接 Bootrom 超时，请安装驱动。'),
                   wraplength=740, font=(FONT, 11, 'bold')).pack(anchor='w', pady=(0, 12))
-        ttk.Label(drivers, text=tr('应用下载并校验 BlackBerry 驱动，随后通过 Windows 管理员确认完成安装。\n'
-                  '请先保存电脑上的工作。安装器不会自动重启；现有程序冲突时会暂停。'),
+        ttk.Label(drivers, text=tr('即使开机状态下 USB 网络已就绪，刷写阶段仍依赖 BlackBerry 原厂 USB（RimUsb）驱动。\n'
+                  '应用会下载并校验官方驱动，随后通过 Windows 管理员确认完成安装；请先保存电脑上的工作。安装器不会自动重启。'),
                   wraplength=740, justify='left').pack(anchor='w')
         self.driver_button = ttk.Button(drivers, text=tr('自动准备并安装驱动'), command=self.drivers)
         self.driver_button.pack(anchor='w', pady=20)
@@ -331,9 +381,16 @@ class SetupWizard(tk.Toplevel):
         backup_code = item.get('backup_manual_download_code') if backup_url else None
         self.backup_download_hint.configure(text=tr('百度网盘提取码：{}').format(backup_code) if backup_code else '')
         version_gate = self.root_version_gate()
-        self.prepare_button.configure(state='normal' if ready and not version_gate and variant in catalog()['auto_root_variants'] and
+        locked = root_lock_path().exists()
+        if locked and not self.downloads_only:
+            if not self.flash_lock_bar.winfo_manager():
+                self.flash_lock_bar.pack(fill='x', before=self.tabs, pady=(0, 10))
+            self.unlock_flash_button.configure(state='disabled' if self.busy else 'normal')
+        elif self.flash_lock_bar.winfo_manager():
+            self.flash_lock_bar.pack_forget()
+        self.prepare_button.configure(state='normal' if ready and not locked and not version_gate and variant in catalog()['auto_root_variants'] and
                                       sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
-        self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
+        self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' else 'disabled')
         blocker = self.flash_blocker(variant)
         self.flash_button.configure(state='disabled' if blocker else 'normal')
         self.root_hint.configure(text=blocker or tr('{} 的 Root 镜像已准备，可以开始刷写；下一步仍会单独确认清空数据。').format(variant))
@@ -681,6 +738,20 @@ class SetupWizard(tk.Toplevel):
                               '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？').format(variant), parent=self):
             self.start('flash', lambda progress: flash_root(self.kit, True, progress))
 
+    def review_flash_lock(self):
+        if self.busy:
+            return
+        if review_flash_lock(self):
+            if self.kit:
+                try:
+                    prepared_images(self.kit)
+                except (SetupError, OSError, ValueError):
+                    self.kit = None
+                    self.ack.set(False)
+                    self.mac_flash_ack.set(False)
+            self.status.configure(text=tr('已解除刷写暂停，原有记录与镜像仍已保留。请先确认驱动与连接状态后再继续。'))
+            self.refresh()
+
     def open_firmware(self):
         if not self.busy and not self.downloads_only:
             from firmware_gui import FirmwareDialog
@@ -709,7 +780,14 @@ class SetupWizard(tk.Toplevel):
                 if kind == 'download_error':
                     self.status.configure(text=value)
                 elif kind == 'error':
-                    self.status.configure(text=MESSAGES.get(value, tr('准备未完成。请检查网络或材料，保留现场后重试；下载代理可在“首次 Root”页设置。')))
+                    if value == 'flash_state_unknown':
+                        lock_info = inspect_flash_lock()
+                        if lock_info and lock_info.get('writing_started') is False:
+                            self.status.configure(text=tr('刷写未进入写入阶段（可能缺少 BlackBerry USB 驱动、连接超时或密码提示中断）。可先在“Windows 驱动”页安装驱动，再点击上方“查看刷写日志并解除暂停…”核对后重试。'))
+                        else:
+                            self.status.configure(text=MESSAGES['flash_state_unknown'])
+                    else:
+                        self.status.configure(text=MESSAGES.get(value, tr('准备未完成。请检查网络或材料，保留现场后重试；下载代理可在“首次 Root”页设置。')))
                 else:
                     action, result = value
                     if action == 'detect':
@@ -746,7 +824,12 @@ class SetupWizard(tk.Toplevel):
                             self.host, self.config = self.choice['host'], self.choice['config']
                     elif action == 'prepare':
                         self.kit = result
-                        self.status.configure(text=tr('{} 的 Root 镜像与个人连接配置已准备。确认备份并勾选同意清空数据后，可开始刷写。').format(self.variant.get()))
+                        usb_verified = (self.usb.get('usb_count') == 1 and
+                                        (self.usb.get('device') or {}).get('ModelName') == self.variant.get())
+                        self.status.configure(text=(
+                            tr('{} 的 Root 镜像与个人连接配置已准备。确认备份并勾选同意清空数据后，可开始刷写。').format(self.variant.get())
+                            if usb_verified else
+                            tr('{} 的 Root 镜像与个人连接配置已准备。请先解锁并单机连接手机，点击下方“重新检测连接与机型”核对型号后，再勾选确认刷写。').format(self.variant.get())))
                     elif action == 'flash':
                         self.host, self.config = result['host'], result['config']
                         self.kit = None
