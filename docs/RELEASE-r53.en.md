@@ -1,0 +1,8 @@
+# Windows r53 and mobile 0.2.0.0
+
+- **Cleaner mobile 0.2.0.0 UI & copy**: Removed the redundant home tagline and permanent secondary call-check button; collapsed infrequent maintenance actions (device details, offline update package, rollback, compatibility report, experimental route) under a default-closed "Show advanced maintenance" section in Manage, moved Refresh to the action bar, and simplified high-frequency labels.
+- **Direct USB pairing verification (no `result.json` copy needed)**: After authorizing a computer, the phone displays an 8-character check code (`XXXX-XXXX`) and full SHA-256 host fingerprint (also printed by the terminal fallback). Desktop adds "Verify directly (no file copy)" to probe the USB host key and pin `known_hosts` only after explicit interactive confirmation (`StrictHostKeyChecking yes`, multi-USB guard, and `result.json` fallback remain intact). Phone auto-load handles renamed request files and prefers unpaired requests.
+- **Faster cloud-downloaded firmware import & phone-only shortcut**: Initial Root and OS Upgrade dialogs scan common download folders (`Downloads`, Desktop, `BaiduNetdiskDownload`), auto-verify upon file selection, show expected size and cache status, and catch extracted `.exe` or wrong-size files instantly before copying. Main window surfaces "Install phone app", and the connection dialog adds "Use VoLTE on the phone only" plus direct `.bar` export.
+- **Merged opt-in KT 450-08 experimental ISIM runner**: Includes `tools/kt_isim_trial.py` and `KT-ISIM-TRIAL-README.md`; default automatic adaptation remains unchanged.
+
+This is an experimental release. The macOS download remains frozen at r43.
