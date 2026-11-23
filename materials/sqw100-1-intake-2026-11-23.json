@@ -42,5 +42,5 @@
     "reported_overall_success": true,
     "per_function_checklist_confirmed": false
   },
-  "limits": "Calls, audio, SMS counts, data during calls and restore round trip were not individually measured. Overseas operators and the bundled r51 release were not tested on this unit."
+  "limits": "Calls, audio, SMS counts, data during calls and restore round trip were not individually measured. Overseas operators and the bundled r52 release were not tested on this unit."
 }

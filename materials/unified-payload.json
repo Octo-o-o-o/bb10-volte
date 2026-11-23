@@ -2,7 +2,7 @@
   "schema": 1,
   "owner": "bb10-unified-carriers-v1",
   "version": "0.5.0",
-  "desktop_revision": 51,
+  "desktop_revision": 52,
   "files": {
     "device/native.py": "a8055a901e26781c66f77c940b37faecd0843ee10ee2bef9da3715dbebdb0dd4",
     "device/profiles.py": "8d0418c0fbc040f958343e028973b9d8068081e4b9b100fcbde7b822f55ee9f2",

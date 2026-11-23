@@ -1,4 +1,4 @@
-# Windows r51 and mobile 0.1.0.51
+# Windows r52 and mobile 0.1.0.52
 
 - Untested home networks can try automatic activation. China Mobile 460-13 can use the pinned China Mobile stock fallback. Other home networks use their own matching stock XML and are labeled untested. The supported SIM authentication route, native checks, working LTE and verified recovery backups still apply.
 - A Passport SQW100-1 on China Mobile 460-07 was blocked by two empty APN files. The updated service accepts the exact observed empty version-3 files and retains their bytes. A repair-only hardware candidate reached LTE and IMS 200 OK after a normal boot. The owner reported normal operation. [Hardware record](../materials/sqw100-1-intake-2026-11-23.json)

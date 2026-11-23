@@ -931,7 +931,7 @@
       "completed_checks": {},
       "repeat_manual_tests_required": false,
       "evidence": "materials/sqw100-1-intake-2026-11-23.json",
-      "evidence_sha256": "1b74590badc9a9d5e82829d5699177b706dbf38e89d6d0cdf41f716dc6b8693e",
+      "evidence_sha256": "5110339c8f37e5b84c15fba5c1bae738c919d3353941910034e7abbd684d7baf",
       "scope_note": "Overall owner report and instrument LTE / IMS 200 OK; no individual call/SMS/data results inferred."
     },
     {
@@ -944,7 +944,7 @@
       "completed_checks": {},
       "repeat_manual_tests_required": false,
       "evidence": "materials/sqw100-1-intake-2026-11-23.json",
-      "evidence_sha256": "1b74590badc9a9d5e82829d5699177b706dbf38e89d6d0cdf41f716dc6b8693e",
+      "evidence_sha256": "5110339c8f37e5b84c15fba5c1bae738c919d3353941910034e7abbd684d7baf",
       "scope_note": "No trial with this carrier on this device."
     },
     {
@@ -957,7 +957,7 @@
       "completed_checks": {},
       "repeat_manual_tests_required": false,
       "evidence": "materials/sqw100-1-intake-2026-11-23.json",
-      "evidence_sha256": "1b74590badc9a9d5e82829d5699177b706dbf38e89d6d0cdf41f716dc6b8693e",
+      "evidence_sha256": "5110339c8f37e5b84c15fba5c1bae738c919d3353941910034e7abbd684d7baf",
       "scope_note": "No trial with this carrier on this device."
     }
   ]
