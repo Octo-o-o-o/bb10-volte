@@ -204,17 +204,19 @@ def safe_error(error):
 
 def ui(state, language, action='status', details=None, ok=True, actions=None, **extra):
     values = MESSAGES.get(state, MESSAGES['error'])
-    offset = 0 if language != 'en' else 3
+    display_language = 'en' if language == 'en' else 'zh'
     localized = {}
     for name, start in (('zh', 0), ('en', 3)):
         localized[name] = {'title': values[start], 'message': values[start + 1],
                            'primary_label': values[start + 2], 'level': 'error' if not ok else 'info'}
+    if details and details.get('operator_trial') is True:
+        localized['zh']['message'] += '\n此运营商尚未实测，实际通话、短信和数据能力需验证。'
+        localized['en']['message'] += '\nThis carrier is untested. Verify calls, SMS and data on the phone.'
     result = {'schema': 2, 'ok': ok, 'state': state, 'title_code': state,
               'message_code': state, 'primary_action': action,
               'actions': actions if actions is not None else [action, 'compatibility'],
-              'details': details or {}, 'display': {'title': values[offset],
-              'message': values[offset + 1], 'primary_label': values[offset + 2],
-              'level': 'error' if not ok else 'info'}, 'display_language': 'en' if language == 'en' else 'zh',
+              'details': details or {}, 'display': dict(localized[display_language]),
+              'display_language': display_language,
               'display_i18n': localized, 'call_context': ''}
     result.update(extra)
     return result
@@ -234,10 +236,19 @@ def sim_unsupported_ui(result, language, details, actions=None):
            'downloaded_carrier_config_present': 'sim_downloaded_config_override',
            'carrier_not_validated': 'sim_carrier_unrecognized'}.get(reason, 'sim_unsupported')
     response = ui(key, language, details=details, actions=actions)
+    if reason == 'experimental_stock_template_unavailable':
+        zh_msg = '此运营商尚未实测，原厂配置缺少可用的互联网或 IMS 服务，暂时无法生成自动激活配置。'
+        en_msg = 'This carrier is untested. A usable stock Internet or IMS configuration is required to generate its automatic profile.'
+        response['display_i18n']['zh']['message'] = zh_msg
+        response['display_i18n']['en']['message'] = en_msg
+        response['display']['message'] = en_msg if language == 'en' else zh_msg
     if key == 'sim_carrier_unrecognized' and plmn:
         zh_msg = '当前 SIM 归属网络（' + plmn + '）不在中国移动、联通、电信已支持的号段内。请核对 SIM 卡状态或导出诊断报告。'
         en_msg = ('This SIM home network (' + plmn +
                   ') is outside the supported China Mobile, Unicom and Telecom PLMN ranges. Check the SIM or export a diagnostic report.')
+        if plmn == '460-20':
+            zh_msg = '当前 SIM 归属网为中国铁通（460-20）。现有中国移动公众 VoLTE 模板不适用于该网络。'
+            en_msg = 'The SIM home PLMN is China Tietong (460-20). The China Mobile public VoLTE profile does not apply to this network.'
         response['display_i18n']['zh']['message'] = zh_msg
         response['display_i18n']['en']['message'] = en_msg
         response['display']['message'] = en_msg if language == 'en' else zh_msg
@@ -369,7 +380,7 @@ def prepare_activation_network(job, manager):
             result = manager.manage('prepare-network', operation_id=job['id'])
         except Exception as error:
             if str(error) in ('china_broadnet_unsupported', 'sim_route_unsupported',
-                              'downloaded_carrier_config_present', 'carrier_not_validated'):
+                              'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable'):
                 base = getattr(manager, 'BASE', None)
                 job['resumable_failure'] = isinstance(base, str) and os.path.isfile(base + '/install-pending.json')
                 try:
@@ -417,6 +428,15 @@ def inspection_response(request, result, details, confirmed_context=None):
     # save when the native client's request deadline expires.
     language = request.get('language', 'zh')
     details['carrier'] = result.get('operator', 'unknown')
+    if result.get('operator_trial') is True:
+        details['operator_trial'] = True
+    for field in ('sim_has_isim', 'radio_lte', 'lte_data_connected'):
+        if type(result.get(field)) is bool:
+            details[field] = result[field]
+    for field in ('sim_plmn', 'serving_plmn'):
+        plmn = result.get(field)
+        if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
+            details[field] = plmn
     details['installed'] = bool(result.get('installed'))
     details['service_state'] = 'unknown'
     if not result.get('scope_error'):
@@ -470,6 +490,10 @@ def inspection_response(request, result, details, confirmed_context=None):
     sim_changed = (status.get('status_from_current_boot') is True and
                    status.get('selected_this_boot') is True and status.get('current_sim_matches') is False)
     details['phase'] = status.get('phase', 'unknown')
+    for field in ('sim_plmn', 'serving_plmn'):
+        plmn = status.get(field)
+        if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
+            details[field] = plmn
     actions = ['status', 'disable', 'export', 'compatibility', 'uninstall']
     if result.get('can_update'):
         actions.append('update')
@@ -529,6 +553,13 @@ def inspection_response(request, result, details, confirmed_context=None):
         return ui(state, language, 'status', details,
                   actions=actions + ['confirm-calls'], call_context=context['context'])
     if status.get('phase') in ('error', 'error_restored', 'cleanup_required'):
+        if status.get('startup_blocker') == 'existing_apn_overlay':
+            details['startup_blocker'] = 'existing_apn_overlay'
+            response = ui('recovery_required', language, details=details, actions=actions)
+            response['display_i18n']['zh']['message'] = '现有 APN 覆盖阻断了 VoLTE 启动。请保留现有 APN 配置并导出诊断报告。'
+            response['display_i18n']['en']['message'] = 'An existing APN overlay blocked VoLTE startup. Keep the APN settings and export diagnostics.'
+            response['display']['message'] = response['display_i18n'][response['display_language']]['message']
+            return response
         if status.get('pre_native_retry_available') is True:
             return ui('retry_ready', language, 'enable', details, actions=actions + ['enable'])
         if (status.get('phase') == 'error_restored' and result.get('family') == 'passport' and
@@ -817,7 +848,7 @@ def diagnostic_job_summary(expected_job=None):
                       'update_version_mismatch', 'package_changed', 'invalid_zip_archive',
                       'rollback_component_too_old', 'backup_location_unavailable',
                       'backup_readback_failed', 'china_broadnet_unsupported', 'sim_route_unsupported',
-                      'downloaded_carrier_config_present', 'carrier_not_validated',
+                      'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable',
                       'preflight_or_recovery_check_failed')
             if job.get('phase') is not None:
                 summary['phase'] = job['phase'] if job['phase'] in phases else 'other'
@@ -882,7 +913,7 @@ def job_response(job, request):
         state = 'recovery_required'
     action = 'poll' if job['state'] in ('queued', 'running', 'waiting_reboot') else 'resume' if resume else 'status'
     sim_errors = ('china_broadnet_unsupported', 'sim_route_unsupported',
-                  'downloaded_carrier_config_present', 'carrier_not_validated')
+                  'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable')
     if job['state'] == 'failed' and job.get('error_code') in sim_errors:
         public = dict(job.get('public_result') or {})
         result = sim_unsupported_ui({'sim_reason': job['error_code'], 'sim_plmn': public.get('sim_plmn')},

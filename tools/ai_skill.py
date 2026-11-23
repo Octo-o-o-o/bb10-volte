@@ -93,6 +93,11 @@ SAFE_PROBE_KEYS = (
     'sim_supported',
     'sim_reason',
     'sim_plmn',
+    'operator_trial',
+    'serving_plmn',
+    'sim_has_isim',
+    'radio_lte',
+    'lte_data_connected',
     'operator',
     'stock_template_verified',
     'mobile_network_off',
@@ -206,6 +211,7 @@ def variant_entry(variant):
         'radio_band_overlap_operators': list(support_row.get('radio_candidate_operators') or []),
         'volte_admitted_operators': assessment['candidate_operators'],
         'volte_admitted_plmns': assessment['admitted_home_plmns'],
+        'experimental_operator_routes': ['460-13', 'other HPLMNs with matching stock carrier configuration'],
         'historical_evidence_status': evidence_row.get('status', {}),
         'note': (evidence_row.get('note') or {}).get(i18n.LANGUAGE, ''),
         'auto_root_recipe_supported': variant in auto_root_variants,
@@ -218,6 +224,9 @@ def sanitize_probe(raw):
     if not isinstance(raw, dict):
         return {}
     out = {key: raw[key] for key in SAFE_PROBE_KEYS if key in raw}
+    for field in ('sim_plmn', 'serving_plmn'):
+        if field in out and not re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', str(out[field])):
+            del out[field]
     if isinstance(raw.get('stock_template'), dict):
         tpl = raw['stock_template']
         out['stock_template'] = {
@@ -683,8 +692,11 @@ def cmd_mobile_app(args):
             'inspection': sanitize_mobile_app(inspection),
         }
     result = installer.install(bar, device_id)
-    return (0 if result.get('state') == 'completed' else 2), {
-        'ok': result.get('state') == 'completed',
+    completed = result.get('state') == 'completed' or (
+        result.get('state') == 'installed' and result.get('version') == pin['version'] and
+        result.get('all_files_verified') is True)
+    return (0 if completed else 2), {
+        'ok': completed,
         'action': 'mobile-app.install',
         'bundled_version': pin['version'],
         'result': sanitize_mobile_app(result),

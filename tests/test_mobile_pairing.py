@@ -2,6 +2,8 @@
 import base64
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import struct
 import sys
@@ -44,6 +46,19 @@ class MobilePairingTests(unittest.TestCase):
         for blob in bad:
             with self.subTest(blob=blob[:70]), self.assertRaises((ValueError, TypeError)):
                 p.parse_pairing_request(blob)
+
+    @unittest.skipUnless(os.name == 'posix' and hasattr(os, 'fchmod'), 'POSIX permissions required')
+    def test_existing_private_result_is_shared_only_if_its_contents_match(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'result.json'
+            path.write_text(json.dumps(self.request), encoding='ascii')
+            path.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, 'differs'):
+                p.checked_public_result(str(path), {'unrelated': True}, make_readable=True)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            p.checked_public_result(str(path), self.request, make_readable=True)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o644)
+            self.assertEqual(json.loads(path.read_text(encoding='ascii')), self.request)
 
     def test_mobile_authorizes_exact_previewed_key_without_touching_running_ssh(self):
         result_path = '/accounts/1000/shared/downloads/bb10-pair-abcdef123456-result.json'

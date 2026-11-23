@@ -103,9 +103,10 @@ class PhoneProbeTests(unittest.TestCase):
             write.assert_not_called()
 
     def test_broadnet_and_downloaded_override_report_notes_explain_exact_cause(self):
-        for kind in (2, 22):
+        for kind, reason in ((2, 'experimental_stock_template_unavailable'), (22, 'sim_route_unsupported')):
             card = {'state': 'READY', 'kind': kind, 'mcc': '460', 'mnc': '15', 'imsi': '460' + '15' + '12345' * 2}
-            with self.assertRaisesRegex(ValueError, '^china_broadnet_unsupported$'):
+            with patch.object(policy.profiles, 'preloaded_carrier_config', return_value=None), \
+                 self.assertRaisesRegex(ValueError, '^' + reason + '$'):
                 policy.select(self.facts, card)
         zh_broadnet = support.report_note({'variant': 'SQC100-2', 'sim_supported': False,
                                            'sim_reason': 'china_broadnet_unsupported', 'sim_plmn': '460-15'})
@@ -117,7 +118,21 @@ class PhoneProbeTests(unittest.TestCase):
         zh_unknown = support.report_note({'variant': 'SQC100-2', 'sim_supported': False,
                                           'sim_reason': 'carrier_not_validated', 'sim_plmn': '460-20'})
         self.assertIn('460-20', zh_unknown)
-        self.assertIn('归属网络尚无自动配置模板', zh_unknown)
+        self.assertIn('中国铁通', zh_unknown)
+
+    def test_kt_isim_and_network_readiness_are_independent(self):
+        card = {'state': 'READY', 'kind': 18, 'mcc': '450', 'mnc': '08'}
+        for radio, connected in ((False, False), (True, True)):
+            with self.subTest(radio=radio), patch.object(installer.u, 'card', return_value=card), \
+                 patch.object(installer.s.compatibility, 'read_network', return_value={'lte': radio, 'data_connected': connected}), \
+                 patch.object(installer.network, 'serving_network_snapshot', return_value={}):
+                result = installer.with_sim_status({'can_install': True}, self.facts)
+            self.assertTrue(result['operator_trial'])
+            self.assertTrue(result['sim_has_isim'])
+            self.assertEqual(result['radio_lte'], radio)
+            self.assertEqual(result['lte_data_connected'], connected)
+            self.assertEqual(result['sim_reason'], 'sim_route_unsupported')
+            self.assertFalse(result['can_install'])
 
     def test_unknown_native_image_is_a_support_result_not_a_connection_failure(self):
         with patch.object(installer, 'identity', side_effect=AssertionError('unknown_native_image')):

@@ -30,7 +30,7 @@ TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
 # Historical failed trials are evidence, not an activation veto.
 UNSUPPORTED_OPERATORS = {}
 OPERATOR_MNCS = {
-    'mobile': ('00', '02', '04', '07', '08'),
+    'mobile': ('00', '02', '04', '07', '08', '13'),
     'unicom': ('01', '06', '09'),
     'telecom': ('03', '05', '11', '12'),
 }
@@ -67,6 +67,7 @@ STOCK_FALLBACK_TEMPLATES = {
     ('460', '04'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
     ('460', '07'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
     ('460', '08'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
+    ('460', '13'): ('/etc/carrier/config/404.xml', MOBILE_404_SHA256),
     ('460', '01'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
     ('460', '06'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
     ('460', '09'): ('/etc/carrier/config/36.xml', UNICOM_36_SHA256),
@@ -271,9 +272,7 @@ def fix_known_telecom_internet_proxy(data, path, stock_sha256, mcc, mnc):
     return result
 
 
-def carrier_template(profile, mcc, mnc):
-    """Read only the SIM's stock carrier file, never a downloaded override."""
-    p = validate(profile)
+def preloaded_carrier_config(mcc, mnc):
     attrs = n.attrs(n.read('/pps/services/carriermanager/status_private'))
     home = n.value(attrs, 'true_home_carrier', {})
     if (not match(r'[0-9]{3}', mcc) or not match(r'[0-9]{2,3}', mnc) or
@@ -281,11 +280,62 @@ def carrier_template(profile, mcc, mnc):
         raise ValueError('Current stock carrier selection cannot be verified')
     if home.get('downloadedConfigFile'):
         raise ValueError('downloaded_carrier_config_present')
-    preloaded = home.get('preloadedConfigFile')
+    return home.get('preloadedConfigFile')
+
+
+def internet_apns(root):
+    entries = [node for node in root.iter('ServiceConfiguration') if node.findtext('Name') == 'internet']
+    return {(node.text or '').strip().lower() for entry in entries for node in entry.iter('APN')
+            if (node.text or '').strip()}
+
+
+def stock_trial_profile(mcc, mnc):
+    """Derive an untested carrier profile from this SIM's own original XML."""
+    try:
+        path = preloaded_carrier_config(mcc, mnc)
+    except (IOError, OSError, ValueError) as error:
+        if str(error) == 'downloaded_carrier_config_present':
+            raise
+        raise ValueError('experimental_stock_template_unavailable')
+    if not match(CONFIG_RE, path) or path == STOCK_DEFAULT_CONFIG_PATH or os.path.islink(path):
+        raise ValueError('experimental_stock_template_unavailable')
+    try:
+        stock = n.read(path)
+        root = parse_xml(stock)
+        apns = sorted(apn for apn in internet_apns(root) if match(APN_RE, apn))
+        if not 1 <= len(apns) <= 16:
+            raise ValueError('internet APN unavailable')
+        profile = default()
+        profile.update(id='auto-stock-' + mcc + mnc, label='Experimental stock carrier ' + mcc + '-' + mnc)
+        profile['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=apns,
+                                  stock_config=path.rsplit('/', 1)[1][:-4], stock_sha256=n.digest(stock))
+        ims = [node for node in root.iter('ServiceConfiguration') if node.findtext('Name') == 'ims']
+        if ims:
+            ims_apns = {(node.text or '').strip().lower() for node in ims[0].iter('APN') if (node.text or '').strip()}
+            families = {node.findtext('Type') for node in ims[0].iter('IPConfiguration') if node.findtext('Type')}
+            if len(ims) != 1 or len(ims_apns) > 1 or len(families) > 1:
+                raise ValueError('ambiguous IMS service')
+            if ims_apns:
+                profile['ims']['apn'] = ims_apns.pop()
+            if families:
+                profile['ims']['ip_family'] = families.pop()
+        profile['runtime']['autostart'] = False
+        patch_carrier(stock, profile)
+        return profile
+    except (IOError, OSError, ValueError, ET.ParseError):
+        raise ValueError('experimental_stock_template_unavailable')
+
+
+def carrier_template(profile, mcc, mnc):
+    """Read only the SIM's stock carrier file, never a downloaded override."""
+    p = validate(profile)
+    preloaded = preloaded_carrier_config(mcc, mnc)
     fallback_used = False
     fallback_sha = ''
     if p['carrier']['stock_config'] != 'auto':
         path = '/etc/carrier/config/' + p['carrier']['stock_config'] + '.xml'
+        if p['id'].startswith('auto-stock-') and path != preloaded:
+            raise ValueError('experimental_stock_template_unavailable')
         if (preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH) and (mcc, mnc) in STOCK_FALLBACK_TEMPLATES and
                 STOCK_FALLBACK_TEMPLATES[(mcc, mnc)][0] == path):
             if preloaded == STOCK_DEFAULT_CONFIG_PATH:
@@ -308,9 +358,7 @@ def carrier_template(profile, mcc, mnc):
     if expected and digest != expected:
         raise ValueError('Selected carrier file hash differs from profile')
     root = parse_xml(stock)
-    internet = [node for node in root.iter('ServiceConfiguration') if node.findtext('Name') == 'internet']
-    apns = set((node.text or '').strip().lower() for entry in internet for node in entry.iter('APN')
-               if (node.text or '').strip())
+    apns = internet_apns(root)
     profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
     # Preserve the existing data APN. Never silently transplant Unicom's data
     # configuration to another carrier just because its IMS APN is also "ims".

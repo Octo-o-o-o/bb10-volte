@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import stat
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 import sys
@@ -47,6 +48,84 @@ class CarrierSelectionTests(unittest.TestCase):
                     self.assertEqual(profiles.home_domain(profile, '460', mnc),
                                      'ims.mnc' + mnc.zfill(3) + '.mcc460.3gppnetwork.org')
         self.assertEqual(profiles.DEFAULT['carrier']['mncs'], ['01'])
+
+    def test_public_status_keeps_serving_plmn_out_of_home_selection(self):
+        home = card('07')
+        selected = p.select(facts(), home)
+        boot = ['current']
+        saved = dict(selected, boot=boot)
+        raw = {'phase': 'error', 'error': 'Existing APN overlay', 'status_from_current_boot': True}
+        with patch.object(u, 'verify'), patch.object(u, 'boot_token', return_value=boot), \
+             patch.object(u, 'boot_start_state', return_value=None), \
+             patch.object(u, 'card', return_value=home), \
+             patch.object(u.os.path, 'isfile', side_effect=lambda path: path in (u.SELECTION, u.BASE + '/enabled')), \
+             patch.object(u.s, 'load', return_value=saved), patch.object(u.s, 'read_status', return_value=raw), \
+             patch.object(u.device_info, 'read_identity', return_value=facts()), \
+             patch('unified_install.installed_management_schema', return_value=2), \
+             patch.object(u.n, 'read', side_effect=OSError), \
+             patch.object(d, 'serving_network_snapshot', return_value={'mcc': '460', 'mnc': '20'}):
+            status = u.public_status()
+            raw['status_from_current_boot'] = False
+            stale_status = u.public_status()
+        self.assertEqual(status['sim_plmn'], '460-07')
+        self.assertEqual(status['serving_plmn'], '460-20')
+        self.assertEqual(status['selected_operator'], 'mobile')
+        self.assertTrue(status['current_sim_matches'])
+        self.assertEqual(status['startup_blocker'], 'existing_apn_overlay')
+        self.assertNotIn('startup_blocker', stale_status)
+        self.assertNotIn(home['imsi'], json.dumps(status))
+
+    def test_only_exact_known_empty_overlays_can_pass_the_unified_journal_guard(self):
+        service = u.s
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            overlay = folder / '404.json'
+            overlay.write_bytes(service.EMPTY_CDSC_OVERLAY)
+            with patch.object(service, 'CDSC_OVERLAYS', temp), \
+                 patch.object(service, 'JOURNAL', str(folder / 'journal')), \
+                 patch.object(service, 'XML', str(folder / 'ims.xml')), \
+                 patch.object(service, 'CFG_DIR', str(folder / 'pps')), \
+                 patch.object(service.n, 'ims_pids', return_value=[]), \
+                 patch.object(service.n, 'voice_policy', side_effect=RuntimeError('next policy check')):
+                with self.assertRaisesRegex(AssertionError, 'Existing APN overlay'):
+                    service.init_journal()
+                with self.assertRaisesRegex(RuntimeError, 'next policy check'):
+                    service.init_journal(allow_known_empty_overlays=True)
+                self.assertEqual(overlay.read_bytes(), service.EMPTY_CDSC_OVERLAY)
+                unknown = folder / '446.json'
+                unknown.write_bytes(service.EMPTY_CDSC_OVERLAY)
+                with self.assertRaisesRegex(AssertionError, 'Existing APN overlay'):
+                    service.init_journal(allow_known_empty_overlays=True)
+                unknown.unlink()
+                overlay.write_bytes(service.EMPTY_CDSC_OVERLAY.replace(b'[]', b'[{"Name":"internet"}]'))
+                with self.assertRaisesRegex(AssertionError, 'Existing APN overlay'):
+                    service.init_journal(allow_known_empty_overlays=True)
+
+    def test_experimental_profiles_use_the_sim_home_and_its_stock_template(self):
+        stock = (b'<CarrierDataConfiguration><ServiceConfiguration><Name>internet</Name>'
+                 b'<APN>test.internet</APN></ServiceConfiguration><ServiceConfiguration>'
+                 b'<Name>ims</Name><APN>voice</APN><IPConfiguration><Type>IPv4</Type></IPConfiguration>'
+                 b'</ServiceConfiguration></CarrierDataConfiguration>')
+        mobile = p.select(facts(), card('13'))
+        self.assertEqual(mobile['operator'], 'mobile')
+        self.assertTrue(p.experimental_plmn('460', '13'))
+        self.assertEqual(profiles.STOCK_FALLBACK_TEMPLATES[('460', '13')][1], profiles.MOBILE_404_SHA256)
+        for mcc, mnc in (('454', '12'), ('310', '260'), ('460', '15'), ('460', '20')):
+            sim = dict(card(), mcc=mcc, mnc=mnc, imsi=(mcc + mnc).ljust(15, '1'))
+            with self.subTest(mcc=mcc, mnc=mnc), \
+                 patch.object(profiles, 'preloaded_carrier_config', return_value='/etc/carrier/config/123.xml'), \
+                 patch.object(profiles.n, 'read', return_value=stock):
+                result = p.select(facts(), sim)
+                self.assertEqual(result['operator'], 'other')
+                self.assertTrue(p.experimental_plmn(mcc, mnc))
+                profile = result['request']['profile']
+                self.assertEqual(profile['carrier']['data_apns'], ['test.internet'])
+                self.assertEqual(profile['ims']['apn'], 'voice')
+                self.assertEqual(profile['ims']['ip_family'], 'IPv4')
+                self.assertEqual(profiles.carrier_template(profile, mcc, mnc)[0]['path'], '/etc/carrier/config/123.xml')
+                with patch.object(profiles, 'preloaded_carrier_config', return_value='/etc/carrier/config/124.xml'), \
+                     self.assertRaisesRegex(ValueError, 'experimental_stock_template_unavailable'):
+                    profiles.carrier_template(profile, mcc, mnc)
 
     def test_second_card_same_carrier_gets_new_identity_without_changing_code(self):
         first = p.select(facts(), card())

@@ -62,6 +62,11 @@ def model(facts):
     return family
 
 
+def experimental_plmn(mcc, mnc):
+    return (profiles.match(r'[0-9]{3}', mcc) and profiles.match(r'[0-9]{2,3}', mnc) and
+            (mcc != '460' or mnc not in CARRIERS))
+
+
 def select(facts, card):
     """Use the home PLMN, never a roaming/display/network name or cached SIM."""
     family = model(facts)
@@ -69,20 +74,23 @@ def select(facts, card):
         raise ValueError('sim_not_ready')
     kind = card.get('kind')
     mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
-    if type(kind) is int and kind & 2 and mcc == '460' and mnc == '15':
-        raise ValueError('china_broadnet_unsupported')
     if type(kind) is not int or not kind & 2 or kind & 16:
         raise ValueError('sim_route_unsupported')
     if profiles.carrier_adaptation_blocked(facts.get('variant'), mcc, (mnc,)):
         raise ValueError('operator_not_supported')
-    if mcc != '460' or mnc not in ADMITTED_MNCS.get(facts.get('variant'), ()):
-        raise ValueError('carrier_not_validated')
     if not profiles.identity_matches(imsi, mcc, mnc):
         raise ValueError('sim_identity_unavailable')
-    operator, label, apns = CARRIERS[mnc]
-    p = profiles.default()
-    p.update(id='auto-' + operator + '-460' + mnc, label=label + ' / automatic SIM selection')
-    p['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=list(apns))
+    carrier = CARRIERS.get(mnc) if mcc == '460' else None
+    if (mcc, mnc) == ('460', '13'):
+        carrier = ('mobile', 'China Mobile', ['cmnet', 'cmwap'])
+    if carrier is None:
+        operator = 'other'
+        p = profiles.stock_trial_profile(mcc, mnc)
+    else:
+        operator, label, apns = carrier
+        p = profiles.default()
+        p.update(id='auto-' + operator + '-' + mcc + mnc, label=label + ' / automatic SIM selection')
+        p['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=list(apns))
     # The separate dispatcher owns boot policy. The legacy experimental profile
     # gate is deliberately not relaxed for standalone legacy service commands.
     p['runtime']['autostart'] = False

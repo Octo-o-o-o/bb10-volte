@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "unit_case": "SQW100-1/2026-11-23",
+  "variant": "SQW100-1",
+  "board": "WINDERMEREEMEA",
+  "os_version": "10.3.3.3216",
+  "sim": {
+    "operator": "mobile",
+    "home_plmn": "460-07"
+  },
+  "installed_mobile_app": "0.1.0.50",
+  "backend": {
+    "baseline_desktop_revision": 50,
+    "tested_payload": "empty-APN-overlay repair candidate",
+    "files_verified": 18,
+    "recovery_originals_verified": 4
+  },
+  "activation": {
+    "before": {
+      "radio": "GSM",
+      "ims": "disconnected",
+      "blocker": "existing_apn_overlay"
+    },
+    "repair": {
+      "known_v3_empty_overlay_filenames": [
+        "36.json",
+        "404.json"
+      ],
+      "original_files_preserved": true
+    },
+    "after_normal_boot": {
+      "radio": "LTE",
+      "ims": "connected",
+      "register_status": "200 OK",
+      "manager_running": true,
+      "native_running": true,
+      "phase_at_observation": "running",
+      "registration_ready": true
+    }
+  },
+  "owner_feedback": {
+    "reported_overall_success": true,
+    "per_function_checklist_confirmed": false
+  },
+  "limits": "Calls, audio, SMS counts, data during calls and restore round trip were not individually measured. Overseas operators and the bundled r51 release were not tested on this unit."
+}

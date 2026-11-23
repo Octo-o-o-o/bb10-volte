@@ -33,6 +33,10 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # Empty-overlay candidate before experimental stock carriers.
+                    'd677d59d414070ae79eb9269dadd0b26814dcf9e2bc3a26941cb7dd644e613e6',
+                    # r50/mobile50 before the PLMN and overlay diagnostics.
+                    'f882f45e4ddde072172137b36ff6788c09c59494d4002b9d6eb1f97689e9e415',
                     # r49/mobile49 before opt-in VoLTE PCM ring buffer support.
                     '994291d7482ffd63049d93369de8887df64e731640cc46ceeb647fa33aaee4cb',
                     # r48/mobile48 before external radio-mode reconciliation, pre-native retry and PLMN lock.
@@ -426,11 +430,23 @@ def probe():
 
 def with_sim_status(result, facts):
     install_ready = bool(result.get('can_install'))
+    radio = s.compatibility.read_network()
+    if radio.get('radio_read_error') is not True and type(radio.get('lte')) is bool:
+        result['radio_lte'] = radio['lte']
+        if radio.get('data_read_error') is not True and type(radio.get('data_connected')) is bool:
+            result['lte_data_connected'] = radio['lte'] and radio['data_connected']
+    serving = network.serving_network_snapshot()
+    if serving.get('mcc') and serving.get('mnc'):
+        result['serving_plmn'] = serving['mcc'] + '-' + serving['mnc']
     try:
         sim = u.card()
+        kind = sim.get('kind')
+        if type(kind) is int and 0 <= kind <= 255:
+            result['sim_has_isim'] = bool(kind & 16)
         mcc, mnc = sim.get('mcc'), sim.get('mnc')
         if profiles.match(r'[0-9]{3}', mcc) and profiles.match(r'[0-9]{2,3}', mnc):
             result['sim_plmn'] = mcc + '-' + mnc
+            result['operator_trial'] = policy.experimental_plmn(mcc, mnc)
         selection = policy.select(facts, sim)
         result['operator'] = selection['operator']
         profile = selection['request']['profile']
@@ -472,6 +488,7 @@ def lock_mobile_network():
     u.setup()
     u.verify()
     selection = policy.select(facts, u.card())
+    assert selection['operator'] in profiles.OPERATOR_MNCS, 'network_lock_profile_unavailable'
     profile = selection['request']['profile']
     sim = u.card()
     profiles.carrier_template(profile, sim.get('mcc'), sim.get('mnc'))

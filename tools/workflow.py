@@ -92,6 +92,14 @@ def public_status(raw):
             'native_alive': raw.get('native_alive') is True,
             'current': {k: current.get(k) for k in ('ims', 'register_status', 'ran', 'radio', 'power')}}
     result['status_from_current_boot'] = raw.get('status_from_current_boot') is True
+    for field in ('sim_plmn', 'serving_plmn'):
+        plmn = raw.get(field)
+        if isinstance(plmn, str) and re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', plmn):
+            result[field] = plmn
+    if raw.get('operator_trial') is True:
+        result['operator_trial'] = True
+    if result['status_from_current_boot'] and raw.get('startup_blocker') == 'existing_apn_overlay':
+        result['startup_blocker'] = 'existing_apn_overlay'
     result['pre_native_retry_available'] = raw.get('pre_native_retry_available') is True
     if raw.get('payload_update_required') is True:
         result['payload_update_required'] = True
@@ -107,7 +115,7 @@ def public_status(raw):
     if raw.get('automatic_carrier_selection') is True:
         result['automatic_carrier_selection'] = True
         result['selected_this_boot'] = raw.get('selected_this_boot') is True
-        if raw.get('selected_operator') in ('mobile', 'unicom', 'telecom'):
+        if raw.get('selected_operator') in ('mobile', 'unicom', 'telecom', 'other'):
             result['selected_operator'] = raw['selected_operator']
     scope = raw.get('ims_observation_scope')
     result['ims_observation_scope'] = scope if scope in ('owned_native', 'system_status_only') else 'unknown'

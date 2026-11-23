@@ -735,7 +735,8 @@ bool MobileController::cachedModel(QVariantMap *model) const
     }
     const QString carrier = bounded(savedDetails.value("carrier"), 16);
     details.insert("device", device);
-    details.insert("carrier", QString("mobile,unicom,telecom").split(',').contains(carrier) ? carrier : "unknown");
+    details.insert("carrier", QString("mobile,unicom,telecom,other").split(',').contains(carrier) ? carrier : "unknown");
+    if (savedDetails.value("operator_trial").toBool()) details.insert("operator_trial", true);
     const QString phase = bounded(savedDetails.value("phase"), 80);
     if (QRegExp("^[a-z0-9_]{1,80}$").exactMatch(phase)) details.insert("phase", phase);
     const QString oldVersion = bounded(savedDetails.value("version"), 40);
@@ -785,6 +786,7 @@ void MobileController::saveCachedModel(const QVariantMap &response)
     QVariantMap safeDetails;
     safeDetails.insert("device", device);
     safeDetails.insert("carrier", bounded(details.value("carrier"), 16));
+    if (details.value("operator_trial").toBool()) safeDetails.insert("operator_trial", true);
     safeDetails.insert("phase", bounded(details.value("phase"), 80));
     safeDetails.insert("version", bounded(details.value("version"), 40));
     safeDetails.insert("service_state", bounded(details.value("service_state"), 20));

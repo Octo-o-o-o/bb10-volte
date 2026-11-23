@@ -4,6 +4,13 @@ Keys are the original Chinese presentation strings. Keep placeholders intact.
 """
 
 ENGLISH = {
+    '系统未接入 LTE。请先在系统设置或向运营商确认入网；SIM 的 ISIM 限制需另行验证。': 'The system is not on LTE. Check network access in system settings or with the carrier. ISIM support requires separate verification.',
+    '当前运营商尚未实测。可以尝试自动激活，实际通话、短信和数据能力需验证。': 'This carrier is untested. You can try automatic activation and verify calls, SMS and data on the phone.',
+    '未实测运营商的原厂配置缺少可用的互联网或 IMS 服务，当前无法生成自动激活配置。': 'A usable stock Internet or IMS configuration is missing for this untested carrier, so the automatic profile cannot be generated.',
+    '现有 APN 覆盖阻断 VoLTE 启动': 'An existing APN overlay blocked VoLTE startup',
+    '请保留现有 APN 配置并导出诊断报告，以便确认配置来源。': 'Keep the APN settings and export diagnostics so their source can be identified.',
+    'SIM 归属网（PLMN）{}\n当前服务网（PLMN）{}': 'SIM home PLMN {}\nCurrent serving PLMN {}',
+    '当前 SIM 归属网为中国铁通（460-20）。现有中国移动公众 VoLTE 模板不适用于该网络。': 'The SIM home PLMN is China Tietong (460-20). The China Mobile public VoLTE profile does not apply to this network.',
     '请核对完整型号与实际运营商。': 'Check the exact model and actual carrier.',
     '请更新手机服务：当前版本已开放所有目录型号的三网入口。': 'Update the phone service: this version opens all catalog models on all three carriers.',
     '当前卡的归属网络尚无自动配置模板；已开放型号不因实测状态或频段说明而限制。': 'No automatic template exists for this home network; test status and band notes do not block listed models.',

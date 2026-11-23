@@ -9,7 +9,7 @@ from auto_carrier import AutoClient
 from connection import resolve_connection
 from completion_dialog import CompletionDialog
 from i18n import tr
-from auto_carrier_view import status_view, restart_guidance, retry_available
+from auto_carrier_view import status_view, restart_guidance, retry_available, operator_trial_note
 import device_support
 
 
@@ -184,6 +184,10 @@ class AutoCarrierWindow:
                         if scope_note:
                             self.status.configure(text=scope_note)
                             details = device_support.describe(device_support.assess(result.get('variant'))) + '\n\n' + scope_note
+                        if result.get('operator_trial') is True and (scope_note or not (result.get('status') or {}).get('operator_trial')):
+                            details += '\n\n' + operator_trial_note()
+                        if result.get('sim_has_isim') is True and result.get('radio_lte') is False:
+                            details += '\n\n' + tr('系统未接入 LTE。请先在系统设置或向运营商确认入网；SIM 的 ISIM 限制需另行验证。')
                     elif action == 'install':
                         self.report = dict(self.report or {}, installed=True, can_install=False, can_update=False,
                                            installation_pending=False, update_pending=False, update_available=False,

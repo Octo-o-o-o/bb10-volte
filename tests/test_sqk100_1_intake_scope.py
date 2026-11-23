@@ -47,10 +47,11 @@ class SQKIntakeTests(unittest.TestCase):
                         {'board_type':'CLASSICATT'},{'os_version':'10.3.3.2163'}):
             with self.assertRaises(ValueError):policy.select(dict(FACTS,**changed),card('01'))
 
-    def test_other_networks_and_bad_sim_identity_remain_blocked(self):
+    def test_missing_template_and_bad_sim_identity_remain_blocked(self):
         for changed in (card('15'),card('99'),dict(card('01'),kind=18),dict(card('01'),kind=True),
                         dict(card('01'),state='ABSENT'),dict(card('01'),imsi='unknown')):
-            with self.assertRaises(ValueError):policy.select(FACTS,changed)
+            with patch.object(policy.profiles, 'preloaded_carrier_config', return_value=None), self.assertRaises(ValueError):
+                policy.select(FACTS, changed)
 
     def test_unknown_native_image_blocks_before_migration(self):
         phone=SimpleNamespace(geteuid=lambda:0,uname=lambda:('QNX',))

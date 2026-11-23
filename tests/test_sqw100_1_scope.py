@@ -26,11 +26,10 @@ class ExactPassportScope(unittest.TestCase):
                              ('os_version', '10.3.3.2205')):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 policy.select(dict(FACTS, **{field: value}), CARD)
-        for mnc in ('20', '99', '000', '001', '007'):
-            with self.subTest(mnc=mnc), self.assertRaisesRegex(ValueError, 'carrier_not_validated'):
-                policy.select(FACTS, dict(CARD, mnc=mnc, imsi='460' + mnc + '12345' * 2))
-        with self.assertRaisesRegex(ValueError, 'china_broadnet_unsupported'):
-            policy.select(FACTS, dict(CARD, mnc='15', imsi='460' + '15' + '12345' * 2))
+        for mnc in ('15', '20', '99', '000', '001', '007'):
+            with self.subTest(mnc=mnc), patch.object(policy.profiles, 'preloaded_carrier_config', return_value=None):
+                with self.assertRaisesRegex(ValueError, 'experimental_stock_template_unavailable'):
+                    policy.select(FACTS, dict(CARD, mnc=mnc, imsi=('460' + mnc).ljust(15, '1')))
         with self.assertRaisesRegex(ValueError, 'sim_route_unsupported'):
             policy.select(FACTS, dict(CARD, kind=18))
 

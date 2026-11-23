@@ -45,7 +45,7 @@ class R48HardeningTests(unittest.TestCase):
         self.assertEqual(profiles.normalize_apn(None), '')
         self.assertEqual(
             set(profiles.OPERATOR_MNCS['mobile']) | set(profiles.OPERATOR_MNCS['unicom']) | set(profiles.OPERATOR_MNCS['telecom']),
-            {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '11', '12'},
+            {'00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '11', '12', '13'},
         )
         for variant in carrier_policy.MODELS:
             for mnc in ('00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '11', '12'):

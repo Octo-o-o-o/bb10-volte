@@ -188,6 +188,22 @@ class PhonePairingTests(unittest.TestCase):
         permissions = patch.object(p.os, 'stat', side_effect=file_stat)
         permissions.start()
         self.addCleanup(permissions.stop)
+        actual_lstat = os.lstat
+
+        def result_stat(path, *args, **kwargs):
+            value = actual_lstat(path, *args, **kwargs)
+            if Path(path).name == 'bb10-pair-abcdef123456-result.json':
+                return SimpleNamespace(st_uid=0, st_mode=value.st_mode, st_nlink=value.st_nlink,
+                                       st_dev=value.st_dev, st_ino=value.st_ino)
+            return value
+
+        lstat = patch.object(p.os, 'lstat', side_effect=result_stat)
+        lstat.start()
+        self.addCleanup(lstat.stop)
+        if os.name == 'nt':
+            chmod = patch.object(p.os, 'fchmod', create=True)
+            chmod.start()
+            self.addCleanup(chmod.stop)
 
     def pair(self):
         return p.authorize(self.key, 'abcdef123456', str(self.ssh), str(self.root), str(self.out))

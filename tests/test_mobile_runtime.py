@@ -117,7 +117,7 @@ class MobileRuntimeTests(unittest.TestCase):
             ('china_broadnet_unsupported', '460-15', '中国广电', 'China Broadnet'),
             ('sim_route_unsupported', '460-00', 'ISIM', 'ISIM'),
             ('downloaded_carrier_config_present', '460-08', '已下载的运营商配置', 'downloaded carrier configuration'),
-            ('carrier_not_validated', '460-20', '460-20', '460-20'),
+            ('carrier_not_validated', '460-20', '中国铁通', 'China Tietong'),
         ]
         for reason, plmn, zh_hint, en_hint in cases:
             probe = {'installed': False, 'sim_supported': False, 'sim_reason': reason, 'sim_plmn': plmn}
@@ -131,6 +131,25 @@ class MobileRuntimeTests(unittest.TestCase):
                 self.assertEqual(response['details']['sim_plmn'], plmn)
                 self.assertIn(zh_hint, response['display_i18n']['zh']['message'])
                 self.assertIn(en_hint, response['display_i18n']['en']['message'])
+
+    def test_untested_carrier_keeps_automatic_activation_with_a_visible_warning(self):
+        probe = {'installed': False, 'operator_trial': True, 'operator': 'other',
+                 'sim_supported': True, 'can_install': True}
+        with mock.patch.object(WORKER, 'mobile_radio_state', return_value='ON'):
+            response = WORKER.inspection_response({'language': 'en'}, probe, {})
+        self.assertEqual(response['primary_action'], 'install')
+        self.assertIn('untested', response['display']['message'])
+        self.assertIn('尚未实测', response['display_i18n']['zh']['message'])
+
+    def test_overlay_failure_keeps_recovery_state_and_reports_both_plmns(self):
+        status = {'enabled': True, 'phase': 'error', 'sim_plmn': '460-07', 'serving_plmn': '460-20',
+                  'startup_blocker': 'existing_apn_overlay'}
+        probe = {'installed': True, 'sim_supported': True, 'status': status}
+        response = WORKER.inspection_response({'language': 'en'}, probe, {})
+        self.assertEqual(response['state'], 'recovery_required')
+        self.assertIn('APN overlay', response['display']['message'])
+        self.assertEqual(response['details']['sim_plmn'], '460-07')
+        self.assertEqual(response['details']['serving_plmn'], '460-20')
 
     def test_busy_inspection_preserves_protocol_and_explains_a_confirmed_off_radio(self):
         job = {'id': 'a' * 32, 'action': 'enable', 'state': 'waiting_reboot'}

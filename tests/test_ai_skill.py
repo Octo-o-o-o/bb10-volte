@@ -102,6 +102,19 @@ class AiSkillModelsTests(unittest.TestCase):
 
 
 class AiSkillDetectAndOperationsTests(unittest.TestCase):
+    def test_status_exposes_valid_plmns_and_known_current_boot_blocker_only(self):
+        raw = {'phase': 'error', 'status_from_current_boot': True, 'sim_plmn': '460-07',
+               'serving_plmn': '310-260', 'startup_blocker': 'existing_apn_overlay'}
+        public = ai_skill.sanitize_probe({'status': raw})
+        self.assertEqual(public['status']['sim_plmn'], '460-07')
+        self.assertEqual(public['status']['serving_plmn'], '310-260')
+        self.assertEqual(public['status']['startup_blocker'], 'existing_apn_overlay')
+        self.assertIn('310-260', ai_skill.status_view(public['status'])['details'])
+        raw.update(serving_plmn='310260' + '123456789', startup_blocker='private text')
+        public = ai_skill.sanitize_probe({'status': raw})
+        self.assertNotIn('serving_plmn', public['status'])
+        self.assertNotIn('startup_blocker', public['status'])
+
     def _patch_local_env(self):
         return (
             patch.object(ai_skill.root_setup, 'prepared_kit_history', return_value=[]),

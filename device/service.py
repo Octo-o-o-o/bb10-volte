@@ -9,6 +9,7 @@ import posixpath
 import re
 import select
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -37,6 +38,8 @@ APN = RUNTIME + '/carrier/36-ims.xml'
 IMS = '/pps/services/carrier_config/ims/ims'
 VOICE = '/pps/services/carrier_config/radio_common/cellular_protocol_configuration'
 CDSC = '/pps/services/cds/cnice/status_persistent'
+CDSC_OVERLAYS = '/var/radio/cdsc'
+EMPTY_CDSC_OVERLAY = b'{"CDSCOverlayVersion":3,"CarrierDataConfiguration":{"ServiceConfiguration":[]}}'
 RADIO = '/pps/services/cellular/radioctrl/status_public'
 DATA = '/pps/services/cds/cnice/status'
 BB_SERVICE = '/pps/system/navigator/status/bb_service'
@@ -313,7 +316,26 @@ def applied_updates():
     return j.get('pps_applied', UPDATES)
 
 
-def init_journal():
+def known_empty_cdsc_overlay(name):
+    if name not in ('36.json', '404.json'):
+        return False
+    path = os.path.join(CDSC_OVERLAYS, name)
+    try:
+        before = os.lstat(path)
+        if not stat.S_ISREG(before.st_mode) or before.st_size != len(EMPTY_CDSC_OVERLAY):
+            return False
+        flags = os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0) | getattr(os, 'O_NOFOLLOW', 0)
+        fd = os.open(path, flags | getattr(os, 'O_BINARY', 0))
+        with os.fdopen(fd, 'rb') as source:
+            opened = os.fstat(source.fileno())
+            if not os.path.samestat(before, opened):
+                return False
+            return source.read(len(EMPTY_CDSC_OVERLAY) + 1) == EMPTY_CDSC_OVERLAY
+    except (IOError, OSError):
+        return False
+
+
+def init_journal(allow_known_empty_overlays=False):
     global j
     if os.path.isfile(JOURNAL):
         j = load(JOURNAL)
@@ -321,7 +343,12 @@ def init_journal():
         return
     assert not n.ims_pids(), 'Existing IMS instance; wait or stop the other experiment first'
     assert not os.path.lexists(XML) and not os.path.lexists(CFG_DIR), 'Existing IMS override'
-    assert not os.listdir('/var/radio/cdsc'), 'Existing APN overlay'
+    overlays = sorted(os.listdir(CDSC_OVERLAYS))
+    if overlays:
+        # Version-3 placeholders observed on stock carrier IDs 36/404 have no
+        # service entries. Accept these exact bytes in the unified path only.
+        assert (allow_known_empty_overlays and all(known_empty_cdsc_overlay(name) for name in overlays) and
+                sorted(os.listdir(CDSC_OVERLAYS)) == overlays), 'Existing APN overlay'
     assert n.voice_policy() == 0, 'Initial modem policy is not the tested original00'
     assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'Existing software crypto provider'
     assert not n.active_vpn_sessions(), 'Stop an existing VPN before initial installation'

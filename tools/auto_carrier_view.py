@@ -41,6 +41,10 @@ def retry_available(state):
         state.get('pre_native_retry_available') is True or state.get('phase') == 'boot_start_available')
 
 
+def operator_trial_note():
+    return tr('当前运营商尚未实测。可以尝试自动激活，实际通话、短信和数据能力需验证。')
+
+
 def status_view(state):
     """No desktop step counter: reconnecting/reopening resumes from phone facts."""
     ready = registration_ready(state)
@@ -65,6 +69,9 @@ def status_view(state):
         title = tr('可以重试连接，无需为上次等网重启')
         guidance = tr('上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。')
         code = 'unified_retry_available'
+    elif phase in ('error', 'error_restored') and state.get('startup_blocker') == 'existing_apn_overlay':
+        title = tr('现有 APN 覆盖阻断 VoLTE 启动')
+        guidance = tr('请保留现有 APN 配置并导出诊断报告，以便确认配置来源。')
     elif phase in ('cleanup_required', 'error', 'error_restored', 'unsupported_sim'):
         title = tr(PHASES[phase])
         guidance = tr('适配尚未完成。请保留当前状态，在主窗口导出报告后处理。')
@@ -117,5 +124,10 @@ def status_view(state):
         current.get('register_status') if ready else tr('未确认'),
         current.get('ran') or '/'.join(current.get('radio') or []) or '—',
         state.get('selected_operator') if state.get('selected_this_boot') else '—')
+    if state.get('sim_plmn') or state.get('serving_plmn'):
+        details += '\n' + tr('SIM 归属网（PLMN）{}\n当前服务网（PLMN）{}').format(
+            state.get('sim_plmn') or '—', state.get('serving_plmn') or '—')
+    if state.get('operator_trial') is True:
+        details += '\n' + operator_trial_note()
     return {'ready': ready, 'title': title, 'guidance': guidance,
             'details': guidance + '\n\n' + details, 'status_button': button, 'check_code': code}

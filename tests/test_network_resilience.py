@@ -403,7 +403,7 @@ class PreparationBoundaryTests(unittest.TestCase):
                          patch.object(service, 'ACTIVE_PROFILE', copy.deepcopy(service.ACTIVE_PROFILE)),
                          patch.object(service, 'ACTIVE_REQUEST', copy.deepcopy(service.ACTIVE_REQUEST)),
                          patch.object(service, 'UPDATES', copy.deepcopy(service.UPDATES)),
-                         patch.object(service, 'init_journal', side_effect=lambda: setattr(service, 'j', {})),
+                         patch.object(service, 'init_journal', side_effect=lambda **kwargs: setattr(service, 'j', {})),
                          patch.object(service, 'save_journal'), patch.object(service, 'status'),
                          patch.object(d, 'prepare', return_value=dca_ready),
                          patch.object(service, 'wait_for_network', side_effect=network),

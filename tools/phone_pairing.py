@@ -34,7 +34,8 @@ PHONE_MESSAGES_ZH = {
     'Existing authorization file is required': '需要已有的授权文件。',
     'Unexpected authorization file owner, mode or size': '授权文件的所有者、权限或大小不符合预期。',
     'Phone Downloads directory is unavailable': '手机 Downloads 目录不可用。',
-    'Existing result must not be a symbolic link': '已有结果不能是符号链接。',
+    'Existing result must be a regular Root-owned file': '已有结果必须是 Root 所有的普通文件。',
+    'Existing pairing result changed; preserve it for review': '已有授权结果已变化；请保留以便检查。',
     'Existing pairing result differs; preserve it for review': '已有授权结果不同；请保留以便检查。',
     'Authorization readback failed': '授权回读校验失败。',
     'Conditional SSH configuration needs manual review': '含条件的 SSH 配置需要人工检查。',
@@ -191,6 +192,21 @@ def settings(path):
     return result
 
 
+def checked_public_result(path, expected, make_readable=False):
+    flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0)
+    original = os.lstat(path)
+    if not stat.S_ISREG(original.st_mode) or original.st_uid != os.geteuid() or original.st_nlink != 1:
+        raise ValueError('Existing result must be a regular Root-owned file')
+    with os.fdopen(os.open(path, flags), 'rb') as source:
+        if not os.path.samestat(original, os.fstat(source.fileno())):
+            raise ValueError('Existing pairing result changed; preserve it for review')
+        raw = source.read(16385)
+        if len(raw) > 16384 or json.loads(raw.decode('ascii')) != expected:
+            raise ValueError('Existing pairing result differs; preserve it for review')
+        if make_readable:
+            os.fchmod(source.fileno(), 0o644)
+
+
 def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
               result_dir='/accounts/1000/shared/downloads'):
     if os.geteuid() != 0:
@@ -230,12 +246,7 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
                                             for name in ('use.sshd', 'use.ssh'))}
     output = os.path.join(result_dir, 'bb10-pair-' + request_id + '-result.json')
     if os.path.lexists(output):
-        if os.path.islink(output):
-            raise ValueError('Existing result must not be a symbolic link')
-        with open(output, 'r') as stream:
-            previous = json.load(stream)
-        if previous != result:
-            raise ValueError('Existing pairing result differs; preserve it for review')
+        checked_public_result(output, result)
     lock = target + '.bb10-pair.lock'
     lock_fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     os.close(lock_fd)
@@ -258,10 +269,17 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
                     raise ValueError('Authorization readback failed')
     finally:
         os.unlink(lock)
-    if not os.path.exists(output):
-        fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    if os.path.lexists(output):
+        checked_public_result(output, result, make_readable=True)
+    else:
+        fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, 'w') as stream:
             json.dump(result, stream, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+            # The caller uses umask 077 for its executable staging. Only this
+            # verified public receipt should be readable by the file share.
+            os.fchmod(stream.fileno(), 0o644)
     return output
 
 

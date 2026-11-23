@@ -48,7 +48,7 @@ def code(value):
 
 BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'can_install', 'can_update', 'can_start',
                'installed', 'installation_pending', 'update_pending', 'update_available', 'registered',
-               'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot',
+               'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot', 'operator_trial', 'sim_has_isim', 'radio_lte', 'lte_data_connected',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
                'sim_supported', 'automatic_start', 'fallback_used', 'stock_apn_bootstrap_eligible'}
 CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'status_error', 'selected_operator',
@@ -100,7 +100,9 @@ def project(value, depth=0):
             out[key] = project(item, depth + 1)
         elif key in ('variant', 'hardware_variant', 'ModelName') and isinstance(item, str):
             out[key] = item if re.fullmatch(r'(?:SQN|SQC|SQW|SQK|STL|STA)\d{3}-\d', item) else 'unknown'
-        elif key == 'sim_plmn' and isinstance(item, str) and re.fullmatch(r'\d{3}-\d{2,3}', item):
+        elif key in ('sim_plmn', 'serving_plmn') and isinstance(item, str) and re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', item):
+            out[key] = item
+        elif key == 'startup_blocker' and item == 'existing_apn_overlay':
             out[key] = item
         elif key in ('os', 'os_version', 'PlatformVersion') and isinstance(item, str):
             out[key] = item if re.fullmatch(r'\d{1,2}(?:\.\d{1,4}){2,3}', item) else 'unknown'

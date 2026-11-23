@@ -28,10 +28,11 @@ class SQC1IntakeScopeTests(unittest.TestCase):
             self.assertFalse(scope['owner_trial_pending_manual_acceptance'])
             self.assertEqual(variant_trials.plan('SQC100-1',operator)['hardware_acceptance'],'not_established_by_this_plan')
 
-    def test_other_mncs_and_isim_or_unready_identity_stay_rejected(self):
+    def test_missing_template_and_invalid_sim_identity_stay_rejected(self):
         for changed in (card('15'),card('99'),dict(card('01'),kind=18),dict(card('01'),state='PIN_REQUIRED'),
                         dict(card('01'),imsi='not-an-identity'),dict(card('01'),kind=True)):
-            with self.assertRaises(ValueError):policy.select(FACTS,changed)
+            with patch.object(policy.profiles, 'preloaded_carrier_config', return_value=None), self.assertRaises(ValueError):
+                policy.select(FACTS, changed)
 
     def test_wrong_board_os_and_suffix_never_reuse_this_device_scope(self):
         for changed in ({'board_type':'CLASSICATT'},{'board_type':'CLASSICNA'},

@@ -784,7 +784,7 @@ def prepare(managed_locking=False):
         # Record pre-native stage first; advance to native_configured right
         # before loading software crypto / launching owned ims_rrm.
         save(ATTEMPT, {'owner': policy.OWNER, 'boot': token, 'at': time.time(), 'stage': 'pre_native'})
-        s.init_journal()
+        s.init_journal(allow_known_empty_overlays=True)
         s.j.update(boot=token, sim_sha256=selected['sim_sha256'], operator=selected['operator'])
         s.save_journal()
         import unified_dca
@@ -1018,6 +1018,7 @@ def boot_start_state(token, raw):
 
 
 def public_status():
+    import unified_dca
     verify()
     token = boot_token(False)
     raw = s.read_status() if token is not None else {}
@@ -1037,15 +1038,26 @@ def public_status():
     value['installed_management_schema'] = installed_management_schema()
     value['installed_stage'] = 'managed' if value['installed_management_schema'] == 2 else 'legacy'
     value['current_sim_matches'] = None
-    if os.path.isfile(SELECTION):
-        saved = s.load(SELECTION)
+    serving = unified_dca.serving_network_snapshot()
+    if serving.get('mcc') and serving.get('mnc'):
+        value['serving_plmn'] = serving['mcc'] + '-' + serving['mnc']
+    if raw.get('status_from_current_boot') is True and raw.get('error') == 'Existing APN overlay':
+        value['startup_blocker'] = 'existing_apn_overlay'
+    saved = s.load(SELECTION) if os.path.isfile(SELECTION) else None
+    if saved is not None:
         value['selected_operator'] = saved['operator']
         value['selected_this_boot'] = saved['boot'] == token
-        try:
-            current_selection = policy.select(device_info.read_identity(), card())
+    try:
+        current_card = card()
+        mcc, mnc = current_card.get('mcc'), current_card.get('mnc')
+        if profiles.match(r'[0-9]{3}', mcc) and profiles.match(r'[0-9]{2,3}', mnc):
+            value['sim_plmn'] = mcc + '-' + mnc
+            value['operator_trial'] = policy.experimental_plmn(mcc, mnc)
+        if saved is not None:
+            current_selection = policy.select(device_info.read_identity(), current_card)
             value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
-        except (IOError, OSError, ValueError, TypeError, KeyError):
-            pass
+    except (IOError, OSError, ValueError, TypeError, KeyError):
+        pass
     try:
         busy = n.value(n.attrs(n.read('/pps/services/cellular/sms/status')), 'smsServiceBusy')
         value['sms_service_busy'] = busy if type(busy) is bool else None

@@ -71,6 +71,8 @@ def root_scope_note(variant, platform):
 
 
 def error_message(code, sim_plmn=None):
+    if code == 'carrier_not_validated' and sim_plmn == '460-20':
+        return tr('当前 SIM 归属网为中国铁通（460-20）。现有中国移动公众 VoLTE 模板不适用于该网络。')
     if code == 'carrier_not_validated' and isinstance(sim_plmn, str) and profiles.match(r'[0-9]{3}-[0-9]{2,3}', sim_plmn):
         return tr('当前卡的归属网络尚无自动配置模板（{}）；已开放型号不因实测状态或频段说明而限制。').format(sim_plmn)
     return {
@@ -81,6 +83,7 @@ def error_message(code, sim_plmn=None):
         'unknown_native_image': tr('系统原生文件与已适配版本不一致，已停止安装。需要核对固件与补丁，不能靠更换运营商模板继续。'),
         'china_broadnet_unsupported': tr('检测到中国广电（460-15）SIM。黑莓 10 全系硬件不支持广电主力 700 MHz（Band 28）频段且归属网非三大运营商，暂不支持开通 VoLTE。'),
         'downloaded_carrier_config_present': tr('检测到手机上存在已下载的运营商配置文件（OTA 覆盖），为保护现有设置未自动改写。请保留现场并导出脱敏检查报告。'),
+        'experimental_stock_template_unavailable': tr('未实测运营商的原厂配置缺少可用的互联网或 IMS 服务，当前无法生成自动激活配置。'),
         'carrier_not_validated': tr('当前卡的归属网络尚无自动配置模板；已开放型号不因实测状态或频段说明而限制。'),
         'sim_route_unsupported': tr('当前 SIM 类型尚未适配。自动流程只支持无 ISIM 的 USIM（部分新版 5G USIM 内置 ISIM 应用暂未适配）；请换用普通 4G USIM，或保留现有系统补充脱敏检查报告。'),
         'sim_not_ready': tr('SIM 尚未就绪。请解锁 SIM 并等待入网，再检查；暂不安装自动适配。'),
