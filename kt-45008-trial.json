@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "enabled": true,
+  "mcc": "450",
+  "mncs": ["08"],
+  "allow_isim": true,
+  "allow_stock_default_xml": true,
+  "data_apns": ["lte.ktfwing.com"],
+  "ims": {
+    "apn": "ims.ktfwing.com",
+    "ip_family": "IPv4v6",
+    "home_domain": "auto",
+    "sms": true
+  }
+}

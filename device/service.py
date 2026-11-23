@@ -229,7 +229,8 @@ def current_usim():
     restricted = n.attrs(n.read(base + 'status_restricted'))
     assert n.value(card, 'uicc_state', {}).get('state') == 'READY', 'SIM not ready'
     kind = n.value(card, 'uicc_type')
-    assert kind & 2 and not kind & 16, 'Only the verified USIM-without-ISIM route is supported'
+    allow_isim = bool(ACTIVE_PROFILE.get('experimental', {}).get('allow_isim'))
+    assert kind & 2 and (allow_isim or not kind & 16), 'Only the verified USIM-without-ISIM route is supported'
     home = n.value(card, 'hplmn')
     assert (home.get('mcc') == ACTIVE_PROFILE['carrier']['mcc'] and
             home.get('mnc') in ACTIVE_PROFILE['carrier']['mncs']), 'SIM does not match the installed operator profile'
@@ -422,6 +423,7 @@ def redact_ims_event_line(line):
         line = line.replace('vpn_login response: uid= ' + uid, 'vpn_login response: uid= __VPN_UID_%d__' % index)
     line = re.sub(r'(?i)\b(?:sips?|tel):[^\s>;,"\'()<>]+', '[redacted-uri]', line)
     line = re.sub(r'(?i)\b(Call-ID\s*:\s*)\S+', r'\1[redacted-call-id]', line)
+    line = re.sub(r'(?i)\b(imsi|impi|impu|iccid|msisdn)(\s*[:=]\s*)\S+', r'\1\2[redacted-id]', line)
     line = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?![\w.])', '[redacted-ip]', line)
     line = re.sub(r'\[[0-9a-fA-F:]+\](?::\d{1,5})?', '[redacted-ip]', line)
     line = re.sub(r'(?i)(?<![\w:])(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{1,4}(?![\w:])', '[redacted-ip]', line)
@@ -450,7 +452,9 @@ def collect_vpn_evidence():
                    'Domain is CS', 'incoming call is rejected', 'SIP/2.0 ', 'CSeq:',
                    'ImsPhoneIfDial', 'selectDomainVoice', 'onRegistrationSuccessful',
                    'MediaDialog', 'SDPState', 'RTPMediaSession', 'AudioMediaSession',
-                   'ImsAudio', 'setAudioQuality', 'startAudio', 'stopAudio')
+                   'ImsAudio', 'setAudioQuality', 'startAudio', 'stopAudio',
+                   'UICCRequired', 'ISIM', 'no impu', 'not provisioned',
+                   'aka auth', 'pcscf', 'P-CSCF', 'Domain name from UICC', 'REGISTER')
         events = [redact_ims_event_line(line) for line in own.splitlines() if any(m in line for m in markers)]
         fresh = [line for line in events if line not in event_seen]
         event_seen = set(events)

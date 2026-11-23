@@ -55,6 +55,7 @@ TELECOM_446_BAD_PROXY_SHA256 = 'd94f9b7eaa664a9ac496475e706bb837c364635400dd1af9
 TELECOM_446_BAD_PROXY = b'<HttpProxyV4>10.0.0.200:80</HttpProxyV4>'
 STOCK_DEFAULT_CONFIG_PATH = '/etc/carrier/config/0.xml'
 STOCK_DEFAULT_CONFIG_SHA256 = '5d13a0b15b30554b8230e2080ea03d9f00f3f36f33d72fa4d6ef8989cd59dadb'
+EXP_TRIAL_PATH = '/var/bb10_volte-exp-trial.json'
 MOBILE_404_SHA256 = '01093873ac626da82ec30c45a2db18925af12f5f9dec1fdca63c7ef3c70f0598'
 UNICOM_36_SHA256 = '929e5e6e92ecadd48c641ec77f93f34e4a8d494ce213ab71d6422d6f5bba3fe4'
 TELECOM_MNCS = ('03', '05', '11', '12')
@@ -104,7 +105,8 @@ def validate(value):
     def need(condition, field):
         if not condition:
             raise ValueError('Invalid profile field: ' + field)
-    need(isinstance(value, dict) and set(value) in (set(DEFAULT), set(DEFAULT) | {'lte_attach'}), 'root keys')
+    need(isinstance(value, dict) and set(value) in (
+        set(DEFAULT), set(DEFAULT) | {'lte_attach'}, set(DEFAULT) | {'experimental'}), 'root keys')
     p = copy.deepcopy(value)
     need(type(p['schema']) is int and p['schema'] == 1, 'schema')
     need(match(r'[a-z0-9][a-z0-9_-]{0,63}', p['id']), 'id')
@@ -113,6 +115,11 @@ def validate(value):
     for section in ('carrier', 'ims', 'runtime'):
         need(isinstance(p[section], dict) and set(p[section]) == set(DEFAULT[section]), section + ' keys')
     c, ims, runtime = p['carrier'], p['ims'], p['runtime']
+    if 'experimental' in p:
+        exp = p['experimental']
+        need(isinstance(exp, dict) and set(exp) == {'allow_isim', 'allow_stock_default_xml'} and
+             type(exp['allow_isim']) is bool and type(exp['allow_stock_default_xml']) is bool and
+             p['id'].startswith('exp-trial-') and runtime['autostart'] is False, 'experimental options')
     if 'lte_attach' in p:
         need(p['lte_attach'] == 'telecom_data_centric_v1', 'lte_attach')
         need(c['mcc'] == '460' and c['mncs'] == ['11'] and
@@ -326,12 +333,113 @@ def stock_trial_profile(mcc, mnc):
         raise ValueError('experimental_stock_template_unavailable')
 
 
+def validate_exp_trial(value):
+    """Validate an explicit opt-in experimental carrier trial JSON file."""
+    def need(condition, field):
+        if not condition:
+            raise ValueError('Invalid experimental trial field: ' + field)
+    need(isinstance(value, dict) and set(value) == {
+        'schema', 'enabled', 'mcc', 'mncs', 'allow_isim', 'allow_stock_default_xml', 'data_apns', 'ims'}, 'keys')
+    trial = copy.deepcopy(value)
+    need(type(trial['schema']) is int and trial['schema'] == 1, 'schema')
+    need(type(trial['enabled']) is bool, 'enabled')
+    need(type(trial['allow_isim']) is bool, 'allow_isim')
+    need(type(trial['allow_stock_default_xml']) is bool, 'allow_stock_default_xml')
+    need(match(r'[0-9]{3}', trial['mcc']), 'mcc')
+    for key, pattern in (('mncs', r'[0-9]{2,3}'), ('data_apns', APN_RE)):
+        items = trial[key]
+        need(isinstance(items, list) and 1 <= len(items) <= 16, key)
+        if key == 'data_apns':
+            items = [normalize_apn(item) for item in items]
+        need(all(match(pattern, item) for item in items), key)
+        need(len(set(items)) == len(items), key + ' duplicates')
+        trial[key] = items
+    ims = trial['ims']
+    need(isinstance(ims, dict) and set(ims) == set(DEFAULT['ims']), 'ims keys')
+    ims['apn'] = normalize_apn(ims['apn'])
+    need(match(APN_RE, ims['apn']), 'ims.apn')
+    need(ims['ip_family'] in ('IPv4', 'IPv6', 'IPv4v6'), 'ims.ip_family')
+    domain = ims['home_domain']
+    need(domain == 'auto' or (isinstance(domain, str) and len(domain) <= 253 and '.' in domain and
+         re.search('[a-z]', domain) is not None and all(match(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?',
+         label) for label in domain.split('.'))), 'ims.home_domain')
+    need(type(ims['sms']) is bool, 'ims.sms')
+    return trial
+
+
+def load_exp_trial(path=EXP_TRIAL_PATH):
+    """Load root-owned opt-in experimental trial config; absent/invalid returns None."""
+    try:
+        if os.path.islink(path) or not os.path.isfile(path):
+            return None
+        st = os.lstat(path)
+        if st.st_size > 4096:
+            return None
+        if hasattr(os, 'uname') and os.uname()[0] == 'QNX':
+            if st.st_uid != 0 or (st.st_mode & 0o077) != 0:
+                return None
+        with open(path, 'rb') as source:
+            raw = source.read(4097)
+        if len(raw) > 4096:
+            return None
+        trial = validate_exp_trial(json.loads(raw.decode('utf-8')))
+        return trial if trial['enabled'] is True else None
+    except (IOError, OSError, ValueError, TypeError):
+        return None
+
+
+def exp_trial_profile(mcc, mnc, trial=None):
+    """Build a strictly validated manual trial profile when opted in for this HPLMN."""
+    if not match(r'[0-9]{3}', mcc) or not match(r'[0-9]{2,3}', mnc):
+        return None
+    if trial is None:
+        trial = load_exp_trial()
+    if trial is None or trial['mcc'] != mcc or mnc not in trial['mncs']:
+        return None
+    profile = default()
+    profile.update(id='exp-trial-' + mcc + mnc, label='Experimental trial ' + mcc + '-' + mnc)
+    profile['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=list(trial['data_apns']),
+                              stock_config='auto', stock_sha256='')
+    profile['ims'] = copy.deepcopy(trial['ims'])
+    profile['runtime']['autostart'] = False
+    profile['experimental'] = {
+        'allow_isim': bool(trial['allow_isim']),
+        'allow_stock_default_xml': bool(trial['allow_stock_default_xml']),
+    }
+    return validate(profile)
+
+
+def patch_default_internet_apn(stock, data_apn):
+    """Fill the empty internet APN inside a verified stock 0.xml runtime copy."""
+    if not match(APN_RE, data_apn):
+        raise ValueError('Invalid experimental data APN')
+    parse_xml(stock)
+    spans = []
+    for found in re.finditer(br'<ServiceConfiguration>.*?</ServiceConfiguration>', stock, re.S):
+        block = found.group(0)
+        node = ET.fromstring(block)
+        if node.findtext('Name') == 'internet':
+            spans.append((found.start(), found.end(), block))
+    if len(spans) != 1:
+        raise ValueError('Default stock carrier XML internet section changed')
+    start, end, block = spans[0]
+    replaced, count = re.subn(br'<APN>\s*</APN>|<APN\s*/>',
+                              ('<APN>' + data_apn + '</APN>').encode('ascii'), block, count=1)
+    if count != 1:
+        raise ValueError('Default stock carrier XML empty APN tag changed')
+    result = stock[:start] + replaced + stock[end:]
+    ET.fromstring(result)
+    return result
+
+
 def carrier_template(profile, mcc, mnc):
     """Read only the SIM's stock carrier file, never a downloaded override."""
     p = validate(profile)
     preloaded = preloaded_carrier_config(mcc, mnc)
     fallback_used = False
     fallback_sha = ''
+    exp_default_xml = bool(p.get('experimental', {}).get('allow_stock_default_xml'))
+    stock_default_xml_used = False
     if p['carrier']['stock_config'] != 'auto':
         path = '/etc/carrier/config/' + p['carrier']['stock_config'] + '.xml'
         if p['id'].startswith('auto-stock-') and path != preloaded:
@@ -342,12 +450,19 @@ def carrier_template(profile, mcc, mnc):
                 if os.path.islink(preloaded) or n.digest(n.read(preloaded)) != STOCK_DEFAULT_CONFIG_SHA256:
                     raise ValueError('Default stock carrier file changed')
             fallback_used = True
+        elif exp_default_xml and path == STOCK_DEFAULT_CONFIG_PATH and preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH):
+            fallback_sha = STOCK_DEFAULT_CONFIG_SHA256
+            stock_default_xml_used = True
     elif preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH) and (mcc, mnc) in STOCK_FALLBACK_TEMPLATES:
         if preloaded == STOCK_DEFAULT_CONFIG_PATH:
             if os.path.islink(preloaded) or n.digest(n.read(preloaded)) != STOCK_DEFAULT_CONFIG_SHA256:
                 raise ValueError('Default stock carrier file changed')
         path, fallback_sha = STOCK_FALLBACK_TEMPLATES[(mcc, mnc)]
         fallback_used = True
+    elif exp_default_xml and preloaded in (None, '', STOCK_DEFAULT_CONFIG_PATH):
+        path = STOCK_DEFAULT_CONFIG_PATH
+        fallback_sha = STOCK_DEFAULT_CONFIG_SHA256
+        stock_default_xml_used = True
     else:
         path = preloaded
     if not match(CONFIG_RE, path) or os.path.islink(path):
@@ -357,16 +472,24 @@ def carrier_template(profile, mcc, mnc):
     expected = p['carrier']['stock_sha256'] or fallback_sha
     if expected and digest != expected:
         raise ValueError('Selected carrier file hash differs from profile')
-    root = parse_xml(stock)
-    apns = internet_apns(root)
-    profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
-    # Preserve the existing data APN. Never silently transplant Unicom's data
-    # configuration to another carrier just because its IMS APN is also "ims".
-    if not apns.intersection(profile_apns):
-        raise ValueError('Stock data APN does not match selected profile')
-    changed = patch_carrier(stock, p)
-    changed = fix_known_telecom_internet_proxy(changed, path, digest, mcc, mnc)
+    if stock_default_xml_used:
+        if digest != STOCK_DEFAULT_CONFIG_SHA256:
+            raise ValueError('Default stock carrier file changed')
+        working = patch_default_internet_apn(stock, p['carrier']['data_apns'][0])
+        changed = patch_carrier(working, p)
+    else:
+        root = parse_xml(stock)
+        apns = internet_apns(root)
+        profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
+        # Preserve the existing data APN. Never silently transplant Unicom's data
+        # configuration to another carrier just because its IMS APN is also "ims".
+        if not apns.intersection(profile_apns):
+            raise ValueError('Stock data APN does not match selected profile')
+        changed = patch_carrier(stock, p)
+        changed = fix_known_telecom_internet_proxy(changed, path, digest, mcc, mnc)
     info = {'path': path, 'sha256': digest}
     if fallback_used:
         info.update(fallback_used=True, original_preloaded_config=preloaded or '')
+    if stock_default_xml_used:
+        info.update(stock_default_xml_used=True, original_preloaded_config=preloaded or '')
     return info, changed
