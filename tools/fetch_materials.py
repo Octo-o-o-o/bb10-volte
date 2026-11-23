@@ -69,14 +69,95 @@ class _Retryable(Exception):
 
 class MaterialImportError(RuntimeError):
     """Local import errors carry instructions without suggesting a network retry."""
-    def __init__(self, code):
+    def __init__(self, code, detail=None):
         super().__init__(code)
-        self.user_message = {
+        self.user_message = detail or {
             'import_source_invalid': tr('无法读取所选文件。请选择浏览器已下载完成的固件压缩包，或检查文件路径和读取权限。'),
             'import_hash_mismatch': tr('所选文件与要求的固件不一致，可能尚未下载完整、已损坏或选错版本。请下载页面指定的完整原版固件文件，保留其原有格式，不要解压。原文件和已有缓存均已保留。'),
             'import_insufficient_disk': tr('下载缓存所在磁盘空间不足，无法复制固件。请至少腾出与固件大小相同的空间后重试。'),
             'import_io_error': tr('导入未完成。请检查所选文件是否可读、缓存目录是否可写，以及磁盘空间。原文件和已保存的下载进度均已保留。'),
         }[code]
+
+
+PARTIAL_SUFFIXES = ('.crdownload', '.part', '.tmp', '.downloading', '.importing', '.td', '.download', '.opdownload')
+
+
+def firmware_download_folder():
+    if os.name == 'nt':
+        import winreg
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders') as key:
+                path, _ = winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')
+            if isinstance(path, str) and path:
+                folder = Path(os.path.expandvars(path))
+                if folder.is_absolute():
+                    return folder
+        except OSError:
+            pass
+    return Path.home() / 'Downloads'
+
+
+def find_local_firmware_candidates(item, search_dirs=None):
+    """Non-recursive scan of common download folders for matching firmware files."""
+    expected_size = item.get('size') if isinstance(item.get('size'), int) else None
+    expected_name = item['file'].lower()
+    expected_stem = Path(item['file']).stem.lower()
+    expected_ext = Path(item['file']).suffix.lower()
+    extracted_name = str(item.get('extracted_file') or '').lower()
+    extracted_stem = Path(extracted_name).stem.lower() if extracted_name else ''
+    extracted_ext = Path(extracted_name).suffix.lower() if extracted_name else ''
+    default_dirs = [firmware_download_folder(), Path.home() / 'Downloads', Path.home() / 'Desktop']
+    if os.name == 'nt':
+        default_dirs.extend([Path('D:/BaiduNetdiskDownload'), Path('C:/BaiduNetdiskDownload'),
+                             Path('E:/BaiduNetdiskDownload'), Path('F:/BaiduNetdiskDownload'),
+                             Path('D:/Downloads')])
+    dirs = dict.fromkeys(Path(path) for path in (default_dirs if search_dirs is None else search_dirs))
+    exact_size, name_matches, seen = [], [], set()
+    for folder in dirs:
+        try:
+            if folder.is_symlink() or not folder.is_dir():
+                continue
+            entries = sorted(folder.iterdir(), key=lambda p: p.name.lower())
+        except OSError:
+            continue
+        for entry in entries:
+            lower = entry.name.lower()
+            if lower.endswith(PARTIAL_SUFFIXES):
+                continue
+            named_archive = lower == expected_name or (
+                lower.startswith(expected_stem) and lower.endswith(expected_ext))
+            named_executable = extracted_name and (lower == extracted_name or
+                (lower.startswith(extracted_stem) and lower.endswith(extracted_ext)))
+            if not (named_archive or named_executable):
+                continue
+            try:
+                if entry.is_symlink() or not entry.is_file():
+                    continue
+                resolved = entry.resolve()
+                if resolved in seen:
+                    continue
+                if expected_size and named_archive and entry.stat().st_size == expected_size:
+                    exact_size.append(entry)
+                else:
+                    name_matches.append(entry)
+                seen.add(resolved)
+            except OSError:
+                continue
+    return exact_size if exact_size else name_matches
+
+
+def firmware_cached(item, folder=None):
+    """Check cache presence by size. Preparation still verifies the full hash."""
+    folder = Path(folder) if folder else download_root()
+    target, _ = _input_paths(item, folder)
+    try:
+        if not target.is_file() or target.is_symlink():
+            return False
+        expected_size = item.get('size')
+        return not expected_size or target.stat().st_size == expected_size
+    except OSError:
+        return False
 
 
 def sha(path):
@@ -219,6 +300,25 @@ def import_material(item, source, folder=None, progress=None):
             raise MaterialImportError('import_source_invalid') from None
         with input_file:
             total = os.fstat(input_file.fileno()).st_size
+            expected_size = item.get('size') if isinstance(item.get('size'), int) and item['size'] > 0 else None
+            if item['file'].lower().endswith('.7z') and source.suffix.lower() == '.exe':
+                raise MaterialImportError(
+                    'import_hash_mismatch',
+                    tr('请选择原始压缩包 {}，不要解压或运行 .exe。').format(item['file']))
+            if source.name.lower().endswith(PARTIAL_SUFFIXES):
+                raise MaterialImportError(
+                    'import_hash_mismatch',
+                    tr('这是下载临时文件。请等下载完成后选择 {}。').format(item['file']))
+            if expected_size and total != expected_size:
+                if total < expected_size:
+                    raise MaterialImportError(
+                        'import_hash_mismatch',
+                        tr('所选文件大小不足（{:.1f} MiB / 需要 {:.1f} MiB），可能尚未下载完整或选错了机型。需要文件：{}。').format(
+                            total / 1024 ** 2, expected_size / 1024 ** 2, item['file']))
+                raise MaterialImportError(
+                    'import_hash_mismatch',
+                    tr('所选文件大小与目标固件不符（{:.1f} MiB / 需要 {:.1f} MiB），请确认没有选错机型。需要文件：{}。').format(
+                        total / 1024 ** 2, expected_size / 1024 ** 2, item['file']))
             folder.mkdir(parents=True, exist_ok=True)
             with _download_lock(partial.with_name(partial.name + '.lock')):
                 _regular(target)

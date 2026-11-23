@@ -4,8 +4,19 @@ import bb.cascades.pickers 1.0
 Page {
     id: page
     property variant appNavigation
+    property bool advancedOpen: false
     function t(key) { var language = volteController.language; return volteController.label(key); }
+    function allows(action) { var model = volteController.model; return volteController.allowed(action); }
     titleBar: TitleBar { title: page.t("advanced") }
+    actions: [
+        ActionItem {
+            title: page.t("status")
+            enabled: !volteController.busy && !volteController.operationInProgress
+            ActionBar.placement: ActionBarPlacement.OnBar
+            shortcuts: [ Shortcut { key: "R" } ]
+            onTriggered: volteController.refresh()
+        }
+    ]
     ScrollView {
         scrollViewProperties.scrollMode: ScrollMode.Vertical
         Container {
@@ -17,13 +28,16 @@ Page {
             Label { text: volteController.statusMessage; multiline: true; visible: text.length > 0; textFormat: TextFormat.Plain }
             Label { text: volteController.cachedStatusText; multiline: true; visible: text.length > 0; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Label { text: volteController.jobText; multiline: true; visible: text.length > 0; textFormat: TextFormat.Plain }
+            Label { text: page.t("export_path") + ": " + volteController.exportPath; visible: volteController.exportPath.length > 0; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             ActivityIndicator { visible: volteController.activityVisible; running: visible; preferredHeight: 60; preferredWidth: 60 }
-            Button { text: page.t("status"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && !volteController.operationInProgress; onClicked: volteController.refresh() }
-            Label { text: page.t("details"); textStyle.fontWeight: FontWeight.W500 }
-            Label { text: volteController.detailText; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
-            Label { text: page.t("app_version") + ": " + volteController.version; textStyle.fontSize: FontSize.Small }
-            Label { text: page.t("runtime_version") + ": " + volteController.runtimeVersionText; textStyle.fontSize: FontSize.Small }
-            Label { text: page.t("phone_service") + ": " + volteController.phoneServiceText; textStyle.fontSize: FontSize.Small }
+            Label { text: page.t("app_version") + ": " + volteController.version + "  ·  " + page.t("phone_service") + ": " + volteController.phoneServiceText; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
+            Button {
+                text: page.t("pair_title")
+                horizontalAlignment: HorizontalAlignment.Fill
+                enabled: !volteController.busy && !volteController.operationInProgress && !pairingController.busy
+                onClicked: page.appNavigation.push(pairingPage.createObject())
+            }
+            Label { text: page.t("pair_optional"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Divider {}
             DropDown {
                 title: page.t("language")
@@ -48,22 +62,8 @@ Page {
                 text: page.t("bundled_update")
                 horizontalAlignment: HorizontalAlignment.Fill
                 visible: volteController.canApplyBundledUpdate
-                enabled: !volteController.busy && volteController.allowed("update")
+                enabled: page.allows("update")
                 onClicked: volteController.applyBundledUpdate()
-            }
-            Label { text: page.t("offline_update"); textStyle.fontWeight: FontWeight.W500 }
-            Label { text: volteController.packageName; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
-            Button {
-                text: page.t("pick_package")
-                horizontalAlignment: HorizontalAlignment.Fill
-                enabled: !volteController.busy && !volteController.jobRunning
-                onClicked: { if (volteController.beginPackageSelection()) packagePicker.open(); }
-            }
-            Button {
-                text: page.t("update")
-                horizontalAlignment: HorizontalAlignment.Fill
-                enabled: volteController.hasPackage && !volteController.busy && volteController.allowed("update")
-                onClicked: volteController.requestAction("update")
             }
             Button {
                 text: page.t("check_update")
@@ -75,7 +75,7 @@ Page {
                 text: page.t("download_update")
                 horizontalAlignment: HorizontalAlignment.Fill
                 visible: volteController.hasUpdate
-                enabled: !volteController.busy && volteController.allowed("update")
+                enabled: page.allows("update")
                 onClicked: volteController.downloadUpdate()
             }
             Button {
@@ -88,31 +88,60 @@ Page {
             Label { text: volteController.updateFeedback; visible: text.length > 0; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
             Divider {}
             Button {
-                text: page.t("pair_title")
+                text: page.t("confirm-calls")
                 horizontalAlignment: HorizontalAlignment.Fill
-                enabled: !volteController.busy && !volteController.operationInProgress && !pairingController.busy
-                onClicked: page.appNavigation.push(pairingPage.createObject())
-            }
-            Label { text: page.t("pair_optional"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
-            Button { text: page.t("export_backup"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.canExportBackup; onClicked: volteController.exportBackup() }
-            Button { text: page.t("export"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("export"); onClicked: volteController.requestAction("export") }
-            Button { text: page.t("compatibility"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("compatibility"); onClicked: volteController.requestAction("compatibility") }
-            Button { text: page.t("enable"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("enable"); onClicked: volteController.requestAction("enable") }
-            Button { text: page.t("restore_network"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("disable"); onClicked: volteController.requestAction("disable") }
-            Label { text: page.t("restore_network_help"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
-            Button { text: page.t("rollback"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("rollback"); onClicked: volteController.requestAction("rollback") }
-            Button { text: page.t("uninstall"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.allowed("uninstall"); onClicked: volteController.requestAction("uninstall") }
-            Button {
-                text: page.t("legacy")
-                horizontalAlignment: HorizontalAlignment.Fill
+                visible: page.allows("confirm-calls")
                 enabled: !volteController.busy && !volteController.jobRunning
-                onClicked: page.appNavigation.push(experimentalPage.createObject())
+                onClicked: page.appNavigation.push(callPage.createObject())
+            }
+            Button { text: page.t("export_backup"); horizontalAlignment: HorizontalAlignment.Fill; enabled: !volteController.busy && volteController.canExportBackup; onClicked: volteController.exportBackup() }
+            Button { text: page.t("export"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("export"); onClicked: volteController.requestAction("export") }
+            Button { text: page.t("enable"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("enable"); onClicked: volteController.requestAction("enable") }
+            Button { text: page.t("restore_network"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("disable"); onClicked: volteController.requestAction("disable") }
+            Label { text: page.t("restore_network_help"); visible: page.allows("disable"); multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
+            Button { text: page.t("uninstall"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("uninstall"); onClicked: volteController.requestAction("uninstall") }
+            Divider {}
+            Button {
+                text: page.t(page.advancedOpen ? "advanced_less" : "advanced_more")
+                horizontalAlignment: HorizontalAlignment.Fill
+                onClicked: page.advancedOpen = !page.advancedOpen
+            }
+            Container {
+                visible: page.advancedOpen
+                topPadding: 12
+                Label { text: page.t("details"); textStyle.fontWeight: FontWeight.W500 }
+                Label { text: volteController.detailText; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
+                Label { text: page.t("runtime_version") + ": " + volteController.runtimeVersionText; textStyle.fontSize: FontSize.Small }
+                Divider {}
+                Label { text: page.t("offline_update"); textStyle.fontWeight: FontWeight.W500 }
+                Label { text: volteController.packageName; multiline: true; textStyle.fontSize: FontSize.Small; textFormat: TextFormat.Plain }
+                Button {
+                    text: page.t("pick_package")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    enabled: !volteController.busy && !volteController.jobRunning
+                    onClicked: { if (volteController.beginPackageSelection()) packagePicker.open(); }
+                }
+                Button {
+                    text: page.t("update")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    enabled: volteController.hasPackage && page.allows("update")
+                    onClicked: volteController.requestAction("update")
+                }
+                Button { text: page.t("rollback"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("rollback"); onClicked: volteController.requestAction("rollback") }
+                Button { text: page.t("compatibility"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("compatibility"); onClicked: volteController.requestAction("compatibility") }
+                Button {
+                    text: page.t("legacy")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    enabled: !volteController.busy && !volteController.jobRunning
+                    onClicked: page.appNavigation.push(experimentalPage.createObject())
+                }
             }
         }
     }
     attachedObjects: [
         ComponentDefinition { id: pairingPage; source: "Pairing.qml" },
         ComponentDefinition { id: experimentalPage; source: "Experimental.qml" },
+        ComponentDefinition { id: callPage; source: "CallCheck.qml" },
         FilePicker {
             id: packagePicker
             title: page.t("pick_package")

@@ -5,10 +5,39 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QRegExp>
+#include <QSet>
 #include <QUrl>
 #include <QUuid>
 #include <QVariantMap>
 #include <openssl/sha.h>
+
+static QByteArray readRequest(const QFileInfo &info, QString *id, QString *fingerprint) {
+    if (!info.isFile() || info.isSymLink() || info.size() < 1 || info.size() > 16384) return QByteArray();
+    QFile file(info.absoluteFilePath());
+    if (!file.open(QIODevice::ReadOnly)) return QByteArray();
+    const QByteArray bytes = file.read(16385);
+    if (bytes.isEmpty() || bytes.size() > 16384) return QByteArray();
+    bb::data::JsonDataAccess json;
+    const QVariantMap request = json.loadFromBuffer(bytes).toMap();
+    if (json.hasError() || request.size() != 4 || request.value("schema").toInt() != 1 ||
+        request.value("kind").toString() != "bb10-computer-pairing") return QByteArray();
+    const QString requestId = request.value("request_id").toString();
+    const QString key = request.value("computer_public_key").toString();
+    if (!QRegExp("[a-f0-9]{12}").exactMatch(requestId) ||
+        !QRegExp("ssh-rsa [A-Za-z0-9+/]+={0,2}").exactMatch(key)) return QByteArray();
+    const QByteArray encoded = key.mid(8).toLatin1();
+    const QByteArray blob = QByteArray::fromBase64(encoded);
+    if (blob.size() < 128 || blob.size() > 8192 || blob.toBase64() != encoded ||
+        !blob.startsWith(QByteArray("\0\0\0\7ssh-rsa", 11))) return QByteArray();
+    *id = requestId;
+    if (fingerprint) {
+        unsigned char digest[SHA256_DIGEST_LENGTH];
+        SHA256(reinterpret_cast<const unsigned char *>(blob.constData()), blob.size(), digest);
+        const QByteArray value(reinterpret_cast<const char *>(digest), sizeof(digest));
+        *fingerprint = "SHA256:" + QString::fromLatin1(value.toBase64()).remove('=');
+    }
+    return bytes;
+}
 
 PairingController::PairingController(QObject *parent) : QObject(parent),
     m_status("pair_choose_help"), m_busy(false), m_done(false), m_timedOut(false) {
@@ -22,49 +51,48 @@ PairingController::PairingController(QObject *parent) : QObject(parent),
 void PairingController::loadDownloadRequest() {
     if (m_busy) return;
     QDir downloads("/accounts/1000/shared/downloads");
-    const QFileInfoList files = downloads.entryInfoList(QStringList() << "bb10-pair-*-request.json",
+    const QFileInfoList files = downloads.entryInfoList(QStringList() << "bb10-pair-*-request*.json" << "request*.json",
         QDir::Files | QDir::Readable | QDir::NoSymLinks, QDir::Name);
-    QStringList matches;
+    QRegExp pattern("(?:bb10-pair-([a-f0-9]{12})-)?request(?:[0-9]+| ?\\([0-9]+\\))?\\.json");
+    QStringList matches, unpaired;
+    QSet<QString> seenRequests;
+    bool invalid = false;
     for (int i = 0; i < files.size(); ++i) {
-        if (QRegExp("bb10-pair-[a-f0-9]{12}-request\\.json").exactMatch(files.at(i).fileName()))
-            matches << files.at(i).absoluteFilePath();
+        const QFileInfo &info = files.at(i);
+        if (!pattern.exactMatch(info.fileName())) continue;
+        QString id, fingerprint;
+        const QByteArray content = readRequest(info, &id, &fingerprint);
+        if (content.isEmpty() || (!pattern.cap(1).isEmpty() && id != pattern.cap(1))) {
+            invalid = true;
+            continue;
+        }
+        const QString requestIdentity = id + fingerprint;
+        if (seenRequests.contains(requestIdentity)) continue;
+        seenRequests.insert(requestIdentity);
+        const QString fullPath = info.absoluteFilePath();
+        matches << fullPath;
+        if (!downloads.exists("bb10-pair-" + id + "-result.json"))
+            unpaired << fullPath;
     }
-    if (matches.size() == 1) { chooseRequest(matches.first()); return; }
+    const QStringList &effective = (!unpaired.isEmpty() && unpaired.size() < matches.size()) ? unpaired : matches;
+    if (effective.size() == 1) { chooseRequest(effective.first()); return; }
     m_request.clear(); m_id.clear(); m_fingerprint.clear(); m_filename.clear();
-    m_resultPath.clear(); m_done = false;
-    m_status = matches.isEmpty() ? "pair_download_missing" : "pair_download_multiple";
+    m_resultPath.clear(); m_hostFingerprint.clear(); m_hostShortCode.clear(); m_done = false;
+    if (effective.isEmpty()) m_status = invalid ? "pair_invalid_request" : "pair_download_missing";
+    else m_status = "pair_download_multiple";
     emit changed();
 }
 void PairingController::chooseRequest(const QString &selected) {
     if (m_busy) return;
     m_request.clear(); m_id.clear(); m_fingerprint.clear(); m_filename.clear();
-    m_resultPath.clear(); m_done = false; m_status = "pair_invalid_request";
+    m_resultPath.clear(); m_hostFingerprint.clear(); m_hostShortCode.clear(); m_done = false; m_status = "pair_invalid_request";
     QString path = selected.startsWith("file:") ? QUrl(selected).toLocalFile() : selected;
-    QFileInfo info(path);
-    if (!info.isFile() || info.size() < 1 || info.size() > 16384) { emit changed(); return; }
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly)) { emit changed(); return; }
-    QByteArray bytes = file.read(16385);
-    if (bytes.isEmpty() || bytes.size() > 16384) { emit changed(); return; }
-    bb::data::JsonDataAccess json;
-    QVariantMap request = json.loadFromBuffer(bytes).toMap();
-    if (json.hasError() || request.size() != 4 || request.value("schema").toInt() != 1 ||
-        request.value("kind").toString() != "bb10-computer-pairing") { emit changed(); return; }
-    QString id = request.value("request_id").toString();
-    QString key = request.value("computer_public_key").toString();
-    if (!QRegExp("[a-f0-9]{12}").exactMatch(id) ||
-        !QRegExp("ssh-rsa [A-Za-z0-9+/]+={0,2}").exactMatch(key)) { emit changed(); return; }
-    QByteArray encoded = key.mid(8).toLatin1();
-    QByteArray blob = QByteArray::fromBase64(encoded);
-    if (blob.size() < 128 || blob.size() > 8192 || blob.toBase64() != encoded ||
-        !blob.startsWith(QByteArray("\0\0\0\7ssh-rsa", 11))) { emit changed(); return; }
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256(reinterpret_cast<const unsigned char *>(blob.constData()), blob.size(), digest);
-    QByteArray value(reinterpret_cast<const char *>(digest), sizeof(digest));
-    m_fingerprint = "SHA256:" + QString::fromLatin1(value.toBase64()).remove('=');
+    const QFileInfo info(path);
+    const QByteArray bytes = readRequest(info, &m_id, &m_fingerprint);
+    if (bytes.isEmpty()) { emit changed(); return; }
     // Keep exactly the previewed bytes; later shared-file changes cannot
     // substitute a different key. Root repeats strict JSON and key validation.
-    m_request = bytes; m_id = id; m_filename = info.fileName();
+    m_request = bytes; m_filename = info.fileName();
     m_status = "pair_ready"; emit changed();
 }
 void PairingController::authorize() {
@@ -115,7 +143,16 @@ void PairingController::finished(int code, QProcess::ExitStatus status) {
                 result.value("state").toString() == "paired" && result.value("request_id").toString() == m_id &&
                 result.value("fingerprint").toString() == m_fingerprint && result.value("result_path").toString() == expected) {
                 m_done = true; m_resultPath = expected;
-                m_status = result.value("usb_ssh_available").toBool() ? "pair_done" : "pair_done_service_pending";
+                m_hostFingerprint = result.value("host_fingerprint").toString();
+                if (QRegExp("SHA256:[A-Za-z0-9+/]{43}").exactMatch(m_hostFingerprint)) {
+                    QString rawCode = m_hostFingerprint.mid(7, 8);
+                    m_hostShortCode = rawCode.left(4) + "-" + rawCode.mid(4, 4);
+                } else {
+                    m_hostFingerprint.clear();
+                    m_hostShortCode.clear();
+                }
+                if (m_hostShortCode.isEmpty()) m_status = "pair_done_copy_result";
+                else m_status = result.value("usb_ssh_available").toBool() ? "pair_done" : "pair_done_service_pending";
             }
         }
     }

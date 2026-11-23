@@ -88,6 +88,12 @@ def main():
     args = parser.parse_args()
     if args.preview_start_page and not args.preview_id:
         parser.error('--preview-start-page requires --preview-id')
+    project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+    from mobile_app_install import release as mobile_app_release
+    bundled_version = mobile_app_release()['version']
+    if bundled_version != project['mobile_version']:
+        parser.error(f'Bundled phone app is {bundled_version}; expected {project["mobile_version"]}. '
+                     'Build and verify the matching mobile BAR before building a Windows release.')
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     assert sys.platform == 'win32' and platform.machine().lower() in ('amd64', 'x86_64')
@@ -101,7 +107,6 @@ def main():
     assert interp.call('info', 'patchlevel') == spec['tcl']
     source_report = check()
     verify_package()
-    project = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
     if args.preview_id is not None:
         project.update(preview_id=args.preview_id, state='unpublished_local_trial_preview')
         project['preview_start_page'] = args.preview_start_page or 'variants'

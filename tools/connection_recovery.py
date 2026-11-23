@@ -67,6 +67,71 @@ def fingerprint(key):
     return 'SHA256:' + base64.b64encode(hashlib.sha256(data).digest()).decode('ascii').rstrip('=')
 
 
+def short_code(key):
+    fp = fingerprint(key)
+    raw = fp.removeprefix('SHA256:')[:8]
+    return raw[:4] + '-' + raw[4:8]
+
+
+def _probe_peer_host_key(client, peer, source=None):
+    # Observe the offered RSA key on stderr. No trusted keys appear on stdout,
+    # so strict SSH verification ends the handshake before authentication.
+    if sys.platform == 'win32':
+        shell = (Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
+        shell = shell.as_posix().replace('%', '%%')
+        observer = (f'"{shell}" -NoProfile -NonInteractive -Command '
+                    '"[Console]::Error.WriteLine(\'BB10-HOST %I %t %K\')"')
+    else:
+        observer = '/bin/sh -c "echo BB10-HOST %I %t %K >&2"'
+    cmd = [client.ssh, '-n', '-T', '-F', 'none',
+           '-o', 'StrictHostKeyChecking=yes',
+           '-o', 'GlobalKnownHostsFile=none',
+           '-o', 'UserKnownHostsFile=none',
+           '-o', 'KnownHostsCommand=' + observer,
+           '-o', 'IdentityAgent=none',
+           '-o', 'IdentityFile=none',
+           '-o', 'PreferredAuthentications=none',
+           '-o', 'BatchMode=yes',
+           '-o', 'ConnectTimeout=8',
+           '-o', 'Ciphers=aes128-ctr,aes192-ctr,aes256-ctr',
+           '-o', 'MACs=hmac-sha1',
+           '-o', 'HostKeyAlgorithms=rsa-sha2-512,rsa-sha2-256,ssh-rsa']
+    if source:
+        cmd += ['-o', 'BindAddress=' + source]
+    cmd += ['root@' + peer]
+    try:
+        proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                              timeout=12, creationflags=CREATE_NO_WINDOW)
+    except subprocess.TimeoutExpired:
+        return None, 'connection_timeout_state_unknown'
+    stderr = proc.stderr or ''
+    if proc.returncode != 0 and 'Host key verification failed.' in stderr:
+        match = re.search(r'^BB10-HOST HOSTNAME (ssh-rsa [A-Za-z0-9+/]+={0,2})[ \t]*$', stderr, re.M)
+        if match:
+            try:
+                return public_key(match[1]), None
+            except RecoveryError:
+                pass
+    if 'connection refused' in stderr.lower():
+        return None, 'connection_refused'
+    return None, 'connection_failed'
+
+
+def probe_usb_host_key():
+    """Read the directly attached phone's RSA host key without authenticating."""
+    from root_setup import local_usb_state
+    usb = local_usb_state()
+    if (usb.get('usb_count') or 0) > 1:
+        raise RecoveryError('multiple_usb_devices')
+    peer, source = usb.get('usb_peer'), usb.get('usb_source_address')
+    if usb.get('usb_count') != 1 or not peer or not source:
+        raise RecoveryError('direct_usb_not_ready')
+    key, error = _probe_peer_host_key(Client(), peer, source)
+    if not key:
+        raise RecoveryError(error)
+    return key
+
+
 def read_host_key(path):
     path = Path(path)
     if path.stat().st_size > 65536:
@@ -76,7 +141,8 @@ def read_host_key(path):
         words = line.split()
         if words and words[0] == 'ssh-rsa':
             candidate = line
-        elif len(words) >= 3 and words[0] in ('169.254.0.1', '[169.254.0.1]:22') and words[1] == 'ssh-rsa':
+        elif (len(words) >= 3 and words[1] == 'ssh-rsa' and
+              any(host in ('169.254.0.1', '[169.254.0.1]:22') for host in words[0].split(','))):
             candidate = ' '.join(words[1:])
         else:
             continue
@@ -103,6 +169,7 @@ def write_config(folder, host_public):
     config.write_text('Host bb10-root q10-root\n    HostName 169.254.0.1\n    User root\n'
                       '    IdentityFile ' + quoted(folder / 'identity') + '\n'
                       '    UserKnownHostsFile ' + quoted(folder / 'known_hosts') + '\n'
+                      '    GlobalKnownHostsFile none\n'
                       '    IdentitiesOnly yes\n    StrictHostKeyChecking yes\n'
                       '    PasswordAuthentication no\n    BatchMode yes\n', encoding='utf-8')
     return {'host': 'bb10-root', 'config': str(config)}
@@ -234,12 +301,37 @@ def read_pairing_result(path):
     return folder, host_key, data.get('ssh_startup_configured') is True
 
 
-def finish_pairing(path, confirmed=False):
+def finish_pairing(path, confirmed=False, *, expected=None):
     if confirmed is not True:
         raise RecoveryError('host_confirmation_required')
     folder, host_key, _ = read_pairing_result(path)
+    if expected is not None and (folder, host_key) != expected:
+        raise RecoveryError('pairing_result_changed')
     config = folder / 'ssh_config'
     # A later import cannot silently replace a previously pinned host identity.
     if config.is_file() and read_host_key(folder / 'known_hosts') != host_key:
+        raise RecoveryError('host_key_changed')
+    return write_config(folder, host_key)
+
+
+def finish_pairing_direct(script, host_public, confirmed=False):
+    """Pin an interactively confirmed USB host key for a pending pairing folder."""
+    if confirmed is not True:
+        raise RecoveryError('host_confirmation_required')
+    script = Path(script)
+    folder = script.parent
+    request_id = folder.name.removeprefix('recovery-')
+    if (not folder.name.startswith('recovery-') or folder.is_symlink() or folder.is_junction() or
+            folder.resolve().parent != private_root().resolve() or
+            not re.fullmatch(r'[a-f0-9]{12}', request_id) or
+            script.name != 'bb10-pair-' + request_id + '.py' or not script.is_file()):
+        raise RecoveryError('pairing_result_invalid')
+    identity = folder / 'identity'
+    config, known = folder / 'ssh_config', folder / 'known_hosts'
+    if not identity.is_file() or not identity.with_suffix('.pub').is_file() or any(
+            path.is_symlink() or path.is_junction() for path in (script, identity, identity.with_suffix('.pub'), config, known)):
+        raise RecoveryError('pairing_result_invalid')
+    host_key = public_key(host_public)
+    if config.is_file() and read_host_key(known) != host_key:
         raise RecoveryError('host_key_changed')
     return write_config(folder, host_key)

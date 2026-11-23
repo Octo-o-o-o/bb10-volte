@@ -9,10 +9,11 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from connection_recovery import (RecoveryError, read_host_key, fingerprint, import_identity,
+from connection_recovery import (RecoveryError, read_host_key, fingerprint, short_code, import_identity,
                                  prepare_pairing, refresh_pairing_script, read_pairing_result, finish_pairing,
+                                 probe_usb_host_key, finish_pairing_direct,
                                  pending_pairings, save_pairing_step, complete_pairing)
-from root_setup import verify_root, SetupError
+from root_setup import local_usb_state, verify_root, SetupError
 from workflow import WorkflowError
 from profile_editor import FONT
 from mac_help import TRANSFER_HINT, scrolled_page, show_guide as show_mac_guide
@@ -30,11 +31,14 @@ MESSAGES = {
     'host_key_changed': tr('这次结果与此前保存的手机身份不同，已保留原记录。请核对手机与授权文件。'),
     'authentication_failed': tr('手机没有接受这把登录密钥。可改用“没有连接文件”，通过手机已有 Root 终端授权本电脑。'),
     'host_key_mismatch': tr('手机身份与导入的公钥不符。请重新从这台手机获取授权结果，不要关闭校验。'),
-    'connection_refused': tr('手机的 SSH 尚未开启。新授权文件可在手机上输入 START 临时开启 USB SSH；已有 Root 工具也可开启。'),
+    'connection_refused': tr('手机的 USB SSH 尚未启动。请先在手机打开一次 BlackBerry World（或用原 Root 工具开启 SSH），再点击验证连接；也可先导入手机 Downloads 中的 result.json。'),
     'connection_failed': tr('尚未连通手机。检查 USB 网络、手机解锁与 SSH 是否已启动，再点击验证。'),
     'connection_timeout_state_unknown': tr('连接超时。请核对 USB 网络与手机 SSH 状态后重新验证。'),
     'root_not_ready': tr('SSH 已连接，但不是有效 Root。请先用原 Root 工具完成启动，再验证。'),
     'root_probe_failed': tr('已建立 SSH，但 Root 诊断未完成。请保留连接材料检查诊断结果，不要因此重新刷写或更改手机安全设置。'),
+    'multiple_usb_devices': tr('检测到多台黑莓手机。请只保留要配对的那一台，拔掉其他黑莓手机后再试。'),
+    'direct_usb_not_ready': tr('未识别到单台黑莓手机的 USB 网络。请解锁手机并检查数据线，或先导入手机的授权结果。'),
+    'pairing_result_changed': tr('结果文件在确认期间发生变化。请重新从当前手机复制，再核对指纹。'),
 }
 
 
@@ -97,12 +101,15 @@ class RecoveryDialog(tk.Toplevel):
         self.missing_steps = ttk.Label(missing, wraplength=740, justify='left')
         self.missing_steps.pack(anchor='w', pady=(8, 0))
         row = ttk.Frame(missing)
-        row.pack(fill='x', pady=12)
+        row.pack(fill='x', pady=(12, 6))
+        nav_row = ttk.Frame(missing)
+        nav_row.pack(fill='x', pady=(0, 8))
         self.generate_button = ttk.Button(row, text=tr('保存授权文件'), command=self.generate)
-        self.result_button = ttk.Button(row, text=tr('选择手机授权结果'), command=self.import_result)
-        self.step_back = ttk.Button(row, text=tr('上一步'), command=lambda: self.set_step(self.pair_step - 1))
-        self.step_next = ttk.Button(row, command=lambda: self.set_step(self.pair_step + 1))
-        self.buttons.extend([self.generate_button, self.result_button, self.step_back, self.step_next])
+        self.direct_button = ttk.Button(row, text=tr('直接验证连接（免拷结果）'), style='Accent.TButton', command=self.verify_direct)
+        self.result_button = ttk.Button(row, text=tr('导入手机授权结果'), command=self.import_result)
+        self.step_back = ttk.Button(nav_row, text=tr('上一步'), command=lambda: self.set_step(self.pair_step - 1))
+        self.step_next = ttk.Button(nav_row, command=lambda: self.set_step(self.pair_step + 1))
+        self.buttons.extend([self.generate_button, self.direct_button, self.result_button, self.step_back, self.step_next])
         self.commands = tk.Text(missing, height=12, wrap='word',
                                 font=('Menlo' if sys.platform == 'darwin' else 'Consolas', 10))
         self.copy_commands = ttk.Button(missing, text=tr('复制完整授权命令'), command=self.copy_phone_commands)
@@ -164,23 +171,25 @@ class RecoveryDialog(tk.Toplevel):
                 item['step'] = step
         self.resume_picker.configure(values=[item['script'].stem + tr(' · 第 ') + str(item['step']) + tr(' 步')
                                               for item in self.pending])
-        titles = {1: tr('把授权文件放到手机'), 2: tr('在手机上允许这台电脑连接'), 3: tr('取回手机授权结果')}
+        titles = {1: tr('把授权文件放到手机'), 2: tr('在手机上允许这台电脑连接'), 3: tr('验证连接（免拷结果或导入）')}
         self.step_label.configure(text=tr('第 {} / 3 步 · {}').format(step, titles[step]))
         descriptions = {
             1: tr('保存授权文件，将 -request.json 复制到手机内部存储 Downloads。\n电脑私钥保留在本机；同编号的 .py 和说明供旧版终端备用。'),
-            2: tr('打开新版 BB10 VoLTE → 管理与恢复 → 连接电脑，选择本次 -request.json。核对下方编号和指纹后，点击“授权这台电脑”。\n无需输入命令；手机需要已有有效 Root。'),
-            3: tr('将手机内部 Downloads 中同编号的 result.json 复制回本电脑，再选择它并确认来源。\n应用会核对请求编号、本机密钥、手机身份与实际 Root 权限。'),
+            2: tr('在手机打开“BB10 VoLTE → 管理与恢复 → 连接电脑”。核对下方编号和电脑指纹，再点“授权这台电脑”。\n如果手机显示校验码，可直接验证。旧版手机只显示结果文件时，请复制回来导入。'),
+            3: tr('手机显示校验码时，点击“直接验证连接”并核对手机身份。\n也可把手机 Downloads 中同编号的 -result.json 复制到电脑，再点“导入手机授权结果”。'),
         }
         self.missing_steps.configure(text=descriptions[step])
-        for button in (self.generate_button, self.result_button, self.step_back, self.step_next):
+        for button in (self.generate_button, self.direct_button, self.result_button, self.step_back, self.step_next):
             button.pack_forget()
         if step == 1:
             self.generate_button.pack(side='left', padx=(0, 10))
+        if step in (2, 3) and self.pair_script:
+            self.direct_button.pack(side='left', padx=(0, 10))
         self.result_button.pack(side='left', padx=(0, 10))
         if step > 1:
             self.step_back.pack(side='left', padx=(0, 10))
         if step < 3:
-            self.step_next.configure(text=tr('已复制到手机，下一步') if step == 1 else tr('手机已生成结果，下一步'))
+            self.step_next.configure(text=tr('已复制到手机，下一步') if step == 1 else tr('手机已完成授权，下一步'))
             self.step_next.pack(side='left')
         self.commands.pack_forget()
         self.copy_commands.pack_forget()
@@ -232,9 +241,14 @@ class RecoveryDialog(tk.Toplevel):
         if path:
             self.host_key.set(path)
 
-    def confirm_host(self, key):
-        return messagebox.askokcancel(tr('核对手机身份'), tr('手机主机公钥指纹：\n') + fingerprint(key) +
-                                     tr('\n\n请确认此公钥或结果来自当前这台手机，或你信任的原始连接材料。确认后会固定校验此身份。'), parent=self)
+    def confirm_host(self, key, direct=False):
+        identity = tr('手机校验码：{}\n完整指纹：\n{}').format(short_code(key), fingerprint(key))
+        instruction = (
+            tr('请逐一核对校验码和完整指纹，两项都应与当前手机屏幕一致。手机未显示时，请取消并导入手机授权结果。')
+            if direct else
+            tr('请确认这是当前手机生成的授权结果或可信的原始材料。手机显示指纹时，请与完整指纹核对。'))
+        return messagebox.askokcancel(
+            tr('核对手机身份'), identity + '\n\n' + instruction, parent=self)
 
     def show_error(self, error):
         self.verified = False
@@ -266,15 +280,22 @@ class RecoveryDialog(tk.Toplevel):
             return script
         self.start('script', work)
 
+    def verify_direct(self):
+        if self.busy or not self.pair_script:
+            return
+        self.start('probe_host', probe_usb_host_key)
+
     def import_result(self):
+        if self.busy:
+            return
         path = filedialog.askopenfilename(parent=self, title=tr('选择手机生成的 bb10-pair-编号-result.json'), filetypes=[(tr('授权结果'), '*.json')])
         if not path:
             return
         try:
-            _, key, _ = read_pairing_result(path)
+            folder, key, _ = read_pairing_result(path)
             if not self.confirm_host(key):
                 return
-            self.choice = finish_pairing(path, confirmed=True)
+            self.choice = finish_pairing(path, confirmed=True, expected=(folder, key))
             self.verify()
         except (OSError, ValueError) as error:
             self.show_error(error)
@@ -282,7 +303,11 @@ class RecoveryDialog(tk.Toplevel):
     def verify(self):
         if self.choice:
             choice = dict(self.choice)
-            self.start('verify', lambda: verify_root(choice['host'], choice['config']))
+            def work():
+                if (local_usb_state().get('usb_count') or 0) > 1:
+                    raise RecoveryError('multiple_usb_devices')
+                return verify_root(choice['host'], choice['config'])
+            self.start('verify', work)
 
     def start(self, action, work):
         if self.busy:
@@ -290,7 +315,8 @@ class RecoveryDialog(tk.Toplevel):
         self.events.begin(action)
         self.busy, self.verified = True, False
         self.refresh()
-        self.status.configure(text=tr('正在准备本机文件…') if action != 'verify' else tr('正在验证手机身份与 Root 权限…'))
+        self.status.configure(text=tr('正在读取手机 USB 身份，请稍候…') if action == 'probe_host' else
+                              tr('正在准备本机文件…') if action != 'verify' else tr('正在验证手机身份与 Root 权限…'))
         def worker():
             try:
                 self.events.put((action, work()))
@@ -312,7 +338,16 @@ class RecoveryDialog(tk.Toplevel):
                 elif action == 'script':
                     self.pair_script = result
                     self.set_step(1)
-                    self.status.configure(text=tr('已保存 ') + result.name + tr('。复制到手机内部 Downloads 后点击下一步。'))
+                    self.status.configure(text=tr('已保存 {}。复制到手机内部 Downloads 后点击下一步。').format(result.stem + '-request.json'))
+                elif action == 'probe_host':
+                    try:
+                        if self.confirm_host(result, direct=True):
+                            self.choice = finish_pairing_direct(self.pair_script, result, confirmed=True)
+                            self.verify()
+                        else:
+                            self.status.configure(text=tr('已取消身份确认；尚未保存配置。'))
+                    except (OSError, ValueError) as error:
+                        self.show_error(error)
                 elif action == 'config':
                     self.choice = result
                     self.verify()

@@ -10,6 +10,8 @@ class PairingController : public QObject {
     Q_PROPERTY(QString filename READ filename NOTIFY changed)
     Q_PROPERTY(QString statusKey READ statusKey NOTIFY changed)
     Q_PROPERTY(QString resultPath READ resultPath NOTIFY changed)
+    Q_PROPERTY(QString hostFingerprint READ hostFingerprint NOTIFY changed)
+    Q_PROPERTY(QString hostShortCode READ hostShortCode NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool done READ done NOTIFY changed)
     Q_PROPERTY(bool hasRequest READ hasRequest NOTIFY changed)
@@ -20,6 +22,8 @@ public:
     QString filename() const { return m_filename; }
     QString statusKey() const { return m_status; }
     QString resultPath() const { return m_resultPath; }
+    QString hostFingerprint() const { return m_hostFingerprint; }
+    QString hostShortCode() const { return m_hostShortCode; }
     bool busy() const { return m_busy; }
     bool done() const { return m_done; }
     bool hasRequest() const { return !m_request.isEmpty(); }
@@ -36,7 +40,7 @@ private slots:
     void timeout();
 private:
     QByteArray m_request, m_command, m_output;
-    QString m_id, m_fingerprint, m_filename, m_status, m_resultPath;
+    QString m_id, m_fingerprint, m_filename, m_status, m_resultPath, m_hostFingerprint, m_hostShortCode;
     bool m_busy, m_done, m_timedOut;
     QProcess m_process;
     QTimer m_timer;

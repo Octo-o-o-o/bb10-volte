@@ -30,6 +30,7 @@ class MobilePairingTests(unittest.TestCase):
         self.request = p.pairing_request(self.key, 'abcdef123456')
         self.raw = json.dumps(self.request).encode('ascii')
         self.encoded = base64.b64encode(self.raw).decode('ascii')
+        self.host_fingerprint = p.key_fingerprint(public_key(2))
 
     def test_request_is_public_only_and_fingerprint_matches_desktop(self):
         self.assertEqual(p.parse_pairing_request(self.raw), self.request)
@@ -64,13 +65,14 @@ class MobilePairingTests(unittest.TestCase):
         result_path = '/accounts/1000/shared/downloads/bb10-pair-abcdef123456-result.json'
         with patch.object(p.os, 'geteuid', return_value=0, create=True), \
                 patch.object(p.os, 'uname', return_value=('QNX',), create=True), \
-                patch.object(p, 'authorize', return_value=result_path) as authorize, \
+                patch.object(p, 'authorize', return_value=(result_path, self.host_fingerprint)) as authorize, \
                 patch.object(p, 'usb_ssh_available', return_value=True), \
                 patch.object(p.subprocess, 'call') as start:
             result = p.mobile_pair(self.encoded)
-        authorize.assert_called_once_with(self.key, 'abcdef123456')
+        authorize.assert_called_once_with(self.key, 'abcdef123456', include_host_fingerprint=True)
         start.assert_not_called()
         self.assertEqual(result['result_path'], result_path)
+        self.assertEqual(result['host_fingerprint'], self.host_fingerprint)
         self.assertTrue(result['desktop_verification_required'])
         self.assertTrue(result['usb_ssh_available'])
 
@@ -93,7 +95,7 @@ class MobilePairingTests(unittest.TestCase):
     def test_missing_ssh_starts_existing_service_only_on_usb(self):
         with patch.object(p.os, 'geteuid', return_value=0, create=True), \
                 patch.object(p.os, 'uname', return_value=('QNX',), create=True), \
-                patch.object(p, 'authorize', return_value='/downloads/result.json'), \
+                patch.object(p, 'authorize', return_value=('/downloads/result.json', self.host_fingerprint)), \
                 patch.object(p, 'usb_ssh_available', side_effect=[False, True]), \
                 patch.object(p, 'usb_ssh_safe_to_start', return_value=True), \
                 patch.object(p, 'open', mock_open(), create=True), \
@@ -112,7 +114,7 @@ class MobilePairingTests(unittest.TestCase):
             self.assertTrue(p.usb_ssh_safe_to_start())
         with patch.object(p.os, 'geteuid', return_value=0, create=True), \
                 patch.object(p.os, 'uname', return_value=('QNX',), create=True), \
-                patch.object(p, 'authorize', return_value='/downloads/result.json'), \
+                patch.object(p, 'authorize', return_value=('/downloads/result.json', self.host_fingerprint)), \
                 patch.object(p, 'usb_ssh_available', return_value=False), \
                 patch.object(p, 'usb_ssh_safe_to_start', return_value=False), \
                 patch.object(p.subprocess, 'call') as start:

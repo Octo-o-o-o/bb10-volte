@@ -108,7 +108,7 @@ ERRORS = {
     'connection_setup_required': tr('这台电脑还没有可用的连接。打开“连接帮助”，选择原刷机文件夹，或从手机重新授权。'),
     'hostname_unresolved': tr('原连接不可用。打开“连接帮助”恢复材料，或在高级设置核对连接。'),
     'ssh_algorithm_mismatch': tr('手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新检查。'),
-    'connection_refused': tr('手机连接服务尚未启动。请解锁手机，打开“连接帮助”按当前状态处理。'),
+    'connection_refused': tr('解锁手机并保持 USB 连接。AutoRoot 可打开一次 BlackBerry World，等 Root 就绪后点“重新检查”。其他 Root 工具请按原方法启动连接服务。'),
     'bundled_ssh_mismatch': tr('内置 SSH 文件校验失败，请重新获取完整 EXE。'),
     'invalid_profile': tr('配置格式或参数不符合要求，请在配置编辑器中检查。'),
     'profile_update_required': tr('所选配置与已装配置不同。先停用恢复，再预检和更新安装。'),
@@ -220,7 +220,9 @@ class App:
         header.pack(fill='x')
         self.label(header, 'BB10 VoLTE', 22, bold=True).pack(side='left')
         self.auto_carrier_button = ttk.Button(header, text=tr('三网自动适配'), command=self.auto_carrier)
-        self.auto_carrier_button.pack(side='left', padx=20)
+        self.auto_carrier_button.pack(side='left', padx=(20, 8))
+        self.mobile_app_button = ttk.Button(header, text=tr('安装手机应用'), command=self.mobile_app)
+        self.mobile_app_button.pack(side='left')
         self.more_button = ttk.Menubutton(header, text=tr('更多'))
         self.more_button.pack(side='right')
         ttk.Button(header, text=tr('遇到问题 / 反馈'), command=lambda: FeedbackDialog(self.root, 'preflight')).pack(side='right', padx=8)
@@ -433,6 +435,7 @@ class App:
         self.menu.entryconfigure(self.menu_actions['enable'], label=tr('启用自动适配')
             if r.get('managed_adapter') == 'unified_carriers' else tr('启用已验收的开机恢复'))
         self.auto_carrier_button.configure(state='disabled' if self.busy else 'normal')
+        self.mobile_app_button.configure(state='disabled' if self.busy else 'normal')
         accepted_telecom = r.get('hardware_validation') == 'q10_telecom_per_sim_accepted'
         self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
         self.edit_button.configure(state='disabled' if self.busy or managed or trial else 'normal')

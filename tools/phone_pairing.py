@@ -20,6 +20,8 @@ PHONE_MESSAGES_ZH = {
     'Type PAIR to authorize this computer: ': '输入 PAIR 授权这台电脑：',
     'Cancelled; no files changed.': '已取消；没有修改任何文件。',
     'Public pairing result saved: ': '公开授权结果已保存：',
+    'Phone check code: ': '手机校验码：',
+    'Host fingerprint: ': '手机指纹：',
     'Copy this result back to the desktop app, then test the connection.': '请将结果复制回电脑应用，再验证连接。',
     'If SSH is disabled, you may start the existing server for the USB link now.': '如果 SSH 未启动，现在可以为 USB 连接启动已有服务。',
     'Type START only if SSH is not already running (Enter to skip): ': '仅当 SSH 尚未运行时输入 START（按回车跳过）：',
@@ -148,7 +150,8 @@ def mobile_pair(encoded):
     if base64.b64encode(raw).decode('ascii') != encoded:
         raise ValueError('Invalid pairing request')
     request = parse_pairing_request(raw)
-    result_path = authorize(request['computer_public_key'], request['request_id'])
+    result_path, host_fp = authorize(request['computer_public_key'], request['request_id'],
+                                     include_host_fingerprint=True)
     available = usb_ssh_available()
     start_code = None
     if not available and usb_ssh_safe_to_start():
@@ -161,10 +164,13 @@ def mobile_pair(encoded):
             except (IOError, OSError):
                 start_code = -1
         available = usb_ssh_available()
-    return {'schema': 1, 'state': 'paired', 'request_id': request['request_id'],
-            'fingerprint': key_fingerprint(request['computer_public_key']),
-            'result_path': result_path, 'usb_ssh_available': available,
-            'ssh_start_exit_code': start_code, 'desktop_verification_required': True}
+    payload = {'schema': 1, 'state': 'paired', 'request_id': request['request_id'],
+               'fingerprint': key_fingerprint(request['computer_public_key']),
+               'result_path': result_path, 'usb_ssh_available': available,
+               'ssh_start_exit_code': start_code, 'desktop_verification_required': True}
+    if host_fp:
+        payload['host_fingerprint'] = host_fp
+    return payload
 
 
 def cleanup_mobile_bridge():
@@ -208,7 +214,7 @@ def checked_public_result(path, expected, make_readable=False):
 
 
 def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
-              result_dir='/accounts/1000/shared/downloads'):
+              result_dir='/accounts/1000/shared/downloads', include_host_fingerprint=False):
     if os.geteuid() != 0:
         raise ValueError('ROOT_REQUIRED: enter an existing Root terminal first')
     if not re.match(r'^[a-f0-9]{12}$', request_id or ''):
@@ -280,6 +286,10 @@ def authorize(key, request_id, ssh_dir='/var/etc/ssh', root_dir='/var/rootdata',
             # The caller uses umask 077 for its executable staging. Only this
             # verified public receipt should be readable by the file share.
             os.fchmod(stream.fileno(), 0o644)
+    if include_host_fingerprint:
+        # Use the key already read from the phone's SSH configuration. The
+        # public copy in shared Downloads is for the legacy transfer only.
+        return output, key_fingerprint(host_key)
     return output
 
 
@@ -290,8 +300,10 @@ def main():
     if input(phone_message('Type PAIR to authorize this computer: ')).strip() != 'PAIR':
         print(phone_message('Cancelled; no files changed.'))
         return
-    output = authorize(PAIR_PUBLIC_KEY, PAIR_REQUEST_ID)
+    output, fp = authorize(PAIR_PUBLIC_KEY, PAIR_REQUEST_ID, include_host_fingerprint=True)
     print(phone_message('Public pairing result saved: ') + output)
+    print(phone_message('Phone check code: ') + fp[7:11] + '-' + fp[11:15])
+    print(phone_message('Host fingerprint: ') + fp)
     print(phone_message('Copy this result back to the desktop app, then test the connection.'))
     print(phone_message('If SSH is disabled, you may start the existing server for the USB link now.'))
     if input(phone_message('Type START only if SSH is not already running (Enter to skip): ')).strip() == 'START':

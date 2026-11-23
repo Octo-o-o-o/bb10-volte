@@ -1,4 +1,5 @@
 """One-time graphical provisioning of the native phone app; no service activation."""
+from pathlib import Path
 import queue
 import threading
 import tkinter as tk
@@ -89,14 +90,14 @@ class MobileAppInstallWindow:
         self.window.bind('<Button-5>', lambda event: self.canvas.yview_scroll(1, 'units'))
         heading = ttk.Label(self.body, text=tr('把 BB10 VoLTE 装到手机'), font=('', 20, 'bold'))
         heading.pack(anchor='w')
-        ttk.Label(self.body, text=tr('目标应用版本：{}').format(self.pin['version'])).pack(anchor='w', pady=(10, 0))
+        ttk.Label(self.body, text=tr('内置手机版：{}').format(self.pin['version'])).pack(anchor='w', pady=(10, 0))
         self.device = ttk.Label(self.body, text=tr('等待检查已 Root 的手机'))
         self.device.pack(anchor='w', pady=(5, 14))
         self.title = ttk.Label(self.body, text=tr('安装包已就绪，先检查手机'), font=('', 15, 'bold'), wraplength=680)
         self.title.pack(fill='x')
         self.detail = ttk.Label(self.body, wraplength=680, justify='left')
         self.detail.pack(fill='x', pady=(8, 16))
-        introduction = ttk.Label(self.body, text=tr('没有本机 BAR 安装器时，用电脑引导安装一次；以后在手机里点击管理。此步骤安装应用图标，VoLTE 的配置和启用在手机上完成。'),
+        introduction = ttk.Label(self.body, text=tr('已有其他 BB10 安装器？可直接另存内置安装包，跳过本工具的电脑配对。在手机上打开应用后，按首页提示开启 VoLTE。'),
                                  wraplength=680, justify='left')
         introduction.pack(fill='x', pady=(0, 6))
         self.file = ttk.Label(footer, text=tr('已内置并核对安装包：{}').format(self.pin['filename']), wraplength=680)
@@ -109,8 +110,12 @@ class MobileAppInstallWindow:
         self.choose_button.pack(side='left', padx=(0, 8))
         self.install_button = ttk.Button(row, text=tr('安装到手机'), command=self.install)
         self.install_button.pack(side='left')
-        self.connect_button = ttk.Button(footer, text=tr('恢复或选择手机连接'), command=self.connect)
-        self.connect_button.pack(anchor='w', pady=(10, 8))
+        connect_row = ttk.Frame(footer)
+        connect_row.pack(fill='x', pady=(10, 8))
+        self.connect_button = ttk.Button(connect_row, text=tr('恢复或选择手机连接'), command=self.connect)
+        self.connect_button.pack(side='left', padx=(0, 8))
+        self.export_bar_button = ttk.Button(connect_row, text=tr('另存内置安装包（.bar）…'), command=self.export_bar)
+        self.export_bar_button.pack(side='left')
         self.progress = ttk.Progressbar(footer, mode='indeterminate')
         self.status = ttk.Label(footer, wraplength=680, justify='left')
         self.status.pack(fill='x')
@@ -134,10 +139,34 @@ class MobileAppInstallWindow:
         return 'break'
 
     def refresh(self):
-        for button in (self.check_button, self.choose_button, self.connect_button):
+        for button in (self.check_button, self.choose_button, self.connect_button, self.export_bar_button):
             button.configure(state='disabled' if self.busy else 'normal')
         self.install_button.configure(state='normal' if not self.busy and self.bar and
                                       self.report.get('can_install') is True else 'disabled')
+
+    def export_bar(self):
+        if self.busy:
+            return
+        try:
+            blob = verify_bar(bundled_bar(self.pin), self.pin)
+        except WorkflowError as error:
+            title, detail = presentation({'error': error.code})
+            self.title.configure(text=title)
+            self.detail.configure(text=detail)
+            return
+        target = filedialog.asksaveasfilename(
+            parent=self.window,
+            title=tr('导出手机版 BAR 安装包'),
+            initialfile=self.pin['filename'],
+            defaultextension='.bar',
+            filetypes=[('BlackBerry BAR', '*.bar')])
+        if not target:
+            return
+        try:
+            Path(target).write_bytes(blob)
+            self.status.configure(text=tr('已导出 {}，可用现有安装器装入手机并独立开启 VoLTE。').format(Path(target).name))
+        except OSError:
+            messagebox.showerror(tr('无法保存'), tr('请检查保存路径和写入权限。'), parent=self.window)
 
     def choose(self):
         if self.busy:
@@ -205,7 +234,8 @@ class MobileAppInstallWindow:
             self.report = {}
             self.window.grab_set()
             self.run('inspect')
-        self.connection_dialog = ConnectionDialog(self.window, ready, self.host, self.config)
+        self.connection_dialog = ConnectionDialog(self.window, ready, self.host, self.config,
+                                                  continue_label=tr('返回并检查手机'))
 
     def poll(self):
         try:
@@ -241,4 +271,7 @@ class MobileAppInstallWindow:
         self.window.after_cancel(self.poll_job)
         if self.recheck_job:
             self.window.after_cancel(self.recheck_job)
+        parent = self.window.master
         self.window.destroy()
+        if isinstance(parent, tk.Toplevel) and parent.winfo_exists():
+            parent.grab_set()

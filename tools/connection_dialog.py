@@ -11,7 +11,7 @@ from tkinter import filedialog, messagebox, ttk
 from connection import matching_alias
 from connection_flow import guidance
 from connection_materials import scan_materials
-from connection_recovery import import_identity, fingerprint, pending_pairings, RecoveryError
+from connection_recovery import import_identity, fingerprint, short_code, pending_pairings, RecoveryError
 from root_setup import local_usb_state, verify_root, SetupError
 from workflow import WorkflowError
 from mac_help import scrolled_page
@@ -31,7 +31,7 @@ MATERIAL_MESSAGES = {
 
 
 class ConnectionDialog(tk.Toplevel):
-    def __init__(self, parent, on_ready, host='bb10-root', config='', auto_check=True):
+    def __init__(self, parent, on_ready, host='bb10-root', config='', auto_check=True, continue_label=None):
         super().__init__(parent)
         self.title(tr('连接手机'))
         self.geometry('790x650')
@@ -60,7 +60,8 @@ class ConnectionDialog(tk.Toplevel):
         self.back_button.pack(side='left', padx=8)
         self.close_button = ttk.Button(footer, text=tr('关闭'), command=self.close)
         self.close_button.pack(side='right')
-        self.continue_button = ttk.Button(footer, text=tr('继续检查 VoLTE'), command=self.finish)
+        self.for_install = continue_label is not None
+        self.continue_button = ttk.Button(footer, text=continue_label or tr('继续检查 VoLTE'), command=self.finish)
         self.continue_button.pack(side='right', padx=10)
         self.progress = ttk.Progressbar(body, mode='indeterminate')
         self.status = ttk.Label(body, wraplength=690, justify='left')
@@ -119,7 +120,10 @@ class ConnectionDialog(tk.Toplevel):
         if self.config:
             self.option(tr('重新查找本机已有连接'), self.rediscover)
         self.option(tr('选择以前刷机的文件夹'), self.select_folder, tr('选择整个文件夹，程序识别登录材料并为本机建立连接。'))
-        self.option(tr('没有旧文件，从手机重新授权'), self.pair, tr('已有 Root 的手机可在新版 BB10 VoLTE 中点击授权。'))
+        self.option(tr('没有旧文件，从手机重新授权'), self.pair,
+                    tr('手机已 Root 时，可以使用 BB10 VoLTE 的“连接电脑”重新授权。'))
+        if not self.for_install:
+            self.option(tr('只在手机上使用 VoLTE'), self.phone_only)
         if pending_pairings():
             self.option(tr('继续上次未完成的手机授权'), lambda: self.recover('pair'))
 
@@ -151,11 +155,21 @@ class ConnectionDialog(tk.Toplevel):
 
     def pair(self):
         self.clear_options()
-        self.title_label.configure(text=tr('先确认手机可以授权'))
-        self.detail.configure(text=tr('手机需要已有有效 Root。新版 BB10 VoLTE 的“连接电脑”可点击授权，旧版保留终端备用流程；程序会检查实际权限。'))
+        self.title_label.configure(text=tr('从已 Root 的手机授权'))
+        self.detail.configure(text=tr('在手机的 BB10 VoLTE 中打开“管理与恢复 → 连接电脑”。如果手机版没有这个入口，可使用原 Root 工具的终端。'))
         self.option(tr('手机已 Root，开始授权'), lambda: self.recover('pair'))
         self.option(tr('不清楚如何确认'), self.root_help)
-        self.option(tr('没有 Root 终端，也没有旧文件'), self.unavailable)
+        self.option(tr('既无法在手机授权，也没有旧文件'), self.unavailable)
+        if not self.for_install:
+            self.option(tr('只在手机上使用 VoLTE'), self.phone_only)
+
+    def phone_only(self):
+        from mobile_app_gui import MobileAppInstallWindow, presentation
+        try:
+            MobileAppInstallWindow(self, self.host, self.config)
+        except WorkflowError as error:
+            title, detail = presentation({'error': error.code})
+            messagebox.showerror(title, detail, parent=self)
 
     def root_help(self):
         self.clear_options()
@@ -183,7 +197,7 @@ class ConnectionDialog(tk.Toplevel):
 
     def open_setup(self, page):
         from setup_wizard import SetupWizard
-        SetupWizard(self, self.adopt, auto_check=False, initial_page=page)
+        SetupWizard(self, self.adopt, auto_check=False, initial_page=page, initial_usb=self.usb)
 
     def firmware(self):
         from firmware_gui import FirmwareDialog
@@ -215,10 +229,12 @@ class ConnectionDialog(tk.Toplevel):
         identity = self.materials['identities'][0]
         host_key, _ = self.materials['hosts'][0]
         if not messagebox.askokcancel(tr('确认材料来自当前手机'),
-                tr('请确认所选文件夹是你为当前手机保存的原材料。\n\n手机身份：') + fingerprint(host_key) +
-                tr('\n\n验证时将为本机复制所需材料到应用个人目录，原文件保留。'), parent=self):
+                tr('请确认所选文件夹是你为当前手机保存的原材料。\n\n手机校验码：{}\n手机身份：{}\n\n验证时将为本机复制所需材料到应用个人目录，原文件保留。').format(
+                    short_code(host_key), fingerprint(host_key)), parent=self):
             return
         def work():
+            if (local_usb_state().get('usb_count') or 0) > 1:
+                raise RecoveryError('multiple_usb_devices')
             choice = import_identity(identity, host_key, confirmed=True)
             self.events.put(('candidate', choice))
             return verify_root(choice['host'], choice['config'])

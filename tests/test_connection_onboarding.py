@@ -270,6 +270,44 @@ class OnboardingGuiTests(unittest.TestCase):
         scan.assert_called_once_with(self.private, recursive=False)
         dialog.close()
 
+    def test_original_folder_requires_confirmation_and_offers_pairing_when_incomplete(self):
+        folder = self.private / 'original-flash'
+        folder.mkdir()
+        (folder / 'id_rsa4x').write_text('PRIVATE KEY fixture')
+        host_record = folder / 'ssh_host_rsa_key.pub'
+        key = rsa_public(2)
+        host_record.write_text(key)
+        dialog = dialog_ui.ConnectionDialog(self.root, lambda *_: None, auto_check=False)
+        self.addCleanup(dialog.close)
+        candidate = {'host': 'bb10-root', 'config': 'verified-config'}
+        with patch.object(dialog_ui.filedialog, 'askdirectory', return_value=str(folder)), \
+                patch.object(dialog_ui.threading, 'Thread', side_effect=lambda target, **_: SimpleNamespace(start=target)), \
+                patch.object(dialog_ui.messagebox, 'askokcancel', side_effect=[False, True]) as confirm, \
+                patch.object(dialog_ui, 'local_usb_state', return_value={'usb_count': 1}), \
+                patch.object(dialog_ui, 'import_identity', return_value=candidate) as import_identity, \
+                patch.object(dialog_ui, 'verify_root', return_value=candidate) as verify:
+            select = next(b for b in dialog.option_buttons if b.cget('text') == '选择以前刷机的文件夹')
+            select.invoke()
+            dialog.after_cancel(dialog._job)
+            dialog.drain()
+            use = next(b for b in dialog.option_buttons if b.cget('text') == '确认来源并验证连接')
+            use.invoke()
+            verify.assert_not_called()
+            self.assertIn(recovery.fingerprint(key), confirm.call_args.args[1])
+            use.invoke()
+            dialog.after_cancel(dialog._job)
+            dialog.drain()
+            import_identity.assert_called_once()
+            verify.assert_called_once_with('bb10-root', 'verified-config')
+            self.assertEqual(str(dialog.continue_button.cget('state')), 'normal')
+            host_record.unlink()
+            dialog.select_folder()
+            dialog.after_cancel(dialog._job)
+            dialog.drain()
+            self.assertEqual(dialog.materials['state'], 'host_missing')
+            self.assertEqual(str(dialog.continue_button.cget('state')), 'disabled')
+            self.assertIn('没有完整材料，从手机授权', [b.cget('text') for b in dialog.option_buttons])
+
     def test_unknown_root_does_not_open_first_root_without_explicit_choice(self):
         dialog = dialog_ui.ConnectionDialog(self.root, lambda *_: None, auto_check=False)
         with patch.object(dialog, 'open_setup') as open_setup, patch.object(dialog_ui.messagebox, 'askokcancel', return_value=False):

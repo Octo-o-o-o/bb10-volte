@@ -59,12 +59,6 @@ NavigationPane {
                 topPadding: 20
                 bottomPadding: 32
                 Label {
-                    text: navigation.t("tagline")
-                    multiline: true
-                    textStyle.fontSize: FontSize.Small
-                    textFormat: TextFormat.Plain
-                }
-                Label {
                     text: volteController.deviceText + "  ·  " + volteController.carrierText
                     multiline: true
                     textStyle.fontSize: FontSize.Small
@@ -139,18 +133,14 @@ NavigationPane {
                 Button {
                     text: volteController.primaryText
                     horizontalAlignment: HorizontalAlignment.Fill
-                    enabled: !volteController.busy && volteController.allowed(volteController.primaryAction)
+                    enabled: {
+                        var model = volteController.model;
+                        return volteController.allowed(volteController.primaryAction);
+                    }
                     onClicked: {
                         if (volteController.primaryAction === "confirm-calls") navigation.push(callPage.createObject());
                         else volteController.primary();
                     }
-                }
-                Button {
-                    text: navigation.t("confirm-calls")
-                    horizontalAlignment: HorizontalAlignment.Fill
-                    visible: { var state = volteController.model; return volteController.allowed("confirm-calls") && volteController.primaryAction !== "confirm-calls"; }
-                    enabled: !volteController.busy && !volteController.jobRunning
-                    onClicked: navigation.push(callPage.createObject())
                 }
                 Label {
                     text: volteController.notice

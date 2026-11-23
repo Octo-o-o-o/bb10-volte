@@ -6,12 +6,12 @@ import queue
 import sys
 import threading
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from firmware_policy import TARGET_OS, assess_version
 import firmware_upgrade as upgrade
 import root_setup as root
-from fetch_materials import DownloadError, MaterialImportError
+from fetch_materials import DownloadError, MaterialImportError, firmware_download_folder
 from i18n import tr
 from mac_help import scrolled_page
 from profile_editor import FONT
@@ -29,7 +29,7 @@ MESSAGES = {
 
 
 class FirmwareDialog(tk.Toplevel):
-    def __init__(self, parent, on_ready, usb=None, root_only=False):
+    def __init__(self, parent, on_ready, usb=None, root_only=False, selected_variant=''):
         super().__init__(parent)
         self.title(tr('手机系统升级'))
         self.geometry('880x730')
@@ -38,7 +38,7 @@ class FirmwareDialog(tk.Toplevel):
         self.on_ready, self.usb = on_ready, usb or {}
         self.busy, self.kit, self.stage = False, None, None
         self.events = FeedbackQueue(self, 'firmware')
-        self.variant = tk.StringVar(value=(self.usb.get('device') or {}).get('ModelName', ''))
+        self.variant = tk.StringVar(value=(self.usb.get('device') or {}).get('ModelName') or selected_variant)
         self.ack = tk.BooleanVar(value=False)
         self.root_only = tk.BooleanVar(value=root_only)
         body = ttk.Frame(self, padding=20)
@@ -72,8 +72,12 @@ class FirmwareDialog(tk.Toplevel):
         self.prepare_button = ttk.Button(content, text=tr('准备升级与 Root 材料'), command=self.prepare)
         self.prepare_button.pack(anchor='w', pady=(12, 8))
         ttk.Button(content, text=tr('存储位置与磁盘清理'), command=lambda: show_storage_help(self)).pack(anchor='w', pady=(0, 8))
-        self.download_button = ttk.Button(content, text=tr('固件浏览器下载与离线导入'), command=self.downloads)
-        self.download_button.pack(anchor='w')
+        import_row = ttk.Frame(content)
+        import_row.pack(fill='x')
+        self.import_local_button = ttk.Button(import_row, text=tr('直接导入本地已下载固件…'), command=self.import_local)
+        self.import_local_button.pack(side='left', padx=(0, 8))
+        self.download_button = ttk.Button(import_row, text=tr('固件浏览器下载与离线导入'), command=self.downloads)
+        self.download_button.pack(side='left')
         self.history = upgrade.pending_upgrades()
         history_row = ttk.Frame(content)
         history_row.pack(fill='x', pady=12)
@@ -129,7 +133,15 @@ class FirmwareDialog(tk.Toplevel):
     def refresh(self):
         version = assess_version((self.usb.get('device') or {}).get('PlatformVersion'))
         model = (self.usb.get('device') or {}).get('ModelName') or tr('型号待确认')
-        self.facts.configure(text=tr('已检测型号：{}\n当前 OS：{}　目标 OS：{}').format(model, version.current or tr('待确认'), TARGET_OS))
+        firmware_line = ''
+        try:
+            selected = root.selected_firmware_variant(self.variant.get(), self.usb)
+            item = root.stock_firmware(selected)
+            cached_note = tr(' · 找到缓存，准备材料时会校验') if root.stock_firmware_cached(selected) else ''
+            firmware_line = '\n' + tr('目标固件：{}').format(item['file']) + cached_note
+        except root.SetupError:
+            pass
+        self.facts.configure(text=tr('已检测型号：{}\n当前 OS：{}　目标 OS：{}').format(model, version.current or tr('待确认'), TARGET_OS) + firmware_line)
         stages = {None: tr('尚未准备升级材料。'), 'prepared': tr('材料已校验。确认备份后才可升级。'),
                   'awaiting_reboot': tr('写入阶段已结束，等待开机后的 OS 回读。'),
                   'os_verified': tr('已确认目标 OS，可继续单独确认 Root 刷写。')}
@@ -145,6 +157,7 @@ class FirmwareDialog(tk.Toplevel):
             button.configure(state='normal' if allowed and not self.busy else 'disabled')
         state(self.detect_button, True)
         state(self.prepare_button, target_valid and not self.kit and sys.platform in ('win32', 'darwin') and version.state not in ('newer', 'ready'))
+        state(self.import_local_button, target_valid)
         state(self.download_button, True)
         state(self.resume_button, bool(self.history))
         device_ready = (self.usb.get('usb_count') == 1 and target_valid and version.state == 'upgrade'
@@ -207,13 +220,42 @@ class FirmwareDialog(tk.Toplevel):
         self.ack.set(False)
         self.start('prepared', lambda progress: upgrade.prepare_upgrade(variant, progress))
 
+    def import_local(self):
+        if self.busy or self.scope_blocker():
+            return
+        try:
+            variant = root.selected_firmware_variant(self.variant.get(), self.usb)
+        except root.SetupError as error:
+            self.show_error(str(error))
+            return
+        candidates = root.find_downloaded_firmware(variant)
+        if len(candidates) == 1 and messagebox.askyesno(
+                tr('发现已下载固件'),
+                tr('在常用下载目录找到候选文件。要校验并导入吗？\n\n{}').format(candidates[0]),
+                parent=self):
+            self.start('import_firmware', lambda progress: root.import_stock_firmware(candidates[0], progress, variant=variant))
+            return
+        folder = candidates[0].parent if candidates else firmware_download_folder()
+        kwargs = {'initialdir': str(folder)} if folder.is_dir() else {}
+        path = filedialog.askopenfilename(parent=self, title=tr('选择对应机型的完整固件文件'),
+                                          filetypes=[(tr('固件文件'), '*.7z *.exe'), (tr('所有文件'), '*')],
+                                          **kwargs)
+        if path:
+            self.start('import_firmware', lambda progress: root.import_stock_firmware(path, progress, variant=variant))
+
     def downloads(self):
         from setup_wizard import SetupWizard
-        wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root')
-        wizard.usb = self.usb
+        wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root',
+                             downloads_only=sys.platform == 'win32', initial_usb=self.usb)
         wizard.variant.set(self.variant.get())
         wizard.root_only.set(self.root_only.get())
         wizard.refresh()
+        def sync_after_close(event):
+            if event.widget is wizard and self.winfo_exists():
+                if not self.kit and not self.usb.get('usb_count'):
+                    self.variant.set(wizard.variant.get())
+                self.after_idle(self.refresh)
+        wizard.bind('<Destroy>', sync_after_close, add='+')
 
     def resume(self):
         index = self.picker.current()
@@ -286,6 +328,8 @@ class FirmwareDialog(tk.Toplevel):
                     if value.get('usb_count') == 1 and model in root.firmware_variants() and not self.kit:
                         self.variant.set(model)
                     self.status.configure(text=tr('检测完成。请核对机型、版本和当前步骤。'))
+                elif action == 'import_firmware':
+                    self.status.configure(text=tr('固件已导入并通过 SHA-256 校验。'))
                 elif action in ('prepared', 'flashed'):
                     self.kit = value
                     self.variant.set(upgrade.read_state(value)['variant'])
@@ -302,7 +346,8 @@ class FirmwareDialog(tk.Toplevel):
                     self.status.configure(text=tr('系统版本已验证。下一步仍需单独确认 Root 刷写。'))
                 elif action == 'root_ready':
                     from setup_wizard import SetupWizard
-                    wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root')
+                    wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='root',
+                                         initial_usb=self.usb)
                     wizard.variant.set(self.variant.get())
                     wizard.root_only.set(self.root_only.get())
                     wizard.kit = self.kit

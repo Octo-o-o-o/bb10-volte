@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from auto_carrier import AutoClient
 from connection import resolve_connection
+from connection_flow import guidance
 from completion_dialog import CompletionDialog
 from i18n import tr
 from auto_carrier_view import status_view, restart_guidance, retry_available, operator_trial_note
@@ -36,7 +37,11 @@ class AutoCarrierWindow:
         box.pack(fill='both', expand=True)
         help_row(box, self.window, lambda: 'acceptance' if status_view((self.report or {}).get('status', {}))['ready']
                  else 'restart' if (self.report or {}).get('installed') else 'install')
-        ttk.Label(box, text=tr('Q10 · Q20 · Passport · P’9983'), font=('', 19, 'bold')).pack(anchor='w')
+        heading = ttk.Frame(box)
+        heading.pack(fill='x')
+        self.connect_button = ttk.Button(heading, text=tr('手机连接选项'), command=self.connect)
+        self.connect_button.pack(side='right')
+        ttk.Label(heading, text=tr('Q10 · Q20 · Passport · P’9983'), font=('', 19, 'bold')).pack(side='left')
         ttk.Label(box, text=tr('首次安装后，关机换卡再开机即可按当前 SIM 归属网络自动选择运营商。\n'
             '支持 Q10、Q20 Classic、Passport 与 P’9983 全 16 个目录型号（OS 10.3.3.3216，无 ISIM 的普通 4G USIM）。\n'
             '支持中国移动（460-00/02/04/07/08）、中国联通（460-01/06/09）、中国电信（460-03/05/11/12），含原厂回落 0.xml 的号段。\n'
@@ -76,6 +81,7 @@ class AutoCarrierWindow:
         report = self.report or {}
         ready = status_view(report.get('status', {}))['ready']
         self.completion_button.configure(state='normal' if ready and not self.busy else 'disabled')
+        self.connect_button.configure(state='disabled' if self.busy else 'normal')
         for action, button in self.buttons.items():
             allowed = (not self.busy and (action == 'probe' or
                 action == 'install' and (report.get('can_install') and report.get('sim_supported') is True or
@@ -151,6 +157,23 @@ class AutoCarrierWindow:
                 self.window.grab_set()
         self.completion_dialog.bind('<Destroy>', restore_grab, add='+')
 
+    def connect(self):
+        if self.busy:
+            return
+        from connection_dialog import ConnectionDialog
+        self.window.grab_release()
+        def ready(host, config):
+            self.host, self.config, self.client = host, config, None
+            self.report = None
+            if self.window.winfo_exists():
+                self.window.grab_set()
+                self.run('probe')
+        dialog = ConnectionDialog(self.window, ready, self.host, self.config)
+        def restore_grab(event):
+            if event.widget is dialog and self.window.winfo_exists() and not self.busy:
+                self.window.grab_set()
+        dialog.bind('<Destroy>', restore_grab, add='+')
+
     def poll(self):
         try:
             while True:
@@ -160,12 +183,26 @@ class AutoCarrierWindow:
                     self.client, self.report = None, None
                     scope_error = device_support.error_message(error)
                     self.reconnect_pending, self.status_button_override = not bool(scope_error), None
-                    self.status.configure(text=tr('本次检查或操作未完成，请重新检查连接。') + '\n' + error)
-                    details = tr('若刚重启手机，请解锁并等待约 3–5 分钟，保持 USB 连接，再点击“重新检查连接”。\n'
-                                 '连接恢复后将重新读取手机状态。若安装或更新中断，先检查设备，不要重复覆盖安装。')
+                    connection_codes = ('connection_setup_required', 'hostname_unresolved', 'config_missing',
+                                        'authentication_failed', 'host_key_mismatch', 'connection_refused',
+                                        'connection_failed', 'connection_timeout_state_unknown',
+                                        'openssh_missing', 'bundled_ssh_mismatch', 'ssh_algorithm_mismatch')
                     if scope_error:
                         self.status.configure(text=scope_error)
                         details = scope_error
+                    elif error in connection_codes:
+                        view = guidance(error=error)
+                        self.status.configure(text=view.title)
+                        details = view.detail
+                        if error in ('connection_refused', 'connection_failed', 'connection_timeout_state_unknown'):
+                            details += '\n\n' + tr('若刚重启手机，请解锁并等待约 3–5 分钟，保持 USB 连接，再点击“重新检查连接”。\n'
+                                                   '连接恢复后将重新读取手机状态。若安装或更新中断，先检查设备，不要重复覆盖安装。')
+                        else:
+                            details += '\n\n' + tr('在“手机连接选项”中恢复旧连接或为这台电脑授权。')
+                    else:
+                        self.status.configure(text=tr('本次检查或操作未完成，请重新检查连接。') + '\n' + error)
+                        details = tr('若刚重启手机，请解锁并等待约 3–5 分钟，保持 USB 连接，再点击“重新检查连接”。\n'
+                                     '连接恢复后将重新读取手机状态。若安装或更新中断，先检查设备，不要重复覆盖安装。')
                 else:
                     self.reconnect_pending, self.status_button_override = False, None
                     if action == 'probe':

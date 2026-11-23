@@ -116,6 +116,24 @@ class FirmwareDialogTests(unittest.TestCase):
         detect.assert_called_once()
         wizard.close()
 
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows firmware workflow')
+    def test_download_window_keeps_detected_target_and_returns_to_upgrade(self):
+        from setup_wizard import SetupWizard
+        d = self.dialog
+        d.download_button.invoke()
+        wizard = next(child for child in d.winfo_children() if isinstance(child, SetupWizard))
+        self.assertEqual(wizard.variant.get(), 'SQW100-4')
+        self.assertEqual(wizard.usb, self.usb)
+        self.assertEqual(str(wizard.prepare_button.cget('state')), 'disabled')
+        self.assertEqual(wizard.root_firmware_button.master.winfo_manager(), '')
+        self.assertEqual(self.root.grab_current(), wizard)
+        with patch.object(root_setup, 'stock_firmware_cached', return_value=True):
+            wizard.close()
+            self.root.update_idletasks()
+        self.assertEqual(self.root.grab_current(), d)
+        self.assertEqual(d.variant.get(), 'SQW100-4')
+        self.assertIn(ui.tr(' · 找到缓存，准备材料时会校验'), d.facts.cget('text'))
+
 
 if __name__ == '__main__':
     unittest.main()

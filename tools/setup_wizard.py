@@ -18,9 +18,10 @@ from root_setup import (SetupError, catalog, local_usb_state, verify_root,
                         prepare_root_kit, flash_root, prepare_driver_kit, install_driver_kit, ensure_ssh,
                         prepared_kit_history, prepared_images, root_lock_path,
                         stock_firmware, import_stock_firmware, download_stock_firmware,
+                        find_downloaded_firmware, stock_firmware_cached,
                         firmware_variants, selected_firmware_variant)
 from workflow import WorkflowError
-from fetch_materials import DownloadError, MaterialImportError, source_urls, source_label
+from fetch_materials import DownloadError, MaterialImportError, firmware_download_folder, source_urls, source_label
 from mac_help import PHONE_STEPS, scrolled_page, show_guide as show_mac_guide
 from storage_help import show_storage_help
 
@@ -66,17 +67,20 @@ MESSAGES = {
 
 
 class SetupWizard(tk.Toplevel):
-    def __init__(self, parent, on_ready, auto_check=True, initial_page='connection'):
+    def __init__(self, parent, on_ready, auto_check=True, initial_page='connection', downloads_only=False,
+                 initial_usb=None):
         super().__init__(parent)
-        self.title(tr('首次使用与连接帮助'))
+        self.downloads_only = downloads_only
+        self.title(tr('下载或导入固件') if downloads_only else tr('首次使用与连接帮助'))
         self.geometry('860x730')
         self.minsize(800, 680)
         self.transient(parent)
         self.on_ready, self.events = on_ready, FeedbackQueue(self, 'root')
-        self.busy, self.choice, self.kit, self.usb = False, None, None, {}
+        self.busy, self.choice, self.kit, self.usb = False, None, None, initial_usb or {}
         self.host, self.config = 'bb10-root', ''
-        self.variant = tk.StringVar()
-        self._last_variant = ''
+        detected_model = (self.usb.get('device') or {}).get('ModelName') if self.usb.get('usb_count') == 1 else None
+        self._last_variant = detected_model if detected_model in firmware_variants() else ''
+        self.variant = tk.StringVar(value=self._last_variant)
         self.proxy = tk.StringVar()
         self.firmware_path = tk.StringVar()
         self.imported_variant = None
@@ -87,8 +91,11 @@ class SetupWizard(tk.Toplevel):
         body = ttk.Frame(self, padding=24)
         body.pack(fill='both', expand=True)
         help_row(body, self, lambda: ('connect', 'root', 'drivers')[self.tabs.index(self.tabs.select())])
-        ttk.Label(body, text=tr('准备好设备，再继续开通'), font=(FONT, 17, 'bold')).pack(anchor='w')
-        self.status = ttk.Label(body, text=tr('已有 Root 的设备可直接检测；首次 Root 需要备份并刷写。'), wraplength=790)
+        ttk.Label(body, text=tr('下载或导入固件') if downloads_only else tr('准备好设备，再继续开通'),
+                  font=(FONT, 17, 'bold')).pack(anchor='w')
+        self.status = ttk.Label(body, wraplength=790, text=(
+            tr('选好机型并导入固件，完成后返回系统升级窗口。') if downloads_only else
+            tr('已有 Root 的设备可直接检测；首次 Root 需要备份并刷写。')))
         self.status.pack(anchor='w', pady=(8, 18))
         self.support_notice = ttk.Label(body, wraplength=790, justify='left')
         self.support_notice.pack(fill='x', pady=(0, 12))
@@ -101,6 +108,10 @@ class SetupWizard(tk.Toplevel):
         for frame, title in [(connection_page, tr('连接检查')), (root_page, tr('首次 Root')), (drivers, tr('Windows 驱动'))]:
             self.tabs.add(frame, text=title)
         self.tabs.select({'connection': 0, 'root': 1, 'drivers': 2}.get(initial_page, 0))
+        if downloads_only:
+            self.tabs.tab(root_page, text=tr('下载或导入固件'))
+            self.tabs.hide(connection_page)
+            self.tabs.hide(drivers)
         self.device = ttk.Label(connection, text=tr('设备型号与系统将在检测后显示'), font=(FONT, 12, 'bold'))
         self.device.pack(anchor='w', pady=(0, 12))
         self.facts = ttk.Label(connection, text=tr('等待检测 USB、开发模式、SSH 与 Root。'), wraplength=730, justify='left')
@@ -134,8 +145,9 @@ class SetupWizard(tk.Toplevel):
         self.upgrade_help_button = ttk.Button(connection, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
         self.upgrade_help_button.pack(anchor='w', pady=(8, 0))
 
-        ttk.Label(root_tab, text=tr('自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写'), wraplength=740,
-                  font=(FONT, 11, 'bold')).pack(anchor='w')
+        if not downloads_only:
+            ttk.Label(root_tab, text=tr('自动获取材料 → 生成个人密钥 → 构建校验镜像 → 确认后刷写'), wraplength=740,
+                      font=(FONT, 11, 'bold')).pack(anchor='w')
         if sys.platform == 'darwin':
             ttk.Label(root_tab, text=tr('macOS 14+ 原生实验流程：按准确型号准备镜像，确认后打开 Terminal 刷写；Apple 芯片 Mac／Q20 已完成原生首刷验收，其他组合仍待验证。'),
                       wraplength=740).pack(anchor='w', pady=(12, 0))
@@ -213,37 +225,42 @@ class SetupWizard(tk.Toplevel):
         self.copy_backup_download_button.pack(side='left', padx=(8, 0))
         self.backup_download_hint = ttk.Label(backup_links, wraplength=250)
         self.backup_download_hint.pack(side='left', padx=(8, 0))
-        ttk.Label(manual, text=tr('2. 下载完成后，选择文件或粘贴本地完整路径：'), wraplength=680).pack(anchor='w')
+        ttk.Label(manual, text=tr('2. 网盘下载完成后，直接选择文件（会自动校验导入）或自动查找已下载固件：'), wraplength=680).pack(anchor='w')
         file_row = ttk.Frame(manual)
         file_row.pack(fill='x', pady=(8, 8))
         self.firmware_entry = ttk.Entry(file_row, textvariable=self.firmware_path)
         self.firmware_entry.pack(side='left', fill='x', expand=True)
         self.browse_firmware_button = ttk.Button(file_row, text=tr('选择文件…'), command=self.browse_firmware)
         self.browse_firmware_button.pack(side='left', padx=(8, 0))
+        self.scan_downloads_button = ttk.Button(file_row, text=tr('自动查找已下载固件'), command=self.scan_downloads)
+        self.scan_downloads_button.pack(side='left', padx=(8, 0))
         self.import_firmware_button = ttk.Button(manual, text=tr('校验并导入固件'), command=self.import_firmware)
         self.import_firmware_button.pack(anchor='w')
         ttk.Label(manual, text=tr('保留下载的原文件，不要运行或解压。导入只校验原版固件；Q10、Q20、Q30 均需继续准备 Root 镜像。'),
                   wraplength=680, justify='left').pack(anchor='w', pady=(8, 0))
-        self.prepare_button = ttk.Button(root_tab, text=tr('自动准备 Root 镜像'), command=self.prepare_root)
+        root_steps = ttk.Frame(root_tab)
+        if not downloads_only:
+            root_steps.pack(fill='x')
+        self.prepare_button = ttk.Button(root_steps, text=tr('自动准备 Root 镜像'), command=self.prepare_root)
         self.prepare_button.pack(anchor='w', pady=(0, 8))
-        self.root_hint = ttk.Label(root_tab, wraplength=730, justify='left')
+        self.root_hint = ttk.Label(root_steps, wraplength=730, justify='left')
         self.root_hint.pack(anchor='w', pady=(0, 12))
-        self.root_detect_button = ttk.Button(root_tab, text=tr('重新检测连接与机型'), command=self.detect)
+        self.root_detect_button = ttk.Button(root_steps, text=tr('重新检测连接与机型'), command=self.detect)
         self.root_detect_button.pack(anchor='w', pady=(0, 8))
-        self.root_firmware_button = ttk.Button(root_tab, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
+        self.root_firmware_button = ttk.Button(root_steps, text=tr('系统升级 / 继续升级记录'), command=self.open_firmware)
         self.root_firmware_button.pack(anchor='w', pady=(0, 12))
-        self.ack_check = ttk.Checkbutton(root_tab, text=tr('已备份并核对机型，同意清空手机数据'), variable=self.ack)
+        self.ack_check = ttk.Checkbutton(root_steps, text=tr('已备份并核对机型，同意清空手机数据'), variable=self.ack)
         self.ack_check.pack(anchor='w')
         self.ack.trace_add('write', lambda *_: self.refresh())
         self.mac_flash_check = None
         if sys.platform == 'darwin':
-            self.mac_flash_check = ttk.Checkbutton(root_tab, text=tr('已核对手机尚未 Root，理解实验性刷写的验证范围'),
+            self.mac_flash_check = ttk.Checkbutton(root_steps, text=tr('已核对手机尚未 Root，理解实验性刷写的验证范围'),
                                                    variable=self.mac_flash_ack)
             self.mac_flash_check.pack(anchor='w', pady=(6, 0))
             self.mac_flash_ack.trace_add('write', lambda *_: self.refresh())
-        self.flash_button = ttk.Button(root_tab, text=tr('开始刷写 Root（清空数据）'), command=self.flash, state='disabled')
+        self.flash_button = ttk.Button(root_steps, text=tr('开始刷写 Root（清空数据）'), command=self.flash, state='disabled')
         self.flash_button.pack(anchor='w', pady=(12, 14))
-        ttk.Label(root_tab, text=tr('刷写后完成手机首次设置，打开一次 BlackBerry World，再到“连接检查”验证 Root。\n'
+        ttk.Label(root_steps, text=tr('刷写后完成手机首次设置，打开一次 BlackBerry World，再到“连接检查”验证 Root。\n'
                   '刷写窗口可能要求输入设备密码；应用不会记录该密码。'), wraplength=740, justify='left').pack(anchor='w')
         network = ttk.Frame(root_tab)
         network.pack(side='bottom', fill='x', pady=(12, 0))
@@ -261,7 +278,7 @@ class SetupWizard(tk.Toplevel):
         self.progress = ttk.Progressbar(body, mode='indeterminate')
         self.progress.pack(fill='x', pady=(18, 10))
         ttk.Button(body, text=tr('存储位置与磁盘清理'), command=lambda: show_storage_help(self)).pack(anchor='w')
-        ttk.Button(body, text=tr('关闭'), command=self.close).pack(anchor='e')
+        ttk.Button(body, text=tr('返回系统升级') if downloads_only else tr('关闭'), command=self.close).pack(anchor='e')
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
         self.grab_set()
@@ -274,12 +291,15 @@ class SetupWizard(tk.Toplevel):
 
     def refresh(self):
         for button in (self.detect_button, self.root_detect_button, self.import_button, self.prepare_button, self.driver_button, self.components_button, self.recovery_button, self.resume_button,
-                       self.browser_download_button, self.copy_download_button, self.browse_firmware_button, self.import_firmware_button):
+                       self.upgrade_help_button, self.root_firmware_button, self.browser_download_button,
+                       self.copy_download_button, self.browse_firmware_button, self.scan_downloads_button, self.import_firmware_button):
             button.configure(state='disabled' if self.busy else 'normal')
         try:
             variant = selected_firmware_variant(self.variant.get(), self.usb)
             item = stock_firmware(variant)
-            firmware_text = tr('目标固件（{}）：\n{}').format(variant, item['file'])
+            size_gb = tr('（约 {:.2f} GB）').format(item['size'] / 1000 ** 3) if isinstance(item.get('size'), int) and item['size'] > 0 else ''
+            cached_note = tr(' · 找到缓存，准备材料时会校验') if stock_firmware_cached(variant) else ''
+            firmware_text = tr('目标固件（{}）：\n{}').format(variant, item['file']) + size_gb + cached_note
         except SetupError as error:
             variant, item = None, None
             firmware_text = MESSAGES[str(error)]
@@ -298,7 +318,7 @@ class SetupWizard(tk.Toplevel):
                                   if self.support_variant() else '')
         ready = item is not None and not self.busy and not blocker
         for button in (self.download_firmware_button, self.browser_download_button, self.copy_download_button,
-                       self.browse_firmware_button, self.import_firmware_button):
+                       self.browse_firmware_button, self.scan_downloads_button, self.import_firmware_button):
             button.configure(state='normal' if ready else 'disabled')
         domestic_url = item.get('manual_download_url') if item else None
         for button in (self.domestic_download_button, self.copy_domestic_download_button):
@@ -310,7 +330,8 @@ class SetupWizard(tk.Toplevel):
             button.configure(state='normal' if ready and backup_url else 'disabled')
         backup_code = item.get('backup_manual_download_code') if backup_url else None
         self.backup_download_hint.configure(text=tr('百度网盘提取码：{}').format(backup_code) if backup_code else '')
-        self.prepare_button.configure(state='normal' if ready and variant in catalog()['auto_root_variants'] and
+        version_gate = self.root_version_gate()
+        self.prepare_button.configure(state='normal' if ready and not version_gate and variant in catalog()['auto_root_variants'] and
                                       sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' and not self.usb.get('usb_network') else 'disabled')
         blocker = self.flash_blocker(variant)
@@ -331,6 +352,13 @@ class SetupWizard(tk.Toplevel):
 
     def selected_operator(self):
         return dict(zip(self.operator_options, (None, 'mobile', 'unicom', 'telecom'))).get(self.operator.get())
+
+    def root_version_gate(self):
+        if sys.platform == 'win32' and self.usb.get('usb_count') == 1:
+            error = baseline_error(self.usb.get('device'))
+            if error in ('firmware_upgrade_required', 'firmware_downgrade_blocked'):
+                return MESSAGES[error]
+        return None
 
     def support_variant(self):
         detected = (self.usb.get('device') or {}).get('ModelName')
@@ -456,6 +484,12 @@ class SetupWizard(tk.Toplevel):
         RecoveryDialog(self, ready)
 
     def prepare_root(self):
+        if self.busy or self.downloads_only:
+            return
+        version_gate = self.root_version_gate()
+        if version_gate:
+            self.status.configure(text=version_gate)
+            return
         variant, proxy = self.firmware_target(), self.proxy.get().strip() or None
         if not variant:
             return
@@ -560,13 +594,34 @@ class SetupWizard(tk.Toplevel):
             self.clipboard_append(self.firmware_urls[max(0, self.firmware_source.current())])
             self.status.configure(text=tr('已复制固件下载链接。可粘贴到浏览器或支持续传的下载工具中。'))
 
-    def browse_firmware(self):
+    def browse_firmware(self, initial_dir=None):
         if self.busy or not self.firmware_target():
             return
+        folder = Path(initial_dir) if initial_dir else firmware_download_folder()
+        kwargs = {'initialdir': str(folder)} if folder.is_dir() else {}
         path = filedialog.askopenfilename(parent=self, title=tr('选择对应机型的完整固件文件'),
-                                          filetypes=[(tr('固件文件'), '*.7z *.exe'), (tr('所有文件'), '*')])
+                                          filetypes=[(tr('固件文件'), '*.7z *.exe'), (tr('所有文件'), '*')],
+                                          **kwargs)
         if path:
             self.firmware_path.set(path)
+            self.import_firmware()
+
+    def scan_downloads(self):
+        if self.busy:
+            return
+        variant = self.firmware_target()
+        if not variant:
+            return
+        item = stock_firmware(variant)
+        candidates = find_downloaded_firmware(variant)
+        if len(candidates) == 1:
+            self.firmware_path.set(str(candidates[0]))
+            self.import_firmware()
+        elif len(candidates) > 1:
+            self.status.configure(text=tr('找到多个候选文件，请在弹窗中选择：') + item['file'])
+            self.browse_firmware(initial_dir=candidates[0].parent)
+        else:
+            self.status.configure(text=tr('未在常用下载目录（Downloads、桌面、BaiduNetdiskDownload）找到 {}。请先从网盘下载，或点击“选择文件…”手动定位。').format(item['file']))
 
     def import_firmware(self):
         if self.busy:
@@ -627,9 +682,10 @@ class SetupWizard(tk.Toplevel):
             self.start('flash', lambda progress: flash_root(self.kit, True, progress))
 
     def open_firmware(self):
-        if not self.busy:
+        if not self.busy and not self.downloads_only:
             from firmware_gui import FirmwareDialog
-            FirmwareDialog(self, self.on_ready, self.usb, root_only=self.root_only.get())
+            FirmwareDialog(self, self.on_ready, self.usb, root_only=self.root_only.get(),
+                           selected_variant=self.variant.get())
 
     def drivers(self):
         if not messagebox.askokcancel(tr('安装 BlackBerry 驱动'), tr('将下载并校验驱动，然后请求 Windows 管理员确认。请先保存电脑上的工作。'), parent=self):
@@ -704,11 +760,23 @@ class SetupWizard(tk.Toplevel):
                         self.status.configure(text=tr('连接组件已就绪，请重新检测。'))
                     elif action == 'import_firmware':
                         self.imported_variant = self.variant.get()
-                        self.status.configure(text=tr('固件已导入并通过校验。下一步：点击下方“自动准备 Root 镜像”，为 {} 生成个人镜像；准备完成后才能刷写。').format(self.variant.get()))
+                        needs_upgrade = (self.usb.get('usb_count') == 1 and
+                                         baseline_error(self.usb.get('device')) == 'firmware_upgrade_required')
+                        self.status.configure(
+                            text=tr('固件已导入并通过校验。当前手机系统低于 10.3.3.3216，请先在“系统升级”窗口完成原版系统升级。')
+                            if needs_upgrade and not self.downloads_only else
+                            tr('固件已导入并通过 SHA-256 校验。') if self.downloads_only else
+                            tr('固件已导入并通过校验。下一步：点击下方“自动准备 Root 镜像”，为 {} 生成个人镜像；准备完成后才能刷写。').format(self.variant.get()))
                     elif action == 'download_firmware':
                         self.firmware_path.set(result)
                         self.imported_variant = self.variant.get()
-                        self.status.configure(text=tr('对应机型固件已下载并通过校验。下一步：点击“自动准备 Root 镜像”。\n{}').format(result))
+                        needs_upgrade = (self.usb.get('usb_count') == 1 and
+                                         baseline_error(self.usb.get('device')) == 'firmware_upgrade_required')
+                        self.status.configure(
+                            text=tr('对应机型固件已下载并通过校验。当前手机系统低于 10.3.3.3216，请先在“系统升级”窗口完成原版系统升级。\n{}').format(result)
+                            if needs_upgrade and not self.downloads_only else
+                            tr('固件已导入并通过 SHA-256 校验。') if self.downloads_only else
+                            tr('对应机型固件已下载并通过校验。下一步：点击“自动准备 Root 镜像”。\n{}').format(result))
                 self.refresh()
         except queue.Empty:
             pass

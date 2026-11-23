@@ -28,7 +28,7 @@ def public_instructions(name):
     commands = phone_commands(name)
     return (tr('手机授权操作说明') + '\n\n' +
             tr('推荐：将同编号的 -request.json 复制到手机 Downloads，在新版 BB10 VoLTE 的“管理与恢复 → 连接电脑”中选择它，核对请求编号后点击“授权这台电脑”。无需输入终端命令。') + '\n' +
-            tr('将生成的 -result.json 复制回原电脑并导入，继续核验手机身份和 Root。仅使用手机版时可以跳过电脑配对。') + '\n\n' +
+            tr('手机显示校验码和完整指纹时，可在电脑点“直接验证连接”逐一核对。旧版手机或连接服务未启动时，可先把 -result.json 复制回原电脑导入。') + '\n\n' +
             tr('以下终端步骤仅供未安装新版手机应用时使用。') + '\n\n' +
             tr('将同名 .py 文件复制到手机内部存储 Downloads，保持文件名不变。') + '\n' +
             tr('先按原 Root 工具说明进入 Root 终端。__root 前有两个下划线；有些工具使用 u_root。找不到入口时，先恢复原 Root 访问。') + '\n' +

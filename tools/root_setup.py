@@ -17,7 +17,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from desktop_paths import resource_root, private_root, download_root, frozen
-from fetch_materials import fetch_entries, import_material, sha
+from fetch_materials import (fetch_entries, import_material, sha,
+                             find_local_firmware_candidates, firmware_cached)
 from connection import resolve_connection, save_connection
 from workflow import WorkflowError
 
@@ -77,6 +78,14 @@ def download_stock_firmware(variant, progress, proxy=None, cache_dir=None, offli
 
 def import_stock_firmware(path, progress, cache_dir=None, *, variant=None):
     return str(import_material(stock_firmware(variant), path, folder=cache_dir, progress=progress))
+
+
+def find_downloaded_firmware(variant, search_dirs=None):
+    return find_local_firmware_candidates(stock_firmware(variant), search_dirs=search_dirs)
+
+
+def stock_firmware_cached(variant, cache_dir=None):
+    return firmware_cached(stock_firmware(variant), folder=cache_dir)
 
 
 def powershell():
