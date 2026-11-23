@@ -57,7 +57,7 @@ Verified by SHA-256 in [sources.json](../../../../materials/sources.json) before
      - `460-00`, `02`, `04`, `07`, `08` → `mobile` (China Mobile, APN `cmnet` / `cmwap`, SHA-256-pinned stock fallback `404.xml` + OI-normalized empty/default-APN bootstrap when BB10 maps newer HPLMNs to `0.xml`)
      - `460-01`, `06`, `09` → `unicom` (China Unicom, APN `3gnet` / `wonet` / `uninet`, SHA-256-pinned stock fallback `36.xml`)
      - `460-03`, `05`, `11`, `12` → `telecom` (China Telecom, APN `ctnet` / `ctlte`, SHA-256-pinned stock fallback `446.xml` with dead `10.0.0.200:80` CTWAP proxy stripped)
-   - Releases from r53 can try China Mobile `460-13` and other home PLMNs when the current USIM and stock carrier XML match. The app labels the route untested. ISIM and lack of normal LTE are separate diagnostics. See [the PLMN and KT investigation](../../../../docs/NETWORK-DIAGNOSTICS.md).
+   - Releases from r54 can try China Mobile `460-13` and other home PLMNs when the current USIM and stock carrier XML match. The app labels the route untested. ISIM and lack of normal LTE are separate diagnostics. See [the PLMN and KT investigation](../../../../docs/NETWORK-DIAGNOSTICS.md).
    - Also applies volatile SE.13 operator-name overlay and numeric `current_ons` display fallback (`中国移动` / `中国联通` / `中国电信`) across all 12 admitted MNCs without touching read-only `/base/etc/network/BBSE-se13-network-override-list.txt`.
 2. **Read-Only Stock Binary Integrity**:
    - `/radio/bin/ims_rrm` and the other 5 stock QNX radio/system binaries are **never modified on `/radio` or `/base`**.

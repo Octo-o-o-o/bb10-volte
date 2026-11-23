@@ -11,6 +11,7 @@ from support_config import SUPPORT_ICON, bundled_receipt_images
 
 ROOT = Path(__file__).resolve().parents[1]
 TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
+       'KT-ISIM-TRIAL-README.md', 'kt-45008-trial.json',
        'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
        'tools/windows-freeze-requirements.txt', 'tools/macos-freeze-requirements.txt',
        'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns',

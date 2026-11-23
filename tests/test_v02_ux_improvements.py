@@ -171,7 +171,7 @@ class V02UxImprovementTests(unittest.TestCase):
                 fm.import_material(item, corrupted, folder=cache)
 
             # Exact file succeeds and marks cached
-            imported = fm.import_material(item, exact, folder=cache)
+            imported = fm.import_material(item, exact, folder=cache, progress=lambda _: None)
             self.assertTrue(imported.is_file())
             self.assertTrue(fm.firmware_cached(item, folder=cache))
 
@@ -195,7 +195,7 @@ class V02UxImprovementTests(unittest.TestCase):
     def test_v02_version_and_mobile_ui_cleanup_contracts(self):
         proj = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
         self.assertEqual(proj['mobile_version'], '0.2.0.0')
-        self.assertEqual(proj['desktop_revision'], 53)
+        self.assertEqual(proj['desktop_revision'], 54)
         bar_xml = (ROOT / 'mobile/native/bar-descriptor.xml').read_text(encoding='utf-8')
         self.assertIn('<versionNumber>0.2.0</versionNumber>', bar_xml)
         self.assertIn('<buildId>0</buildId>', bar_xml)

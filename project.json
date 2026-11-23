@@ -1,7 +1,7 @@
 {
   "name": "bb10-volte",
   "version": "0.5.0",
-  "desktop_revision": 53,
+  "desktop_revision": 54,
   "mobile_version": "0.2.0.0",
   "management_protocol": 2,
   "state": "experimental_public_release",
