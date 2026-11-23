@@ -153,22 +153,22 @@ class V02UxImprovementTests(unittest.TestCase):
 
             # Fast size pre-check for extracted .exe
             with self.assertRaises(fm.MaterialImportError) as ctx_exe:
-                fm.import_material(item, extracted, folder=cache)
+                fm.import_material(item, extracted, folder=cache, progress=lambda _: None)
             self.assertEqual(str(ctx_exe.exception), 'import_hash_mismatch')
             self.assertIn('.exe', ctx_exe.exception.user_message)
 
             # Fast size pre-check for incomplete file
             with self.assertRaises(fm.MaterialImportError) as ctx_small:
-                fm.import_material(item, partial, folder=cache)
+                fm.import_material(item, partial, folder=cache, progress=lambda _: None)
             self.assertEqual(str(ctx_small.exception), 'import_hash_mismatch')
             self.assertIn('Passport_10.3.03.3216.7z', ctx_small.exception.user_message)
 
             with self.assertRaises(fm.MaterialImportError):
-                fm.import_material(item, downloads / 'Passport_10.3.03.3216.7z.td', folder=cache)
+                fm.import_material(item, downloads / 'Passport_10.3.03.3216.7z.td', folder=cache, progress=lambda _: None)
             corrupted = downloads / 'Passport_10.3.03.3216 (2).7z'
             corrupted.write_bytes(b'X' * len(data))
             with self.assertRaisesRegex(fm.MaterialImportError, 'import_hash_mismatch'):
-                fm.import_material(item, corrupted, folder=cache)
+                fm.import_material(item, corrupted, folder=cache, progress=lambda _: None)
 
             # Exact file succeeds and marks cached
             imported = fm.import_material(item, exact, folder=cache, progress=lambda _: None)
