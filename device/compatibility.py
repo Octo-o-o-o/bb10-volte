@@ -37,7 +37,8 @@ NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
 NETWORK_ENUMS = ('data_services_status', 'data_service_mode', 'data_roaming_mode')
-PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', 'cmwap', '3gnet', 'wonet', 'uninet')
+PUBLIC_APNS = ('ctnet', 'ctlte', 'cmnet', 'cmwap', '3gnet', 'wonet', 'uninet',
+               'lte.ktfwing.com', 'alwayson.ktfwing.com')
 CONFIGURATION_FLAGS = ('ims_override_absent', 'probe_override_absent', 'cdsc_directory_empty',
                        'voice_override_absent', 'ims_profiles_absent', 'ims_networks_absent',
                        'ims_services_absent', 'ims_domain_default', 'cdsc_selection_default')
@@ -301,8 +302,11 @@ def network_checks(s, profile=None):
         carrier = s.get('mcc') == p['carrier']['mcc'] and s.get('mnc') in p['carrier']['mncs']
         add('carrier', 'pass' if carrier else 'adapt', 'carrier_matches_profile' if carrier else 'carrier_not_profiled')
         kind = s.get('sim_type')
-        supported = isinstance(kind, int) and bool(kind & 2) and not bool(kind & 16)
-        add('sim_route', 'pass' if supported else 'adapt', 'usim_without_isim' if supported else 'sim_route_not_profiled')
+        allow_isim = bool(p.get('experimental', {}).get('allow_isim'))
+        supported = isinstance(kind, int) and bool(kind & 2) and (allow_isim or not bool(kind & 16))
+        route_code = ('usim_with_isim_experimental' if supported and bool(kind & 16) else
+                      'usim_without_isim' if supported else 'sim_route_not_profiled')
+        add('sim_route', 'pass' if supported else 'adapt', route_code)
         if carrier and supported:
             add('identity', 'pass' if s.get('identity_matches') else 'adapt',
                 'identity_layout_matches' if s.get('identity_matches') else 'identity_layout_unknown')

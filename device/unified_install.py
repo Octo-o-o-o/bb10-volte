@@ -33,6 +33,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r52/mobile52 before experimental ISIM/0.xml carrier trial support.
+                    'f1ab846b5a37e5a6a50cb4e0a6cba219f57e0ff056a2465413bb18f9c8ae061c',
                     # Empty-overlay candidate before experimental stock carriers.
                     'd677d59d414070ae79eb9269dadd0b26814dcf9e2bc3a26941cb7dd644e613e6',
                     # r50/mobile50 before the PLMN and overlay diagnostics.
@@ -428,6 +430,43 @@ def probe():
     return with_sim_status(result, facts)
 
 
+def read_isim_public_status():
+    """Read only non-identifying ISIM readiness/service flags from PPS."""
+    out = {}
+    try:
+        attrs = n.attrs(n.read('/pps/services/cellular/uicc/card0/status_isim'))
+        status_val = n.value(attrs, 'isim_status')
+        if isinstance(status_val, str) and re.match(r'\A[A-Za-z0-9_-]{1,32}\Z', status_val):
+            out['isim_status'] = status_val
+        services_val = n.value(attrs, 'isim_services')
+        if isinstance(services_val, dict):
+            out['isim_services'] = {
+                str(k): bool(v) for k, v in services_val.items()
+                if isinstance(k, str) and re.match(r'\A[a-z0-9_]{1,32}\Z', k) and type(v) is bool
+            }
+    except (IOError, OSError, ValueError, TypeError, AttributeError):
+        pass
+    return out
+
+
+def read_carrier_config_summary():
+    """Read only public stock-template basename and OTA-override presence."""
+    out = {}
+    try:
+        attrs = n.attrs(n.read('/pps/services/carriermanager/status_private'))
+        home = n.value(attrs, 'true_home_carrier', {})
+        if isinstance(home, dict):
+            preloaded = home.get('preloadedConfigFile')
+            if isinstance(preloaded, str) and profiles.match(profiles.CONFIG_RE, preloaded):
+                out['preloaded_carrier_config'] = preloaded.rsplit('/', 1)[-1]
+            elif preloaded in (None, ''):
+                out['preloaded_carrier_config'] = ''
+            out['downloaded_carrier_config_present'] = bool(home.get('downloadedConfigFile'))
+    except (IOError, OSError, ValueError, TypeError, AttributeError):
+        pass
+    return out
+
+
 def with_sim_status(result, facts):
     install_ready = bool(result.get('can_install'))
     radio = s.compatibility.read_network()
@@ -435,6 +474,11 @@ def with_sim_status(result, facts):
         result['radio_lte'] = radio['lte']
         if radio.get('data_read_error') is not True and type(radio.get('data_connected')) is bool:
             result['lte_data_connected'] = radio['lte'] and radio['data_connected']
+    if isinstance(radio.get('observed_data_apn'), str):
+        result['observed_data_apn'] = radio['observed_data_apn']
+    result.update(read_isim_public_status())
+    result.update(read_carrier_config_summary())
+    result['exp_trial_active'] = profiles.load_exp_trial() is not None
     serving = network.serving_network_snapshot()
     if serving.get('mcc') and serving.get('mnc'):
         result['serving_plmn'] = serving['mcc'] + '-' + serving['mnc']

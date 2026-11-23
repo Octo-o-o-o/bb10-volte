@@ -74,23 +74,29 @@ def select(facts, card):
         raise ValueError('sim_not_ready')
     kind = card.get('kind')
     mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
-    if type(kind) is not int or not kind & 2 or kind & 16:
+    exp = profiles.exp_trial_profile(mcc, mnc)
+    allow_isim = bool(exp.get('experimental', {}).get('allow_isim')) if exp is not None else False
+    if type(kind) is not int or not kind & 2 or (not allow_isim and kind & 16):
         raise ValueError('sim_route_unsupported')
     if profiles.carrier_adaptation_blocked(facts.get('variant'), mcc, (mnc,)):
         raise ValueError('operator_not_supported')
     if not profiles.identity_matches(imsi, mcc, mnc):
         raise ValueError('sim_identity_unavailable')
-    carrier = CARRIERS.get(mnc) if mcc == '460' else None
-    if (mcc, mnc) == ('460', '13'):
-        carrier = ('mobile', 'China Mobile', ['cmnet', 'cmwap'])
-    if carrier is None:
+    if exp is not None:
         operator = 'other'
-        p = profiles.stock_trial_profile(mcc, mnc)
+        p = exp
     else:
-        operator, label, apns = carrier
-        p = profiles.default()
-        p.update(id='auto-' + operator + '-' + mcc + mnc, label=label + ' / automatic SIM selection')
-        p['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=list(apns))
+        carrier = CARRIERS.get(mnc) if mcc == '460' else None
+        if (mcc, mnc) == ('460', '13'):
+            carrier = ('mobile', 'China Mobile', ['cmnet', 'cmwap'])
+        if carrier is None:
+            operator = 'other'
+            p = profiles.stock_trial_profile(mcc, mnc)
+        else:
+            operator, label, apns = carrier
+            p = profiles.default()
+            p.update(id='auto-' + operator + '-' + mcc + mnc, label=label + ' / automatic SIM selection')
+            p['carrier'].update(mcc=mcc, mncs=[mnc], data_apns=list(apns))
     # The separate dispatcher owns boot policy. The legacy experimental profile
     # gate is deliberately not relaxed for standalone legacy service commands.
     p['runtime']['autostart'] = False
