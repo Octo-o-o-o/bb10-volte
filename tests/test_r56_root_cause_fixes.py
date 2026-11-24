@@ -158,10 +158,9 @@ class DeviceEngineR56Tests(unittest.TestCase):
             ui.cleanup_stage(None)
         with self.assertRaises(AssertionError):
             ui.cleanup_stage('/tmp/other-dir')
-        if hasattr(os, 'geteuid'):
-            with patch.object(os, 'geteuid', return_value=1000):
-                with self.assertRaisesRegex(AssertionError, 'root_required'):
-                    ui.cleanup_stage('/tmp/bb10-unified-1234567890abcdef')
+        with patch.object(ui.os, 'geteuid', return_value=1000, create=True):
+            with self.assertRaisesRegex(AssertionError, 'root_required'):
+                ui.cleanup_stage('/var/bb10_auto_stage_1234567890ab')
 
     def test_dca_restore_original_and_network_lock_always_restore_lte_mode(self):
         import unified_dca as dca
