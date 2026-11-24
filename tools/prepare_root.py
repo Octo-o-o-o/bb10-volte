@@ -27,7 +27,7 @@ def main(argv=None):
     args=p.parse_args(argv)
     assert os.name=='nt','This preparation recipe is verified on Windows'
     assert args.seven_zip.is_file()
-    source=json.loads((ROOT/'materials/sources.json').read_text())
+    source=json.loads((ROOT/'materials/sources.json').read_text(encoding='utf-8'))
     stock_item, _ = recipe(args.variant)
     items={x['id']:x for x in source['verified_inputs'] if not x['id'].startswith('stock-')}
     items[stock_item['id']] = stock_item
@@ -37,9 +37,8 @@ def main(argv=None):
     kit=args.output.resolve()
     assert not kit.exists(),'Output exists; use a new directory to preserve keys and images'
     kit.mkdir(parents=True)
-    account=subprocess.check_output(['whoami'],text=True).strip()
-    subprocess.run(['icacls',str(kit),'/inheritance:r','/grant:r',account+':(OI)(CI)F','SYSTEM:(OI)(CI)F'],check=True,capture_output=True)
-    from preparation_cache import mark_started
+    from preparation_cache import mark_started, restrict_windows_acl
+    restrict_windows_acl(kit, directory=True)
     mark_started(kit, args.variant, 'win32')
     work=kit/'autoroot';work.mkdir()
     with zipfile.ZipFile(args.cache/items['autoroot-v4']['file']) as z:
@@ -48,7 +47,7 @@ def main(argv=None):
             assert target.is_relative_to(work) and not stat.S_ISLNK(member.external_attr>>16)
         z.extractall(work)
     # Preserve AppWorld and other stock apps; use the existing minimal root helpers.
-    original=(work/'patch.txt').read_text()
+    original=(work/'patch.txt').read_text(encoding='utf-8',errors='replace')
     patch='\n'.join(line for line in original.splitlines() if not line.startswith('removeapp ') and not line.startswith('#sys.'))+'\n'
     (work/'patch-owner.txt').write_text(patch,encoding='ascii')
     for name in ['q10_root_rsa','q10_host_rsa']:
@@ -59,7 +58,7 @@ def main(argv=None):
     (sshdir/'authorized_keys2').write_text('from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding '+pub+'\n',encoding='ascii')
     shutil.copyfile(kit/'q10_host_rsa',sshdir/'ssh_host_rsa_key')
     shutil.copyfile(kit/'q10_host_rsa.pub',sshdir/'ssh_host_rsa_key.pub')
-    config=(sshdir/'sshd_config').read_text()
+    config=(sshdir/'sshd_config').read_text(encoding='utf-8',errors='replace')
     config=config.replace('AuthorizedKeysFile=/etc/ssh/authorized_keys2 /accounts/devuser/.ssh/authorized_keys2','AuthorizedKeysFile=/etc/ssh/authorized_keys2')
     assert 'PasswordAuthentication=no' in config
     if args.variant == 'SQC100-4':
@@ -70,9 +69,14 @@ def main(argv=None):
     (sshdir/'sshd_config').write_text(config,encoding='ascii')
     host=(kit/'q10_host_rsa.pub').read_text(encoding='utf-8',errors='replace').split()
     (kit/'known_hosts').write_text('169.254.0.1 '+' '.join(host[:2])+'\n',encoding='ascii')
+    def quoted(path):
+        value = path.as_posix().replace('%', '%%')
+        assert not any(char in value for char in ('"', '\n', '\r'))
+        return '"' + value + '"'
     (kit/'ssh_config').write_text('Host bb10-root q10-root\n    HostName 169.254.0.1\n    User root\n'
-        +'    IdentityFile "'+(kit/'q10_root_rsa').as_posix()+'"\n'
-        +'    UserKnownHostsFile "'+(kit/'known_hosts').as_posix()+'"\n'
+        +'    IdentityFile '+quoted(kit/'q10_root_rsa')+'\n'
+        +'    UserKnownHostsFile '+quoted(kit/'known_hosts')+'\n'
+        +'    GlobalKnownHostsFile none\n'
         +'    IdentitiesOnly yes\n    StrictHostKeyChecking yes\n    PasswordAuthentication no\n    BatchMode yes\n    ConnectTimeout 5\n'
         +'    Ciphers aes128-ctr,aes192-ctr,aes256-ctr\n    MACs hmac-sha1\n    HostKeyAlgorithms +ssh-rsa\n    PubkeyAcceptedAlgorithms +ssh-rsa\n',encoding='utf-8')
     libusb=items['libusb']
@@ -85,7 +89,7 @@ def main(argv=None):
         assert hashlib.sha256(data).hexdigest()==lzo['dll_sha256']
         (work/'lzo2.dll').write_bytes(data)
         (work/'LZO-LICENSE.txt').write_bytes(t.extractfile('mingw64/share/licenses/lzo2/LICENSE').read())
-    git_core=args.openssl_dir or Path(subprocess.check_output(['git','--exec-path'],text=True).strip())
+    git_core=args.openssl_dir or Path(subprocess.check_output(['git','--exec-path'],text=True,encoding='utf-8',errors='replace',creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0)).strip())
     for name,digest in source['openssl']['files'].items():
         data=(git_core/name).read_bytes()
         assert hashlib.sha256(data).hexdigest()==digest,'OpenSSL version/hash differs; see materials/sources.json'
@@ -100,7 +104,7 @@ def main(argv=None):
             'variant':args.variant,'firmware_id':item['id'],'platform':'win32',
             'shared_default_ssh_authorization_replaced':True,'appworld_preserved':True,
             'stock_sha256':item['extracted_sha256'],'root_bundle_sha256':items['autoroot-v4']['sha256']}
-    (kit/'preparation.json').write_text(json.dumps(report,indent=2)+'\n')
+    (kit/'preparation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({'kit':str(kit),**report}))
 
 if __name__=='__main__':main()

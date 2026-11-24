@@ -204,14 +204,16 @@ def upgrade(folder, confirmed, current_version, progress):
                                'unknown': 'firmware_version_unknown'}[observed.state])
     if observed.current != current_version:
         raise root.SetupError('firmware_device_changed')
+    from preparation_cache import process_creation_time
     lock = root.root_lock_path()
     lock.parent.mkdir(parents=True, exist_ok=True)
     token = uuid.uuid4().hex
     try:
         with lock.open('x', encoding='utf-8') as stream:
-            json.dump({'pid': os.getpid(), 'kit': str(folder), 'operation': 'stock-upgrade', 'token': token}, stream)
+            json.dump({'pid': os.getpid(), 'pid_created_at': process_creation_time(os.getpid()),
+                       'kit': str(folder), 'operation': 'stock-upgrade', 'token': token}, stream)
     except FileExistsError:
-        raise root.SetupError('flash_state_unknown') from None
+        raise root._locked_unknown_flash() from None
     state.update(confirmation_token=token, previous_os=observed.current, phone_contacted=True)
     try:
         for phase, _ in images:

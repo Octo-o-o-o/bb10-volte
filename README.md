@@ -2,19 +2,20 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r55 · 手机版 0.2.1.0。** Q10、Q20、Passport、P’9983 可尝试大陆三网及匹配原厂配置的其他运营商。界面会标明尚未实测的运营商。
+**桌面 r56 · 手机版 0.2.2.0。** Q10、Q20、Passport、P’9983 可尝试大陆三网及匹配原厂配置的其他运营商。界面会标明尚未实测的运营商。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r55.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r56.md)
 
 本版包含[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。新行为尚待对应版本的真机验收。
 
 ## 这版改了什么
 
-- 刷写排障与安全解锁：Root 与原版系统升级记录是否进入写入阶段（`writing_started`），异常退出时控制台暂停展示原因并自动写入脱敏反馈包；锁定时可直接查看日志并安全解除暂停（不删镜像/密钥/日志），且不再阻断 Windows Bootrom 驱动安装。
-- Windows 驱动与中文用户名修复：PowerShell 驱动校验与安装统一传入 `-ExecutionPolicy Bypass`；SSH 密钥生成与读取兼容中文 Windows 用户名/主机名，不再报 `UnicodeDecodeError`。
-- 旧版目录指引、锁竞争与错误码修复：识别 `/var/rootdata/q10_volte` 旧版残留并给出手机端清理步骤；`cleanup-stage` 移出非阻塞管理锁；后台异常导出白名单 `error_code`，并在预启动失败时自动恢复 4G/3G/2G 选网模式。
+- 全 16 型号旧版自动迁移：校验完整的标准旧版 `/var/rootdata/q10_volte` 现已在全部 16 个目录型号上自动安全迁移，不再卡在旧版目录阻断；跨机型专属目录、多目录冲突与篡改仍严格拦截。
+- 彻底修补 LTE-only 回滚与错误遮蔽：覆盖 `restore()`、`restore_original()`、`reconcile()` 与 `disable` 的 5 处选网回滚缺口，补齐 `scan_mode_rejected` / `ims_apn_timeout` 等错误码，修复手机端 `cleanup_required` 与桌面 `sim_not_ready` 错误遮蔽。
+- 根本修复 Windows 驱动漏装与刷写稳定性：`pnputil` 退出码 `259` 不再阻断 `BlackBerry Device Manager` MSI 安装；禁用刷写控制台 QuickEdit 点击冻结；32 位 ANSI `cap.exe` 自动使用纯 ASCII 路径与 `TEMP`；多阶段刷写锁防止第二阶段掩盖第一阶段写入；Windows ACL 改用纯 ASCII SID（修复中文用户名 `icacls`）。
+- 桌面与文档引导完善：升级窗口新增 Windows 驱动直达按钮与 Bootrom（`RimUsb`）驱动提示，未安装服务的 Passport 主界面直达三网自动适配，手机应用安装窗补齐反馈入口，同步更新内置指南。
 
 ## 怎么用
 
@@ -55,16 +56,16 @@ Windows 11 和 Apple 芯片试过启动。Windows 10 和 Intel 还没试。详�
 
 反复准备或失败后磁盘占用较大时，见[保存位置与手动清理说明](docs/DISK-CLEANUP.md)。r43 已包含缓存复用与构建残留清理修复。
 
-Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r55 下载中。
+Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r56 下载中。
 
 打不开 GitHub 时，用官网的 Cloudflare R2。两边是同一份文件，运行前对一下 SHA-256。
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r55/bb10-volte-0.5.0-r55-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/bb10-volte-0.5.0-r55-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r56/bb10-volte-0.5.0-r56-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/bb10-volte-0.5.0-r56-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r55/bb10-volte-0.5.0-r55-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/bb10-volte-0.5.0-r55-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r55/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r56/bb10-volte-0.5.0-r56-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/bb10-volte-0.5.0-r56-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r56/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

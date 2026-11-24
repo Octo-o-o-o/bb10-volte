@@ -1,11 +1,15 @@
 # bb10-volte
 
-**Upcoming first-use improvements:** Each main step provides feedback and an illustrated guide. Preview and save a redacted ZIP with earlier failures, including across retries and restarts. See [feedback](FEEDBACK.en.md) and the [complete walkthrough](recordings/FIRST-USE-RECORDING.md). Published r14 users can use More → Export check report.
+[简体中文](GUI.md)
 
 <!-- unified-current:start -->
-**Current experimental release 0.5.0-r8:** The three exact rooted variants use **Automatic carrier setup**. Install for the current SIM, restart normally and let the phone register automatically; later powered-off SIM changes need no computer. r8 adds authenticated own-number display for Q10 and Passport. See [scope, steps and acceptance](AUTO-CARRIERS.en.md).
+**Recommended workflow (Automatic carrier setup / Phone app):** All **16 catalog variants** across Q10, Classic (Q20), Passport, and P’9983 (OS 10.3.3.3216, standard USIM without ISIM) are open for China Mobile, China Unicom, and China Telecom—including stock `0.xml` fallback PLMNs and the safe retain-provider-until-reboot lifecycle. On rooted phones, use **Automatic carrier setup** or **Install phone app** at the top of the main window. Restart normally after installation; later powered-off SIM swaps need no computer. See [Automatic carrier setup](AUTO-CARRIERS.en.md) and [compatibility-matrix.json](../materials/compatibility-matrix.json) for per-variant test status.
 
-The 0.3/0.4 notes below preserve the history of the legacy single-carrier, connection and initial-Root workflows. Their legacy Passport installer restrictions are separate from the new unified entry.
+- **Windows flashing drivers**: Even when USB RNDIS networking works while the phone is booted, Bootrom flashing (Initial Root / Stock OS upgrade) requires the official BlackBerry USB (`RimUsb`) driver and `BlackBerry Device Manager`. Install them from **First use → Windows drivers**. If a previous flash paused with a lock, use **Inspect flash log & unlock…** to review the scrubbed log before retrying.
+- **Feedback bundles**: Every major window (including Mobile App Install, Firmware Upgrade, Drivers, and Automatic Carrier Setup) includes **Need help / Feedback** to preview and save a redacted ZIP with error codes, visible status, and scrubbed flash failure excerpts. See [feedback](FEEDBACK.en.md).
+- **macOS status**: The macOS build is permanently frozen at `v0.5.0-r43`; Windows desktop and the BB10 phone app remain actively maintained.
+
+The 0.3/0.4 notes below preserve the history of the legacy single-carrier, connection and initial-Root workflows. Legacy Passport single-carrier holds do not apply to Automatic carrier setup or the phone app.
 <!-- unified-current:end -->
 
 
@@ -24,7 +28,7 @@ Desktop `0.3.3-r9` firmware downloads also provide **Backup download (Baidu)** a
 
 The local `0.3.3-r4` diagnostic test build recognizes Telecom `ctlte`. Check details and exported reports distinguish profile matching, actual data connectivity and individual baseline configuration observations. Only fixed public APN names are exported; other names become `other`. Existing custom profiles are not silently changed: reselect the Telecom template or review its APN list. Non-default settings do not establish corruption or ownership; preflight never resets an APN or deletes overrides. Old reports lack these details. Device data and baseline gates still apply, and Q20 Telecom hardware acceptance is pending.
 
-Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. Passport automatic installation, start and restore are paused; see [community research](COMMUNITY-RESEARCH.en.md).
+Version 0.3.3 adds “More → Community research and adaptation progress.” Reports include exact-match community evidence and read-only incoming configuration snapshots. They do not establish call acceptance. The legacy single-carrier engine pauses Passport mutations, while all Passport variants are open via **Automatic carrier setup** and **Install phone app**; see [Automatic carrier setup](AUTO-CARRIERS.en.md) and [community research](COMMUNITY-RESEARCH.en.md).
 
 `0.3.3-r3` uses **连接手机 / Connect phone** and **连接帮助 / Connection help**. SSH file paths and aliases move to **更多 → 高级连接设置 / More → Advanced connection settings**. This flow is included in the Windows EXE, Mac DMG and source; r6 and older binaries retain some labels described below.
 
@@ -54,6 +58,6 @@ Desktop revision 2 removes the permanent sidebar and technical checklist from fi
 
 After a connection failure, recheck before retrying. Interrupted writes leave an installation transaction receipt or an incomplete directory and block replacement. Arbitrary interrupted installs do not yet have automatic repair; preserve the files for maintainer inspection. First use provides Windows Q10 preparation/flashing; this branch also adds experimental native preparation and separately confirmed staged execution on macOS 14+, without hardware first-flash acceptance. Both erase phone data when flashing; see [setup scope](FIRST-RUN.en.md). Other models remain outside the recipe; native Mac errors pause without the Windows exit-73 exception.
 
-Q20 remains experimental. Passport shows a provider-lifecycle hold and automatic mutations are paused. Explicit opt-in never bypasses OS/native hashes or SIM compatibility. Only one Beijing Unicom Q10 has call evidence. Public-data Mobile, Telecom and other Unicom templates are untested; ISIM remains unsupported. Reports include selected profile and file fingerprints; keep personal details out of profile labels. See [compatibility](COMPATIBILITY.en.md). Never flash the bundled Q10 Root images onto Q20/Q30.
+(Historical legacy single-carrier engine behavior) In the legacy single-carrier engine, Q20 uses experimental opt-in and Passport redirects uninstalled devices to **Automatic carrier setup**. Explicit opt-in never bypasses OS/native hashes or SIM compatibility. Reports include selected profile and file fingerprints; keep personal details out of profile labels. See [compatibility-matrix.json](../materials/compatibility-matrix.json) and [compatibility](COMPATIBILITY.en.md) for current per-variant test evidence. Never flash the bundled Q10 Root images onto Q20/Q30.
 
 After the author reported boot-animation hangs, experimental combinations require autostart off under Customize → Runtime options and a fresh preflight. Desktop/CLI/phone gates enforce manual start; the accepted Q10 baseline retains its prior behavior.

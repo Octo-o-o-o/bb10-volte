@@ -43,6 +43,82 @@ def write_record(folder, record):
     temporary.replace(target)
 
 
+def process_creation_time(pid):
+    """Return 64-bit Win32 process creation FILETIME on Windows, or None."""
+    if os.name != 'nt' or type(pid) is not int or pid < 1:
+        return None
+    import ctypes
+    from ctypes import wintypes
+    api = ctypes.WinDLL('kernel32', use_last_error=True)
+    api.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    api.OpenProcess.restype = wintypes.HANDLE
+    api.GetProcessTimes.argtypes = (wintypes.HANDLE, ctypes.POINTER(wintypes.FILETIME),
+                                    ctypes.POINTER(wintypes.FILETIME),
+                                    ctypes.POINTER(wintypes.FILETIME),
+                                    ctypes.POINTER(wintypes.FILETIME))
+    api.GetProcessTimes.restype = wintypes.BOOL
+    api.CloseHandle.argtypes = (wintypes.HANDLE,)
+    handle = api.OpenProcess(0x1000, False, pid)
+    if not handle:
+        return None
+    try:
+        created, exited, kernel, user = (wintypes.FILETIME(), wintypes.FILETIME(),
+                                         wintypes.FILETIME(), wintypes.FILETIME())
+        if not api.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited),
+                                   ctypes.byref(kernel), ctypes.byref(user)):
+            return None
+        return (created.dwHighDateTime << 32) | created.dwLowDateTime
+    finally:
+        api.CloseHandle(handle)
+
+
+def process_matches(pid, expected_created_at=None):
+    """Verify whether pid is alive and (when known) matches its original creation time."""
+    if type(pid) is not int or pid < 1:
+        return False
+    if expected_created_at is None:
+        return process_alive(pid)
+    if os.name == 'nt':
+        actual = process_creation_time(pid)
+        if actual is None:
+            # Either the process exited or the PID was recycled to an inaccessible system process.
+            return False
+        if actual != expected_created_at:
+            return False
+    return process_alive(pid)
+
+
+def windows_user_sid():
+    """Return the current Windows user's pure-ASCII SID (S-1-...) without OEM/ACP corruption."""
+    import re
+    raw = subprocess.check_output(
+        ['whoami', '/user', '/fo', 'csv', '/nh'],
+        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+    )
+    match = re.search(r'S-1-[0-9-]+', raw.decode('ascii', errors='ignore'))
+    if match:
+        return match.group(0)
+    return None
+
+
+def restrict_windows_acl(path, directory=False):
+    """Restrict a Windows file/folder to the current user and SYSTEM using pure-ASCII SIDs."""
+    permission = ':(OI)(CI)F' if directory else ':F'
+    sid = windows_user_sid()
+    flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+    if sid:
+        principal = '*' + sid + permission
+        system = '*S-1-5-18' + permission
+    else:
+        account = subprocess.check_output(['whoami'], text=True, encoding='utf-8',
+                                          errors='replace', creationflags=flags).strip()
+        principal = account + permission
+        system = 'SYSTEM' + permission
+    subprocess.run(['icacls', str(path), '/inheritance:r', '/grant:r',
+                    principal, system, '/remove:g', '*S-1-3-4'],
+                   check=True, capture_output=True, creationflags=flags)
+
+
 def process_alive(pid):
     if type(pid) is not int or pid < 1:
         return False
@@ -124,7 +200,8 @@ def preparation_lock(private, check_flash_lock=True):
                 raise SetupError('preparation_busy') from None
             raise
         if check_flash_lock and root_lock_path().exists():
-            raise SetupError('flash_state_unknown')
+            from root_setup import _locked_unknown_flash
+            raise _locked_unknown_flash()
         yield
 
 
@@ -210,17 +287,17 @@ def legacy_record(folder, variant, platform):
     work = folder / 'autoroot'
     if linked(work) or any(linked(path) for path in work.rglob('*')):
         raise ValueError('Linked legacy recipe')
-    original = (work / 'patch.txt').read_text()
+    original = (work / 'patch.txt').read_text(encoding='utf-8', errors='replace')
     patch = '\n'.join(line for line in original.splitlines()
                       if not line.startswith('removeapp ') and not line.startswith('#sys.')) + '\n'
-    if (work / 'patch-owner.txt').read_text() != patch:
+    if (work / 'patch-owner.txt').read_text(encoding='utf-8', errors='replace') != patch:
         raise ValueError('Changed legacy patch recipe')
     ssh = work / 'patchdata/var/etc/ssh'
     public_raw = (folder / 'q10_root_rsa.pub').read_text(encoding='utf-8', errors='replace').strip()
     public_key_only = ' '.join(public_raw.split()[:2])
     prefix = 'from="169.254.0.2",no-agent-forwarding,no-port-forwarding,no-X11-forwarding '
     expected_keys = {prefix + public_raw + '\n', prefix + public_key_only + '\n'}
-    config = (ssh / 'sshd_config').read_text()
+    config = (ssh / 'sshd_config').read_text(encoding='utf-8', errors='replace')
     if ((ssh / 'authorized_keys2').read_text(encoding='utf-8', errors='replace') not in expected_keys
             or sha(ssh / 'ssh_host_rsa_key') != sha(folder / 'q10_host_rsa')
             or 'PasswordAuthentication=no' not in config

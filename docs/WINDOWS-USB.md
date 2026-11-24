@@ -1,6 +1,6 @@
 # Windows USB 驱动与连接
 
-本次使用 BlackBerry USB Drivers **5.0.0.2** 的 x64 组件。电脑已经能稳定识别 Q10 的 BlackBerry USB 设备和 USB 网络时，无需重新安装。
+本次使用 BlackBerry USB Drivers **5.0.0.2** 的 x64 组件。注意：**即使手机开机状态下 Windows 已自带 RNDIS USB 网络，首次 Root 或原版系统升级进入 Bootrom 阶段仍必须安装 BlackBerry 原厂 `RimUsb` 驱动与 `BlackBerry Device Manager`**；只有确认 Bootrom 驱动和 USB 网络均已就绪时，才无需重新安装。
 
 ## 材料与离线核验
 

@@ -182,7 +182,7 @@ def job_lock(blocking=False):
                   (info.st_dev, info.st_ino) == (current.st_dev, current.st_ino), 'job_lock_changed')
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | (0 if blocking else fcntl.LOCK_NB))
-        except IOError as error:
+        except (IOError, OSError) as error:
             if error.errno in (errno.EACCES, errno.EAGAIN):
                 raise e.MobileError('operation_in_progress')
             raise
@@ -469,10 +469,16 @@ def inspection_response(request, result, details, confirmed_context=None):
                       actions=['status', 'compatibility', 'legacy-inspect'])
         scope_copy = {
             'unvalidated_legacy_installation': (
-                '检测到旧版安装残留',
-                '检测到旧版独立 VoLTE 安装目录（如 /var/rootdata/q10_volte），当前型号未启用自动旧版迁移。请先在“管理与恢复 → 高级维护 → 实验适配”停用并卸载旧服务、正常重启后再开启，或导出报告。',
-                'Legacy installation detected',
-                'A legacy standalone VoLTE directory was found and automatic migration is not enabled for this variant. Open Manage & restore -> Advanced -> Experimental to stop and uninstall the legacy service, restart normally, then try again, or export a report.',
+                '检测到未识别或不兼容的旧版目录',
+                '检测到来源不完整、跨机型残留或无法自动迁移的旧版 VoLTE 目录（标准完整旧版 /var/rootdata/q10_volte 会自动接管）。为保护系统原配置已停止安装，请保留现场并导出兼容性报告。',
+                'Incompatible legacy directory detected',
+                'An incomplete, cross-variant, or unmigratable legacy VoLTE directory was detected (standard verified /var/rootdata/q10_volte installs migrate automatically). Setup stopped safely; preserve the current state and export a compatibility report.',
+            ),
+            'legacy_install_interrupted': (
+                '旧版安装事务尚未完成',
+                '检测到旧版 VoLTE 安装目录中存在未结束的安装事务记录（install-transaction.json），已暂停自动迁移。请保留现场并导出兼容性报告。',
+                'Interrupted legacy installation detected',
+                'An unfinished legacy installation transaction (install-transaction.json) was detected, so automatic migration paused safely. Preserve the state and export a report.',
             ),
             'root_scheme_not_supported': (
                 '当前 Root 方案暂未支持',
@@ -486,11 +492,53 @@ def inspection_response(request, result, details, confirmed_context=None):
                 'Root boot script changed',
                 'The Root boot script does not match the known baseline hash, so setup stopped safely. Keep the current state and export a compatibility report.',
             ),
+            'root_addon_directory_changed': (
+                'Root 启动目录状态异常',
+                '手机 /var/addons 启动目录状态不符合预期，为保护系统已停止安装。请保留现场并导出兼容性报告。',
+                'Root addon directory unexpected',
+                'The phone /var/addons directory state is unexpected, so setup stopped safely. Keep the current state and export a compatibility report.',
+            ),
             'legacy_payload_changed': (
                 '旧版安装文件已变更',
                 '检测到旧版 VoLTE 文件与原始清单不一致，已暂停自动迁移。请保留现场并导出兼容性报告。',
                 'Legacy installation modified',
                 'Existing legacy VoLTE files differ from their recorded manifest, so automatic migration paused safely. Keep the current state and export a report.',
+            ),
+            'legacy_directory_changed': (
+                '旧版安装目录状态异常',
+                '检测到旧版 VoLTE 目录状态异常（例如符号链接），已暂停自动迁移。请保留现场并导出兼容性报告。',
+                'Legacy directory changed',
+                'The legacy VoLTE directory state is unexpected (such as a symlink), so automatic migration paused safely. Keep the current state and export a report.',
+            ),
+            'unknown_legacy_owner': (
+                '旧版安装来源不明',
+                '检测到旧版 VoLTE 清单归属信息不在受支持范围内，已暂停自动迁移。请保留现场并导出兼容性报告。',
+                'Unknown legacy installation owner',
+                'The legacy VoLTE manifest owner is unrecognized, so automatic migration paused safely. Keep the current state and export a report.',
+            ),
+            'unfinished_nas_trial': (
+                '旧版实验恢复尚未完成',
+                '检测到旧版 VoLTE 目录存在未结束的实验恢复记录，已暂停自动迁移。请先完成原恢复并正常重启。',
+                'Unfinished legacy recovery record',
+                'An unfinished legacy experimental recovery record was detected, so automatic migration paused safely. Complete recovery and restart normally first.',
+            ),
+            'os_not_supported': (
+                '系统版本不符合要求',
+                '自动适配要求 BB10 OS 10.3.3.3216。请先使用原版固件升级到 10.3.3.3216 后再试。',
+                'Unsupported OS version',
+                'Automatic setup requires BB10 OS 10.3.3.3216. Upgrade with stock firmware to 10.3.3.3216 first.',
+            ),
+            'unknown_native_image': (
+                '系统原生文件未匹配',
+                '手机六个系统原生文件的散列与已知 10.3.3.3216 基线不一致，已停止安装。请保留现场并导出兼容性报告。',
+                'Native system images did not match',
+                'One or more of the six stock system files do not match the known 10.3.3.3216 baseline, so setup stopped safely. Export a compatibility report.',
+            ),
+            'hardware_identity_conflict': (
+                '机型与板型信息不一致',
+                '读到的硬件型号与板型标识冲突，已停止安装。请保留现场并导出兼容性报告。',
+                'Hardware identity conflict',
+                'The detected model variant and board identity conflict, so setup stopped safely. Export a compatibility report.',
             ),
         }.get(scope_code)
         if scope_copy:
@@ -573,6 +621,8 @@ def inspection_response(request, result, details, confirmed_context=None):
         if temporary:
             return ui('waiting_sim', language, details=details, actions=actions)
         return sim_unsupported_ui(result, language, details, actions=actions)
+    if status.get('status_from_current_boot') is True and status.get('phase') == 'cleanup_required':
+        return recovery_required_ui(language, details, actions)
     if not status.get('enabled'):
         actions = ['enable', 'update', 'export', 'compatibility', 'uninstall', 'status']
         if rollback_available:
@@ -895,11 +945,17 @@ def diagnostic_job_summary(expected_job=None):
                       'mobile_network_off', 'mobile_network_rejected', 'mobile_network_reply_timeout',
                       'mobile_network_enable_unconfirmed', 'mobile_network_state_unknown',
                       'mobile_network_enable_blocked', 'mobile_network_write_failed',
-                      'call_active', 'operation_in_progress', 'state_persistence_unconfirmed',
-                      'update_version_mismatch', 'package_changed', 'invalid_zip_archive',
-                      'rollback_component_too_old', 'backup_location_unavailable',
+                      'call_active', 'operation_in_progress', 'management_busy', 'restore_pending',
+                      'retry_not_available', 'restore_incomplete', 'restoration_still_pending',
+                      'activation_recovery_required', 'uninstall_pending',
+                      'state_persistence_unconfirmed', 'update_version_mismatch', 'package_changed',
+                      'invalid_zip_archive', 'rollback_component_too_old', 'backup_location_unavailable',
                       'backup_readback_failed', 'china_broadnet_unsupported', 'sim_route_unsupported',
-                      'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable',
+                      'downloaded_carrier_config_present', 'carrier_not_validated',
+                      'experimental_stock_template_unavailable', 'unvalidated_legacy_installation',
+                      'legacy_install_interrupted', 'legacy_payload_changed', 'root_scheme_not_supported',
+                      'root_boot_script_changed', 'root_addon_directory_changed',
+                      'network_mode_rejected', 'network_mode_readback_failed', 'usage_restore_unconfirmed',
                       'preflight_or_recovery_check_failed')
             if job.get('phase') is not None:
                 summary['phase'] = job['phase'] if job['phase'] in phases else 'other'

@@ -8,7 +8,7 @@ import { applyRelease, menuLabel, RELEASE_KEYS, RELEASE_TAG, MACOS_RELEASE_TAG, 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pages = ['index.html', 'guides.html', 'mobile-installer.html', 'mobile-manual.html', 'guide.html', 'mobile.html', 'trials.html', '404.html', 'en/index.html', 'en/guides.html', 'en/mobile-installer.html', 'en/mobile-manual.html', 'en/guide.html', 'en/mobile.html', 'en/trials.html', 'en/404.html'];
 const html = Object.fromEntries(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(root, 'dist', page), 'utf8')])));
-const windowsFallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r55/bb10-volte-0.5.0-r55';
+const windowsFallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r56/bb10-volte-0.5.0-r56';
 const macFallbackBase = 'https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43';
 
 test('candidate guide keeps open entry separate from completed tests', () => {
@@ -287,11 +287,11 @@ test('mobile installation has two static routes and versioned R2 downloads', asy
       assert.ok(idsFor(source).has(id), `${page}: missing ${id}`);
     }
     assert.match(source, /https:\/\/github\.com\/Octo-o-o-o\/bb10-volte\/releases"/);
-    assert.match(source, /v0\.5\.0-r55/);
+    assert.match(source, /v0\.5\.0-r56/);
     assert.match(source, /120/);
     assert.match(source, /SUD success/);
     assert.match(source, /mobile-installer\.html/); assert.match(source, /mobile-manual\.html/); assert.doesNotMatch(source, /尚未公开发布|not publicly released/);
-    assert.ok(html[(page.startsWith('en/') ? 'en/' : '') + 'mobile-manual.html'].includes('https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.2.1.0.bar'));
+    assert.ok(html[(page.startsWith('en/') ? 'en/' : '') + 'mobile-manual.html'].includes('https://bb10-downloads.octoooo.com/mobile/bb10-volte-0.2.2.0.bar'));
   }
   for (const page of ['index.html', 'guide.html', 'en/index.html', 'en/guide.html']) {
     assert.match(html[page], /href="mobile\.html"/);

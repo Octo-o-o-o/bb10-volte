@@ -39,6 +39,9 @@ MESSAGES = {
     'multiple_usb_devices': tr('检测到多台黑莓手机。请只保留要配对的那一台，拔掉其他黑莓手机后再试。'),
     'direct_usb_not_ready': tr('未识别到单台黑莓手机的 USB 网络。请解锁手机并检查数据线，或先导入手机的授权结果。'),
     'pairing_result_changed': tr('结果文件在确认期间发生变化。请重新从当前手机复制，再核对指纹。'),
+    'openssh_missing': tr('本机缺少 SSH 客户端。Windows 源码用户可先在“首次使用”点击“准备连接组件”。'),
+    'bundled_ssh_mismatch': tr('内置 SSH 文件校验失败，请重新获取完整应用包。'),
+    'ssh_algorithm_mismatch': tr('手机 SSH 与客户端算法不匹配。请使用更新后的完整应用重新验证。'),
 }
 
 

@@ -427,8 +427,14 @@ def set_network_lock(selected, mcc=None, mnc=None):
     try:
         ensure_lte_mode(selected)
     except Exception:
-        restore_network_selection()
-        restore_lte_mode()
+        try:
+            restore_network_selection()
+        except Exception:
+            pass
+        try:
+            restore_lte_mode()
+        except Exception:
+            pass
         raise
     return {'network_locked': True, 'operator': operator, 'target_plmn': target_mcc + '-' + target_mnc,
             'lte_only_applied': True, 'scan_mode': scan_mode_snapshot(),
@@ -730,7 +736,22 @@ def prepare(selected, allow_rplmn_attach=False):
 
 
 def restore_original():
-    result = set_usage(0, {'operator': 'original', 'sim_sha256': None})
-    restore_network_selection(preserve_locked_sim=None)
-    restore_lte_mode()
+    first_error = None
+    result = None
+    try:
+        result = set_usage(0, {'operator': 'original', 'sim_sha256': None})
+    except Exception as error:
+        first_error = error
+    try:
+        restore_network_selection(preserve_locked_sim=None)
+    except Exception as error:
+        if first_error is None:
+            first_error = error
+    try:
+        restore_lte_mode()
+    except Exception as error:
+        if first_error is None:
+            first_error = error
+    if first_error is not None:
+        raise first_error
     return result

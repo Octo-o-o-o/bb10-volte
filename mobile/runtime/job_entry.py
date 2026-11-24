@@ -31,6 +31,8 @@ def main():
                 result = {'updated': True, 'runtime_only': True, 'reboot_required': False}
             else:
                 result = m.manage('update', stage=stage, operation_id=request['operation_id'])
+                if os.path.isdir(stage):
+                    m.cleanup_stage(stage)
     except Exception as error:
         if not entered and str(error) == 'management_busy':
             return {'ok': False, 'error_code': 'management_busy',

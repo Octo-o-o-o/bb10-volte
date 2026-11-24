@@ -88,7 +88,7 @@ class ExactClassicNAScope(unittest.TestCase):
         self.assertIn(hashlib.sha256(profiles.canonical(r47['files'])).hexdigest(),unified_install.PREVIOUS_PAYLOADS)
         expected_r48_diff={'device/carrier_policy.py','device/compatibility.py','device/device_info.py',
                            'device/ims_image.py','device/profiles.py','device/service.py',
-                           'device/unified_dca.py','device/unified_install.py',
+                           'device/unified_dca.py','device/unified_install.py','device/unified_migrate.py',
                            'device/unified_operator_name.py','device/unified_service.py','device/telecom_dca.py'}
         for prior in (r44, r45, r46):
             diff={name for name in prior['files'] if prior['files'][name]!=current['files'][name]}

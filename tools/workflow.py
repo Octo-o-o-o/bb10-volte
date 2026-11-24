@@ -487,9 +487,8 @@ class Client:
         folder = private_root() / datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
         folder.mkdir(parents=True, exist_ok=False, mode=0o700)
         if sys.platform == 'win32':
-            account = subprocess.check_output(['whoami'], text=True, creationflags=CREATE_NO_WINDOW).strip()
-            self.process(['icacls', str(folder), '/inheritance:r', '/grant:r',
-                          account + ':(OI)(CI)F', 'SYSTEM:(OI)(CI)F'], 20)
+            from preparation_cache import restrict_windows_acl
+            restrict_windows_acl(folder, directory=True)
         self.process([self.scp, '-S', self.ssh, '-O', '-q', '-r'] + self.options + [self.host + ':' + BASE + '/state', str(folder)], 60)
         self.process([self.scp, '-S', self.ssh, '-O', '-q'] + self.options + [self.host + ':' + BASE + '/installation.json', str(folder / 'installation.json')], 30)
         return {'private_logs_saved': str(folder), 'share_publicly': False}

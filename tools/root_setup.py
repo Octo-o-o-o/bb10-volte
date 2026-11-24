@@ -157,9 +157,33 @@ def usb_discovery_targets(state):
     return targets
 
 
+def windows_bootrom_driver_status():
+    """Read-only check for BlackBerry Bootrom (RimUsb) driver and Device Manager service."""
+    if sys.platform != 'win32':
+        return {'rimusb_installed': None, 'bdm_service_installed': None, 'bootrom_driver_ready': None}
+    try:
+        import winreg
+    except ImportError:
+        return {'rimusb_installed': None, 'bdm_service_installed': None, 'bootrom_driver_ready': None}
+    def key_exists(subkey):
+        try:
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey):
+                return True
+        except OSError:
+            return False
+    rimusb = (key_exists(r'SYSTEM\CurrentControlSet\Services\RimUsb') or
+              key_exists(r'SYSTEM\CurrentControlSet\Services\RimUsb_AMD64') or
+              key_exists(r'SYSTEM\CurrentControlSet\Services\RimUsbNT'))
+    bdm = (key_exists(r'SYSTEM\CurrentControlSet\Services\BlackBerry Device Manager') or
+           key_exists(r'SYSTEM\CurrentControlSet\Services\BbDevMgr'))
+    return {'rimusb_installed': rimusb, 'bdm_service_installed': bdm,
+            'bootrom_driver_ready': bool(rimusb and bdm)}
+
+
 def local_usb_state():
     result = {'usb_present': None, 'usb_count': None, 'usb_network': None, 'driver_ready': None}
     if sys.platform == 'win32':
+        result.update(windows_bootrom_driver_status())
         script = r"""
 $ErrorActionPreference='Stop'
 $devices=@(Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match '^USB\\VID_0FCA&PID_[0-9A-F]{4}\\' })
@@ -174,7 +198,8 @@ $links=@($adapters | Where-Object { $_.PnPDeviceID -match '^USB\\VID_0FCA&' } | 
 """
         try:
             raw = subprocess.run([powershell(), '-NoProfile', '-Command', script], capture_output=True,
-                                 text=True, timeout=18, creationflags=NO_WINDOW)
+                                 text=True, encoding='utf-8', errors='replace',
+                                 timeout=18, creationflags=NO_WINDOW)
             if raw.returncode == 0:
                 result.update(json.loads(raw.stdout))
         except (OSError, ValueError, subprocess.TimeoutExpired):
@@ -423,25 +448,68 @@ def _lock_kit_dir(lock_data):
     if not isinstance(raw_kit, str) or not raw_kit:
         return None
     try:
+        priv = private_root()
+        if priv.is_symlink() or priv.is_junction():
+            return None
         candidate = Path(raw_kit)
         if candidate.is_symlink() or candidate.is_junction():
             return None
         resolved = candidate.resolve()
-        if resolved.is_relative_to(private_root().resolve()) and resolved.is_dir():
+        if (resolved.parent == priv.resolve() and
+                (resolved.name == 'root-kit' or resolved.name.startswith('root-kit-')) and
+                resolved.is_dir()):
             return resolved
     except OSError:
         return None
     return None
 
 
+def _bounded_log_text(path, limit=32768):
+    with path.open('rb') as stream:
+        head = stream.read(limit)
+        stream.seek(0, 2)
+        size = stream.tell()
+        if size > limit:
+            stream.seek(max(0, size - limit))
+            tail = stream.read(limit)
+        else:
+            tail = b''
+    return (head + b'\n' + tail).decode('utf-8', errors='replace')
+
+
+def _locked_unknown_flash():
+    error = SetupError('flash_state_unknown')
+    try:
+        info = inspect_flash_lock()
+        if info:
+            summary = {k: info[k] for k in ('operation', 'stage', 'exit_code', 'writing_started', 'launch_error')
+                       if info.get(k) is not None}
+            parts = []
+            if summary:
+                parts.append('root-flash.lock: ' + json.dumps(summary, ensure_ascii=True, sort_keys=True))
+            if info.get('excerpt'):
+                parts.append(info['excerpt'])
+            error.feedback_log = '\n'.join(parts)
+    except Exception:
+        pass
+    return error
+
+
 def inspect_flash_lock():
     """Read bounded, scrubbed facts about an existing root-flash.lock without mutating it."""
     from feedback import flash_failure_excerpt
-    from preparation_cache import process_alive
+    from preparation_cache import process_matches
     from root_flash import writing_started_line
     lock = root_lock_path()
-    if lock.is_symlink() or not lock.exists():
+    try:
+        if lock.is_symlink() or lock.is_junction() or not lock.exists():
+            return None
+    except OSError:
         return None
+    if not lock.is_file():
+        return {'locked': True, 'operation': 'unknown', 'process_running': False, 'kit_name': '',
+                'stage': None, 'exit_code': None, 'writing_started': None, 'writing_complete': None,
+                'done': None, 'error_seen': None, 'launch_error': None, 'excerpt': ''}
     lock_data = {}
     try:
         if lock.stat().st_size <= 65536:
@@ -451,21 +519,38 @@ def inspect_flash_lock():
     except (OSError, ValueError):
         lock_data = {}
     pid = lock_data.get('pid')
-    running = bool(type(pid) is int and pid > 0 and pid != os.getpid() and process_alive(pid))
+    pid_created = lock_data.get('pid_created_at')
+    if type(pid_created) is not int:
+        pid_created = None
+    running = bool(type(pid) is int and pid > 0 and pid != os.getpid() and process_matches(pid, pid_created))
     operation = lock_data.get('operation') if isinstance(lock_data.get('operation'), str) else 'root-flash'
     prefix = 'upgrade' if operation == 'stock-upgrade' else 'flash'
     kit_dir = _lock_kit_dir(lock_data)
+    if kit_dir and not running:
+        active_path = kit_dir / 'flash-active.json'
+        try:
+            if active_path.is_file() and not active_path.is_symlink() and active_path.stat().st_size <= 4096:
+                active = json.loads(active_path.read_text(encoding='utf-8'))
+                if isinstance(active, dict):
+                    apid = active.get('pid')
+                    acreated = active.get('created_at') if type(active.get('created_at')) is int else None
+                    if type(apid) is int and apid > 0 and process_matches(apid, acreated):
+                        running = True
+        except (OSError, ValueError):
+            pass
     info = {
         'locked': True,
         'operation': operation,
         'process_running': running,
         'kit_name': kit_dir.name if kit_dir else '',
         'stage': None,
+        'failed_phase': None,
         'exit_code': None,
         'writing_started': None,
         'writing_complete': None,
         'done': None,
         'error_seen': None,
+        'launch_error': None,
         'excerpt': '',
     }
     if not kit_dir:
@@ -479,31 +564,72 @@ def inspect_flash_lock():
                 info['stage'] = jdata['stage']
     except (OSError, ValueError):
         pass
+    # Inspect ALL stages so a pre-write failure in stage 2 (e.g. radio) NEVER hides
+    # an earlier stage 1 (e.g. os) that already wiped/wrote the phone.
     phases = ('stock_radio', 'stock_os', 'stock') if prefix == 'upgrade' else ('radio', 'os')
+    any_started = False
+    any_complete = False
+    any_receipt = False
+    any_missing_receipt = False
+    latest_recorded = False
     for phase in phases:
         rpath = kit_dir / (prefix + '-' + phase + '.json')
         lpath = kit_dir / (prefix + '-' + phase + '.log')
+        has_receipt = False
+        has_log = lpath.is_file() and not lpath.is_symlink()
+        phase_started = None
         if rpath.is_file() and not rpath.is_symlink() and rpath.stat().st_size <= 65536:
             try:
                 rdata = json.loads(rpath.read_text(encoding='utf-8'))
                 if isinstance(rdata, dict):
-                    if isinstance(rdata.get('exit_code'), int):
-                        info['exit_code'] = rdata['exit_code']
-                    for key in ('writing_started', 'writing_complete', 'done', 'error_seen'):
-                        if isinstance(rdata.get(key), bool):
-                            info[key] = rdata[key]
-                    if info['writing_started'] is None and info['writing_complete'] is True:
-                        info['writing_started'] = True
+                    has_receipt = True
+                    any_receipt = True
+                    p_complete = rdata.get('writing_complete') is True
+                    p_started = rdata.get('writing_started')
+                    if type(p_started) is not bool:
+                        p_started = True if p_complete else None
+                    if p_started is True or p_complete:
+                        any_started = True
+                        phase_started = True
+                    elif p_started is False:
+                        phase_started = False
+                    if p_complete:
+                        any_complete = True
+                    if not latest_recorded:
+                        latest_recorded = True
+                        info['failed_phase'] = phase
+                        if type(rdata.get('exit_code')) is int:
+                            info['exit_code'] = rdata['exit_code']
+                        if isinstance(rdata.get('launch_error'), str):
+                            info['launch_error'] = rdata['launch_error']
+                        for key in ('done', 'error_seen'):
+                            if type(rdata.get(key)) is bool:
+                                info[key] = rdata[key]
             except (OSError, ValueError):
                 pass
-        if info['writing_started'] is None and lpath.is_file() and not lpath.is_symlink():
+        if has_log and phase_started is not True:
             try:
-                text = lpath.read_text(encoding='utf-8', errors='replace')[:262144]
-                info['writing_started'] = any(writing_started_line(line) for line in text.splitlines())
+                text = _bounded_log_text(lpath)
+                if any(writing_started_line(line) for line in text.splitlines()):
+                    any_started = True
+                    phase_started = True
             except OSError:
                 pass
-        if rpath.is_file() or lpath.is_file():
-            break
+        if has_log and not has_receipt:
+            any_missing_receipt = True
+            if not latest_recorded:
+                latest_recorded = True
+                info['failed_phase'] = phase
+    if any_started:
+        info['writing_started'] = True
+    elif any_receipt and not any_missing_receipt:
+        info['writing_started'] = False
+    else:
+        info['writing_started'] = None
+    if any_complete:
+        info['writing_complete'] = True
+    elif any_receipt and not any_missing_receipt:
+        info['writing_complete'] = False
     info['excerpt'] = flash_failure_excerpt(kit_dir, prefix=prefix)
     return info
 
@@ -513,7 +639,7 @@ def clear_flash_lock(confirmed=False):
     if confirmed is not True:
         raise SetupError('flash_confirmation_required')
     lock = root_lock_path()
-    if lock.is_symlink():
+    if lock.is_symlink() or lock.is_junction() or (lock.exists() and not lock.is_file()):
         raise SetupError('flash_state_unknown')
     if not lock.exists():
         return {'cleared': False, 'previous': None}
@@ -543,7 +669,10 @@ def clear_flash_lock(confirmed=False):
                 }, indent=2) + '\n', encoding='utf-8')
             except OSError:
                 pass
-    lock.unlink()
+    try:
+        lock.unlink()
+    except FileNotFoundError:
+        return {'cleared': False, 'previous': info}
     return {'cleared': True, 'previous': info}
 
 
@@ -588,13 +717,15 @@ def flash_root(folder, confirmed, progress):
     folder = Path(folder)
     journal = folder / 'setup-state.json'
     state['confirmation_token'] = uuid.uuid4().hex
+    from preparation_cache import process_creation_time
     lock = root_lock_path()
     lock.parent.mkdir(parents=True, exist_ok=True)
     try:
         with lock.open('x', encoding='utf-8') as file:
-            json.dump({'pid': os.getpid(), 'kit': str(folder), 'token': state['confirmation_token']}, file)
+            json.dump({'pid': os.getpid(), 'pid_created_at': process_creation_time(os.getpid()),
+                       'kit': str(folder), 'token': state['confirmation_token']}, file)
     except FileExistsError:
-        raise SetupError('flash_state_unknown') from None
+        raise _locked_unknown_flash() from None
     for name, image in zip(('os', 'radio'), images):
         state['stage'] = name + '_started'
         journal.write_text(json.dumps(state, indent=2), encoding='utf-8')
@@ -641,6 +772,15 @@ def prepare_driver_kit(progress, proxy=None):
         import prepare_usb_drivers
         try:
             prepare_usb_drivers.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder), '--cache', str(tools['cache'])])
+        except subprocess.CalledProcessError as exc:
+            for name in ('package', 'bootstrapper', 'payload', 'extracted', 'rim-usb'):
+                remove_owned_tree(private, folder, name)
+            for name in ('payload.cab', 'USBInstallerMSIx64.msi'):
+                (folder / name).unlink(missing_ok=True)
+            err = SetupError('driver_prepare_failed')
+            detail = (exc.stderr or exc.output or '')
+            err.feedback_log = 'prepare_usb_drivers exit=' + str(exc.returncode) + ('\n' + str(detail)[:1200] if detail else '')
+            raise err from None
         except BaseException:
             # This directory belongs to this call and has never been installed.
             for name in ('package', 'bootstrapper', 'payload', 'extracted', 'rim-usb'):
@@ -654,6 +794,28 @@ def prepare_driver_kit(progress, proxy=None):
         return str(folder)
 
 
+def _driver_install_excerpt(folder, exit_code):
+    from feedback import scrub
+    folder = Path(folder)
+    parts = ['driver_install exit=' + str(exit_code)]
+    result_path = folder / 'driver-install-result.json'
+    parsed = None
+    try:
+        if result_path.is_file() and not result_path.is_symlink() and result_path.stat().st_size <= 16384:
+            raw = json.loads(result_path.read_text(encoding='utf-8'))
+            if isinstance(raw, dict):
+                parsed = raw
+                safe = {k: raw[k] for k in ('step', 'exit_code', 'pnputil_add_exit', 'pnputil_install_exit',
+                                            'msi_exit', 'blocked_process', 'service_present')
+                        if k in raw and raw[k] is not None}
+                if raw.get('error_message'):
+                    safe['error_message'] = scrub(raw['error_message'])[:300]
+                parts.append('driver-install-result.json: ' + json.dumps(safe, ensure_ascii=True, sort_keys=True))
+    except (OSError, ValueError):
+        pass
+    return '\n'.join(parts), parsed
+
+
 def install_driver_kit(folder):
     # Use standard Windows UAC on the recipient's machine, with explicit paths.
     # The assistant's personal administrator bridge is not a product dependency.
@@ -663,9 +825,25 @@ def install_driver_kit(folder):
     def quote(value):
         return "'" + str(value).replace("'", "''") + "'"
     args = '-NoProfile -ExecutionPolicy Bypass -File "' + str(script) + '" -PreparedKit "' + str(folder) + '" -SpecPath "' + str(spec) + '"'
-    command = ("$ErrorActionPreference='Stop'; try { $p=Start-Process -FilePath " + quote(powershell()) +
-               ' -ArgumentList ' + quote(args) + ' -Verb RunAs -WindowStyle Hidden -Wait -PassThru; exit $p.ExitCode } catch { exit 1 }')
-    result = subprocess.run([powershell(), '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command], creationflags=NO_WINDOW)
+    command = (
+        "$ErrorActionPreference='Stop'; try { $p=Start-Process -FilePath " + quote(powershell()) +
+        ' -ArgumentList ' + quote(args) +
+        ' -Verb RunAs -WindowStyle Hidden -Wait -PassThru; exit $p.ExitCode } '
+        'catch { if ($_.Exception.InnerException -and $_.Exception.InnerException.NativeErrorCode -eq 1223) { exit 1223 }; exit 1 }'
+    )
+    result = subprocess.run([powershell(), '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command],
+                            capture_output=True, text=True, encoding='utf-8', errors='replace',
+                            creationflags=NO_WINDOW)
+    if result.returncode == 1223:
+        err = SetupError('driver_uac_cancelled')
+        err.feedback_log = 'driver_install uac_cancelled exit=1223'
+        raise err
     if result.returncode not in (0, 3010):
-        raise SetupError('driver_install_incomplete')
+        excerpt, parsed = _driver_install_excerpt(folder, result.returncode)
+        code = 'driver_process_running' if (parsed and parsed.get('blocked_process')) else 'driver_install_incomplete'
+        err = SetupError(code)
+        err.feedback_log = excerpt
+        if parsed and parsed.get('blocked_process'):
+            err.blocked_process = parsed['blocked_process']
+        raise err
     return {'installed': True, 'reboot_required': result.returncode == 3010}

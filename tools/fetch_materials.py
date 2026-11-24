@@ -758,7 +758,7 @@ def main(argv=None):
     parser.add_argument('--proxy', help='Optional explicit HTTP proxy URL')
     parser.add_argument('--variant', help='Exact hardware variant, e.g. SQC100-1 or SQW100-4; omit to fetch tools only')
     args = parser.parse_args(argv)
-    entries = json.loads((ROOT / 'materials/sources.json').read_text())['verified_inputs']
+    entries = json.loads((ROOT / 'materials/sources.json').read_text(encoding='utf-8'))['verified_inputs']
     entries = [item for item in entries if not item['id'].startswith('stock-')]
     if args.variant:
         from root_setup import SetupError, stock_firmware
@@ -767,7 +767,7 @@ def main(argv=None):
         except SetupError as error:
             parser.error(str(error))
     if args.with_usb_drivers:
-        entries += json.loads((ROOT / 'materials/usb-drivers.json').read_text())['parts']
+        entries += json.loads((ROOT / 'materials/usb-drivers.json').read_text(encoding='utf-8'))['parts']
     try:
         fetch_entries(entries, proxy=args.proxy, verify_only=args.verify_only)
     except DownloadError as error:

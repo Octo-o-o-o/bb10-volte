@@ -8,9 +8,11 @@ from tkinter import filedialog, messagebox, ttk
 from connection import resolve_connection
 from connection_flow import guidance
 from feedback import FeedbackQueue
+from feedback_gui import help_row
 from i18n import tr
 from mobile_app_install import MobileAppInstaller, release, verify_bar, bundled_bar
 from ui_theme import BG
+from workflow import WorkflowError
 
 
 def presentation(report):
@@ -52,13 +54,13 @@ def presentation(report):
 
 
 class MobileAppInstallWindow:
-    def __init__(self, parent, host, config):
+    def __init__(self, parent, host, config, auto_inspect=False):
         self.host, self.config = host, config
         self.pin = release()
         self.window = tk.Toplevel(parent)
         self.window.title(tr('安装手机应用'))
-        self.window.geometry('760x570')
-        self.window.minsize(680, 500)
+        self.window.geometry('760x610')
+        self.window.minsize(680, 530)
         self.window.transient(parent)
         self.window.grab_set()
         self.events = FeedbackQueue(self.window, 'install')
@@ -66,6 +68,7 @@ class MobileAppInstallWindow:
         self.bar, self.recheck_job, self.connection_dialog = str(bundled_bar(self.pin)), None, None
         box = ttk.Frame(self.window, padding=24)
         box.pack(fill='both', expand=True)
+        help_row(box, self.window, 'install')
         # Reserve all actions/status first. Long translated explanations scroll
         # above them instead of clipping buttons at the minimum window size.
         footer = ttk.Frame(box)
@@ -126,6 +129,8 @@ class MobileAppInstallWindow:
         self.window.protocol('WM_DELETE_WINDOW', self.close)
         self.poll_job = self.window.after(100, self.poll)
         self.refresh()
+        if auto_inspect:
+            self.window.after_idle(lambda: self.run('inspect'))
 
     def reflow(self, event):
         self.canvas.itemconfigure(self.body_item, width=event.width)

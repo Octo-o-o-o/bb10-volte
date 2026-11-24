@@ -60,6 +60,9 @@ MESSAGES = {
     'flash_state_unknown': tr('刷写状态未确认，自动流程已暂停。请点击上方“查看刷写日志并解除暂停…”核对上次刷写记录，或先在“Windows 驱动”页安装驱动。'),
     'flash_process_running': tr('检测到另一个刷写进程仍在运行，请等待其结束后再检查，不要解除暂停。'),
     'driver_install_incomplete': tr('驱动安装未完成。可能取消了管理员确认，或已有进程需要处理；请查看驱动指南后重试。'),
+    'driver_uac_cancelled': tr('已取消 Windows 管理员确认，驱动尚未安装。若要继续，请重新点击“自动准备并安装驱动”并在弹窗中点“是”。'),
+    'driver_process_running': tr('检测到正在运行的旧版黑莓进程（如 RimDeviceManager / PeerManager / tunmgr / nginx），驱动安装已停止。请先关闭对应程序后重试。'),
+    'driver_prepare_failed': tr('驱动安装材料准备或签名校验未通过，尚未修改系统驱动。请检查网络或重新准备，并可保存反馈包以便排查。'),
     'host_key_mismatch': tr('手机主机密钥与当前配置不符。请使用这台设备原来的可信配置，不要关闭主机校验。'),
     'connection_setup_required': tr('尚未找到可用的个人配置。已有 Root 请导入原配置；首次使用请按下方手机步骤准备。'),
     'authentication_failed': tr('个人密钥未获这台手机授权，请导入原来的 SSH 配置。'),
@@ -81,8 +84,8 @@ def review_flash_lock(parent):
     lines = [tr('上次操作：{}').format(op_label)]
     if info.get('kit_name'):
         lines.append(tr('记录目录：{}').format(info['kit_name']))
-    if info.get('stage'):
-        lines.append(tr('记录阶段：{}').format(info['stage']))
+    if info.get('stage') or info.get('failed_phase'):
+        lines.append(tr('记录阶段：{}').format(info.get('stage') or info.get('failed_phase')))
     if info.get('exit_code') is not None:
         lines.append(tr('工具退出码：{}').format(info['exit_code']))
     if info.get('writing_started') is False:
@@ -227,17 +230,17 @@ class SetupWizard(tk.Toplevel):
         self.root_scope.pack(fill='x', pady=(0, 12))
         self.root_scope.bind('<Configure>', lambda event: self.root_scope.configure(wraplength=max(1, event.width - 4)))
         self.history = prepared_kit_history()
-        history_row = ttk.Frame(root_tab)
-        history_row.pack(fill='x', pady=(12, 0))
+        self.history_row = ttk.Frame(root_tab)
+        self.history_row.pack(fill='x', pady=(12, 0))
         stage_labels = {'prepared': tr('镜像已准备'), 'flashed_waiting_for_root': tr('已刷写，等待验证')}
-        self.history_picker = ttk.Combobox(history_row, state='readonly', width=46, values=[
+        self.history_picker = ttk.Combobox(self.history_row, state='readonly', width=46, values=[
             '{} · {} · {}'.format(item['variant'], stage_labels.get(item['stage'], tr('刷写状态待核对')), Path(item['folder']).name)
             for item in self.history])
         self.history_picker.pack(side='left')
-        self.resume_button = ttk.Button(history_row, text=tr('继续上次准备'), command=self.resume_preparation)
+        self.resume_button = ttk.Button(self.history_row, text=tr('继续上次准备'), command=self.resume_preparation)
         self.resume_button.pack(side='left', padx=(8, 0))
         if not self.history:
-            history_row.pack_forget()
+            self.history_row.pack_forget()
         elif len(self.history) == 1:
             self.history_picker.current(0)
         self.download_firmware_button = ttk.Button(root_tab, text=tr('下载对应机型固件'), command=self.download_firmware)
@@ -329,6 +332,7 @@ class SetupWizard(tk.Toplevel):
         self.progress.pack(fill='x', pady=(18, 10))
         ttk.Button(body, text=tr('存储位置与磁盘清理'), command=lambda: show_storage_help(self)).pack(anchor='w')
         ttk.Button(body, text=tr('返回系统升级') if downloads_only else tr('关闭'), command=self.close).pack(anchor='e')
+        self._feedback_status_labels = [self.status, self.root_hint, self.facts, self.flash_lock_label]
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
         self.grab_set()
@@ -393,7 +397,10 @@ class SetupWizard(tk.Toplevel):
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' else 'disabled')
         blocker = self.flash_blocker(variant)
         self.flash_button.configure(state='disabled' if blocker else 'normal')
-        self.root_hint.configure(text=blocker or tr('{} 的 Root 镜像已准备，可以开始刷写；下一步仍会单独确认清空数据。').format(variant))
+        hint_text = blocker or tr('{} 的 Root 镜像已准备，可以开始刷写；下一步仍会单独确认清空数据。').format(variant)
+        if sys.platform == 'win32' and self.usb.get('bootrom_driver_ready') is False and not self.choice:
+            hint_text += '\n' + tr('提示：未检测到 BlackBerry Bootrom（RimUsb）驱动，开始刷写前请先在“Windows 驱动”页安装。')
+        self.root_hint.configure(text=hint_text)
         self.continue_button.configure(state='normal' if self.choice and not self.busy else 'disabled')
         detected = self.usb.get('usb_count') == 1 and (self.usb.get('device') or {}).get('ModelName') in firmware_variants()
         self.model_picker.configure(state='disabled' if self.busy or self.kit or detected else 'readonly')
@@ -712,8 +719,11 @@ class SetupWizard(tk.Toplevel):
         self.ack.set(False)
         self.mac_flash_ack.set(False)
         self.refresh()
-        if root_lock_path().exists() or item['stage'] not in ('prepared', 'flashed_waiting_for_root'):
-            self.status.configure(text=tr('上次刷写状态尚未确认。请保留现场和日志，不要重复刷写。'))
+        if root_lock_path().exists():
+            self.status.configure(text=tr('上次刷写处于暂停状态。请先点击上方“查看刷写日志并解除暂停…”核对记录，不要盲目重复刷写。'))
+            return
+        if item['stage'] not in ('prepared', 'flashed_waiting_for_root'):
+            self.status.configure(text=tr('该次刷写记录上次未能完成，已作为只读日志保留，不要重复刷写该记录。若已确认驱动与连接，请点击“自动准备 Root 镜像”生成新的校验镜像（将复用已缓存固件）。'))
             return
         if item['stage'] == 'flashed_waiting_for_root':
             self.host, self.config = 'bb10-root', str(Path(item['folder']) / 'ssh_config')
@@ -738,10 +748,27 @@ class SetupWizard(tk.Toplevel):
                               '请只连接这一台手机，确保已备份、电量充足，并保持 USB 稳定。确认开始？').format(variant), parent=self):
             self.start('flash', lambda progress: flash_root(self.kit, True, progress))
 
+    def refresh_history(self):
+        self.history = prepared_kit_history()
+        stage_labels = {'prepared': tr('镜像已准备'), 'flashed_waiting_for_root': tr('已刷写，等待验证')}
+        self.history_picker.configure(values=[
+            '{} · {} · {}'.format(item['variant'], stage_labels.get(item['stage'], tr('刷写状态待核对')), Path(item['folder']).name)
+            for item in self.history])
+        if self.history:
+            if not self.history_row.winfo_manager():
+                self.history_row.pack(fill='x', pady=(12, 0), before=self.download_firmware_button)
+            if len(self.history) == 1:
+                self.history_picker.current(0)
+        else:
+            self.history_picker.set('')
+            if self.history_row.winfo_manager():
+                self.history_row.pack_forget()
+
     def review_flash_lock(self):
         if self.busy:
             return
         if review_flash_lock(self):
+            kit_cleared = False
             if self.kit:
                 try:
                     prepared_images(self.kit)
@@ -749,7 +776,12 @@ class SetupWizard(tk.Toplevel):
                     self.kit = None
                     self.ack.set(False)
                     self.mac_flash_ack.set(False)
-            self.status.configure(text=tr('已解除刷写暂停，原有记录与镜像仍已保留。请先确认驱动与连接状态后再继续。'))
+                    kit_cleared = True
+            self.refresh_history()
+            self.status.configure(text=(
+                tr('已解除刷写暂停，原有记录与日志仍已保留。请点击“自动准备 Root 镜像”生成新的校验镜像并重试（将复用已缓存固件），或先在“Windows 驱动”页安装驱动。')
+                if kit_cleared else
+                tr('已解除刷写暂停，原有记录与镜像仍已保留。请先确认驱动与连接状态后再继续。')))
             self.refresh()
 
     def open_firmware(self):
@@ -780,6 +812,7 @@ class SetupWizard(tk.Toplevel):
                 if kind == 'download_error':
                     self.status.configure(text=value)
                 elif kind == 'error':
+                    self.refresh_history()
                     if value == 'flash_state_unknown':
                         lock_info = inspect_flash_lock()
                         if lock_info and lock_info.get('writing_started') is False:
@@ -808,22 +841,35 @@ class SetupWizard(tk.Toplevel):
                         yesno = lambda value: tr('已就绪') if value is True else tr('未就绪') if value is False else tr('待确认')
                         development = device.get('DeveloperModeEnabled')
                         ssh_state = (tr('需核对密钥') if result['error'] in ('authentication_failed', 'host_key_mismatch') else yesno(self.usb['ssh_port']))
-                        self.facts.configure(text=tr('USB 设备：{}    USB 网络：{}\n开发模式：{}    SSH 连接：{}\nRoot：{}').format(
+                        facts_text = tr('USB 设备：{}    USB 网络：{}\n开发模式：{}    SSH 连接：{}\nRoot：{}').format(
                             yesno(self.usb['usb_present']), yesno(self.usb['usb_network']),
                             tr('已开启') if development == '1' else tr('未开启') if development == '0' else tr('待确认'),
-                            ssh_state, tr('已验证') if self.choice else tr('未能验证（不等于未 Root）')))
+                            ssh_state, tr('已验证') if self.choice else tr('未能验证（不等于未 Root）'))
+                        if sys.platform == 'win32' and self.usb.get('bootrom_driver_ready') is not None:
+                            facts_text += tr('\nBootrom 刷机驱动（RimUsb）：{}').format(yesno(self.usb.get('bootrom_driver_ready')))
+                        self.facts.configure(text=facts_text)
                         if sys.platform == 'darwin' and self.usb.get('network_interfaces'):
                             interfaces = self.usb['network_interfaces']
                             rows = ['{} {}'.format(item['name'], ', '.join(item.get('ipv4', [])) or tr('无 IPv4'))
                                     for item in interfaces if item.get('active')]
                             network = tr('；').join(rows) if rows else tr('关联接口尚未启用')
                             self.facts.configure(text=self.facts.cget('text') + tr('\n电脑 USB 网络：') + network)
-                        self.status.configure(text=tr('Root 连接已验证，可以继续。开发模式无需为此保持开启。') if self.choice else
-                                              MESSAGES.get(result['error'], tr('请按手机上的准备步骤操作，再重新检测。')))
+                        on_root_tab = self.tabs.index(self.tabs.select()) == 1
+                        if self.choice:
+                            status_msg = tr('Root 连接已验证，可以继续。开发模式无需为此保持开启。')
+                        elif on_root_tab and self.kit:
+                            if self.usb.get('usb_count') == 1 and device.get('ModelName') == self.variant.get():
+                                status_msg = tr('已核对单台目标手机 {}，确认备份并勾选同意清空数据后可开始刷写。').format(self.variant.get())
+                            else:
+                                status_msg = tr('已保留 {} 的 Root 镜像，但尚未检测到唯一连接的该型号手机。请解锁并用数据线单独连接此手机后重新检测。').format(self.variant.get())
+                        else:
+                            status_msg = MESSAGES.get(result['error'], tr('请按手机上的准备步骤操作，再重新检测。'))
+                        self.status.configure(text=status_msg)
                         if self.choice:
                             self.host, self.config = self.choice['host'], self.choice['config']
                     elif action == 'prepare':
                         self.kit = result
+                        self.refresh_history()
                         usb_verified = (self.usb.get('usb_count') == 1 and
                                         (self.usb.get('device') or {}).get('ModelName') == self.variant.get())
                         self.status.configure(text=(
@@ -834,6 +880,7 @@ class SetupWizard(tk.Toplevel):
                         self.host, self.config = result['host'], result['config']
                         self.kit = None
                         self.ack.set(False)
+                        self.refresh_history()
                         self.tabs.select(0)
                         self.status.configure(text=tr('刷写已结束。请完成手机首次设置，打开一次 BlackBerry World，再重新检测 Root。'))
                     elif action == 'drivers':

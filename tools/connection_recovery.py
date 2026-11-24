@@ -35,6 +35,7 @@ def keygen():
 def run_keygen(args):
     try:
         result = subprocess.run([keygen()] + args, input='', capture_output=True, text=True,
+                                encoding='utf-8', errors='replace',
                                 timeout=30, creationflags=CREATE_NO_WINDOW)
     except subprocess.TimeoutExpired:
         raise RecoveryError('key_unreadable') from None
@@ -52,12 +53,8 @@ def new_folder():
 
 def protect(path, directory=False):
     if os.name == 'nt':
-        account = subprocess.check_output(['whoami'], text=True, creationflags=CREATE_NO_WINDOW).strip()
-        permission = ':(OI)(CI)F' if directory else ':F'
-        subprocess.run(['icacls', str(path), '/inheritance:r', '/grant:r',
-                        account + permission, 'SYSTEM' + permission,
-                        '/remove:g', '*S-1-3-4'], check=True,
-                       capture_output=True, creationflags=CREATE_NO_WINDOW)
+        from preparation_cache import restrict_windows_acl
+        restrict_windows_acl(path, directory=directory)
     else:
         path.chmod(0o700 if directory else 0o600)
 
@@ -112,6 +109,7 @@ def _probe_peer_host_key(client, peer, source=None):
     cmd += ['root@' + peer]
     try:
         proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                              encoding='utf-8', errors='replace',
                               timeout=12, creationflags=CREATE_NO_WINDOW)
     except subprocess.TimeoutExpired:
         return None, 'connection_timeout_state_unknown'
@@ -148,7 +146,7 @@ def read_host_key(path):
     if path.stat().st_size > 65536:
         raise RecoveryError('host_key_invalid')
     keys = set()
-    for line in path.read_text(encoding='utf-8-sig').splitlines():
+    for line in path.read_text(encoding='utf-8-sig', errors='replace').splitlines():
         words = line.split()
         if words and words[0] == 'ssh-rsa':
             candidate = line

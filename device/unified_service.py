@@ -475,18 +475,34 @@ def locked_prepare():
                 import unified_dca
                 with management_lock(blocking=True):
                     verify()
-                    unified_dca.restore_network_selection()
-                    unified_dca.restore_lte_mode()
+                    first_error = None
+                    try:
+                        unified_dca.restore_network_selection()
+                    except Exception as error:
+                        first_error = error
+                    try:
+                        unified_dca.restore_lte_mode()
+                    except Exception as error:
+                        if first_error is None:
+                            first_error = error
+                    if first_error is not None:
+                        raise first_error
             elif failed:
                 try:
                     from unified_install import management_lock
                     import unified_dca
-                    if (s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions() and
-                            n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}):
-                        with management_lock(blocking=True):
+                    with management_lock(blocking=True):
+                        if (s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions() and
+                                n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}):
                             verify()
-                            unified_dca.restore_network_selection()
-                            unified_dca.restore_lte_mode()
+                            try:
+                                unified_dca.restore_network_selection()
+                            except Exception:
+                                pass
+                            try:
+                                unified_dca.restore_lte_mode()
+                            except Exception:
+                                pass
                 except Exception:
                     pass
 
@@ -610,81 +626,113 @@ def handoff(managed_locking=False):
 def restore(previous_boot=False):
     """Keep software crypto registered until the OS clears it on normal reboot."""
     s.close_berry_indicator()
-    assert s.j is not None and s.phone_idle()
-    assert s.j['owner'] == 'q10-unicom-volte-v1' and s.j['original_voice_policy'] == 0
-    if previous_boot:
-        assert s.j.get('boot') != boot_token()
-        assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}
-        assert not n.ims_pids()
-        # Never signal a PID recorded by an earlier boot, even if it is reused.
-        s.j['native_pid'] = None
-    else:
-        assert s.j.get('boot') == boot_token()
-    s.stop_native()
-    for path, applied in s.applied_updates().items():
-        assert path in (s.IMS, s.CDSC, s.VOICE,
-            '/pps/services/carrier_config/ims/ir92', '/pps/services/ims/status_persistent')
-        changes = policy.restore_fields(n.attrs(n.read(path)), s.j['pps_before'][path], applied)
-        if changes:
-            n.update_pps(path, changes)
-        assert all(n.attrs(n.read(path)).get(k) == v for k, v in changes.items())
-    s.remove_owned(s.XML)
-    s.remove_platform()
-    crypto = n.crypto_policy()
-    if crypto['swcr_id'] >= 0:
-        assert s.j.get('crypto_boot') == boot_token() and s.j.get('provider') == crypto['swcr_id']
-    voice = n.voice_policy()
-    if voice != 0:
-        assert voice == 3 and s.set_voice_preference(4)['rc'] == 0
-    for unused in range(2):
-        time.sleep(1.2)
-        assert n.voice_policy() == 0
-    if s.BASE == BASE and not os.path.isfile(BASE + '/enabled'):
-        import unified_dca
-        unified_dca.restore_original()
-    elif s.BASE == BASE and not previous_boot and crypto['swcr_id'] == -1 and os.path.isfile(ATTEMPT):
-        attempt = s.load(ATTEMPT)
-        if attempt.get('boot') == boot_token() and attempt.get('stage') == 'pre_native':
+    radio_restored = False
+    try:
+        assert s.j is not None, 'journal_missing'
+        assert s.phone_idle(), 'call_active'
+        assert s.j['owner'] == 'q10-unicom-volte-v1' and s.j['original_voice_policy'] == 0, 'journal_invalid'
+        if previous_boot:
+            assert s.j.get('boot') != boot_token(), 'previous_boot_expected'
+            assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'existing_crypto_provider'
+            assert not n.ims_pids(), 'native_ims_active'
+            # Never signal a PID recorded by an earlier boot, even if it is reused.
+            s.j['native_pid'] = None
+        else:
+            assert s.j.get('boot') == boot_token(), 'journal_boot_mismatch'
+        s.stop_native()
+        for path, applied in s.applied_updates().items():
+            assert path in (s.IMS, s.CDSC, s.VOICE,
+                '/pps/services/carrier_config/ims/ir92', '/pps/services/ims/status_persistent')
+            changes = policy.restore_fields(n.attrs(n.read(path)), s.j['pps_before'][path], applied)
+            if changes:
+                n.update_pps(path, changes)
+            assert all(n.attrs(n.read(path)).get(k) == v for k, v in changes.items()), 'pps_restore_unconfirmed'
+        s.remove_owned(s.XML)
+        s.remove_platform()
+        crypto = n.crypto_policy()
+        if crypto['swcr_id'] >= 0:
+            assert s.j.get('crypto_boot') == boot_token() and s.j.get('provider') == crypto['swcr_id'], 'existing_crypto_provider'
+        voice = n.voice_policy()
+        if voice != 0:
+            assert voice == 3 and s.set_voice_preference(4)['rc'] == 0, 'voice_policy_failed'
+        for unused in range(2):
+            time.sleep(1.2)
+            assert n.voice_policy() == 0, 'voice_policy_failed'
+        if s.BASE == BASE and not os.path.isfile(BASE + '/enabled'):
             import unified_dca
-            unified_dca.restore_network_selection()
-            unified_dca.restore_lte_mode()
-    if s.BASE == BASE and selected is not None:
-        try:
-            import unified_operator_name
-            unified_operator_name.restore(selected, boot_token())
-        except Exception as error:
-            save(BASE + '/state/operator-name-status.json', {'error_type': type(error).__name__})
-        if not previous_boot:
+            radio_restored = True
+            unified_dca.restore_original()
+        elif s.BASE == BASE and not previous_boot:
+            import unified_dca
+            radio_restored = True
+            first_error = None
             try:
-                import unified_own_number
-                unified_own_number.restore(n, boot_token(), s.current_usim())
+                unified_dca.restore_network_selection()
             except Exception as error:
-                save(BASE + '/state/own-number-status.json', {'error_type': type(error).__name__})
-    s.j.update(native_pid=None, configuration_restored=True,
-               restore_completed=crypto['swcr_id'] == -1,
-               lifecycle='retain-provider-until-reboot',
-               provider_retained_until_reboot=crypto['swcr_id'] >= 0)
-    s.save_journal()
-    s.status('reboot_required' if crypto['swcr_id'] >= 0 else 'stopped')
+                first_error = error
+            try:
+                unified_dca.restore_lte_mode()
+            except Exception as error:
+                if first_error is None:
+                    first_error = error
+            if first_error is not None:
+                raise first_error
+        if s.BASE == BASE and selected is not None:
+            try:
+                import unified_operator_name
+                unified_operator_name.restore(selected, boot_token())
+            except Exception as error:
+                save(BASE + '/state/operator-name-status.json', {'error_type': type(error).__name__})
+            if not previous_boot:
+                try:
+                    import unified_own_number
+                    unified_own_number.restore(n, boot_token(), s.current_usim())
+                except Exception as error:
+                    save(BASE + '/state/own-number-status.json', {'error_type': type(error).__name__})
+        s.j.update(native_pid=None, configuration_restored=True,
+                   restore_completed=crypto['swcr_id'] == -1,
+                   lifecycle='retain-provider-until-reboot',
+                   provider_retained_until_reboot=crypto['swcr_id'] >= 0)
+        s.save_journal()
+        s.status('reboot_required' if crypto['swcr_id'] >= 0 else 'stopped')
+    finally:
+        # Even if restore() aborts into cleanup_required, release any owned
+        # LTE-only / network-selection override whenever radio resources are idle.
+        if not radio_restored and s.BASE == BASE and not previous_boot:
+            try:
+                if s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions():
+                    import unified_dca
+                    try:
+                        unified_dca.restore_network_selection()
+                    except Exception:
+                        pass
+                    try:
+                        unified_dca.restore_lte_mode()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
 
 
 def reconcile():
     if not os.path.isfile(s.JOURNAL):
         return
     s.j = s.load(s.JOURNAL)
-    token = boot_token()
-    if s.j.get('boot') == token:
-        assert pre_native_retryable(token), 'reboot_required'
-        assert not n.ims_pids() and n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
-    else:
-        restore(previous_boot=True)
-    for path, expected in s.j['managed_files'].items():
-        if path.startswith(s.RUNTIME + '/') and os.path.exists(path):
-            assert not os.path.islink(path) and n.digest(n.read(path)) == expected
-            os.unlink(path)
-    archive = BASE + '/archive/journal-' + binascii.hexlify(os.urandom(8)).decode('ascii') + '.json'
-    os.rename(s.JOURNAL, archive)
-    s.j = None
+    try:
+        token = boot_token()
+        if s.j.get('boot') == token:
+            assert pre_native_retryable(token), 'reboot_required'
+            assert not n.ims_pids() and n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}, 'reboot_required'
+        else:
+            restore(previous_boot=True)
+        for path, expected in s.j['managed_files'].items():
+            if path.startswith(s.RUNTIME + '/') and os.path.exists(path):
+                assert not os.path.islink(path) and n.digest(n.read(path)) == expected
+                os.unlink(path)
+        archive = BASE + '/archive/journal-' + binascii.hexlify(os.urandom(8)).decode('ascii') + '.json'
+        os.rename(s.JOURNAL, archive)
+    finally:
+        s.j = None
 
 
 @contextlib.contextmanager
@@ -825,7 +873,7 @@ def prepare(managed_locking=False):
         reconcile_stale_sms_busy(facts, selected, previous)
         save(ATTEMPT, {'owner': policy.OWNER, 'boot': boot_token(), 'at': time.time(), 'stage': 'native_configured'})
         s.configure()
-        assert not n.ims_pids()
+        assert not n.ims_pids(), 'native_ims_active'
     return True
 
 
@@ -1038,18 +1086,33 @@ def boot_start_state(token, raw):
 STATUS_ERROR_CODES = (
     'stock_ims_not_idle', 'stock_ims_reappeared', 'sim_not_ready', 'sim_changed',
     'network_not_ready', 'reboot_required', 'call_active', 'stopped',
-    'automatic_service_disabled', 'network_mode_readback_failed',
-    'network_mode_rejected', 'network_mode_restore_unconfirmed',
-    'network_mode_requires_fresh_boot', 'network_scan_mode_rejected',
-    'network_select_rejected', 'usage_restore_unconfirmed',
+    'automatic_service_disabled', 'startup_resources_busy',
+    'call_or_phone_initialization_busy', 'native_ims_active', 'vpn_active',
+    'network_mode_readback_failed', 'network_mode_rejected',
+    'network_mode_reply_timeout', 'network_mode_readback_conflict',
+    'network_mode_restore_unconfirmed', 'network_mode_requires_fresh_boot',
+    'unknown_radio_controller', 'unknown_network_mode', 'unknown_network_preference',
+    'carrier_lte_not_allowed', 'scan_mode_rejected', 'scan_mode_reply_timeout',
+    'scan_mode_readback_failed', 'scan_mode_unknown', 'system_manual_selection_preserved',
+    'network_select_rejected', 'network_select_reply_timeout',
+    'usage_restore_unconfirmed', 'usage_readback_failed', 'usage_baseline_unconfirmed',
+    'dca_publish_failed', 'dca_source_changed', 'unowned_dca_policy',
+    'dca_write_phase_changed', 'dca_write_identity_changed', 'dca_source_write_failed',
     'mobile_network_off', 'mobile_network_rejected', 'mobile_network_reply_timeout',
     'mobile_network_enable_unconfirmed', 'mobile_network_state_unknown',
     'mobile_network_enable_blocked', 'mobile_network_write_failed',
-    'china_broadnet_unsupported', 'sim_route_unsupported',
-    'downloaded_carrier_config_present', 'carrier_not_validated',
-    'experimental_stock_template_unavailable', 'unsupported_model_or_os',
-    'unknown_native_image', 'root_scheme_not_supported',
-    'unvalidated_legacy_installation', 'existing_apn_overlay', 'existing_ims_override',
+    'china_broadnet_unsupported', 'sim_route_unsupported', 'sim_identity_unavailable',
+    'downloaded_carrier_config_present', 'carrier_not_validated', 'operator_not_supported',
+    'experimental_stock_template_unavailable', 'invalid_stock_template',
+    'carrier_configuration_changed', 'hardware_identity_conflict',
+    'unsupported_model_or_os', 'unknown_native_image', 'root_scheme_not_supported',
+    'unvalidated_legacy_installation', 'legacy_install_interrupted',
+    'installation_reboot_required', 'legacy_reboot_unconfirmed', 'legacy_reenabled',
+    'legacy_journal_changed', 'payload_changed', 'startup_payload_changed',
+    'backup_device_changed', 'original_backup_changed', 'backup_receipt_changed',
+    'backup_not_verified', 'existing_apn_overlay', 'existing_ims_override',
+    'existing_crypto_provider', 'voice_policy_failed', 'pps_restore_unconfirmed',
+    'journal_missing', 'journal_invalid', 'journal_boot_mismatch', 'previous_boot_expected',
 )
 
 
@@ -1064,15 +1127,53 @@ def classify_status_error(raw_error):
         'Existing APN overlay': 'existing_apn_overlay',
         'Existing IMS override': 'existing_ims_override',
         'Service is already running': 'service_already_running',
+        'SIM not ready': 'sim_not_ready',
+        'Only the verified USIM-without-ISIM route is supported': 'sim_route_unsupported',
+        'SIM does not match the installed operator profile': 'sim_profile_mismatch',
+        'Unexpected USIM identity layout': 'sim_identity_unavailable',
+        'Existing software crypto provider': 'existing_crypto_provider',
+        'Unowned crypto provider': 'existing_crypto_provider',
+        'Initial modem policy is not the tested original00': 'voice_policy_failed',
+        'Unexpected modem policy': 'voice_policy_failed',
+        'IMS-preferred policy did not apply': 'voice_policy_failed',
+        'Owned IMS did not stop': 'native_ims_stop_failed',
+        'PID is not the owned executable': 'native_ims_stop_failed',
     }
     if text in exact:
         return exact[text]
+    if text.startswith('Timeout: dedicated IMS APN'):
+        return 'ims_apn_timeout'
+    if text.startswith('SIM/network changed after preflight'):
+        return 'network_changed_before_configure'
+    if text.startswith(('SIM identity changed', 'SIM changed while', 'SIM/carrier changed while')):
+        return 'sim_changed'
+    if text.startswith('Stopped while'):
+        return 'stopped'
+    if text.startswith(('Existing IMS instance', 'An existing IMS instance')):
+        return 'native_ims_active'
+    if text.startswith(('Stop an existing VPN', 'An IMS process still owns VPN')):
+        return 'vpn_active'
+    if text.startswith('Native VPN delete'):
+        return 'vpn_cleanup_failed'
+    if text.startswith(('Concurrent carrier change', 'Refuse to overwrite concurrent carrier change')):
+        return 'carrier_configuration_changed'
+    if text.startswith(('Owned IMS APN file changed', 'IMS APN override changed',
+                        'Externally changed file', 'Refuse to remove changed file')):
+        return 'owned_file_changed'
     if text.startswith('Readiness timed out'):
         return 'network_readiness_timeout'
     if text.startswith('SIM/carrier needs adaptation'):
         return 'sim_or_carrier_needs_adaptation'
-    if 'voice_policy' in text.lower() or 'voice policy' in text.lower():
+    if 'voice_policy' in text.lower() or 'voice policy' in text.lower() or 'modem policy' in text.lower():
         return 'voice_policy_failed'
+    if 'stock carrier template' in text.lower() or 'carrier xml' in text.lower():
+        return 'carrier_template_failed'
+    if text.startswith('Command timed out'):
+        return 'native_command_timeout'
+    if text.startswith('Native command failed'):
+        return 'native_command_failed'
+    if text.startswith(('Unexpected native radio provider', 'Native radio attach failed')):
+        return 'radio_provider_attach_failed'
     if 'Original radio configuration' in text or 'DCA' in text:
         return 'radio_config_check_failed'
     return 'internal_error'
@@ -1192,19 +1293,35 @@ def service_action(action):
         n.atomic(s.STOP, b'disabled by owner\n')
         lock = s.load(s.LOCK) if os.path.isfile(s.LOCK) else {}
         active = lock.get('boot') == boot_token() and s.alive(lock['pid'])
+        first_error = None
         if not active and os.path.isfile(s.JOURNAL):
             s.j = s.load(s.JOURNAL)
-            if s.j.get('boot') == boot_token():
-                restore()
+            try:
+                if s.j.get('boot') == boot_token():
+                    restore()
+            except Exception as error:
+                first_error = error
+            finally:
+                s.j = None
         if not active:
             # Explicit network assistance can precede the first IMS journal.
             # Disabling still releases its owned selection and LTE mode.
             import unified_dca
-            unified_dca.restore_network_selection()
-            unified_dca.restore_lte_mode()
+            try:
+                unified_dca.restore_network_selection()
+            except Exception as error:
+                if first_error is None:
+                    first_error = error
+            try:
+                unified_dca.restore_lte_mode()
+            except Exception as error:
+                if first_error is None:
+                    first_error = error
         if not active and os.path.isfile(s.STOP):
             assert n.read(s.STOP) == b'disabled by owner\n', 'stop_request_changed'
             os.unlink(s.STOP)
+        if first_error is not None:
+            raise first_error
         result = {'disabled': True, 'reboot_required': True, 'restoration_pending': active}
     elif action == 'enable':
         verify()

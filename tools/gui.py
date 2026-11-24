@@ -219,7 +219,7 @@ class App:
         header = tk.Frame(main, bg=BG)
         header.pack(fill='x')
         self.label(header, 'BB10 VoLTE', 22, bold=True).pack(side='left')
-        self.auto_carrier_button = ttk.Button(header, text=tr('三网自动适配'), command=self.auto_carrier)
+        self.auto_carrier_button = ttk.Button(header, text=tr('三网自动适配'), style='Accent.TButton', command=self.auto_carrier)
         self.auto_carrier_button.pack(side='left', padx=(20, 8))
         self.mobile_app_button = ttk.Button(header, text=tr('安装手机应用'), command=self.mobile_app)
         self.mobile_app_button.pack(side='left')
@@ -298,7 +298,7 @@ class App:
         toolbar.pack(side='bottom', fill='x')
         self.primary_action = 'install'
         self.primary_button = ttk.Button(toolbar, text=tr('安装并验证'), style='Accent.TButton',
-                                          command=lambda: self.run(self.primary_action))
+                                          command=self.trigger_primary)
         self.primary_button.pack(side='right')
         self.check_button = ttk.Button(toolbar, text=tr('连接手机'), command=self.connect_phone)
         self.check_button.pack(side='right', padx=(0, 10))
@@ -389,16 +389,40 @@ class App:
         self.experimental.set(False)
         self.run('preflight')
 
+    def _is_passport_open_absent(self, r):
+        if not r or r.get('can_restore') is not False:
+            return False
+        if r.get('installation', {}).get('state') != 'absent':
+            return False
+        import device_support
+        variant = (r.get('device') or {}).get('variant')
+        return bool(variant and device_support.assess(variant).get('automatic_volte'))
+
+    def _is_unified_error_recovery(self, r):
+        if not r or r.get('managed_adapter') != 'unified_carriers':
+            return False
+        owned = r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
+        status = r.get('status') or {}
+        return bool(owned and status.get('enabled') is True and
+                    status.get('phase') in ('error', 'error_restored', 'cleanup_required'))
+
+    def trigger_primary(self):
+        if self.primary_action == 'auto_carrier':
+            self.auto_carrier()
+        elif self.primary_action:
+            self.run(self.primary_action)
+
     def allowed_actions(self):
         r = self.report or {}
         owned = r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
         current = self.report_connection == self.selection()
+        unified_recovery = self._is_unified_error_recovery(r)
         allowed = {'preflight': True,
                    'install': current and (r.get('can_install') or r.get('can_update')) and self.ack.get(),
                    'start': current and r.get('can_start') and self.ack.get(),
                    'status': current and owned,
                    'enable': current and r.get('can_enable') and not r.get('installation', {}).get('enabled') and self.ack.get(),
-                   'disable': current and owned and r.get('can_restore', True) and self.ack.get()}
+                   'disable': current and owned and r.get('can_restore', True) and (self.ack.get() or unified_recovery)}
         return {key: bool(value) and not self.busy for key, value in allowed.items()}
 
     def refresh_buttons(self):
@@ -413,12 +437,18 @@ class App:
         else:
             self.trial_notice.pack_forget()
         owned = r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
-        self.primary_action = ('start' if r.get('can_start') else 'install' if r.get('can_install') or r.get('can_update')
+        passport_open = self._is_passport_open_absent(r)
+        unified_recovery = self._is_unified_error_recovery(r)
+        self.primary_action = ('auto_carrier' if passport_open else 'disable' if unified_recovery else
+                               'start' if r.get('can_start') else 'install' if r.get('can_install') or r.get('can_update')
                                else 'status' if owned else None)
-        self.primary_button.configure(text=tr('启动并验证') if self.primary_action == 'start' else
+        primary_enabled = (not self.busy) if self.primary_action == 'auto_carrier' else allowed.get(self.primary_action)
+        self.primary_button.configure(text=tr('打开三网自动适配') if self.primary_action == 'auto_carrier' else
+                                      tr('停用自动适配') if self.primary_action == 'disable' else
+                                      tr('启动并验证') if self.primary_action == 'start' else
                                       tr('查看状态') if self.primary_action == 'status' else
                                       tr('更新并验证') if r.get('can_update') else tr('安装并验证'),
-                                      state='normal' if allowed.get(self.primary_action) else 'disabled')
+                                      state='normal' if primary_enabled else 'disabled')
         if self.primary_action:
             self.primary_button.pack(side='right', before=self.check_button)
         else:
@@ -434,12 +464,14 @@ class App:
         managed = r.get('managed_adapter') in ('q20_root_v2', 'unified_carriers')
         self.menu.entryconfigure(self.menu_actions['enable'], label=tr('启用自动适配')
             if r.get('managed_adapter') == 'unified_carriers' else tr('启用已验收的开机恢复'))
+        self.menu.entryconfigure(self.menu_actions['disable'], label=tr('停用自动适配')
+            if r.get('managed_adapter') == 'unified_carriers' else tr('停用并恢复'))
         self.auto_carrier_button.configure(state='disabled' if self.busy else 'normal')
         self.mobile_app_button.configure(state='disabled' if self.busy else 'normal')
         accepted_telecom = r.get('hardware_validation') == 'q10_telecom_per_sim_accepted'
         self.profile_picker.configure(state='disabled' if self.busy or managed else 'readonly')
         self.edit_button.configure(state='disabled' if self.busy or managed or trial else 'normal')
-        self.experiment_check.configure(state='disabled' if self.busy or managed or accepted_telecom else 'normal')
+        self.experiment_check.configure(state='disabled' if self.busy or managed or accepted_telecom or passport_open else 'normal')
         self.menu.entryconfigure(self.export_index, state='normal' if self.last_result and not self.busy else 'disabled')
         self.details_button.configure(state='normal' if self.display_report and not self.busy else 'disabled')
         needs_ack = any(r.get(key) for key in ('can_install', 'can_update', 'can_start')) or r.get('installation', {}).get('state') in ('busy', 'stopped', 'recovery_required')
@@ -449,7 +481,7 @@ class App:
             self.ack_check.pack_forget()
         experimental = (trial or self.experimental.get() or not profiles.baseline_parameters(self.profile) or
                         bool(self.device_info) and not self.device_info.get('hardware_tested'))
-        if experimental and not managed and not accepted_telecom:
+        if experimental and not managed and not accepted_telecom and not passport_open:
             self.experiment_check.pack(anchor='w', pady=(12, 0))
         else:
             self.experiment_check.pack_forget()
@@ -478,9 +510,12 @@ class App:
         self.running_baseline_expected = (report.get('installation', {}).get('state') == 'busy' and
                                           bool((service_status or {}).get('manager_alive')) and
                                           not has_read_failure(report))
+        passport_open = self._is_passport_open_absent(report)
         badge = tr('Q10 已有实测记录') if device.get('hardware_tested') else tr('未实测 · 可实验试用')
         if not device.get('recognized'):
             badge = tr('机型待识别')
+        elif passport_open:
+            badge = tr('Passport · 已开放三网自动适配')
         elif any(c['code'] == 'passport_provider_lifecycle_unvalidated' for c in report['checks']):
             badge = tr('Passport 恢复策略待验证')
         elif report.get('managed_adapter') == 'q20_root_v2':
@@ -537,6 +572,9 @@ class App:
             detail = view['guidance']
         elif trial_blocker:
             detail = self.check_note(trial_blocker, report)
+        elif passport_open:
+            title, color = tr('该 Passport 型号已开放三网自动适配'), BLUE
+            detail = tr('该 Passport 型号已通过“三网自动适配”开放移动／联通／电信入口（采用安全的重启保留提供器方案）。请点击下方“打开三网自动适配”或顶部“安装手机应用”；旧版单卡引擎不再用于 Passport。')
         elif report.get('can_restore') is False:
             detail = tr('旧版单卡引擎暂停了 Passport 操作；请改用顶部“三网自动适配”或“安装手机应用”：已开放 Q10、Q20、Passport 与 P’9983 全 16 个目录型号并采用安全的重启保留提供器方案。若已有旧版安装，请保留现场并导出报告。')
         elif state == 'busy':
@@ -581,7 +619,8 @@ class App:
         if self.busy:
             return
         from auto_carrier_gui import AutoCarrierWindow
-        AutoCarrierWindow(self.root, self.host.get().strip(), self.config.get().strip())
+        AutoCarrierWindow(self.root, self.host.get().strip(), self.config.get().strip(),
+                          auto_probe=bool(self.report or self.last_result))
 
     def mobile_app(self):
         if self.busy:
@@ -589,7 +628,8 @@ class App:
         from mobile_app_gui import MobileAppInstallWindow
         from mobile_app_gui import presentation
         try:
-            MobileAppInstallWindow(self.root, self.host.get().strip(), self.config.get().strip())
+            MobileAppInstallWindow(self.root, self.host.get().strip(), self.config.get().strip(),
+                                   auto_inspect=bool(self.report or self.last_result))
         except WorkflowError as error:
             title, detail = presentation({'error': error.code})
             messagebox.showerror(title, detail, parent=self.root)
@@ -601,7 +641,8 @@ class App:
             self.root.after_cancel(self._startup_job)
             self._startup_job = None
         if action in ('install', 'start', 'enable', 'disable'):
-            if not self.ack.get() or self.report_connection != self.selection():
+            allow_without_ack = (action == 'disable' and self._is_unified_error_recovery(self.report or {}))
+            if (not self.ack.get() and not allow_without_ack) or self.report_connection != self.selection():
                 return
             message = (tr('将停止本项目服务、恢复其修改并关闭自动启动。') if action == 'disable' else
                        tr('将按所选配置安装或启动并进行 IMS 验证。自动启动：') +

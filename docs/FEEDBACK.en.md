@@ -1,10 +1,10 @@
-# Feedback (for the next desktop release)
+# Feedback
 
-Each main step has **Problem / feedback** and **Open illustrated guide for this step**. The entry remains available during connection, drivers, first Root, OS upgrade, carrier installation, restart checks, call acceptance and recovery.
+Each main step has **Problem / feedback** and **Open illustrated guide for this step**. The entry remains available during connection, drivers, first Root, OS upgrade, phone app installation, carrier installation, restart checks, call acceptance and recovery.
 
 Open feedback, describe the problem, review the redacted preview, then save the ZIP. Send it through your existing contact channel or to `octoooo@octoooo.com`. The app does not upload or send anything automatically. A short summary can also be copied.
 
-The ZIP contains `feedback.json`, `timeline.txt` and `README.txt`: the current step, app/platform versions, recent actions, failure codes, allowlisted checks, candidate binding and six native-file digests, current status text and available sanitized Root build failure excerpts. Successful retries preserve earlier errors, including across app restarts.
+The ZIP contains `feedback.json`, `timeline.txt` and `README.txt`: the current step, app/platform versions, recent actions, failure codes, allowlisted checks, candidate binding and six native-file digests, current status text and available sanitized Root build, flash, or driver failure excerpts. Successful retries preserve earlier errors, including across app restarts.
 
 History covers the latest five recorded sessions since this feature was installed, with at most 400 events per session. Truncated sessions are marked. It cannot recover errors that older versions did not record. If local persistence fails, the dialog warns and can still export the current in-memory session.
 

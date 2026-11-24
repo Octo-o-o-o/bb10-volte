@@ -188,8 +188,8 @@ class MobileRuntimeR55Tests(unittest.TestCase):
         self.assertEqual(resp['state'], 'unsupported')
         self.assertEqual(resp['details']['error_code'], 'unvalidated_legacy_installation')
         self.assertIn('/var/rootdata/q10_volte', resp['display_i18n']['zh']['message'])
-        self.assertIn('实验适配', resp['display_i18n']['zh']['message'])
-        self.assertIn('Experimental', resp['display_i18n']['en']['message'])
+        self.assertIn('自动接管', resp['display_i18n']['zh']['message'])
+        self.assertIn('migrate automatically', resp['display_i18n']['en']['message'])
 
     def test_recovery_required_includes_error_code_and_network_restore_hint(self):
         import worker
@@ -443,7 +443,7 @@ class UiAndMiscR55Tests(unittest.TestCase):
 
         self.assertIn('/var/rootdata/q10_volte', device_support.error_message('unvalidated_legacy_installation'))
         with patch.object(i18n, 'LANGUAGE', 'en'):
-            self.assertIn('legacy standalone VoLTE', device_support.error_message('unvalidated_legacy_installation'))
+            self.assertIn('legacy VoLTE', device_support.error_message('unvalidated_legacy_installation'))
 
         src_kt = (ROOT / 'tools/kt_isim_trial.py').read_text(encoding='utf-8')
         self.assertIn("default='bb10-root'", src_kt)
@@ -520,7 +520,7 @@ class UiAndMiscR55Tests(unittest.TestCase):
                             with patch.object(setup_wizard, 'review_flash_lock', side_effect=lambda *_: (lock.unlink(), True)[1]):
                                 dlg.review_flash_lock()
                             self.assertIsNone(dlg.kit)
-                            self.assertEqual(dlg.stage, 'none')
+                            self.assertIsNone(dlg.stage)
                             self.assertFalse(bool(dlg.flash_lock_bar.winfo_manager()))
                             if sys.platform in ('win32', 'darwin'):
                                 self.assertEqual(str(dlg.prepare_button['state']), 'normal')

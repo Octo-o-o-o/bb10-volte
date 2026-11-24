@@ -29,7 +29,7 @@ def main(argv=None):
     parser.add_argument('--output',type=Path,default=private_root()/'windows-usb')
     parser.add_argument('--cache',type=Path,default=download_root())
     args=parser.parse_args(argv)
-    spec=json.loads((ROOT/'materials/usb-drivers.json').read_text())
+    spec=json.loads((ROOT/'materials/usb-drivers.json').read_text(encoding='utf-8'))
     for item in spec['parts']:
         assert sha(args.cache/item['file'])==item['sha256']
     kit=args.output.resolve()
@@ -47,6 +47,7 @@ def main(argv=None):
         return json.loads(subprocess.check_output([powershell,'-NoProfile','-NonInteractive',
             '-ExecutionPolicy','Bypass','-File',
             str(ROOT/'tools/verify_signature.ps1'),'-Path',str(path)],text=True,
+            encoding='utf-8',errors='replace',
             stderr=subprocess.PIPE,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0)))
     signed=signature(bundle)
     extract(bundle,kit/'bootstrapper')
@@ -79,7 +80,7 @@ def main(argv=None):
     catalog=signature(drivers/'rimusbnt.cat')
     report={'prepared':True,'windows_installation_performed':False,
             'bundle_signature':signed,'driver_catalog_signature':catalog,'x64_msi_matches_signed_manifest':True}
-    (kit/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
+    (kit/'verification.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(report))
 
 

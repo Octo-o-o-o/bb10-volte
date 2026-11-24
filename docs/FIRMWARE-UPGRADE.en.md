@@ -20,7 +20,7 @@ The application reads anonymous metadata on the directly attached USB link. A te
 ## Prepare and execute
 
 1. Connect only one phone, unlock it, and establish USB networking. Use the firmware action in Connection help, or “System upgrade / resume upgrade record” in the first-run wizard.
-2. Verify the exact hardware variant: SQN100-1–5 for Q10, SQC100-1–5 for Classic, or SQW100-1–4 for Passport. Detected hardware takes precedence over manual selection. Recorded VoLTE acceptance still covers only SQN100-3, SQC100-2, and SQW100-4.
+2. Verify the exact hardware variant: SQN100-1–5 for Q10, SQC100-1–5 for Classic, or SQW100-1–4 for Passport. Detected hardware takes precedence over manual selection. See [compatibility-matrix.json](../materials/compatibility-matrix.json) for current per-variant VoLTE test status.
 3. Prepare upgrade and Root materials with at least **24 GB** free. The application verifies pinned inputs and creates private keys and matching Root images. The download/import entry can populate the cache first. Offline selection authorizes computer-side preparation only.
 4. Back up the phone, acknowledge data loss, and confirm the displayed model and old → target OS. The backend reads the phone again before starting. Windows runs the matching original EXE. Mac uses verified native tools to write the stock signed OS, then radio. Enter device passwords only in the native console.
 5. Wait for the phone to boot, complete required phone setup, unlock it, restore USB networking, and verify the OS in the application. Successful loader output only establishes the write stage. Root remains separate until the phone reports the exact target OS.
@@ -32,7 +32,7 @@ This is not a lossless OTA update. It does not accept phone setup or password pr
 
 Preparation, awaiting-boot, and OS-verified records survive application restart. Selecting a record does not resume flashing or reuse a prior erase confirmation.
 
-Any error, missing result, timeout, or interrupted write preserves the journal and shared flash lock. Stock and Root retry are blocked. Closing a window cannot undo a write. Keep the phone state and computer materials; establish whether the original loader is still running and which stage completed before any recovery. Do not delete the lock or replay console scripts blindly.
+Any error, missing result, timeout, or interrupted write preserves the journal and shared flash lock. Stock and Root retry are blocked while Windows driver installation remains available directly from the dialog. Closing a window cannot undo a write. Use **Inspect flash log & unlock…** to review whether writing started and verify the phone state before clearing the pause; do not delete the lock or replay console scripts blindly.
 
 Stock upgrades require complete success. They **never accept the Windows exit-73 exception used by the specific AutoRoot OS recipe**. Native Mac flashing likewise requires complete evidence.
 

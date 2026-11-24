@@ -13,7 +13,8 @@ import time
 from desktop_paths import frozen, resource_root
 from i18n import tr
 from root_setup import SetupError, root_lock_path
-from root_flash import writing_complete_line, writing_started_line
+from root_flash import (configure_windows_console, pause_windows_console_on_failure,
+                        run_windows_autoloader, writing_complete_line, writing_started_line)
 
 
 class StockFlashEvidence:
@@ -119,10 +120,7 @@ def run_stage(folder, phase, token):
     with (folder / ('upgrade-' + phase + '.claimed')).open('x', encoding='ascii') as stream:
         stream.write(token)
     if sys.platform == 'win32':
-        if not ctypes.windll.kernel32.GetConsoleWindow() and not ctypes.windll.kernel32.AllocConsole():
-            raise SetupError('native_console_unavailable')
-        sys.stdin = open('CONIN$', 'r')
-        sys.stdout = open('CONOUT$', 'w', encoding='utf-8', errors='replace')
+        configure_windows_console(tr('bb10-volte：正在写入原版系统'))
         command, environment = [str(image)], None
         evidence, input_context = StockFlashEvidence(), contextlib.nullcontext()
     elif sys.platform == 'darwin':
@@ -147,7 +145,7 @@ def run_stage(folder, phase, token):
             code = run_native_command(command, image.parent, environment, evidence, log)
             result = evidence.result(phase, code)
         else:
-            result = run_windows_command(command, image.parent, evidence, log, public_line, phase)
+            result = run_windows_autoloader(image, folder, log, evidence, public_line, phase)
     output = folder / ('upgrade-' + phase + '.json')
     temporary = output.with_suffix('.json.partial')
     with temporary.open('x', encoding='utf-8') as stream:
@@ -157,40 +155,17 @@ def run_stage(folder, phase, token):
     if not result['completed']:
         print(tr('刷写工具退出码：{}（是否已进入写入：{}）').format(
             result['exit_code'], tr('是') if result.get('writing_started') else tr('否')), flush=True)
-        if not result.get('writing_started'):
+        if result.get('launch_error'):
+            print(tr('未能启动刷写程序（{}）；请检查安全软件拦截或文件权限。').format(result['launch_error']), flush=True)
+        elif not result.get('writing_started'):
             print(tr('未检测到进入写入阶段。常见原因：Windows 缺少 BlackBerry USB（Bootrom）驱动、未识别连接超时或密码提示中断。'), flush=True)
             print(tr('可在应用“Windows 驱动”页安装驱动，并通过“查看刷写日志并解除暂停”核对后重试。'), flush=True)
-        if (sys.platform == 'win32' and isinstance(sys.stdin, io.TextIOBase) and
-                sys.stdin.isatty() and not os.environ.get('BB10_FLASH_NO_PAUSE')):
-            try:
-                input(tr('请先查看上方输出，再按回车键关闭此窗口…'))
-            except (EOFError, OSError):
-                pass
+        pause_windows_console_on_failure()
     return 0 if result['completed'] else 1
 
 
 def run_windows_command(command, cwd, evidence, log, public_line, phase):
-    pending = bytearray()
-    child = subprocess.Popen(command, cwd=cwd, env=None, stdin=sys.stdin,
-                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=0)
-    while True:
-        char = child.stdout.read(1)
-        if not char:
-            break
-        sys.stdout.buffer.write(char)
-        sys.stdout.buffer.flush()
-        pending.extend(char)
-        if char in (b'\r', b'\n'):
-            line = pending.decode('utf-8', 'replace')
-            evidence.line(line)
-            log.write(public_line(line))
-            log.flush()
-            pending.clear()
-    if pending:
-        line = pending.decode('utf-8', 'replace')
-        evidence.line(line)
-        log.write(public_line(line))
-    return evidence.result(phase, child.wait())
+    return run_windows_autoloader(Path(command[0]), Path(cwd), log, evidence, public_line, phase)
 
 
 def main():

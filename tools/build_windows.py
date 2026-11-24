@@ -99,7 +99,7 @@ def main():
     assert sys.platform == 'win32' and platform.machine().lower() in ('amd64', 'x86_64')
     spec = json.loads((ROOT / 'materials/windows-runtime.json').read_text(encoding='utf-8'))
     assert platform.python_version() == spec['python'], 'Use the pinned Python build'
-    for line in (ROOT / 'tools/windows-freeze-requirements.txt').read_text().splitlines():
+    for line in (ROOT / 'tools/windows-freeze-requirements.txt').read_text(encoding='utf-8').splitlines():
         name, version = line.split('==')
         assert importlib.metadata.version(name) == version, 'Build dependency differs: ' + name
     import tkinter as tk
@@ -128,7 +128,7 @@ def main():
             signatures[name] = json.loads(subprocess.check_output([
                 powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
                 '-File', str(ROOT / 'tools/verify_signature.ps1'),
-                '-Path', str(vendor / name)], text=True))
+                '-Path', str(vendor / name)], text=True, encoding='utf-8', errors='replace'))
     work = ROOT / 'build/windows'
     work.mkdir(parents=True, exist_ok=True)
     # The contrib hook named workflow belongs to an unrelated PyPI package.

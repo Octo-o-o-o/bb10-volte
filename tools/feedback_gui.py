@@ -33,12 +33,15 @@ class FeedbackDialog(tk.Toplevel):
         # password fields or the whole screen. Scrubbing happens before storage.
         labels = getattr(parent, '_feedback_status_labels', None)
         if labels is None:
-            labels = [getattr(parent, name, None) for name in ('status', 'root_hint', 'facts', 'device')]
+            labels = [getattr(parent, name, None) for name in
+                      ('status', 'root_hint', 'facts', 'device', 'progress_text', 'gate_label', 'flash_lock_label', 'details')]
         visible = []
         for label in labels:
             if label is not None:
                 try:
-                    visible.append(str(label.cget('text')))
+                    text = label.get('1.0', 'end-1c')[:1600] if isinstance(label, tk.Text) else str(label.cget('text'))
+                    if text.strip():
+                        visible.append(text.strip())
                 except (tk.TclError, AttributeError):
                     pass
         self.journal.record(step, 'open_feedback', 'observed', message='\n'.join(visible))

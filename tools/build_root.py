@@ -15,7 +15,7 @@ def main(argv=None):
     p.add_argument('--kit',type=Path,default=private_root()/'root-kit')
     args=p.parse_args(argv)
     kit=args.kit.resolve()
-    preparation=json.loads((kit/'preparation.json').read_text())
+    preparation=json.loads((kit/'preparation.json').read_text(encoding='utf-8'))
     assert preparation['offline_preparation_complete']
     variant=preparation['variant']
     stock,_=recipe(variant)

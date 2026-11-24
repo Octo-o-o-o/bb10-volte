@@ -15,7 +15,7 @@ ALIASES = ('bb10-root', 'q10-root')
 def aliases(path):
     found = []
     try:
-        for line in Path(path).read_text(encoding='utf-8-sig').splitlines():
+        for line in Path(path).read_text(encoding='utf-8-sig', errors='replace').splitlines():
             words = shlex.split(line, comments=True)
             if words and words[0].lower() == 'host':
                 found.extend(word for word in words[1:] if word in ALIASES)

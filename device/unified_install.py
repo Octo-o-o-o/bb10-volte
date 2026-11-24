@@ -33,6 +33,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r55 / mobile 0.2.1.0 before r56 legacy migration and LTE rollback fixes.
+                    '0d43724ca4ab024e3001599cedfd4b7a72437296cbec80a9026516e12fb8655e',
                     # r53/r54 / mobile 0.2.0.0 before probe legacy-blocker, cleanup-stage and error_code fixes.
                     '1b1227074c90fc5794e19b5a2f0df06cb6d3307db5082679fc7e5914047b5c65',
                     # r52/mobile52 before experimental ISIM/0.xml carrier trial support.
@@ -222,7 +224,7 @@ def management_lock(blocking=False):
         assert opened.st_mode & 0o077 == 0 and (opened.st_dev, opened.st_ino) == (current.st_dev, current.st_ino)
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | (0 if blocking else fcntl.LOCK_NB))
-        except IOError as error:
+        except (IOError, OSError) as error:
             if error.errno in (errno.EACCES, errno.EAGAIN):
                 raise RuntimeError('management_busy')
             raise
@@ -430,6 +432,7 @@ def probe():
             entry = migration.inspect(facts)
         except AssertionError as error:
             if str(error) in ('root_scheme_not_supported', 'root_boot_script_changed',
+                              'root_addon_directory_changed', 'legacy_install_interrupted',
                               'unvalidated_legacy_installation', 'legacy_directory_changed',
                               'legacy_payload_changed', 'unknown_legacy_owner', 'unfinished_nas_trial'):
                 return blocked_probe(facts, str(error))
@@ -747,7 +750,9 @@ def original_source(name, legacy):
     assert legacy is not None, 'unowned_dca_source'
     base = legacy['base']
     q20 = base == migration.BASES['SQC100-2']
-    pointer = s.load(base + '/state/' + ('dca-usage-plan.json' if q20 else 'telecom-plan.json'))
+    pointer_path = base + '/state/' + ('dca-usage-plan.json' if q20 else 'telecom-plan.json')
+    assert os.path.isfile(pointer_path), 'unowned_dca_source'
+    pointer = s.load(pointer_path)
     folder = pointer['folder']
     prefix = base + '/state/' + ('dca-usage-' if q20 else 'telecom-attach-')
     assert folder.startswith(prefix) and os.path.realpath(folder) == folder
@@ -1059,15 +1064,24 @@ def check_activation_hook(installed, journal):
 
 
 def cleanup_stage(stage):
-    assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}\Z', stage)
-    assert os.path.realpath(stage) == stage and not os.path.islink(stage)
+    assert isinstance(stage, str) and re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}\Z', stage)
+    if hasattr(os, 'geteuid'):
+        assert os.geteuid() == 0, 'root_required'
+    info = os.lstat(stage)
+    assert stat.S_ISDIR(info.st_mode) and not os.path.islink(stage) and os.path.realpath(stage) == stage
+    if os.name != 'nt':
+        assert info.st_uid == 0 and (info.st_mode & 0o077) == 0
     expected = set(u.PAYLOAD_FILES) | {'payload.json'}
     actual = set()
+    seen_dirs = set()
     for folder, directories, files in os.walk(stage):
         for name in directories + files:
             assert not os.path.islink(folder + '/' + name)
+        for name in directories:
+            seen_dirs.add((folder + '/' + name)[len(stage) + 1:].replace(os.sep, '/'))
         for name in files:
-            actual.add((folder + '/' + name)[len(stage) + 1:])
+            actual.add((folder + '/' + name)[len(stage) + 1:].replace(os.sep, '/'))
+    assert seen_dirs == {'device', 'driver'}
     assert actual == expected
     assert set(os.listdir(stage)) == {'device', 'driver', 'payload.json'}
     for name in sorted(expected):

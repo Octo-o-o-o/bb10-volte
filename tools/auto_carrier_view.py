@@ -68,6 +68,8 @@ def status_view(state):
         ready = False
         title = tr('可以重试连接，无需为上次等网重启')
         guidance = tr('上次在启动 IMS 前停止，配置已恢复。保持当前 SIM，点击“重试连接”。')
+        if state.get('error_code'):
+            guidance += '\n' + tr('诊断错误码：{}').format(state['error_code'])
         code = 'unified_retry_available'
     elif phase in ('error', 'error_restored') and state.get('startup_blocker') == 'existing_apn_overlay':
         title = tr('现有 APN 覆盖阻断 VoLTE 启动')

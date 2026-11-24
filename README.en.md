@@ -2,19 +2,20 @@
 
 **macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
 
-**Desktop r55 · mobile 0.2.1.0.** Q10, Q20, Passport and P’9983 can try the established mainland China profiles and other carriers with matching stock configuration. The app labels untested carriers.
+**Desktop r56 · mobile 0.2.2.0.** Q10, Q20, Passport and P’9983 can try the established mainland China profiles and other carriers with matching stock configuration. The app labels untested carriers.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r55.en.md)
+[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r56.en.md)
 
-Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r55; device validation remains pending.
+Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r56; device validation remains pending.
 
 ## What changed
 
-- Flash diagnostics & safe pause recovery: Initial Root and stock OS upgrades record whether writing started (`writing_started`), pause the console on incomplete exit with a redacted feedback excerpt, add "Review flash log and clear pause…" without deleting images/keys/logs, and decouple Windows Bootrom driver installation from `root-flash.lock`.
-- Windows driver & non-ASCII SSH fixes: Driver Authenticode checks and installation prefer Windows PowerShell 5.1 with `-ExecutionPolicy Bypass`; SSH key generation and `.pub` parsing tolerate non-ASCII Windows usernames/hostnames without `UnicodeDecodeError`.
-- Legacy guidance, lock contention & runtime error codes: `probe()` maps legacy `/var/rootdata/q10_volte` blockers to actionable UI guidance; `cleanup-stage` no longer contends for non-blocking `management_lock()`; runtime failures expose allowlisted `error_code` and roll back owned LTE-only overrides when prepare fails before journaling.
+- Legacy `/var/rootdata/q10_volte` auto-migration on all 16 catalog variants: verified standard `q10-unicom-volte-v1` installations now migrate automatically across Q10, Q20, Passport, and P’9983 instead of deadlocking; foreign variant dirs, multi-dir collisions, and tampered installs still fail closed.
+- Five LTE-only rollback gaps & error-masking fixes: closes rollback leaks in `restore()`, `restore_original()`, `reconcile()`, and `disable`; fixes `scan_mode_rejected` classification and adds `ims_apn_timeout` / `voice_policy_failed`; fixes `worker.py` hiding `cleanup_required` behind `disabled` and `AutoCarrierWindow` overwriting failure guidance with `sim_not_ready`.
+- Windows driver installer, ANSI autoloader & flash-lock root fixes: treats `pnputil` exit `259` as staged so `BlackBerry Device Manager` MSI always runs; disables Console QuickEdit click-to-freeze; stages pure-ASCII paths and `TEMP` for 32-bit ANSI `cap.exe`; inspects all flash phases and checks process creation time + `flash-active.json`; uses pure-ASCII SIDs for Windows ACLs (`icacls`).
+- Desktop UX & guides: adds a Windows driver button, Bootrom (`RimUsb`) status, and live history refresh to Firmware Upgrade; adds direct Automatic carrier setup CTA for uninstalled Passport devices; adds the Feedback bar to Mobile App Install; and updates in-app `docs/GUI.md`.
 
 ## How to use it
 
@@ -55,16 +56,16 @@ Startup has been tried on Windows 11 and Apple silicon. Windows 10 and Intel hav
 
 For excessive disk use after repeated preparation or failures, see [storage locations and manual cleanup](docs/DISK-CLEANUP.en.md). r43 includes preparation reuse and build cleanup fixes.
 
-A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r55 downloads below.
+A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r56 downloads below.
 
 If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same file. Check the SHA-256 before you run it.
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r55/bb10-volte-0.5.0-r55-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/bb10-volte-0.5.0-r55-windows-x64.exe) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r56/bb10-volte-0.5.0-r56-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/bb10-volte-0.5.0-r56-windows-x64.exe) |
 | macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r55/bb10-volte-0.5.0-r55-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/bb10-volte-0.5.0-r55-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r55/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r55/SHA256SUMS.txt) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r56/bb10-volte-0.5.0-r56-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/bb10-volte-0.5.0-r56-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r56/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r56/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

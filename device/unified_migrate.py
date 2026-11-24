@@ -12,6 +12,7 @@ import carrier_policy as policy
 
 BASES = {'SQN100-3': '/var/rootdata/q10_volte', 'SQC100-2': '/var/q20_volte',
          'SQW100-4': '/var/rootdata/passport_volte_research'}
+STANDARD_BASE = '/var/rootdata/q10_volte'
 
 
 def legacy_boot(base):
@@ -26,38 +27,76 @@ def legacy_boot(base):
     return [info.st_ino, info.st_mtime]
 
 
+def _load_legacy_json(path):
+    assert not os.path.islink(path), 'legacy_payload_changed'
+    try:
+        value = s.load(path)
+    except (IOError, OSError, ValueError, TypeError):
+        assert False, 'legacy_payload_changed'
+    assert isinstance(value, dict), 'legacy_payload_changed'
+    return value
+
+
 def inspect(facts):
     variant = facts['variant']
-    if variant not in BASES:
-        # An admitted model without a validated migration may start fresh only
-        # if no known legacy installation is present. Never borrow a different
-        # suffix's recovery path based on its device family.
-        if variant not in policy.MODELS:
-            raise ValueError('unsupported_model_or_os')
-        assert not any(os.path.lexists(path) for path in BASES.values()), 'unvalidated_legacy_installation'
+    if variant not in policy.MODELS:
+        raise ValueError('unsupported_model_or_os')
+    # Never borrow a suffix-specific Q20 or Passport research directory on another variant.
+    if variant != 'SQC100-2' and os.path.lexists(BASES['SQC100-2']):
+        assert False, 'unvalidated_legacy_installation'
+    if variant != 'SQW100-4' and os.path.lexists(BASES['SQW100-4']):
+        assert False, 'unvalidated_legacy_installation'
+    present = [path for path in (STANDARD_BASE, BASES['SQC100-2'], BASES['SQW100-4'])
+               if os.path.lexists(path)]
+    if not present:
         return None
-    base = BASES[variant]
-    if not os.path.exists(base):
-        return None
+    if len(present) > 1:
+        assert False, 'unvalidated_legacy_installation'
+    base = present[0]
     assert not os.path.islink(base), 'legacy_directory_changed'
-    manifest_name = ('installation.json' if facts['variant'] == 'SQN100-3' else
-                     'payload-manifest.json' if facts['variant'] == 'SQC100-2' else 'research-manifest.json')
-    manifest = s.load(base + '/' + manifest_name)
+    if base == STANDARD_BASE:
+        manifest_name = 'installation.json'
+        if os.path.lexists(base + '/install-transaction.json'):
+            assert False, 'legacy_install_interrupted'
+        if not os.path.lexists(base + '/' + manifest_name):
+            assert False, 'unvalidated_legacy_installation'
+        assert not os.path.islink(base + '/' + manifest_name), 'legacy_payload_changed'
+        assert os.path.isfile('/tmp/root.done'), 'root_scheme_not_supported'
+        manifest = _load_legacy_json(base + '/' + manifest_name)
+        assert manifest.get('owner') == 'q10-unicom-volte-v1', 'unknown_legacy_owner'
+    elif base == BASES['SQC100-2']:
+        manifest_name = 'payload-manifest.json'
+        manifest = _load_legacy_json(base + '/' + manifest_name)
+        assert manifest.get('owner') == 'q20-sqc100-2-volte-v1', 'unknown_legacy_owner'
+    else:
+        manifest_name = 'research-manifest.json'
+        manifest = _load_legacy_json(base + '/' + manifest_name)
+        assert manifest.get('schema') == 1 and manifest.get('lifecycle') == 'retain-provider-until-reboot', 'unknown_legacy_owner'
     # Verify every immutable file before requesting the running legacy manager
     # to stop. SIM-specific requests are checked against their existing manifest.
-    if facts['variant'] == 'SQW100-4':
-        assert manifest.get('schema') == 1 and manifest.get('lifecycle') == 'retain-provider-until-reboot'
-    else:
-        assert manifest.get('owner') in ('q10-unicom-volte-v1', 'q20-sqc100-2-volte-v1'), 'unknown_legacy_owner'
-    assert isinstance(manifest.get('files'), dict) and manifest['files']
+    assert isinstance(manifest.get('files'), dict) and manifest['files'], 'legacy_payload_changed'
     for name, expected in manifest['files'].items():
-        assert not name.startswith('/') and '..' not in name.split('/') and '\\' not in name
+        assert isinstance(name, str) and not name.startswith('/') and '..' not in name.split('/') and '\\' not in name, 'legacy_payload_changed'
         path = base + '/' + name
-        assert not os.path.islink(path) and n.digest(n.read(path)) == expected, 'legacy_payload_changed'
-    journal = s.load(base + '/state/journal.json') if os.path.isfile(base + '/state/journal.json') else None
-    if journal:
-        assert journal['owner'] == 'q10-unicom-volte-v1' and journal['original_voice_policy'] == 0
+        assert not os.path.islink(path), 'legacy_payload_changed'
+        try:
+            actual = n.digest(n.read(path))
+        except (IOError, OSError):
+            assert False, 'legacy_payload_changed'
+        assert actual == expected, 'legacy_payload_changed'
+    journal_path = base + '/state/journal.json'
+    if os.path.lexists(journal_path):
+        journal = _load_legacy_json(journal_path)
+        assert journal.get('owner') == 'q10-unicom-volte-v1' and journal.get('original_voice_policy') == 0, 'legacy_payload_changed'
         assert not journal.get('nas_voice_trial'), 'unfinished_nas_trial'
+    # Legacy service.py unloads software crypto on stop; never quiesce a live
+    # legacy standalone manager on Passport in the same boot.
+    if base == STANDARD_BASE and variant.startswith('SQW100-'):
+        lock_path = base + '/state/lock.json'
+        if os.path.isfile(lock_path):
+            lock = _load_legacy_json(lock_path)
+            if lock.get('boot') == legacy_boot(base) and s.alive(lock.get('pid')):
+                assert False, 'unvalidated_legacy_installation'
     return {'base': base, 'manifest': manifest_name, 'manifest_sha256': n.digest(n.read(base + '/' + manifest_name)),
             'boot': legacy_boot(base), 'was_enabled': os.path.isfile(base + '/enabled')}
 

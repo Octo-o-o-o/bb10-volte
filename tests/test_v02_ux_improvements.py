@@ -194,10 +194,10 @@ class V02UxImprovementTests(unittest.TestCase):
 
     def test_v02_version_and_mobile_ui_cleanup_contracts(self):
         proj = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
-        self.assertEqual(proj['mobile_version'], '0.2.1.0')
-        self.assertEqual(proj['desktop_revision'], 55)
+        self.assertEqual(proj['mobile_version'], '0.2.2.0')
+        self.assertEqual(proj['desktop_revision'], 56)
         bar_xml = (ROOT / 'mobile/native/bar-descriptor.xml').read_text(encoding='utf-8')
-        self.assertIn('<versionNumber>0.2.1</versionNumber>', bar_xml)
+        self.assertIn('<versionNumber>0.2.2</versionNumber>', bar_xml)
         self.assertIn('<buildId>0</buildId>', bar_xml)
         main_qml = (ROOT / 'mobile/native/assets/main.qml').read_text(encoding='utf-8')
         self.assertNotIn('navigation.t("confirm-calls")', main_qml)

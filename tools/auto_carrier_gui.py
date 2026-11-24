@@ -20,7 +20,7 @@ def status_text(result):
 
 
 class AutoCarrierWindow:
-    def __init__(self, parent, host, config):
+    def __init__(self, parent, host, config, auto_probe=False):
         self.host, self.config = host, config
         self.window = tk.Toplevel(parent)
         self.window.title(tr('三网自动适配'))
@@ -68,9 +68,12 @@ class AutoCarrierWindow:
         self.completion_button.pack(side='left', padx=(0, 8))
         self.details = tk.Text(box, height=10, wrap='word', state='disabled')
         self.details.pack(fill='both', expand=True, pady=(12, 0))
+        self.window._feedback_status_labels = [self.status, self.details]
         self.refresh()
         self.poll_job = self.window.after(150, self.poll)
         self.window.protocol('WM_DELETE_WINDOW', self.close)
+        if auto_probe:
+            self.window.after_idle(lambda: self.run('probe'))
 
     def close(self):
         if not self.busy:
@@ -219,8 +222,15 @@ class AutoCarrierWindow:
                                                 tr('有适配更新。请先停用，待恢复后正常重启，再检查并更新。'))
                         scope_note = device_support.report_note(result)
                         if scope_note:
-                            self.status.configure(text=scope_note)
-                            details = device_support.describe(device_support.assess(result.get('variant'))) + '\n\n' + scope_note
+                            status_phase = (result.get('status') or {}).get('phase')
+                            preserve_status = (result.get('installed') and not result.get('scope_error') and
+                                               status_phase in ('error', 'error_restored', 'cleanup_required',
+                                                                'reboot_required', 'carrier_reboot_required'))
+                            if preserve_status:
+                                details += '\n\n' + scope_note
+                            else:
+                                self.status.configure(text=scope_note)
+                                details = device_support.describe(device_support.assess(result.get('variant'))) + '\n\n' + scope_note
                         if result.get('operator_trial') is True and (scope_note or not (result.get('status') or {}).get('operator_trial')):
                             details += '\n\n' + operator_trial_note()
                         if result.get('sim_has_isim') is True and result.get('radio_lte') is False:

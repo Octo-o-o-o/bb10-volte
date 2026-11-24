@@ -19,8 +19,21 @@ MAX_FILE_BYTES = 2_000_000
 TEXT_LIMIT = 1600
 
 
+SAFE_CONSOLE_MARKERS = (
+    '[Bootrom device unlock prompt shown in console]',
+    '[Device password input requested in native console]',
+    '[Device identity or password prompt omitted]',
+)
+
+
 def scrub(value):
     text = str(value)[:16000]
+    preserved = []
+    for idx, marker in enumerate(SAFE_CONSOLE_MARKERS):
+        token = '__BB10_SAFE_MARKER_' + str(idx) + '__'
+        if marker in text:
+            text = text.replace(marker, token)
+            preserved.append((token, marker))
     text = re.sub(r'-----BEGIN [^-]*(?:PRIVATE KEY)[^-]*-----.*?(?:-----END [^-]+-----|$)',
                   '[private key removed]', text, flags=re.S)
     text = re.sub(r'(?im)^.*(?:password|passwd|passphrase|secret|api[_ -]?key|authorization|'
@@ -38,6 +51,8 @@ def scrub(value):
     text = re.sub(r'(?i)(?<!\w)(?:[0-9a-f]{0,4}:){2,}[0-9a-f:]{0,39}(?!\w)', '[address removed]', text)
     text = re.sub(r'(?<!\w)\+?\d[\d ()-]{6,}\d(?!\w)', '[number removed]', text)
     text = re.sub(r'\b[A-Za-z0-9+/=_-]{40,}\b', '[token removed]', text)
+    for token, marker in preserved:
+        text = text.replace(token, marker)
     return text[:TEXT_LIMIT]
 
 
@@ -47,7 +62,8 @@ def code(value):
     return value if re.fullmatch(r'[A-Za-z][A-Za-z0-9_:-]{0,95}', value) and not re.search(r'\d{7}', value) else 'see_message'
 
 
-BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'can_install', 'can_update', 'can_start',
+BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'bootrom_driver_ready', 'rimusb_installed', 'bdm_service_installed',
+               'can_install', 'can_update', 'can_start',
                'installed', 'installation_pending', 'update_pending', 'update_available', 'registered',
                'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot', 'operator_trial', 'sim_has_isim', 'radio_lte', 'lte_data_connected',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
@@ -157,7 +173,7 @@ def flash_failure_excerpt(folder, prefix='flash', phase=None):
                 raw = json.loads(receipt_path.read_text(encoding='utf-8'))
                 if isinstance(raw, dict):
                     summary = {}
-                    for key in ('stage', 'exit_code', 'writing_started', 'writing_complete', 'done', 'error_seen', 'completed'):
+                    for key in ('stage', 'exit_code', 'writing_started', 'writing_complete', 'done', 'error_seen', 'completed', 'launch_error'):
                         if key in raw and isinstance(raw[key], (bool, int, str)):
                             summary[key] = raw[key]
                     if summary:
@@ -252,14 +268,31 @@ class Journal:
             release = desktop_release_version(json.loads((resource_root() / 'project.json').read_text(encoding='utf-8')))
         except (OSError, ValueError, KeyError):
             release = 'unknown'
-        return {'schema': 'bb10-feedback/v1', 'feedback_id': uuid.uuid4().hex[:12],
-                'created_at': now(), 'step': code(step), 'app_version': release,
-                'desktop': {'system': platform.system(), 'release': platform.release(),
-                            'machine': platform.machine(), 'python': platform.python_version()},
-                'note': scrub(note), 'persistence_ok': self.persistence_ok,
-                'limits': {'sessions': MAX_SESSIONS, 'events_per_session': MAX_EVENTS,
-                           'raw_device_logs_included': False, 'automatic_upload': False},
-                'sessions': self.history()}
+        payload = {'schema': 'bb10-feedback/v1', 'feedback_id': uuid.uuid4().hex[:12],
+                   'created_at': now(), 'step': code(step), 'app_version': release,
+                   'desktop': {'system': platform.system(), 'release': platform.release(),
+                               'machine': platform.machine(), 'python': platform.python_version()},
+                   'note': scrub(note), 'persistence_ok': self.persistence_ok,
+                   'limits': {'sessions': MAX_SESSIONS, 'events_per_session': MAX_EVENTS,
+                              'raw_device_logs_included': False, 'automatic_upload': False},
+                   'sessions': self.history()}
+        try:
+            from root_setup import inspect_flash_lock
+            lock_info = inspect_flash_lock()
+            if lock_info:
+                payload['flash_lock'] = {
+                    'operation': code(lock_info.get('operation', 'unknown')),
+                    'process_running': bool(lock_info.get('process_running')),
+                    'stage': code(lock_info['stage']) if lock_info.get('stage') else None,
+                    'exit_code': lock_info['exit_code'] if type(lock_info.get('exit_code')) is int else None,
+                    'writing_started': lock_info.get('writing_started') if type(lock_info.get('writing_started')) is bool else None,
+                    'writing_complete': lock_info.get('writing_complete') if type(lock_info.get('writing_complete')) is bool else None,
+                    'launch_error': code(lock_info['launch_error']) if lock_info.get('launch_error') else None,
+                    'excerpt': scrub(lock_info.get('excerpt', '')) if lock_info.get('excerpt') else '',
+                }
+        except Exception:
+            pass
+        return payload
 
 
 def write_bundle(path, payload):

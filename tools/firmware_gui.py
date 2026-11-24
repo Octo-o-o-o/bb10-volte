@@ -49,12 +49,17 @@ class FirmwareDialog(tk.Toplevel):
         self.support_notice.pack(fill='x', pady=(8, 0))
         self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
         self.flash_lock_bar = ttk.Frame(body)
-        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=580, justify='left',
+        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=480, justify='left',
                                           text=tr('检测到上次刷写处于暂停状态，升级与重新准备已锁定（仍可安装 Windows 驱动）。'))
         self.flash_lock_label.pack(side='left', fill='x', expand=True, padx=(0, 10))
         self.unlock_flash_button = ttk.Button(self.flash_lock_bar, text=tr('查看刷写日志并解除暂停…'),
                                               command=self.review_flash_lock)
         self.unlock_flash_button.pack(side='right')
+        self.install_drivers_lock_button = None
+        if sys.platform == 'win32':
+            self.install_drivers_lock_button = ttk.Button(self.flash_lock_bar, text=tr('安装 Windows 驱动…'),
+                                                          command=self.open_drivers)
+            self.install_drivers_lock_button.pack(side='right', padx=(0, 8))
         page, content = scrolled_page(body, padding=12)
         self.page_frame = page
         page.pack(fill='both', expand=True, pady=12)
@@ -86,18 +91,22 @@ class FirmwareDialog(tk.Toplevel):
         self.import_local_button.pack(side='left', padx=(0, 8))
         self.download_button = ttk.Button(import_row, text=tr('固件浏览器下载与离线导入'), command=self.downloads)
         self.download_button.pack(side='left')
+        self.drivers_button = None
+        if sys.platform == 'win32':
+            self.drivers_button = ttk.Button(import_row, text=tr('安装 Windows 驱动…'), command=self.open_drivers)
+            self.drivers_button.pack(side='left', padx=(8, 0))
         self.history = upgrade.pending_upgrades()
-        history_row = ttk.Frame(content)
-        history_row.pack(fill='x', pady=12)
-        self.picker = ttk.Combobox(history_row, state='readonly', width=42,
+        self.history_row = ttk.Frame(content)
+        self.history_row.pack(fill='x', pady=12)
+        self.picker = ttk.Combobox(self.history_row, state='readonly', width=42,
                                   values=[item['variant'] + ' · ' + Path(item['folder']).name for item in self.history])
         self.picker.pack(side='left')
-        self.resume_button = ttk.Button(history_row, text=tr('继续选中的准备记录'), command=self.resume)
+        self.resume_button = ttk.Button(self.history_row, text=tr('继续选中的准备记录'), command=self.resume)
         self.resume_button.pack(side='left', padx=8)
         if self.history:
             self.picker.current(0)
         else:
-            history_row.pack_forget()
+            self.history_row.pack_forget()
         self.progress_text = ttk.Label(content, wraplength=710, justify='left')
         self.progress_text.pack(anchor='w', pady=12)
         self.gate_label = ttk.Label(content, wraplength=710, justify='left')
@@ -115,6 +124,7 @@ class FirmwareDialog(tk.Toplevel):
         self.progress.pack(fill='x')
         self.status = ttk.Label(body, text=tr('准备材料不会刷写手机；每次刷写均需单独确认。'), wraplength=800, justify='left')
         self.status.pack(fill='x', pady=12)
+        self._feedback_status_labels = [self.status, self.progress_text, self.gate_label, self.flash_lock_label]
         ttk.Button(body, text=tr('关闭'), command=self.close).pack(anchor='e')
         self.protocol('WM_DELETE_WINDOW', self.close)
         self._job = self.after(100, self.drain)
@@ -149,7 +159,11 @@ class FirmwareDialog(tk.Toplevel):
             firmware_line = '\n' + tr('目标固件：{}').format(item['file']) + cached_note
         except root.SetupError:
             pass
-        self.facts.configure(text=tr('已检测型号：{}\n当前 OS：{}　目标 OS：{}').format(model, version.current or tr('待确认'), TARGET_OS) + firmware_line)
+        bootrom_line = (
+            '\n' + tr('Windows Bootrom 驱动（RimUsb）：未检测到；开始刷写前请先点击“安装 Windows 驱动…”。')
+            if sys.platform == 'win32' and self.usb.get('bootrom_driver_ready') is False else ''
+        )
+        self.facts.configure(text=tr('已检测型号：{}\n当前 OS：{}　目标 OS：{}').format(model, version.current or tr('待确认'), TARGET_OS) + firmware_line + bootrom_line)
         stages = {None: tr('尚未准备升级材料。'), 'prepared': tr('材料已校验。确认备份后才可升级。'),
                   'awaiting_reboot': tr('写入阶段已结束，等待开机后的 OS 回读。'),
                   'os_verified': tr('已确认目标 OS，可继续单独确认 Root 刷写。')}
@@ -168,12 +182,16 @@ class FirmwareDialog(tk.Toplevel):
             if not self.flash_lock_bar.winfo_manager():
                 self.flash_lock_bar.pack(fill='x', before=self.page_frame, pady=(8, 0))
             self.unlock_flash_button.configure(state='disabled' if self.busy else 'normal')
+            if self.install_drivers_lock_button is not None:
+                self.install_drivers_lock_button.configure(state='disabled' if self.busy else 'normal')
         elif self.flash_lock_bar.winfo_manager():
             self.flash_lock_bar.pack_forget()
         state(self.detect_button, True)
         state(self.prepare_button, target_valid and not locked and (not self.kit or self.stage == 'uncertain') and sys.platform in ('win32', 'darwin') and version.state not in ('newer', 'ready'))
         state(self.import_local_button, target_valid)
         state(self.download_button, True)
+        if self.drivers_button is not None:
+            state(self.drivers_button, True)
         state(self.resume_button, bool(self.history))
         device_ready = (self.usb.get('usb_count') == 1 and target_valid and version.state == 'upgrade'
                         and (sys.platform != 'darwin' or self.usb.get('usb_address_ready') is True))
@@ -312,16 +330,45 @@ class FirmwareDialog(tk.Toplevel):
         # Recheck even when a stale button or old successful journal is reused.
         self.start('root_ready', lambda _: (upgrade.verify_boot(self.kit), root.prepared_images(self.kit)))
 
+    def open_drivers(self):
+        if self.busy:
+            return
+        from setup_wizard import SetupWizard
+        wizard = SetupWizard(self, self.on_ready, auto_check=False, initial_page='drivers',
+                             downloads_only=False, initial_usb=self.usb)
+        def sync_after_close(event):
+            if event.widget is wizard and self.winfo_exists():
+                self.grab_set()
+                self.after_idle(self.detect)
+        wizard.bind('<Destroy>', sync_after_close, add='+')
+
+    def refresh_history(self):
+        self.history = upgrade.pending_upgrades()
+        self.picker.configure(values=[item['variant'] + ' · ' + Path(item['folder']).name for item in self.history])
+        if self.history:
+            if not self.history_row.winfo_manager():
+                self.history_row.pack(fill='x', pady=12, before=self.progress_text)
+            self.picker.current(0)
+        else:
+            self.picker.set('')
+            if self.history_row.winfo_manager():
+                self.history_row.pack_forget()
+
     def review_flash_lock(self):
         if self.busy:
             return
         from setup_wizard import review_flash_lock
         if review_flash_lock(self):
-            if self.stage == 'uncertain':
+            cleared_uncertain = self.stage == 'uncertain'
+            if cleared_uncertain:
                 self.kit = None
-                self.stage = 'none'
+                self.stage = None
                 self.ack.set(False)
-            self.status.configure(text=tr('已解除刷写暂停，原有升级记录与镜像仍已保留。请确认驱动与连接后再继续。'))
+            self.refresh_history()
+            self.status.configure(text=(
+                tr('已解除刷写暂停，原有升级记录与日志仍已保留。请点击“准备升级与 Root 材料”重新生成校验镜像（将复用已缓存固件），或先安装 Windows 驱动后再试。')
+                if cleared_uncertain else
+                tr('已解除刷写暂停，原有升级记录与镜像仍已保留。请确认驱动与连接后再继续。')))
             self.refresh()
 
     def show_error(self, error):
@@ -349,6 +396,7 @@ class FirmwareDialog(tk.Toplevel):
                             self.stage = upgrade.read_state(self.kit)['stage']
                         except (OSError, ValueError, root.SetupError):
                             self.stage = 'uncertain'
+                    self.refresh_history()
                     if action == 'download_error':
                         self.status.configure(text=value)
                     else:
@@ -365,12 +413,18 @@ class FirmwareDialog(tk.Toplevel):
                     self.kit = value
                     self.variant.set(upgrade.read_state(value)['variant'])
                     self.stage = upgrade.read_state(value)['stage']
+                    self.refresh_history()
                     self.status.configure(text=tr('准备完成。') if action == 'prepared' else tr('请等待手机开机，然后点击验证系统版本。'))
                 elif action == 'resumed':
-                    self.kit, state = value
-                    self.stage = state['stage']
-                    self.variant.set(state['variant'])
-                    self.status.configure(text=tr('已恢复记录；不会自动继续刷写。'))
+                    folder, state = value
+                    if state['stage'] == 'uncertain' and not root.root_lock_path().exists():
+                        self.kit, self.stage = None, None
+                        self.variant.set(state['variant'])
+                        self.status.configure(text=tr('该次升级记录上次未能完成，已作为只读日志保留。若已确认驱动与连接，请点击“准备升级与 Root 材料”重新生成校验镜像（将复用已缓存固件）。'))
+                    else:
+                        self.kit, self.stage = folder, state['stage']
+                        self.variant.set(state['variant'])
+                        self.status.configure(text=tr('已恢复记录；不会自动继续刷写。'))
                 elif action == 'verified':
                     self.stage = value['stage']
                     self.usb = value['usb']
