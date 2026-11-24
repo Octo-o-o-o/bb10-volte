@@ -1,4 +1,4 @@
-# Windows r57 与手机版 0.2.2.0
+# Windows r58 与手机版 0.2.3.0
 
 - **彻底打通全 16 个目录型号的旧版 `/var/rootdata/q10_volte` 自动迁移**：标准且校验通过的旧版 `q10-unicom-volte-v1` 安装现在会在 Q10、Q20 Classic、Passport、P’9983 全 16 个目录型号上自动安全迁移，不再卡在无路可走的“旧版目录阻断”；跨机型专属目录、多目录冲突、安装中断残留（`install-transaction.json`）、篡改文件或未结束实验记录仍严格拦截，并明确给出对应原因。同步将 `r55` / `0.2.1.0` 纳入 `PREVIOUS_PAYLOADS` 以支持安全热更新。
 - **彻底修补 5 处 LTE-only 选网回滚缺口与诊断遮蔽**：`unified_service.restore()` 在原生配置失败或异常中止进入 `cleanup_required` 时始终尝试释放本工具拥有的 LTE-only 与手动选网锁定；`unified_dca.restore_original()` 与 `set_network_lock()` 彼此隔离失败，不再因前一步报错跳过 `restore_lte_mode()`；`reconcile()` 与 `disable` 在 `finally` 清理内存日志并补齐选网恢复；修正 `scan_mode_rejected` 分类笔误并补全 `ims_apn_timeout`、`voice_policy_failed` 等错误码；修复手机端 `worker.py` 在停用状态下将 `cleanup_required` 误报为 `disabled`、桌面 `AutoCarrierWindow` 被 `sim_not_ready` 覆盖错误详情等问题，并在主界面统一适配故障态提供一键「停用自动适配」。

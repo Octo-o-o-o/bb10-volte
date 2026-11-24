@@ -2,11 +2,11 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r57 · 手机版 0.2.2.0。** Q10、Q20、Passport、P’9983 可尝试大陆三网及匹配原厂配置的其他运营商。界面会标明尚未实测的运营商。
+**桌面 r58 · 手机版 0.2.3.0。** Q10、Q20、Passport、P’9983 可尝试大陆三网及匹配原厂配置的其他运营商。界面会标明尚未实测的运营商。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r57.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r58.md)
 
 本版包含[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。新行为尚待对应版本的真机验收。
 
@@ -56,16 +56,16 @@ Windows 11 和 Apple 芯片试过启动。Windows 10 和 Intel 还没试。详�
 
 反复准备或失败后磁盘占用较大时，见[保存位置与手动清理说明](docs/DISK-CLEANUP.md)。r43 已包含缓存复用与构建残留清理修复。
 
-Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r57 下载中。
+Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r58 下载中。
 
 打不开 GitHub 时，用官网的 Cloudflare R2。两边是同一份文件，运行前对一下 SHA-256。
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r57/bb10-volte-0.5.0-r57-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r57/bb10-volte-0.5.0-r57-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r57/bb10-volte-0.5.0-r57-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r57/bb10-volte-0.5.0-r57-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r57/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r57/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r58/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 
