@@ -748,7 +748,7 @@ def flash_root(folder, confirmed, progress):
 
 
 def prepare_driver_kit(progress, proxy=None):
-    from preparation_cache import preparation_lock, linked, read_json, remove_owned_tree
+    from preparation_cache import preparation_lock, linked, read_json, remove_owned_file, remove_owned_tree
     private = private_root()
     spec = json.loads((ROOT / 'materials/usb-drivers.json').read_text(encoding='utf-8'))
     files = {'package/BlackBerry-USBDrivers-5.0.0.2.exe': spec['bundle_sha256'],
@@ -774,9 +774,15 @@ def prepare_driver_kit(progress, proxy=None):
             prepare_usb_drivers.main(['--seven-zip', str(tools['seven_zip']), '--output', str(folder), '--cache', str(tools['cache'])])
         except subprocess.CalledProcessError as exc:
             for name in ('package', 'bootstrapper', 'payload', 'extracted', 'rim-usb'):
-                remove_owned_tree(private, folder, name)
+                try:
+                    remove_owned_tree(private, folder, name)
+                except OSError:
+                    pass
             for name in ('payload.cab', 'USBInstallerMSIx64.msi'):
-                (folder / name).unlink(missing_ok=True)
+                try:
+                    remove_owned_file(private, folder, name)
+                except OSError:
+                    pass
             err = SetupError('driver_prepare_failed')
             detail = (exc.stderr or exc.output or '')
             err.feedback_log = 'prepare_usb_drivers exit=' + str(exc.returncode) + ('\n' + str(detail)[:1200] if detail else '')
@@ -784,13 +790,28 @@ def prepare_driver_kit(progress, proxy=None):
         except BaseException:
             # This directory belongs to this call and has never been installed.
             for name in ('package', 'bootstrapper', 'payload', 'extracted', 'rim-usb'):
-                remove_owned_tree(private, folder, name)
+                try:
+                    remove_owned_tree(private, folder, name)
+                except OSError:
+                    pass
             for name in ('payload.cab', 'USBInstallerMSIx64.msi'):
-                (folder / name).unlink(missing_ok=True)
+                try:
+                    remove_owned_file(private, folder, name)
+                except OSError:
+                    pass
             raise
+        cleanup_locked = False
         for name in ('bootstrapper', 'payload', 'extracted'):
-            remove_owned_tree(private, folder, name)
-        (folder / 'payload.cab').unlink(missing_ok=True)
+            try:
+                remove_owned_tree(private, folder, name)
+            except OSError:
+                cleanup_locked = True
+        try:
+            remove_owned_file(private, folder, 'payload.cab')
+        except OSError:
+            cleanup_locked = True
+        if cleanup_locked:
+            progress(tr('部分驱动解压临时文件正被系统占用，已跳过清理，不影响继续安装：') + str(folder))
         return str(folder)
 
 

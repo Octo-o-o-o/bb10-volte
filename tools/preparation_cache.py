@@ -9,7 +9,10 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
+import sys
+import time
 
 from desktop_paths import resource_root
 from fetch_materials import DownloadError, _download_lock, sha
@@ -349,19 +352,93 @@ def reusable_root_kit(private, variant, platform, progress):
     return None
 
 
+_REMOVE_ATTEMPTS = 5
+_REMOVE_RETRY_DELAY = 0.25
+
+
+def _transient_remove_error(exc):
+    return isinstance(exc, PermissionError) or getattr(exc, 'winerror', None) in (5, 32, 145)
+
+
+def _clear_readonly_and_retry(target_root, func, path, exc):
+    if not isinstance(exc, PermissionError):
+        raise exc
+    item = Path(path)
+    if linked(item):
+        raise exc
+    parent = item.parent
+    if parent != item and not linked(parent):
+        try:
+            resolved_parent = parent.resolve()
+            if resolved_parent == target_root or target_root in resolved_parent.parents:
+                os.chmod(parent, stat.S_IRWXU)
+        except OSError:
+            pass
+    mode = stat.S_IRWXU if item.is_dir() else (stat.S_IWRITE | stat.S_IREAD)
+    try:
+        os.chmod(item, mode)
+    except OSError:
+        raise exc
+    func(path)
+
+
+def _rmtree_once(target, target_root):
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(target, onexc=lambda func, path, exc: _clear_readonly_and_retry(target_root, func, path, exc))
+    else:
+        def _onerror(func, path, exc_info):
+            _clear_readonly_and_retry(target_root, func, path, exc_info[1])
+        shutil.rmtree(target, onerror=_onerror)
+
+
 def remove_owned_tree(private, folder, name):
     """Validate the whole tree and resolved boundary before recursive removal."""
     private, folder = Path(private), Path(folder)
     target = folder / name
-    if not target.exists() and not linked(target):
-        return
-    if (linked(private) or linked(folder) or linked(target)
-            or folder.resolve().parent != private.resolve()
-            or target.resolve().parent != folder.resolve() or not target.is_dir()):
-        raise ValueError('Unsafe preparation directory')
-    if any(linked(path) for path in target.rglob('*')):
-        raise ValueError('Linked preparation output')
-    shutil.rmtree(target)
+    for attempt in range(1, _REMOVE_ATTEMPTS + 1):
+        if not target.exists() and not linked(target):
+            return
+        if (linked(private) or linked(folder) or linked(target)
+                or folder.resolve().parent != private.resolve()
+                or target.resolve().parent != folder.resolve() or not target.is_dir()):
+            raise ValueError('Unsafe preparation directory')
+        if any(linked(path) for path in target.rglob('*')):
+            raise ValueError('Linked preparation output')
+        target_root = target.resolve()
+        try:
+            _rmtree_once(target, target_root)
+            return
+        except OSError as exc:
+            if not _transient_remove_error(exc) or attempt >= _REMOVE_ATTEMPTS:
+                raise
+            time.sleep(_REMOVE_RETRY_DELAY * attempt)
+
+
+def remove_owned_file(private, folder, name):
+    """Validate an owned preparation file before removal, tolerating read-only/transient locks."""
+    private, folder = Path(private), Path(folder)
+    target = folder / name
+    for attempt in range(1, _REMOVE_ATTEMPTS + 1):
+        if not target.exists() and not linked(target):
+            return
+        if (linked(private) or linked(folder) or linked(target)
+                or folder.resolve().parent != private.resolve()
+                or target.resolve().parent != folder.resolve() or not target.is_file()):
+            raise ValueError('Unsafe preparation file')
+        try:
+            target.unlink(missing_ok=True)
+            return
+        except OSError as exc:
+            if isinstance(exc, PermissionError):
+                try:
+                    os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
+                    target.unlink(missing_ok=True)
+                    return
+                except OSError as retry_exc:
+                    exc = retry_exc
+            if not _transient_remove_error(exc) or attempt >= _REMOVE_ATTEMPTS:
+                raise
+            time.sleep(_REMOVE_RETRY_DELAY * attempt)
 
 
 def clean_failed_root(private, folder, progress):

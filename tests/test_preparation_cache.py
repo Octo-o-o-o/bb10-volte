@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import stat
 import sys
 import tempfile
 import subprocess
@@ -280,6 +281,124 @@ class PreparationCacheTests(unittest.TestCase):
             cache.run_preparation([sys.executable, '-c', 'import time; time.sleep(10)'], folder,
                                   capture_output=True, timeout=0.05)
         self.assertIsNone(cache.read_json(folder / cache.MARKER)['worker_pid'])
+
+    def test_remove_owned_tree_clears_readonly_and_retries_transient_permission_error(self):
+        folder = self.private / 'windows-usb-ro'
+        nested = folder / 'extracted' / 'sub'
+        nested.mkdir(parents=True)
+        ro_file = nested / 'driver.inf'
+        ro_file.write_text('fixture', encoding='utf-8')
+        os.chmod(ro_file, stat.S_IREAD)
+        if os.name != 'nt':
+            os.chmod(nested, stat.S_IRUSR | stat.S_IXUSR)
+        try:
+            cache.remove_owned_tree(self.private, folder, 'extracted')
+        finally:
+            if nested.exists() and os.name != 'nt':
+                os.chmod(nested, stat.S_IRWXU)
+            if ro_file.exists():
+                os.chmod(ro_file, stat.S_IWRITE | stat.S_IREAD)
+        self.assertFalse((folder / 'extracted').exists())
+
+        locked = folder / 'payload'
+        locked.mkdir(parents=True)
+        (locked / 'item.bin').write_bytes(b'fixture')
+        real_rmtree = cache.shutil.rmtree
+        calls = {'count': 0}
+
+        def flaky_rmtree(path, *args, **kwargs):
+            calls['count'] += 1
+            if calls['count'] < 3:
+                raise PermissionError(13, 'Access is denied', str(path))
+            return real_rmtree(path, *args, **kwargs)
+
+        with patch.object(cache, '_REMOVE_RETRY_DELAY', 0), \
+                patch.object(cache.shutil, 'rmtree', side_effect=flaky_rmtree):
+            cache.remove_owned_tree(self.private, folder, 'payload')
+        self.assertEqual(calls['count'], 3)
+        self.assertFalse(locked.exists())
+
+    def test_remove_owned_file_clears_readonly_and_checks_boundaries(self):
+        folder = self.private / 'windows-usb-file'
+        folder.mkdir()
+        cab = folder / 'payload.cab'
+        cab.write_bytes(b'cab fixture')
+        os.chmod(cab, stat.S_IREAD)
+        try:
+            cache.remove_owned_file(self.private, folder, 'payload.cab')
+        finally:
+            if cab.exists():
+                os.chmod(cab, stat.S_IWRITE | stat.S_IREAD)
+        self.assertFalse(cab.exists())
+
+        outside = Path(self.temp.name) / 'outside-file'
+        outside.mkdir()
+        keep = outside / 'payload.cab'
+        keep.write_bytes(b'keep')
+        with self.assertRaises(ValueError):
+            cache.remove_owned_file(self.private, outside, 'payload.cab')
+        self.assertTrue(keep.is_file())
+
+    def test_prepare_driver_kit_succeeds_when_post_verification_temp_cleanup_is_locked(self):
+        fixtures = Path(self.temp.name) / 'resources-driver-lock'
+        (fixtures / 'materials').mkdir(parents=True)
+        (fixtures / 'materials/usb-drivers.json').write_text(json.dumps({
+            'parts': [],
+            'bundle_sha256': digest(b'fixture'), 'msi_sha256': digest(b'fixture'),
+            'driver_files': {'rimusbnt.cat': digest(b'fixture')}}))
+        cache_dir = Path(self.temp.name) / 'dl-cache'
+        cache_dir.mkdir()
+        tools_stub = {'seven_zip': Path(self.temp.name) / '7z.exe', 'cache': cache_dir}
+
+        def fake_prepare_main(argv):
+            out = Path(argv[argv.index('--output') + 1])
+            (out / 'package').mkdir(parents=True)
+            (out / 'rim-usb').mkdir()
+            for name in ('package/BlackBerry-USBDrivers-5.0.0.2.exe', 'USBInstallerMSIx64.msi', 'rim-usb/rimusbnt.cat'):
+                (out / name).write_bytes(b'fixture')
+            (out / 'verification.json').write_text('{"prepared":true}', encoding='utf-8')
+            for temp_dir in ('bootstrapper', 'payload', 'extracted'):
+                (out / temp_dir).mkdir()
+                (out / temp_dir / 'locked.bin').write_bytes(b'temp')
+            (out / 'payload.cab').write_bytes(b'temp cab')
+
+        import prepare_usb_drivers
+        with patch.object(root, 'ROOT', fixtures), \
+                patch.object(root, 'ensure_tools', return_value=tools_stub) as ensure_tools, \
+                patch.object(root, 'fetch_entries'), \
+                patch.object(prepare_usb_drivers, 'main', side_effect=fake_prepare_main), \
+                patch.object(cache, 'remove_owned_tree', side_effect=PermissionError(13, 'Defender lock')), \
+                patch.object(cache, 'remove_owned_file', side_effect=PermissionError(13, 'Defender lock')):
+            prepared = root.prepare_driver_kit(self.messages.append)
+            self.assertTrue(Path(prepared).is_dir())
+            self.assertTrue(any('临时文件正被系统占用' in msg for msg in self.messages))
+            # Subsequent call reuses the verified kit cleanly without invoking tools again.
+            self.assertEqual(root.prepare_driver_kit(self.messages.append), prepared)
+            ensure_tools.assert_called_once()
+
+    def test_prepare_driver_kit_preserves_prepare_error_when_cleanup_is_locked(self):
+        fixtures = Path(self.temp.name) / 'resources-driver-err'
+        (fixtures / 'materials').mkdir(parents=True)
+        (fixtures / 'materials/usb-drivers.json').write_text(json.dumps({
+            'parts': [],
+            'bundle_sha256': digest(b'fixture'), 'msi_sha256': digest(b'fixture'),
+            'driver_files': {'rimusbnt.cat': digest(b'fixture')}}))
+        cache_dir = Path(self.temp.name) / 'dl-cache-err'
+        cache_dir.mkdir()
+        tools_stub = {'seven_zip': Path(self.temp.name) / '7z.exe', 'cache': cache_dir}
+
+        import prepare_usb_drivers
+        boom = subprocess.CalledProcessError(2, ['7z'], stderr='archive error')
+        with patch.object(root, 'ROOT', fixtures), \
+                patch.object(root, 'ensure_tools', return_value=tools_stub), \
+                patch.object(root, 'fetch_entries'), \
+                patch.object(prepare_usb_drivers, 'main', side_effect=boom), \
+                patch.object(cache, 'remove_owned_tree', side_effect=PermissionError(13, 'locked')), \
+                patch.object(cache, 'remove_owned_file', side_effect=PermissionError(13, 'locked')):
+            with self.assertRaises(root.SetupError) as ctx:
+                root.prepare_driver_kit(self.messages.append)
+        self.assertEqual(str(ctx.exception), 'driver_prepare_failed')
+        self.assertIn('prepare_usb_drivers exit=2', getattr(ctx.exception, 'feedback_log', ''))
 
 
 if __name__ == '__main__':

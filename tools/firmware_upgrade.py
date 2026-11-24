@@ -91,7 +91,10 @@ def prepare_upgrade(variant, progress, proxy=None, cache_dir=None, offline=False
             return _prepare_upgrade(folder, variant, progress)
         except BaseException:
             if not (folder / JOURNAL).exists():
-                remove_owned_tree(private, folder, 'stock-upgrade')
+                try:
+                    remove_owned_tree(private, folder, 'stock-upgrade')
+                except OSError:
+                    pass
             raise
 
 

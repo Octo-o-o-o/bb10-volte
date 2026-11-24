@@ -1172,6 +1172,7 @@ ENGLISH.update({
     '另一个窗口或程序正在准备材料，请等待完成后重试，不会另建一份。': 'Another window or application is preparing materials. Wait for it to finish and retry; no duplicate preparation will be created.',
     '本地镜像、原版固件和个人密钥校验通过，复用已有准备：': 'Local images, stock firmware and personal credentials verified; reusing: ',
     '本地驱动文件校验通过，复用已有准备：': 'Local driver files verified; reusing: ',
+    '部分驱动解压临时文件正被系统占用，已跳过清理，不影响继续安装：': 'Some temporary driver extraction files are locked by the system; skipped cleanup and continuing installation: ',
     '部分构建临时文件未能清理，请退出程序后按磁盘清理说明处理：': 'Some temporary build files could not be removed. Close the application and follow the disk cleanup instructions: ',
     '缓存校验失败，已清除无效文件，将重新获取 ': 'Cache verification failed; invalid bytes removed. Downloading again: ',
     '已有进度无法与可用节点匹配，已清除旧进度，将重新下载 ': 'Saved progress does not match available sources; discarded it and restarting: ',
