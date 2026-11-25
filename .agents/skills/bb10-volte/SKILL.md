@@ -13,7 +13,7 @@ description: >-
 
 # BB10 VoLTE Agent Skill (`bb10-volte`)
 
-Operate `bb10-volte` safely and deterministically across all **16 supported BlackBerry 10 hardware variants** (`SQN100-1..5`, `SQC100-1..5`, `SQW100-1..4`, `SQK100-1..2`) and **3 Chinese carriers** (`460-00/02/04/07/08` China Mobile, `460-01/06/09` China Unicom, `460-03/05/11/12` China Telecom) using the headless JSON CLI [ai_skill.py](../../../tools/ai_skill.py) (also callable via [bb10_skill.py](./scripts/bb10_skill.py)).
+Operate `bb10-volte` safely and deterministically across all **16 supported BlackBerry 10 hardware variants** (`SQN100-1..5`, `SQC100-1..5`, `SQW100-1..4`, `SQK100-1..2`), **3 Mainland China carriers** (`460-00/02/04/07/08` China Mobile, `460-01/06/09` China Unicom, `460-03/05/11/12` China Telecom), and **explicit opt-in overseas / custom experimental carriers** (offline Apache-2.0 AOSP reference catalog + root-owned Schema 2 configuration + automatic P-CSCF host route sync) using the headless JSON CLI [ai_skill.py](../../../tools/ai_skill.py) (also callable via [bb10_skill.py](./scripts/bb10_skill.py)).
 
 ## 0. Scope & Non-Negotiable Safety Rules
 
@@ -35,7 +35,8 @@ Operate `bb10-volte` safely and deterministically across all **16 supported Blac
    - IMS `200 OK` registration is necessary but **not** final acceptance: always ask the human user to verify outbound + inbound native dialer calls (`>= 00:35` connected audio), LTE retention, and SMS.
 7. **License Boundary**:
    - Licensed under [PolyForm Noncommercial License 1.0.0](../../../LICENSE): free for personal/noncommercial use; paid flashing/installation services, pre-installed phone sales, or commercial redistribution require prior paid commercial licensing via `octoooo@octoooo.com`.
-   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r49`) and the native BB10 mobile app (`0.1.0.49`) continue to receive updates.
+   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r60`) and the native BB10 mobile app (`0.2.5.0`) continue to receive updates.
+   - Offline overseas carrier reference metadata (`materials/overseas-carriers.json`) is derived from AOSP (Apache-2.0); `licenses/APACHE-2.0.txt` and `NOTICE.md` ship in source and Windows EXE bundles, and `materials/APACHE-2.0.txt` and `materials/NOTICE.md` ship inside mobile BAR/update bundles. All overseas catalog entries are `untested` on BB10 hardware and never claim hardware validation.
 
 ---
 
@@ -66,17 +67,27 @@ Read `recommended_next_step.code` from `detect` JSON output and follow the match
 
 Once Root SSH (`EUID == 0`), OS `10.3.3.3216`, and the 6 stock QNX native binary hashes are verified:
 
-1. **Install or Update the Standalone Native BB10 Phone App (`0.1.0.49`)** *(Recommended for all rooted users so they can manage, back up, activate, and switch SIMs directly on the phone without a computer)*:
+1. **Install or Update the Standalone Native BB10 Phone App (`0.2.5.0`)** *(Recommended for all rooted users so they can manage, back up, activate, configure overseas carriers, and switch SIMs directly on the phone without a computer)*:
    ```bash
    python tools/ai_skill.py mobile-app inspect
    python tools/ai_skill.py mobile-app install
    ```
-2. **Install & Activate Unified 3-Carrier VoLTE Directly from Computer** *(Requires a ready China Mobile `460-00/02/04/07/08`, Unicom `460-01/06/09`, or Telecom `460-03/05/11/12` USIM without ISIM)*:
+2. **Install & Activate Unified 3-Carrier VoLTE Directly from Computer** *(Mainland China `460-00/02/04/07/08`, `460-01/06/09`, `460-03/05/11/12` work zero-config; for non-460 overseas SIMs, configure opt-in parameters first via `overseas`)*:
    ```bash
    python tools/ai_skill.py volte probe
    python tools/ai_skill.py volte install
    ```
    - `volte install` automatically backs up and verifies the original configuration files on both phone and computer before activating.
+   - **Overseas / Non-460 Experimental Opt-In**:
+     ```bash
+     python tools/ai_skill.py overseas catalog --plmn 450-08
+     python tools/ai_skill.py overseas set --plmn 450-08 --allow-isim   # or --config <path.json>
+     python tools/ai_skill.py overseas get
+     python tools/ai_skill.py overseas clear
+     ```
+     - Always stop an active VoLTE manager (`volte disable`) before modifying overseas trial config (`service_active` is enforced under `management_lock`).
+     - If `probe.lte_bands_disabled == true`, cellular radio is ON, not on LTE, and the baseband reports LTE band capability mask `0` (read-only diagnostic; never rewrite baseband NV).
+     - `volte status` reports `pcscf_route_status` / `pcscf_route_family` / `pcscf_route_count` when the manager executes P-CSCF host routes denied to non-root `ims_rrm` on verified active `msm*` cellular gateways (cleaned on stop/exit).
 3. **Normal Reboot & Post-Boot Verification**:
    - Ask the user to **restart normally via the phone power menu**, unlock the phone, and wait **3–5 minutes**, then check:
    ```bash
@@ -150,7 +161,7 @@ Then have the user complete initial setup / enable Development Mode and run `fir
 
 For the r49 network-resilience changes, read [the network guide](../../../docs/NETWORK-RESILIENCE.en.md). While an enabled manager is waiting for LTE, let it continue; do not delete native-attempt receipts. `pre_native_retry_available=true` permits an explicit same-SIM `volte start` or the UI's Retry action after verified restoration. `volte lock-network` / `volte unlock-network` are optional owner-requested assistance, not automatic recovery steps; they require unused native resources and preserve an existing system MANUAL selection. Reboot requirements after native configuration or a Passport policy change still apply.
 
-- **In-Place Payload Update (`r42`–`r48` → `r49`)**:
+- **In-Place Payload Update (`r42`–`r59` → `r60`)**:
   - If `probe.update_available == true` and `probe.can_update == false`, stop VoLTE first (`python tools/ai_skill.py volte disable`), have the user **restart normally via power menu**, then run `python tools/ai_skill.py volte install` and restart normally once more.
 - **Swapping SIM Cards**:
   - Power off before swapping SIMs (hot-swapping is not supported). Boot normally; the unified service automatically selects China Mobile / Unicom / Telecom by home PLMN (`460-00/02/04/07/08`, `460-01/06/09`, `460-03/05/11/12`). Passport switching between Unicom (`ue_usage=0`) and Mobile/Telecom (`ue_usage=1`) requires waiting ~5 minutes after boot and performing one extra normal restart.

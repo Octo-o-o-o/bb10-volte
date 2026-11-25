@@ -35,6 +35,6 @@ CLI 的 `setup`、`update`、`start`、`enable` 等操作需传入同一配置�
 
 手机保存 `carrier-profile.json`，安装回执绑定其哈希；原厂 XML 仅替换 IMS 服务段，保留数据及其他原有段落。恢复日志保存实际写入的 PPS 值，换运营商后仍能恢复旧值。完整 v0.1/v0.2 安装可停用恢复后更新；中断和外部改动会阻止覆盖。
 
-P-CSCF 由网络 PCO 提供，IMSI/IMPI/IMPU 在手机本地取得和派生；不会下载他人身份。当前引擎不支持 ISIM，也不提供可编辑的补丁偏移、原生哈希绕过或鉴权替代。需要适配时请附脱敏报告提 Issue / PR。
+P-CSCF 由网络 PCO 提供（r59/r60 起在统一引擎中由 Root 守护进程按实时蜂窝接口校验同步 P-CSCF 主机路由并在停用或进程退出时清理）；IMSI/IMPI/IMPU 在手机本地取得和派生，不会下载他人身份。海外非 `460` 运营商可在统一三网引擎的海外配置中启用 Schema 2 参数（含 `allow_isim` 保留原生 ISIM 凭据、`allow_stock_default_xml`、`ue_usage`、`IR.92` `UsePreconditions` 布尔值及 `SilentRedial` / `SIP_Timer_CSFB` 秒级 / `IPsec` / `SIP_transport` / `RegExpiration` 白名单 PPS，全量记录原值以便还原），不提供可编辑的补丁偏移、原生哈希绕过或鉴权替代。需要适配时请附脱敏报告提 Issue / PR。
 
 三个试用模板默认关闭自动启动。Q20 使用默认联通参数时，也请在“自定义 → 运行选项”关闭自动启动；runtime.autostart=false 是未验收组合的强制条件，enable 不能绕过。Passport 仍受独立适配限制。

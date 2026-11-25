@@ -99,7 +99,7 @@ int main(int argc, char **argv)
                 CHECK(c.phoneServiceText() == c.label("service_" + states.at(i)));
                 c.setLanguage("zh"); CHECK(c.phoneServiceText() == c.label("service_" + states.at(i)));
                 finishMetadata(c, metadata("0.1.0.16"));
-                CHECK(c.m_notice == "up_to_date" && c.label("up_to_date").contains(QString::fromUtf8("首页")));
+                CHECK(c.m_notice == "up_to_date" && c.label("up_to_date") == QString::fromUtf8("此更新渠道暂无新版。"));
             }
         }
         {

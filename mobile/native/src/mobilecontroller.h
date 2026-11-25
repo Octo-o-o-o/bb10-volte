@@ -124,6 +124,7 @@ public:
     Q_INVOKABLE void downloadUpdate();
     Q_INVOKABLE void cancelUpdateTransfer();
     Q_INVOKABLE QVariantList overseasCatalog(const QString &query) const;
+    Q_INVOKABLE int overseasCatalogTotal(const QString &query) const;
     Q_INVOKABLE void inspectOverseasConfig();
     Q_INVOKABLE void saveOverseasConfig(const QVariantMap &fields);
     Q_INVOKABLE void clearOverseasConfig();
@@ -131,6 +132,7 @@ public:
 signals:
     void modelChanged();
     void overseasStateChanged();
+    void overseasActionFinished(const QString &action, bool ok, const QString &errorCode);
     void languageChanged();
     void settingsChanged();
     void confirmationNeeded();
@@ -174,6 +176,8 @@ private:
     bool refreshBlocked() const;
     bool reportInProgress() const;
     void fail(const QString &code);
+    void failOverseas(const QString &action, const QString &code);
+    void ensureOverseasCatalogLoaded() const;
     void stopNetworkTransfer();
     void startConfirmedUpdate(const QVariantMap &extra = QVariantMap());
     void beginNetwork(const QUrl &url);
@@ -248,6 +252,12 @@ private:
     QVariantMap m_update;
     QVariantMap m_latest;
     QFile m_download;
+    mutable bool m_compatLoaded;
+    mutable QString m_compatPath;
+    mutable QVariantMap m_compatModels;
+    mutable bool m_overseasCatalogLoaded;
+    mutable QString m_overseasCatalogPath;
+    mutable QVariantList m_overseasCatalogCache;
     SHA256_CTX m_downloadHash;
     qint64 m_downloadBytes;
     int m_redirects;

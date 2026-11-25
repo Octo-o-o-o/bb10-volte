@@ -5,13 +5,12 @@ Page {
     objectName: "overseasPage"
     property bool advancedOpen: false
     property bool userDirty: false
-    property bool loadingForm: false
+    property bool loadingForm: true
     property bool awaitingReload: false
     property variant catalogItems: []
+    property int catalogTotal: 0
     property variant extraCarriers: []
     property variant preservedMeta: ({})
-    property variant liveState: volteController.overseasState
-    property string feedbackText: volteController.overseasFeedback
     function t(key) { var language = volteController.language; return volteController.label(key); }
     function usableApn(val) {
         if (!val) return "";
@@ -21,6 +20,18 @@ Page {
     }
     function markDirty() {
         if (!loadingForm) userDirty = true;
+    }
+    function extraCarrierSummary() {
+        if (!extraCarriers || !extraCarriers.length) return "";
+        var list = [];
+        for (var i = 0; i < extraCarriers.length; ++i) {
+            var item = extraCarriers[i];
+            if (item && item.mcc && item.mncs && item.mncs.length) {
+                for (var j = 0; j < item.mncs.length; ++j)
+                    list.push(String(item.mcc) + "-" + String(item.mncs[j]));
+            }
+        }
+        return list.slice(0, 8).join(", ");
     }
     function selectDropdownValue(dd, val) {
         for (var i = 0; i < dd.count(); ++i) {
@@ -51,7 +62,27 @@ Page {
     function applyPreset(item, fromUser) {
         if (!item) return;
         loadingForm = true;
-        extraCarriers = [];
+        var kept = [];
+        if (extraCarriers && extraCarriers.length) {
+            for (var k = 0; k < extraCarriers.length; ++k) {
+                var ex = extraCarriers[k];
+                if (!ex || ex.mcc !== item.mcc) {
+                    kept.push(ex);
+                } else if (ex.mncs && ex.mncs.length) {
+                    var remain = [];
+                    for (var m = 0; m < ex.mncs.length; ++m) {
+                        if (String(ex.mncs[m]) !== String(item.mnc)) remain.push(ex.mncs[m]);
+                    }
+                    if (remain.length) {
+                        var copy = {};
+                        for (var prop in ex) copy[prop] = ex[prop];
+                        copy.mncs = remain;
+                        kept.push(copy);
+                    }
+                }
+            }
+        }
+        extraCarriers = kept;
         preservedMeta = {
             label: ((item.name ? String(item.name) : "") + " " + (item.plmn ? String(item.plmn) : "")).replace(/^\s+|\s+$/g, "")
         };
@@ -59,8 +90,10 @@ Page {
         mncField.text = item.mnc ? String(item.mnc) : "";
         var apns = ["auto"];
         var state = volteController.overseasState;
-        var obs = state ? usableApn(state.observed_data_apn) : "";
-        if (obs && apns.indexOf(obs) < 0) apns.push(obs);
+        if (state && state.sim_plmn && String(state.sim_plmn) === String(item.plmn)) {
+            var obs = usableApn(state.observed_data_apn);
+            if (obs && apns.indexOf(obs) < 0) apns.push(obs);
+        }
         if (item.data_apns && item.data_apns.length) {
             for (var i = 0; i < item.data_apns.length; ++i) {
                 if (apns.indexOf(item.data_apns[i]) < 0) apns.push(item.data_apns[i]);
@@ -70,6 +103,8 @@ Page {
         imsApnField.text = item.ims_apn ? String(item.ims_apn) : "ims";
         selectDropdownValue(ipFamilyDrop, item.ip_family ? String(item.ip_family) : "IPv4v6");
         smsCheck.checked = true;
+        if (!fromUser)
+            allowIsimCheck.checked = Boolean(state && state.sim_plmn === item.plmn && state.sim_has_isim === true);
         allowDefaultXmlCheck.checked = true;
         resetAdvancedFields();
         loadingForm = false;
@@ -84,9 +119,22 @@ Page {
         preservedMeta = {};
         if (cfg) {
             if (cfg.carriers && cfg.carriers.length > 0) {
-                entry = cfg.carriers[0];
+                var pickIdx = 0;
+                if (state.sim_plmn && String(state.sim_plmn).indexOf("-") > 0) {
+                    var sp = String(state.sim_plmn).split("-");
+                    for (var c = 0; c < cfg.carriers.length; ++c) {
+                        var cand = cfg.carriers[c];
+                        if (cand && String(cand.mcc) === sp[0] && cand.mncs && cand.mncs.indexOf(sp[1]) >= 0) {
+                            pickIdx = c;
+                            break;
+                        }
+                    }
+                }
+                entry = cfg.carriers[pickIdx];
                 var rest = [];
-                for (var k = 1; k < cfg.carriers.length; ++k) rest.push(cfg.carriers[k]);
+                for (var k = 0; k < cfg.carriers.length; ++k) {
+                    if (k !== pickIdx) rest.push(cfg.carriers[k]);
+                }
                 extraCarriers = rest;
             } else {
                 entry = cfg;
@@ -108,7 +156,11 @@ Page {
             disableDadCheck.checked = ims.disable_dad === true;
             selectDropdownValue(ueUsageDrop, entry.ue_usage ? String(entry.ue_usage) : "auto");
             var ir92 = ims.ir92 || {};
-            selectDropdownValue(precondDrop, ir92.UsePreconditions !== undefined ? String(ir92.UsePreconditions) : "");
+            if (ir92.UsePreconditions === undefined) {
+                selectDropdownValue(precondDrop, "");
+            } else {
+                selectDropdownValue(precondDrop, (ir92.UsePreconditions === true || ir92.UsePreconditions === 1) ? "true" : "false");
+            }
             selectDropdownValue(smsFormatDrop, ir92.SMS_Format ? String(ir92.SMS_Format) : "");
             preservedMeta = {
                 label: entry.label ? String(entry.label) : "",
@@ -147,7 +199,9 @@ Page {
         selectMatchingPreset(state.sim_plmn);
     }
     function refreshCatalog(query) {
-        catalogItems = volteController.overseasCatalog(query || "");
+        var q = query || "";
+        catalogItems = volteController.overseasCatalog(q);
+        catalogTotal = volteController.overseasCatalogTotal(q);
         presetDrop.removeAll();
         for (var i = 0; i < catalogItems.length; ++i) {
             var item = catalogItems[i];
@@ -158,28 +212,29 @@ Page {
         }
         if (catalogItems.length > 0) {
             presetDrop.setSelectedIndex(0);
-            if (!query && volteController.overseasState && volteController.overseasState.sim_plmn)
+            if (!q && volteController.overseasState && volteController.overseasState.sim_plmn)
                 selectMatchingPreset(volteController.overseasState.sim_plmn);
         }
     }
-    onFeedbackTextChanged: {
-        if (feedbackText.length > 0 &&
-            feedbackText !== t("overseas_saved_notice") &&
-            feedbackText !== t("overseas_cleared_notice")) {
-            awaitingReload = false;
-        }
-    }
-    onLiveStateChanged: {
-        if (!userDirty || awaitingReload) {
-            awaitingReload = false;
-            userDirty = false;
-            loadFromState(liveState);
+    function handleOverseasFinished(action, ok, errorCode) {
+        if (ok) {
+            if (action !== "overseas-inspect" || !page.userDirty || page.awaitingReload) {
+                page.awaitingReload = false;
+                page.userDirty = false;
+                page.loadFromState(volteController.overseasState);
+            }
+        } else {
+            page.awaitingReload = false;
         }
     }
     titleBar: TitleBar { title: page.t("overseas_title") }
     onCreationCompleted: {
+        loadingForm = true;
+        volteController.overseasActionFinished.connect(page.handleOverseasFinished);
         refreshCatalog("");
         loadFromState(volteController.overseasState);
+        userDirty = false;
+        loadingForm = false;
         volteController.inspectOverseasConfig();
     }
     ScrollView {
@@ -195,11 +250,23 @@ Page {
                 textStyle.fontSize: FontSize.Small
                 textFormat: TextFormat.Plain
             }
+            ActivityIndicator {
+                running: volteController.busy
+                visible: volteController.busy
+                horizontalAlignment: HorizontalAlignment.Center
+            }
             Label {
                 text: volteController.overseasFeedback
                 visible: text.length > 0
                 multiline: true
                 textStyle.fontWeight: FontWeight.W500
+                textFormat: TextFormat.Plain
+            }
+            Label {
+                text: page.t("overseas_extra_preserved") + page.extraCarrierSummary()
+                visible: page.extraCarriers && page.extraCarriers.length > 0
+                multiline: true
+                textStyle.fontSize: FontSize.Small
                 textFormat: TextFormat.Plain
             }
             Label {
@@ -211,8 +278,17 @@ Page {
             Divider {}
             TextField {
                 id: searchField
+                enabled: !volteController.busy
                 hintText: page.t("overseas_search")
+                input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
                 onTextChanging: page.refreshCatalog(text)
+            }
+            Label {
+                text: page.t("overseas_more_matches")
+                visible: page.catalogTotal > page.catalogItems.length
+                multiline: true
+                textStyle.fontSize: FontSize.XSmall
+                textFormat: TextFormat.Plain
             }
             DropDown {
                 id: presetDrop
@@ -230,15 +306,44 @@ Page {
             }
             Divider {}
             Label { text: page.t("overseas_mcc"); textStyle.fontSize: FontSize.Small }
-            TextField { id: mccField; hintText: "450"; inputMode: TextFieldInputMode.NumbersAndPunctuation; onTextChanging: page.markDirty() }
+            TextField {
+                id: mccField
+                enabled: !volteController.busy
+                hintText: "450"
+                inputMode: TextFieldInputMode.NumbersAndPunctuation
+                input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
+                onTextChanging: page.markDirty()
+            }
             Label { text: page.t("overseas_mncs"); textStyle.fontSize: FontSize.Small }
-            TextField { id: mncField; hintText: "08"; onTextChanging: page.markDirty() }
+            TextField {
+                id: mncField
+                enabled: !volteController.busy
+                hintText: "08"
+                inputMode: TextFieldInputMode.NumbersAndPunctuation
+                input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
+                onTextChanging: page.markDirty()
+            }
             Label { text: page.t("overseas_data_apns"); textStyle.fontSize: FontSize.Small }
-            TextField { id: dataApnField; text: "auto"; hintText: "auto, lte.ktfwing.com"; onTextChanging: page.markDirty() }
+            TextField {
+                id: dataApnField
+                enabled: !volteController.busy
+                text: "auto"
+                hintText: "auto, lte.ktfwing.com"
+                input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
+                onTextChanging: page.markDirty()
+            }
             Label { text: page.t("overseas_ims_apn"); textStyle.fontSize: FontSize.Small }
-            TextField { id: imsApnField; text: "ims"; hintText: "ims"; onTextChanging: page.markDirty() }
+            TextField {
+                id: imsApnField
+                enabled: !volteController.busy
+                text: "ims"
+                hintText: "ims"
+                input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
+                onTextChanging: page.markDirty()
+            }
             DropDown {
                 id: ipFamilyDrop
+                enabled: !volteController.busy
                 title: page.t("overseas_ip_family")
                 options: [
                     Option { text: "IPv4v6"; value: "IPv4v6"; selected: true },
@@ -247,9 +352,9 @@ Page {
                 ]
                 onSelectedOptionChanged: page.markDirty()
             }
-            CheckBox { id: smsCheck; text: page.t("overseas_sms"); checked: true; onCheckedChanged: page.markDirty() }
-            CheckBox { id: allowIsimCheck; text: page.t("overseas_allow_isim"); checked: false; onCheckedChanged: page.markDirty() }
-            CheckBox { id: allowDefaultXmlCheck; text: page.t("overseas_allow_0xml"); checked: true; onCheckedChanged: page.markDirty() }
+            CheckBox { id: smsCheck; enabled: !volteController.busy; text: page.t("overseas_sms"); checked: true; onCheckedChanged: page.markDirty() }
+            CheckBox { id: allowIsimCheck; enabled: !volteController.busy; text: page.t("overseas_allow_isim"); checked: false; onCheckedChanged: page.markDirty() }
+            CheckBox { id: allowDefaultXmlCheck; enabled: !volteController.busy; text: page.t("overseas_allow_0xml"); checked: true; onCheckedChanged: page.markDirty() }
             Divider {}
             Button {
                 text: page.t(page.advancedOpen ? "overseas_advanced_hide" : "overseas_advanced_show")
@@ -260,12 +365,19 @@ Page {
                 visible: page.advancedOpen
                 topPadding: 8
                 Label { text: page.t("overseas_home_domain"); textStyle.fontSize: FontSize.Small }
-                TextField { id: homeDomainField; text: "auto"; onTextChanging: page.markDirty() }
-                CheckBox { id: alwaysOnCheck; text: page.t("overseas_always_on"); checked: true; onCheckedChanged: page.markDirty() }
-                CheckBox { id: sigPcoCheck; text: page.t("overseas_sig_pco"); checked: false; onCheckedChanged: page.markDirty() }
-                CheckBox { id: disableDadCheck; text: page.t("overseas_disable_dad"); checked: false; onCheckedChanged: page.markDirty() }
+                TextField {
+                    id: homeDomainField
+                    enabled: !volteController.busy
+                    text: "auto"
+                    input.flags: TextInputFlag.AutoCapitalizationOff | TextInputFlag.AutoCorrectionOff | TextInputFlag.SpellCheckOff | TextInputFlag.PredictionOff
+                    onTextChanging: page.markDirty()
+                }
+                CheckBox { id: alwaysOnCheck; enabled: !volteController.busy; text: page.t("overseas_always_on"); checked: true; onCheckedChanged: page.markDirty() }
+                CheckBox { id: sigPcoCheck; enabled: !volteController.busy; text: page.t("overseas_sig_pco"); checked: false; onCheckedChanged: page.markDirty() }
+                CheckBox { id: disableDadCheck; enabled: !volteController.busy; text: page.t("overseas_disable_dad"); checked: false; onCheckedChanged: page.markDirty() }
                 DropDown {
                     id: ueUsageDrop
+                    enabled: !volteController.busy
                     title: page.t("overseas_ue_usage")
                     options: [
                         Option { text: page.t("overseas_ue_auto"); value: "auto"; selected: true },
@@ -276,16 +388,18 @@ Page {
                 }
                 DropDown {
                     id: precondDrop
+                    enabled: !volteController.busy
                     title: page.t("overseas_use_precond")
                     options: [
                         Option { text: page.t("overseas_unchanged"); value: ""; selected: true },
-                        Option { text: "0"; value: "0" },
-                        Option { text: "1"; value: "1" }
+                        Option { text: page.t("overseas_bool_false"); value: "false" },
+                        Option { text: page.t("overseas_bool_true"); value: "true" }
                     ]
                     onSelectedOptionChanged: page.markDirty()
                 }
                 DropDown {
                     id: smsFormatDrop
+                    enabled: !volteController.busy
                     title: page.t("overseas_sms_format")
                     options: [
                         Option { text: page.t("overseas_unchanged"); value: ""; selected: true },

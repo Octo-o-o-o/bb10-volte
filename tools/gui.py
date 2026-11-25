@@ -41,6 +41,7 @@ NOTES = {
     'unified_payload_verified': tr('三网自动适配文件及原始备份回执已核验。'),
     'unified_running': tr('本次开机自动选择的运营商已注册；双向通话仍需实机确认。'),
     'unified_waiting': tr('自动适配尚未完成注册。请按当前阶段的提示处理，再检查状态。'),
+    'unified_retry_available': tr('上次在启动 IMS 前停止，配置已恢复。请在“三网自动适配”中点击“重试连接”。'),
     'unified_waiting_sms': tr('系统仍报告短信忙，可能阻塞通话注册。请勿重发已送达短信；若持续等待，请导出报告。'),
     'unified_sim_changed': tr('SIM 卡已更换，请先用系统电源菜单正常重启并解锁，再重新检查状态。'),
     'unified_carrier_reboot_required': tr('入网策略已保存，还需一次正常重启；重启后重新检查注册。'),
@@ -73,11 +74,12 @@ NOTES = {
     'saved_profile_matches': tr('所选配置与手机已装配置一致'),
     'profile_update_required': tr('新安装将保存所选配置；已装配置有变更时先停用恢复，再更新'),
     'usim_without_isim': tr('USIM，无 ISIM；符合当前实现'),
+    'usim_with_isim_experimental': tr('USIM 含 ISIM；仅在显式开启海外 / 自定义实验试测后放行'),
     'sim_route_not_profiled': tr('此 SIM 类型需要另行适配，不能套用当前配置'),
     'identity_layout_matches': tr('在手机本地核验通过；报告不包含完整标识'),
     'identity_layout_unknown': tr('SIM 身份格式不符，需提供脱敏预检报告排查'),
     'lte_ready': tr('本次快照报告 LTE；不代表已完成网络注册、能上网或已确认频段'), 'lte_not_ready': tr('开启移动网络并等待 LTE'),
-    'lte_bands_disabled': tr('手机无线层已开启但当前活跃 LTE 频段位图为 0（硬件支持 LTE 但未启用任何频段）；此为只读诊断，工具不会自动改写基带，请先在系统网络设置或向运营商核对 LTE 模式与频段。'),
+    'lte_bands_disabled': tr('手机无线层已开启且未接入 LTE，且基带报告的 LTE 频段能力位图为 0；此为只读诊断，工具不会自动改写基带，请先在系统网络设置或向运营商核对 LTE 模式与频段。'),
     'lte_emergency_only': tr('手机仍报告紧急服务标志；即使其他项目显示已连接，也不能认定正常入网。'),
     'lte_service_unknown': tr('未取得有效的无线网络服务位图；显示 LTE 或数据已连接仍不足以确认就绪。'),
     'lte_data_unavailable': tr('无线层未报告正常 LTE 数据服务；请先排查入网，能力标志不能代替数据服务。'),
@@ -388,23 +390,36 @@ class App:
         if not self.busy:
             from auto_carrier import AutoClient
             from overseas_carrier_gui import OverseasCarrierDialog
+            host_snapshot = self.host.get().strip() or 'bb10-root'
+            config_snapshot = self.config.get().strip()
             def make_client():
-                transport, unused = resolve_connection(self.host.get().strip() or 'bb10-root', self.config.get().strip())
+                transport, unused = resolve_connection(host_snapshot, config_snapshot)
                 return AutoClient(transport)
             probe_hint = {}
             report = self.report or {}
             status = report.get('status') if isinstance(report.get('status'), dict) else {}
             facts = report.get('facts') if isinstance(report.get('facts'), dict) else {}
+            net_diag = report.get('network_diagnostics') if isinstance(report.get('network_diagnostics'), dict) else {}
             if status.get('sim_plmn'):
                 probe_hint['sim_plmn'] = status['sim_plmn']
             elif facts.get('mcc') and facts.get('mnc'):
                 probe_hint['sim_plmn'] = str(facts['mcc']) + '-' + str(facts['mnc'])
-            for key in ('exp_trial_active', 'sim_has_isim', 'observed_data_apn', 'preloaded_carrier_config'):
+            for key in ('exp_trial_active', 'sim_has_isim', 'observed_data_apn', 'preloaded_carrier_config',
+                        'lte_bands_disabled', 'radio_lte', 'update_available'):
                 if key in status:
                     probe_hint[key] = status[key]
                 elif key in report:
                     probe_hint[key] = report[key]
-            OverseasCarrierDialog(self.root, make_client, probe_hint, on_saved=lambda _: self.run('preflight'))
+                elif key in net_diag:
+                    probe_hint[key] = net_diag[key]
+            if status:
+                probe_hint['status'] = status
+            def after_saved(_):
+                if (self.report or {}).get('managed_adapter') == 'unified_carriers':
+                    self.run('preflight')
+                else:
+                    self.auto_carrier(auto_probe=True)
+            OverseasCarrierDialog(self.root, make_client, probe_hint, on_saved=after_saved)
 
     def check_variant_trial(self, profile):
         if self.busy:
@@ -639,12 +654,13 @@ class App:
         self.detail.configure(text=detail)
         self.refresh_buttons()
 
-    def auto_carrier(self):
+    def auto_carrier(self, auto_probe=None):
         if self.busy:
             return
         from auto_carrier_gui import AutoCarrierWindow
+        probe_now = bool(self.report or self.last_result) if auto_probe is None else bool(auto_probe)
         AutoCarrierWindow(self.root, self.host.get().strip(), self.config.get().strip(),
-                          auto_probe=bool(self.report or self.last_result))
+                          auto_probe=probe_now)
 
     def mobile_app(self):
         if self.busy:

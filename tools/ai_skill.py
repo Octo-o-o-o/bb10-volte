@@ -43,7 +43,9 @@ import connection_materials
 import connection_recovery
 import firmware_policy
 import firmware_upgrade
+import overseas_carrier
 import pairing_instructions
+import profiles
 import root_setup
 from auto_carrier import AutoClient
 from auto_carrier_view import registration_ready, status_view
@@ -72,50 +74,22 @@ SAFE_DISCOVERY_KEYS = (
     'OobeCompleted',
 )
 
-SAFE_PROBE_KEYS = (
+SAFE_PROBE_KEYS = tuple(dict.fromkeys((
     'schema',
     'management_schema',
     'installed_management_schema',
-    'variant',
-    'family',
-    'os_version',
-    'board_type',
-    'installed',
     'installed_stage',
     'installation_pending',
     'pending_phase',
-    'update_available',
     'update_pending',
-    'can_install',
-    'can_update',
     'can_prepare_mobile_network',
-    'call_idle',
-    'sim_supported',
-    'sim_reason',
-    'sim_plmn',
-    'operator_trial',
-    'serving_plmn',
-    'sim_has_isim',
-    'isim_status',
-    'isim_services',
-    'preloaded_carrier_config',
-    'downloaded_carrier_config_present',
-    'observed_data_apn',
-    'exp_trial_active',
-    'radio_lte',
-    'lte_data_connected',
-    'operator',
-    'stock_template_verified',
-    'mobile_network_off',
     'scan_mode',
     'network_lock_enabled',
-    'reboot_required',
     'uninstalled',
     'root_kind',
     'legacy_detected',
-    'scope_error',
     'normal_reboot_after_sim_change',
-)
+) + overseas_carrier.SAFE_PROBE_FIELDS))
 
 SAFE_MOBILE_APP_KEYS = (
     'schema',
@@ -327,6 +301,23 @@ def synthesize_next_step(usb, os_state, discovery, root_verified, ssh_error, pro
             }
         if not probe.get('installed'):
             if probe.get('sim_supported') is False:
+                sim_plmn = probe.get('sim_plmn') or ''
+                is_overseas = isinstance(sim_plmn, str) and '-' in sim_plmn and not sim_plmn.startswith('460-')
+                if is_overseas:
+                    return {
+                        'code': 'configure_overseas_carrier_or_install_mobile_app',
+                        'reason': probe.get('sim_reason'),
+                        'sim_plmn': sim_plmn,
+                        'summary': (
+                            f'Root and OS 10.3.3.3216 are verified, and an overseas SIM ({sim_plmn}) is inserted. '
+                            'Run `overseas catalog --plmn ' + sim_plmn + '` and `overseas set --plmn ' + sim_plmn
+                            + (' --allow-isim' if probe.get('sim_has_isim') else '')
+                            + '` (or `--config <path>`) to write an explicit opt-in experimental carrier config, '
+                            'then run `volte install` and/or `mobile-app install` ('
+                            + str(project_metadata().get('mobile_version', '')) + ').'
+                        ),
+                        'destructive': False,
+                    }
                 return {
                     'code': 'install_mobile_app_or_prepare_sim',
                     'reason': probe.get('sim_reason'),
@@ -955,6 +946,55 @@ def cmd_firmware(args):
     return 2, {'ok': False, 'error': 'invalid_firmware_action'}
 
 
+def cmd_overseas(args):
+    action = args.overseas_action
+    if action == 'catalog':
+        if getattr(args, 'plmn', ''):
+            found = overseas_carrier.lookup_plmn_code(args.plmn)
+            return 0, {'ok': True, 'action': 'overseas.catalog', 'plmn': args.plmn, 'carrier': found}
+        matches = overseas_carrier.search_catalog(getattr(args, 'query', ''))
+        return 0, {'ok': True, 'action': 'overseas.catalog', 'count': len(matches), 'carriers': matches[:50]}
+    client, _ = connection.resolve_connection(args.host, args.ssh_config or '')
+    auto = AutoClient(client)
+    if action == 'get':
+        res = auto.get_exp_trial()
+        return 0, {'ok': True, 'action': 'overseas.get', 'active': bool(res.get('active')),
+                   'config': res.get('config'), 'summary': res.get('summary')}
+    if action == 'set':
+        if getattr(args, 'config', None):
+            cfg = profiles.validate_exp_trial(json.loads(Path(args.config).read_text(encoding='utf-8')))
+        elif getattr(args, 'plmn', ''):
+            entry = overseas_carrier.lookup_plmn_code(args.plmn)
+            if entry is not None:
+                cfg = overseas_carrier.preset_to_trial_config(entry, allow_isim=bool(getattr(args, 'allow_isim', False)))
+            else:
+                if '-' not in args.plmn:
+                    raise ValueError('PLMN must be MCC-MNC')
+                mcc, mnc = args.plmn.split('-', 1)
+                cfg = overseas_carrier.build_trial_config(mcc, [mnc], ['auto'], allow_isim=bool(getattr(args, 'allow_isim', False)))
+        else:
+            raise ValueError('Provide --config or --plmn')
+        res = auto.set_exp_trial(cfg)
+        return 0, {
+            'ok': True,
+            'action': 'overseas.set',
+            'saved': bool(res.get('saved')),
+            'active': bool(res.get('active')),
+            'summary': res.get('summary'),
+            'probe': sanitize_probe(res.get('probe') or {}),
+        }
+    if action == 'clear':
+        res = auto.clear_exp_trial()
+        return 0, {
+            'ok': True,
+            'action': 'overseas.clear',
+            'cleared': bool(res.get('cleared')),
+            'active': bool(res.get('active')),
+            'probe': sanitize_probe(res.get('probe') or {}),
+        }
+    return 2, {'ok': False, 'error': 'invalid_overseas_action'}
+
+
 def build_parser():
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument('--lang', choices=('zh', 'en'), default=argparse.SUPPRESS, help='Override output guidance language (zh or en)')
@@ -1011,6 +1051,20 @@ def build_parser():
             sub_p.add_argument('--host', default='bb10-root')
             sub_p.add_argument('--ssh-config')
 
+    p_overseas = sub.add_parser('overseas', parents=[common], help='Inspect offline overseas carrier reference catalog and manage opt-in experimental carrier config')
+    ov_sub = p_overseas.add_subparsers(dest='overseas_action', required=True)
+    p_ov_cat = ov_sub.add_parser('catalog', parents=[common], help='Search offline Apache-2.0 overseas carrier catalog')
+    p_ov_cat.add_argument('--query', default='')
+    p_ov_cat.add_argument('--plmn', default='')
+    for name in ('get', 'set', 'clear'):
+        sub_p = ov_sub.add_parser(name, parents=[common])
+        sub_p.add_argument('--host', default='bb10-root')
+        sub_p.add_argument('--ssh-config')
+        if name == 'set':
+            sub_p.add_argument('--config', type=Path, help='Path to Schema 1/2 overseas trial JSON')
+            sub_p.add_argument('--plmn', default='', help='Catalog or custom PLMN (MCC-MNC)')
+            sub_p.add_argument('--allow-isim', action='store_true', help='Opt in to USIM+ISIM experimental trial')
+
     p_fw = sub.add_parser('firmware', parents=[common], help='Model-bound USB driver, stock 10.3.3.3216 upgrade and AutoRoot v4 workflows')
     fw_sub = p_fw.add_subparsers(dest='fw_action', required=True)
     p_fw_status = fw_sub.add_parser('status', parents=[common], help='Check USB baseline, disk space, required stock archive and prepared kits')
@@ -1061,6 +1115,8 @@ def run(argv=None):
                 return cmd_mobile_app(args)
             if cmd == 'volte':
                 return cmd_volte(args)
+            if cmd == 'overseas':
+                return cmd_overseas(args)
             if cmd == 'firmware':
                 return cmd_firmware(args)
             return 2, {'ok': False, 'error': 'unknown_command'}

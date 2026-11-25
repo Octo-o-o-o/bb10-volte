@@ -221,7 +221,7 @@ class SetupWizard(tk.Toplevel):
         self.operator_options = [tr('连接后核对 SIM'), tr('中国移动'), tr('中国联通'), tr('中国电信'),
                                  tr('海外 / 其他运营商（实验试测）')]
         self.operator_picker = ttk.Combobox(carrier_row, textvariable=self.operator,
-                                            values=self.operator_options, state='readonly', width=22)
+                                            values=self.operator_options, state='readonly', width=34)
         self.operator_picker.current(0)
         self.operator_picker.pack(side='left')
         self.root_only_check = ttk.Checkbutton(root_tab, variable=self.root_only,

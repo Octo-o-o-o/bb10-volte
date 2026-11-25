@@ -2,9 +2,9 @@
 
 This build-time tool consumes only pinned Apache-2.0 Android Open Source Project
 inputs (apns-full-conf.xml and carrier_list.textpb), strictly excludes MCC 460
-(Mainland China uses the verified three-carrier zero-config engine and blocks
-460-15 Broadnet), validates every APN/PLMN against device/profiles.py rules, and
-marks every entry as untested on BB10 until real hardware acceptance exists.
+(Mainland China uses the built-in three-carrier zero-config engine), filters
+lab/test/reserved entries, validates every APN/PLMN against device/profiles.py
+rules, and marks every entry as untested on BB10 until hardware acceptance exists.
 """
 import argparse
 import hashlib
@@ -30,17 +30,42 @@ AOSP_CID_URL = (
 )
 
 # Major global MNOs whose base entries in AOSP apns-full-conf.xml omit an
-# explicit type="ims" row (or use MVNO matchers) so overseas users still get a
-# clean PLMN-to-name + default APN starting point using standard 3GPP "ims".
+# explicit non-MVNO type="ims" row so overseas users still get a clean
+# PLMN-to-name + APN starting point using standard 3GPP "ims".
 EXTRA_BASE_PLMNS = (
     '204-08', '208-01', '208-10', '208-15', '208-20',
-    '214-07', '222-01', '222-10', '228-01',
-    '234-10', '234-20', '240-01',
-    '302-220', '302-490', '302-610', '302-780',
-    '310-260', '310-410', '311-480',
-    '440-50', '440-51',
+    '214-03', '214-04', '214-07',
+    '222-01', '222-10', '222-50', '222-88',
+    '228-01', '234-10', '234-20', '240-01',
+    '302-220', '302-490', '302-500', '302-610', '302-780',
+    '310-260', '310-410', '311-480', '311-580', '313-100', '313-340',
+    '334-030', '334-050',
+    '440-10', '440-20', '440-50', '440-51',
+    '450-05', '450-06', '450-08',
     '454-03', '454-06', '454-12', '466-01', '466-97',
-    '505-02', '505-03', '525-03', '525-05', '530-01', '530-05',
+    '502-16', '502-18', '502-19',
+    '505-02', '505-03',
+    '525-03', '525-05', '525-10',
+    '530-01', '530-05', '530-24',
+    '724-05',
+)
+
+# Filter out AOSP lab/test/reserved/internal/defunct entries that should not
+# appear as consumer carrier presets.
+JUNK_CARRIER_RE = re.compile(
+    r'(?i)(?:\btest-?sim\b|\blab\b|\btestnetz\b|\breserved\b|\binternal use\b|\bquam\b|\bmvno\b)'
+)
+JUNK_PLMNS = frozenset((
+    '204-69',   # KPN Lab
+    '262-09',   # Vodafone Lab
+    '262-14',   # Defunct Group 3G UMTS GmbH (Quam)
+    '310-028',  # ALU Test-SIM
+    '334-140',  # ALTAN - Internal Use
+    '454-20',   # Public Mobile Networks/Reserved
+    '454-29',   # Public Mobile Networks/Reserved
+))
+BAD_APN_CARRIER_LABEL_RE = re.compile(
+    r'(?i)(?:^mms\b|\bmms$|^internet\b|^ims\b|^wap\b|^gprs\b|^ctnet$|^cat cdma$|^java session$|^gsm\d|^3g radio|^hutchison 2g|testnetz)'
 )
 
 PROTO_MAP = {
@@ -84,30 +109,9 @@ def sha256_bytes(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def parse_carrier_names(text):
-    names = {}
-    for block in re.split(r'(?:^|\n)carrier_id\s*\{', text):
-        if not block.strip():
-            continue
-        m_name = re.search(r'carrier_name:\s*"([^"]+)"', block)
-        if not m_name:
-            continue
-        cname = clean_name(m_name.group(1))
-        if not cname or len(cname) > 64:
-            continue
-        for attr in re.findall(r'carrier_attribute\s*\{([^}]+)\}', block):
-            if any(k in attr for k in ('spn:', 'imsi_prefix_xpattern:', 'gid1:', 'gid2:', 'iccid_prefix:', 'plmn:', 'preferred_apn:')):
-                continue
-            for mm in re.findall(r'mccmnc_tuple:\s*"([0-9]{5,6})"', attr):
-                mcc, mnc = mm[:3], mm[3:]
-                if mcc != '460':
-                    names.setdefault(mcc + '-' + mnc, cname)
-    return names
-
-
 def clean_apn(raw):
     val = (raw or '').strip().lower()
-    if not val or not profiles.match(profiles.APN_RE, val):
+    if len(val) < 2 or not profiles.match(profiles.APN_RE, val):
         return None
     return val
 
@@ -115,6 +119,68 @@ def clean_apn(raw):
 def clean_name(raw):
     val = re.sub(r'\s+', ' ', (raw or '').strip())
     return val[:64] if val else ''
+
+
+def parse_carrier_names(text):
+    """Map MCC-MNC -> canonical AOSP MNO carrier_name.
+
+    In AOSP carrier_list.textpb, parent MNOs have the lowest canonical_id and no
+    parent_canonical_id, even when they also include GID/SPN attributes alongside
+    their base mccmnc_tuple. Ranking by (is_child, has_only_mvno_attrs, canonical_id)
+    prevents MVNOs (e.g. DOCOMO MVNO, Rakuten) from stealing the MNO's PLMN.
+    """
+    best = {}
+    for block in re.split(r'(?:^|\n)carrier_id\s*\{', text):
+        if not block.strip():
+            continue
+        m_name = re.search(r'carrier_name:\s*"([^"]+)"', block)
+        if not m_name:
+            continue
+        cname = clean_name(m_name.group(1))
+        if not cname or len(cname) > 64 or JUNK_CARRIER_RE.search(cname):
+            continue
+        m_cid = re.search(r'canonical_id:\s*(\d+)', block)
+        cid_num = int(m_cid.group(1)) if m_cid else 999999
+        is_child = 1 if re.search(r'parent_canonical_id:\s*\d+', block) else 0
+        for attr in re.findall(r'carrier_attribute\s*\{([^}]+)\}', block):
+            has_mvno = 1 if any(k in attr for k in (
+                'spn:', 'imsi_prefix_xpattern:', 'gid1:', 'gid2:',
+                'iccid_prefix:', 'plmn:', 'preferred_apn:',
+            )) else 0
+            # Bare-PLMN root MNO beats MVNO-filtered blocks (e.g. Verizon 311-480 over cellcom);
+            # among same tier, lowest canonical_id wins (e.g. NTT DOCOMO #850, TELUS #1404).
+            rank = (is_child, has_mvno, cid_num)
+            for mm in re.findall(r'mccmnc_tuple:\s*"([0-9]{5,6})"', attr):
+                mcc, mnc = mm[:3], mm[3:]
+                if mcc == '460':
+                    continue
+                plmn = mcc + '-' + mnc
+                if plmn not in best or rank < best[plmn][0]:
+                    best[plmn] = (rank, cname)
+    return {plmn: cname for plmn, (_, cname) in best.items()}
+
+
+def _pick_carrier_label(plmn, cid_names, rec_names):
+    if plmn in cid_names:
+        return cid_names[plmn]
+    for candidate in rec_names:
+        if not BAD_APN_CARRIER_LABEL_RE.search(candidate) and not JUNK_CARRIER_RE.search(candidate):
+            return candidate
+    for candidate in rec_names:
+        if not JUNK_CARRIER_RE.search(candidate):
+            return candidate
+    return 'PLMN ' + plmn
+
+
+def _matches_mno_name(apn_carrier, mno_name):
+    if not apn_carrier or not mno_name:
+        return False
+    low = apn_carrier.lower()
+    if any(bad in low for bad in ('dish-', 'reseller', 'tracfone', 'mvno')):
+        return False
+    tokens = [tok for tok in re.split(r'[^a-z0-9]+', mno_name.lower()) if len(tok) >= 3]
+    words = set(re.split(r'[^a-z0-9]+', low))
+    return any(tok in words or (len(tok) >= 4 and tok in low) for tok in tokens)
 
 
 def build_catalog(apns_path, cid_path):
@@ -128,80 +194,119 @@ def build_catalog(apns_path, cid_path):
     cid_names = parse_carrier_names(cid_raw.decode('utf-8'))
     root = ET.fromstring(apns_raw)
     by_plmn = {}
+    mvno_rows = {}
     for el in root.findall('apn'):
         mcc = (el.get('mcc') or '').strip()
         mnc = (el.get('mnc') or '').strip()
         if mcc == '460' or not (re.fullmatch(r'[0-9]{3}', mcc) and re.fullmatch(r'[0-9]{2,3}', mnc)):
             continue
-        if el.get('mvno_type') or el.get('mvno_match_data'):
+        plmn = mcc + '-' + mnc
+        if plmn in JUNK_PLMNS:
             continue
         apn = clean_apn(el.get('apn'))
         if not apn:
             continue
+        cname = clean_name(el.get('carrier'))
+        if JUNK_CARRIER_RE.search(cname):
+            continue
         types = [t.strip().lower() for t in (el.get('type') or '').split(',') if t.strip()]
         proto = PROTO_MAP.get((el.get('protocol') or 'IPV4V6').strip().upper(), 'IPv4v6')
-        plmn = mcc + '-' + mnc
-        rec = by_plmn.setdefault(plmn, {'ims': [], 'data': [], 'names': []})
+        is_mvno = bool(el.get('mvno_type') or el.get('mvno_match_data'))
+        bucket = mvno_rows if is_mvno else by_plmn
+        rec = bucket.setdefault(plmn, {'ims_dedicated': [], 'ims_combined': [], 'data': [], 'names': []})
         if 'ims' in types:
-            pair = (apn, proto)
-            if pair not in rec['ims']:
-                rec['ims'].append(pair)
+            pair = (apn, proto, cname)
+            target_key = 'ims_dedicated' if set(types) <= {'ims', 'ia'} else 'ims_combined'
+            if pair not in rec[target_key]:
+                rec[target_key].append(pair)
         if 'default' in types or not types:
-            if apn not in rec['data']:
-                rec['data'].append(apn)
-        cname = clean_name(el.get('carrier'))
+            pair = (apn, cname)
+            if pair not in rec['data']:
+                rec['data'].append(pair)
         if cname and cname not in rec['names']:
             rec['names'].append(cname)
 
     target_plmns = sorted(
-        {plmn for plmn, rec in by_plmn.items() if rec['ims']}
-        | {plmn for plmn in EXTRA_BASE_PLMNS if plmn in by_plmn or plmn in cid_names}
+        (
+            {plmn for plmn, rec in by_plmn.items() if rec['ims_dedicated'] or rec['ims_combined']}
+            | {plmn for plmn in EXTRA_BASE_PLMNS if plmn in by_plmn or plmn in cid_names or plmn in mvno_rows}
+        )
+        - JUNK_PLMNS
     )
 
     entries = {}
+    used_mccs = set()
     for plmn in target_plmns:
         mcc, mnc = plmn.split('-', 1)
         if mcc == '460':
             continue
-        rec = by_plmn.get(plmn, {'ims': [], 'data': [], 'names': []})
-        name = cid_names.get(plmn) or (rec['names'][0] if rec['names'] else ('PLMN ' + plmn))
-        name = clean_name(name)
-        if rec['ims']:
-            ims_apn, ims_family = rec['ims'][0]
-            source = 'aosp-apns'
+        rec = by_plmn.get(plmn, {'ims_dedicated': [], 'ims_combined': [], 'data': [], 'names': []})
+        mrec = mvno_rows.get(plmn, {'ims_dedicated': [], 'ims_combined': [], 'data': [], 'names': []})
+        name = clean_name(_pick_carrier_label(plmn, cid_names, rec['names']))
+        if JUNK_CARRIER_RE.search(name):
+            continue
+
+        # Choose IMS APN: dedicated base row -> combined base row -> matching MNO MVNO row -> default 'ims'.
+        ims_candidates = rec['ims_dedicated'] or rec['ims_combined']
+        source = 'aosp-apns'
+        if not ims_candidates:
+            matched_mvno_ims = [item for item in (mrec['ims_dedicated'] or mrec['ims_combined'])
+                                if _matches_mno_name(item[2], name)]
+            ims_candidates = matched_mvno_ims
+        if ims_candidates:
+            ims_apn, ims_family = ims_candidates[0][0], ims_candidates[0][1]
         else:
             ims_apn, ims_family = 'ims', 'IPv4v6'
             source = 'aosp-carrier-list'
+
+        # Choose data APNs: prefer base rows whose carrier label doesn't contradict MNO;
+        # if base rows are empty (e.g. TELUS 302-220, Iliad 222-50, Orange ES 214-03,
+        # AT&T MX 334-050, Movistar MX 334-030), pull MNO-matching AOSP rows.
+        data_pairs = list(rec['data'])
+        if plmn == '440-51':
+            # AOSP's sole un-typed base row on 440-51 is Rakuten's legacy au-MVNO APN; keep empty
+            # so au users rely on 'auto' / observed APN rather than a wrong MVNO APN.
+            data_pairs = [p for p in data_pairs if 'rakuten' not in p[1].lower()]
+        if not data_pairs and mrec['data']:
+            data_pairs = [p for p in mrec['data'] if _matches_mno_name(p[1], name)]
+            if data_pairs and source == 'aosp-carrier-list':
+                source = 'aosp-apns'
+        # Prioritize APNs whose carrier name matches the MNO name over secondary MVNOs sharing the PLMN.
+        ordered = (
+            [p for p in data_pairs if _matches_mno_name(p[1], name)]
+            + [p for p in data_pairs if not _matches_mno_name(p[1], name)]
+        )
         data_apns = []
         seen_lower = set()
-        for candidate in rec['data']:
+        for candidate, _ in ordered:
             low = candidate.lower()
             if low not in seen_lower:
                 seen_lower.add(low)
                 data_apns.append(candidate)
             if len(data_apns) >= 3:
                 break
-        country_code, region_name = MCC_COUNTRY.get(mcc, ('', ''))
+
+        used_mccs.add(mcc)
         entries[plmn] = {
-            'mcc': mcc,
-            'mnc': mnc,
-            'country': country_code,
-            'region': region_name,
             'name': name,
             'data_apns': data_apns,
             'ims_apn': ims_apn,
             'ims_ip_family': ims_family,
             'source': source,
-            'bb10_status': 'untested',
         }
 
+    mcc_regions = {}
+    for mcc in sorted(used_mccs):
+        code, region = MCC_COUNTRY.get(mcc, ('', ''))
+        mcc_regions[mcc] = [code, region]
+
     return {
-        'schema': 1,
+        'schema': 2,
         'license': 'Apache-2.0',
         'license_file': 'licenses/APACHE-2.0.txt',
         'copyright': 'Copyright (C) The Android Open Source Project',
         'attribution': 'Derived from Android Open Source Project (AOSP) device/sample apns-full-conf.xml and TelephonyProvider carrier_list.textpb',
-        'modifications': 'Filtered non-460 carrier APN/IMS metadata into a compact offline lookup table with bb10_status marked untested and ITU-T E.212 country/region tags added.',
+        'modifications': 'Filtered non-460 carrier APN/IMS metadata into a compact offline lookup table with default_bb10_status=untested, lab/reserved entries removed, and ITU-T E.212 mcc_regions added.',
         'sources': {
             'aosp_apns_url': AOSP_APNS_URL,
             'aosp_apns_commit': AOSP_APNS_COMMIT,
@@ -211,7 +316,9 @@ def build_catalog(apns_path, cid_path):
             'aosp_carrier_list_sha256': AOSP_CID_SHA256,
         },
         'disclaimer': 'Public APN and carrier name suggestions only; not BB10 hardware or VoLTE certification. Excludes MCC 460.',
+        'default_bb10_status': 'untested',
         'entry_count': len(entries),
+        'mcc_regions': mcc_regions,
         'carriers': entries,
     }
 

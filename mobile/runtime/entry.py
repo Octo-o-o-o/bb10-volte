@@ -84,14 +84,14 @@ def supports_selection_guard(manifest):
 
 
 def decode64(value):
-    require(isinstance(value, str) and len(value) <= 16384 and
+    require(isinstance(value, str) and len(value) <= 24576 and
             len(value) % 4 == 0 and re.match(r'\A[A-Za-z0-9+/]*={0,2}\Z', value),
             'invalid_encoding')
     try:
         result = base64.b64decode(value.encode('ascii'))
     except (ValueError, binascii.Error):
         raise MobileError('invalid_encoding')
-    require(base64.b64encode(result).decode('ascii') == value, 'invalid_encoding')
+    require(len(result) <= 16384 and base64.b64encode(result).decode('ascii') == value, 'invalid_encoding')
     return result
 
 

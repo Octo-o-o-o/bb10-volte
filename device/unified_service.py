@@ -187,6 +187,20 @@ def notification_ready(value):
             and current.get('radio') == ['lte'])
 
 
+def _deliver_receipt_notice(receipt_path, receipt, cmd_args):
+    """Persist attempt receipt before running notification helper; record outcome."""
+    save(receipt_path, receipt)
+    try:
+        result = json.loads(n.command(
+            [sys.executable, BASE + '/device/unified_service.py'] + list(cmd_args), timeout=5).decode('ascii'))
+        assert isinstance(result, dict) and set(result) == set(('hub', 'popup', 'popup_dismissal'))
+        assert all(v in ('accepted', 'error', 'unconfirmed') for v in result.values())
+        receipt.update(state='finished', result=result)
+    except Exception as error:
+        receipt.update(state='unconfirmed', error_type=type(error).__name__)
+    save(receipt_path, receipt)
+
+
 def notify_connection():
     """One best-effort popup and Hub item per boot, independent of the UI.
 
@@ -212,20 +226,11 @@ def notify_connection():
     value['current_sim_matches'] = current['sim_sha256'] == selected['sim_sha256']
     if not notification_ready(value):
         return
-    receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted'}
-    save(receipt_path, receipt)
     notification_boot = token
     item = 'bb10volte_' + n.digest(profiles.canonical(token))[:24]
-    try:
-        # Keep notification I/O outside the IMS manager process.
-        result = json.loads(n.command([sys.executable, BASE + '/device/unified_service.py',
-                                       'notify-connected', item], timeout=5).decode('ascii'))
-        assert isinstance(result, dict) and set(result) == set(('hub', 'popup', 'popup_dismissal'))
-        assert all(v in ('accepted', 'error', 'unconfirmed') for v in result.values())
-        receipt.update(state='finished', result=result)
-    except Exception as error:
-        receipt.update(state='unconfirmed', error_type=type(error).__name__)
-    save(receipt_path, receipt)
+    receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted'}
+    # Keep notification I/O outside the IMS manager process.
+    _deliver_receipt_notice(receipt_path, receipt, ['notify-connected', item])
 
 
 def notify_attention(phase, error=None):
@@ -258,19 +263,10 @@ def notify_attention(phase, error=None):
         return
     if reason == 'activation_failed' and s.j.get('configuration_restored') is not True:
         return
-    receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted', 'reason': reason}
-    save(path, receipt)
     attention_boot = token
     item = 'bb10volte_' + n.digest(profiles.canonical([token, 'attention']))[:24]
-    try:
-        result = json.loads(n.command([sys.executable, BASE + '/device/unified_service.py',
-            'notify-attention', item, reason], timeout=5).decode('ascii'))
-        assert isinstance(result, dict) and set(result) == set(('hub', 'popup', 'popup_dismissal'))
-        assert all(v in ('accepted', 'error', 'unconfirmed') for v in result.values())
-        receipt.update(state='finished', result=result)
-    except Exception as failure:
-        receipt.update(state='unconfirmed', error_type=type(failure).__name__)
-    save(path, receipt)
+    receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted', 'reason': reason}
+    _deliver_receipt_notice(path, receipt, ['notify-attention', item, reason])
 
 
 def ready_sim_hash(snapshot):
@@ -306,19 +302,10 @@ def notify_sim_change(previous, snapshot, after_reboot=False):
             sim_notice_boot = token
             return
         kind = 'sim_review' if after_reboot else 'sim_restart'
-        receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted', 'reason': kind}
-        save(path, receipt)
         sim_notice_boot = token
         item = 'bb10volte_' + n.digest(profiles.canonical([token, 'sim-change']))[:24]
-        try:
-            result = json.loads(n.command([sys.executable, BASE + '/device/unified_service.py',
-                'notify-attention', item, kind], timeout=5).decode('ascii'))
-            assert isinstance(result, dict) and set(result) == set(('hub', 'popup', 'popup_dismissal'))
-            assert all(v in ('accepted', 'error', 'unconfirmed') for v in result.values())
-            receipt.update(state='finished', result=result)
-        except Exception as failure:
-            receipt.update(state='unconfirmed', error_type=type(failure).__name__)
-        save(path, receipt)
+        receipt = {'schema': 1, 'boot': token, 'at': time.time(), 'state': 'attempted', 'reason': kind}
+        _deliver_receipt_notice(path, receipt, ['notify-attention', item, kind])
     except Exception:
         pass  # Missing identity/receipt/UI evidence never changes the SIM lifecycle.
 
@@ -475,18 +462,7 @@ def locked_prepare():
                 import unified_dca
                 with management_lock(blocking=True):
                     verify()
-                    first_error = None
-                    try:
-                        unified_dca.restore_network_selection()
-                    except Exception as error:
-                        first_error = error
-                    try:
-                        unified_dca.restore_lte_mode()
-                    except Exception as error:
-                        if first_error is None:
-                            first_error = error
-                    if first_error is not None:
-                        raise first_error
+                    unified_dca.restore_radio_overrides(raise_error=True)
             elif failed:
                 try:
                     from unified_install import management_lock
@@ -495,14 +471,7 @@ def locked_prepare():
                         if (s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions() and
                                 n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}):
                             verify()
-                            try:
-                                unified_dca.restore_network_selection()
-                            except Exception:
-                                pass
-                            try:
-                                unified_dca.restore_lte_mode()
-                            except Exception:
-                                pass
+                            unified_dca.restore_radio_overrides(raise_error=False)
                 except Exception:
                     pass
 
@@ -566,12 +535,31 @@ def live():
             'power': n.value(radio, 'power_status')}
 
 
+def _idle_stock_overseas_allowed():
+    if s._overseas_profile_active():
+        return True
+    trial = profiles.load_exp_trial()
+    if trial is None:
+        return False
+    try:
+        snap = card()
+        mcc, mnc = snap.get('mcc'), snap.get('mnc')
+        if mcc == '460':
+            return False
+        return any(entry.get('mcc') == mcc and mnc in entry.get('mncs', ())
+                   for entry in profiles.exp_trial_entries(trial))
+    except (IOError, OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def idle_stock(pid):
     assert n.ims_pids() == [pid] and s.phone_idle() and not n.active_vpn_sessions()
     assert n.crypto_policy() == {'swcr_id': -1, 'crypto_support': 0}
     assert s.live()['ims'] in (None, 'idle', 'disconnected')
+    overseas_carrier = _idle_stock_overseas_allowed()
     attrs = n.attrs(n.read(s.IMS))
-    assert all(n.value(attrs, key) in (None, []) for key in ('IMS_profiles', 'IMS_profilesV2'))
+    if not overseas_carrier:
+        assert all(n.value(attrs, key) in (None, []) for key in ('IMS_profiles', 'IMS_profilesV2'))
     rows = [line.strip().split() for line in n.command(
         ['/bin/pidin', '-p', str(pid), '-f', 'A']).decode('ascii').splitlines() if line.strip()]
     assert len(rows) == 2 and rows[0] == ['Arguments'] and len(rows[1]) == 3
@@ -583,7 +571,9 @@ def idle_stock(pid):
     assert len(rows) == 2 and rows[0] == 'name' and posixpath.normpath('/' + rows[1].lstrip('/')) == '/radio/bin/ims_rrm'
     logs = n.command(['/bin/slog2info', '-b', 'ims_rrm'], 10).decode('utf-8', 'replace')
     own = '\n'.join(line for line in logs.splitlines() if 'ims_rrm.' + str(pid) + ' ' in line)
-    assert 'No IMS profiles provisioned .. waiting' in own and 'exit req but wait acl' not in own
+    assert 'exit req but wait acl' not in own
+    if not overseas_carrier:
+        assert 'No IMS profiles provisioned .. waiting' in own
     assert not re.search(r'CSeq:\s*\d+\s+(?:REGISTER|INVITE)\b', own)
 
 
@@ -640,10 +630,17 @@ def restore(previous_boot=False):
         else:
             assert s.j.get('boot') == boot_token(), 'journal_boot_mismatch'
         s.stop_native()
+        pps_before = s.j.get('pps_before') or {}
         for path, applied in s.applied_updates().items():
             assert path in (s.IMS, s.CDSC, s.VOICE,
                 '/pps/services/carrier_config/ims/ir92', '/pps/services/ims/status_persistent')
-            changes = policy.restore_fields(n.attrs(n.read(path)), s.j['pps_before'][path], applied)
+            if path not in pps_before:
+                continue
+            before_path = pps_before[path]
+            applied_subset = {k: v for k, v in applied.items() if k in before_path}
+            if not applied_subset:
+                continue
+            changes = policy.restore_fields(n.attrs(n.read(path)), before_path, applied_subset)
             if changes:
                 n.update_pps(path, changes)
             assert all(n.attrs(n.read(path)).get(k) == v for k, v in changes.items()), 'pps_restore_unconfirmed'
@@ -665,18 +662,7 @@ def restore(previous_boot=False):
         elif s.BASE == BASE and not previous_boot:
             import unified_dca
             radio_restored = True
-            first_error = None
-            try:
-                unified_dca.restore_network_selection()
-            except Exception as error:
-                first_error = error
-            try:
-                unified_dca.restore_lte_mode()
-            except Exception as error:
-                if first_error is None:
-                    first_error = error
-            if first_error is not None:
-                raise first_error
+            unified_dca.restore_radio_overrides(raise_error=True)
         if s.BASE == BASE and selected is not None:
             try:
                 import unified_operator_name
@@ -702,14 +688,7 @@ def restore(previous_boot=False):
             try:
                 if s.phone_idle() and not n.ims_pids() and not n.active_vpn_sessions():
                     import unified_dca
-                    try:
-                        unified_dca.restore_network_selection()
-                    except Exception:
-                        pass
-                    try:
-                        unified_dca.restore_lte_mode()
-                    except Exception:
-                        pass
+                    unified_dca.restore_radio_overrides(raise_error=False)
             except Exception:
                 pass
 
@@ -839,8 +818,17 @@ def prepare(managed_locking=False):
         s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
         sim_mcc = snapshot.get('mcc') or s.ACTIVE_PROFILE['carrier'].get('mcc', '460')
         sim_mnc = snapshot.get('mnc') or s.ACTIVE_PROFILE['carrier']['mncs'][0]
-        template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
-        selected = policy.bind_template(selected, template)
+        deferred_template = False
+        try:
+            template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
+            selected = policy.bind_template(selected, template)
+        except ValueError as error:
+            if (s.ACTIVE_PROFILE['id'].startswith('exp-trial-') and
+                    s.ACTIVE_PROFILE['carrier']['data_apns'] == ['auto'] and
+                    str(error) == 'No concrete data APN available for 0.xml bootstrap'):
+                deferred_template = True
+            else:
+                raise
         selected.update(boot=token, selected_unix=time.time())
         s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
         s.UPDATES = s.profile_updates(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
@@ -870,6 +858,11 @@ def prepare(managed_locking=False):
         if managed_locking and unified_dca.deferred_lte_lock:
             unified_dca.ensure_lte_mode(selected)
             assert s.wait_for_network(30), 'network_not_ready'
+        if deferred_template:
+            template, unused_xml = profiles.carrier_template(s.ACTIVE_PROFILE, sim_mcc, sim_mnc)
+            selected = policy.bind_template(selected, template)
+            s.ACTIVE_REQUEST, s.ACTIVE_PROFILE = selected['request'], selected['request']['profile']
+            save(SELECTION, selected)
         reconcile_stale_sms_busy(facts, selected, previous)
         save(ATTEMPT, {'owner': policy.OWNER, 'boot': boot_token(), 'at': time.time(), 'stage': 'native_configured'})
         s.configure()
@@ -1104,6 +1097,7 @@ STATUS_ERROR_CODES = (
     'china_broadnet_unsupported', 'sim_route_unsupported', 'sim_identity_unavailable',
     'downloaded_carrier_config_present', 'carrier_not_validated', 'operator_not_supported',
     'experimental_stock_template_unavailable', 'invalid_stock_template',
+    'stock_apn_mismatch', 'default_apn_required',
     'carrier_configuration_changed', 'hardware_identity_conflict',
     'unsupported_model_or_os', 'unknown_native_image', 'root_scheme_not_supported',
     'unvalidated_legacy_installation', 'legacy_install_interrupted',
@@ -1138,6 +1132,8 @@ def classify_status_error(raw_error):
         'IMS-preferred policy did not apply': 'voice_policy_failed',
         'Owned IMS did not stop': 'native_ims_stop_failed',
         'PID is not the owned executable': 'native_ims_stop_failed',
+        'Stock data APN does not match selected profile': 'stock_apn_mismatch',
+        'No concrete data APN available for 0.xml bootstrap': 'default_apn_required',
     }
     if text in exact:
         return exact[text]
@@ -1221,8 +1217,13 @@ def public_status():
             value['sim_plmn'] = mcc + '-' + mnc
             value['operator_trial'] = policy.experimental_plmn(mcc, mnc)
         if saved is not None:
-            current_selection = policy.select(device_info.read_identity(), current_card)
-            value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
+            try:
+                current_selection = policy.select(device_info.read_identity(), current_card)
+                value['current_sim_matches'] = current_selection['sim_sha256'] == saved['sim_sha256']
+            except ValueError:
+                current_hash = ready_sim_hash(current_card)
+                if current_hash is not None:
+                    value['current_sim_matches'] = current_hash == saved['sim_sha256']
     except (IOError, OSError, ValueError, TypeError, KeyError):
         pass
     try:
@@ -1239,11 +1240,21 @@ def public_status():
     except Exception:
         value.update(pcscf_route_status='idle', pcscf_route_family='none',
                      pcscf_route_count=0, pcscf_route_verified=False)
+    unsupported_sim_now_ready = False
+    if (value.get('enabled') is True and value.get('manager_alive') is False and
+            value.get('status_from_current_boot') is True and value.get('phase') == 'unsupported_sim'):
+        try:
+            sel = policy.select(device_info.read_identity(), card())
+            if pre_native_retryable(token, saved, sel['sim_sha256']):
+                unsupported_sim_now_ready = True
+        except (IOError, OSError, ValueError, TypeError, KeyError):
+            unsupported_sim_now_ready = False
     value['pre_native_retry_available'] = bool(
-        value.get('enabled') is True and value.get('manager_alive') is False and
-        value.get('status_from_current_boot') is True and value.get('selected_this_boot') is True and
-        value.get('current_sim_matches') is True and value.get('phase') in ('error_restored', 'stopped') and
-        os.path.isfile(ATTEMPT) and pre_native_retryable(token))
+        unsupported_sim_now_ready or (
+            value.get('enabled') is True and value.get('manager_alive') is False and
+            value.get('status_from_current_boot') is True and value.get('selected_this_boot') is True and
+            value.get('current_sim_matches') is True and value.get('phase') in ('error_restored', 'stopped') and
+            os.path.isfile(ATTEMPT) and pre_native_retryable(token)))
     return value
 
 
@@ -1316,16 +1327,9 @@ def service_action(action):
             # Explicit network assistance can precede the first IMS journal.
             # Disabling still releases its owned selection and LTE mode.
             import unified_dca
-            try:
-                unified_dca.restore_network_selection()
-            except Exception as error:
-                if first_error is None:
-                    first_error = error
-            try:
-                unified_dca.restore_lte_mode()
-            except Exception as error:
-                if first_error is None:
-                    first_error = error
+            radio_error = unified_dca.restore_radio_overrides(raise_error=False)
+            if first_error is None:
+                first_error = radio_error
         if not active and os.path.isfile(s.STOP):
             assert n.read(s.STOP) == b'disabled by owner\n', 'stop_request_changed'
             os.unlink(s.STOP)

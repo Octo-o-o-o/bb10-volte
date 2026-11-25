@@ -65,28 +65,38 @@ SAFE_PROBE_FIELDS = (
 @lru_cache(maxsize=4)
 def _load_catalog_cached(path_str):
     raw = json.loads(Path(path_str).read_text(encoding='utf-8'))
-    if not isinstance(raw, dict) or raw.get('schema') != 1 or not isinstance(raw.get('carriers'), dict):
+    if (not isinstance(raw, dict) or raw.get('schema') not in (1, 2) or
+            not isinstance(raw.get('carriers'), dict)):
         raise ValueError('invalid_overseas_catalog')
+    mcc_regions = raw.get('mcc_regions') if isinstance(raw.get('mcc_regions'), dict) else {}
+    default_status = str(raw.get('default_bb10_status') or 'untested')
     carriers = []
     for plmn, item in sorted(raw['carriers'].items()):
         if not isinstance(item, dict):
             continue
-        mcc = str(item.get('mcc', ''))
-        mnc = str(item.get('mnc', ''))
+        if '-' in plmn:
+            plmn_mcc, plmn_mnc = plmn.split('-', 1)
+        else:
+            plmn_mcc, plmn_mnc = '', ''
+        mcc = str(item.get('mcc') or plmn_mcc)
+        mnc = str(item.get('mnc') or plmn_mnc)
         if mcc == '460' or not profiles.match(r'[0-9]{3}', mcc) or not profiles.match(r'[0-9]{2,3}', mnc):
             continue
+        geo = mcc_regions.get(mcc)
+        geo_country = str(geo[0]) if isinstance(geo, list) and len(geo) >= 1 else ''
+        geo_region = str(geo[1]) if isinstance(geo, list) and len(geo) >= 2 else ''
         ip_family = item.get('ims_ip_family') or item.get('ip_family') or 'IPv4v6'
         carriers.append({
             'plmn': plmn,
             'mcc': mcc,
             'mnc': mnc,
-            'country': str(item.get('country', '')),
-            'region': str(item.get('region', '')),
+            'country': str(item.get('country') or geo_country),
+            'region': str(item.get('region') or geo_region),
             'name': str(item.get('name', plmn)),
-            'data_apns': list(item.get('data_apns') or ()),
+            'data_apns': tuple(item.get('data_apns') or ()),
             'ims_apn': str(item.get('ims_apn') or 'ims'),
             'ip_family': ip_family if ip_family in ('IPv4', 'IPv6', 'IPv4v6') else 'IPv4v6',
-            'bb10_status': str(item.get('bb10_status', 'untested')),
+            'bb10_status': str(item.get('bb10_status') or default_status),
             'source': str(item.get('source', 'aosp')),
         })
     return tuple(carriers)
@@ -94,7 +104,8 @@ def _load_catalog_cached(path_str):
 
 def load_catalog(path=None):
     target = Path(path) if path is not None else ROOT / CATALOG_REL
-    return list(_load_catalog_cached(str(target.resolve())))
+    return [dict(entry, data_apns=list(entry['data_apns']))
+            for entry in _load_catalog_cached(str(target.resolve()))]
 
 
 def lookup_plmn(mcc, mnc, path=None):
@@ -204,12 +215,7 @@ def build_trial_config(mcc, mncs, data_apns, ims_apn='ims', ip_family='IPv4v6', 
 
 
 def usable_observed_apn(observed_apn):
-    if not isinstance(observed_apn, str):
-        return ''
-    obs = profiles.normalize_apn(observed_apn)
-    if obs in ('', 'other', 'unknown', 'auto'):
-        return ''
-    return obs if profiles.match(profiles.APN_RE, obs) else ''
+    return profiles.usable_observed_apn(observed_apn)
 
 
 def preset_to_trial_config(entry, allow_isim=False, allow_stock_default_xml=True, observed_apn=None):
@@ -254,6 +260,15 @@ def read_redacted_ims_events(client, max_lines=40):
     return [device_service.redact_ims_event_line(line) for line in raw.splitlines() if line.strip()]
 
 
+def configure_stdio():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            try:
+                stream.reconfigure(encoding='utf-8', errors='replace')
+            except (OSError, ValueError):
+                pass
+
+
 def _connect(args):
     import connection
     from auto_carrier import AutoClient
@@ -261,7 +276,94 @@ def _connect(args):
     return client, AutoClient(client), meta
 
 
+def run_probe(auto):
+    return 0, {'ok': True, 'action': 'probe', 'probe': sanitize_probe(auto.probe())}
+
+
+def run_apply(auto, config_path):
+    raw_cfg = json.loads(Path(config_path).read_text(encoding='utf-8'))
+    validated = profiles.validate_exp_trial(raw_cfg)
+    saved = auto.set_exp_trial(validated)
+    probe_after = saved.get('probe') or auto.probe()
+    payload = {
+        'ok': True,
+        'action': 'apply',
+        'trial_config': validated,
+        'probe_before_install': sanitize_probe(probe_after),
+    }
+    if probe_after.get('scope_error'):
+        payload['ok'] = False
+        payload['error'] = probe_after['scope_error']
+        return 1, payload
+    if probe_after.get('update_available') and not probe_after.get('can_update'):
+        payload['ok'] = False
+        payload['error'] = 'unified_update_needs_stop_and_reboot'
+        return 1, payload
+    if probe_after.get('sim_supported') is not True and not probe_after.get('can_prepare_mobile_network'):
+        payload['ok'] = False
+        payload['error'] = probe_after.get('sim_reason') or 'sim_not_supported'
+        return 1, payload
+    if (probe_after.get('installed') and not probe_after.get('installation_pending') and
+            not probe_after.get('can_update') and not probe_after.get('update_available')):
+        payload['install_result'] = 'already_installed_current_payload'
+        return 0, payload
+    result = auto.install()
+    install_summary = {
+        k: result[k] for k in ('installed', 'updated', 'reboot_required', 'phone_backup')
+        if k in result
+    }
+    if 'desktop_backup' in result:
+        install_summary['desktop_backup_verified'] = bool(result.get('desktop_backup'))
+    payload['install_result'] = install_summary
+    if isinstance(result.get('status'), dict):
+        payload['status'] = public_status(result['status'])
+    return 0, payload
+
+
+def run_start(client, auto):
+    res = auto.action('start')
+    return 0, {
+        'ok': True,
+        'action': 'start',
+        'status': public_status(res) if isinstance(res, dict) else res,
+        'recent_ims_events': read_redacted_ims_events(client, 30),
+    }
+
+
+def run_status(client, auto, lines=40):
+    return 0, {
+        'ok': True,
+        'action': 'status',
+        'probe': sanitize_probe(auto.probe()),
+        'recent_ims_events': read_redacted_ims_events(client, lines),
+    }
+
+
+def run_restore(auto, wait_seconds=90.0):
+    try:
+        disabled = auto.action('disable')
+    except Exception as exc:
+        disabled = {'note': str(exc)}
+    deadline = time.time() + float(wait_seconds)
+    while time.time() < deadline:
+        try:
+            st = auto.action('status')
+        except Exception:
+            break
+        if not isinstance(st, dict) or not st.get('manager_alive'):
+            break
+        time.sleep(1.5)
+    cleared = auto.clear_exp_trial()
+    return 0, {
+        'ok': True,
+        'action': 'restore',
+        'trial_config_removed': bool(cleared.get('cleared')),
+        'disable_result': public_status(disabled) if isinstance(disabled, dict) and 'phase' in disabled else disabled,
+    }
+
+
 def main(argv=None):
+    configure_stdio()
     parser = argparse.ArgumentParser(description='Offline overseas carrier catalog and experimental runner')
     parser.add_argument('--host', default='bb10-root', help='Saved SSH host alias or IP (default: bb10-root)')
     parser.add_argument('--ssh-config', default='', help='Optional path to SSH config file')
@@ -313,83 +415,19 @@ def main(argv=None):
             code = 0
         elif args.command == 'probe':
             _, auto, _ = _connect(args)
-            payload = {'ok': True, 'action': 'probe', 'probe': sanitize_probe(auto.probe())}
-            code = 0
+            code, payload = run_probe(auto)
         elif args.command == 'apply':
-            raw_cfg = json.loads(Path(args.config).read_text(encoding='utf-8'))
-            validated = profiles.validate_exp_trial(raw_cfg)
             _, auto, _ = _connect(args)
-            saved = auto.set_exp_trial(validated)
-            probe_after = saved.get('probe') or auto.probe()
-            payload = {
-                'ok': True,
-                'action': 'apply',
-                'trial_config': validated,
-                'probe_before_install': sanitize_probe(probe_after),
-            }
-            if probe_after.get('scope_error'):
-                payload['ok'] = False
-                payload['error'] = probe_after['scope_error']
-                code = 1
-            elif probe_after.get('sim_supported') is not True:
-                payload['ok'] = False
-                payload['error'] = probe_after.get('sim_reason') or 'sim_not_supported'
-                code = 1
-            elif probe_after.get('installed') and not probe_after.get('can_update') and not probe_after.get('update_available'):
-                payload['install_result'] = 'already_installed_current_payload'
-                code = 0
-            else:
-                result = auto.install()
-                install_summary = {
-                    k: result[k] for k in ('installed', 'updated', 'reboot_required', 'phone_backup')
-                    if k in result
-                }
-                if 'desktop_backup' in result:
-                    install_summary['desktop_backup_verified'] = bool(result.get('desktop_backup'))
-                payload['install_result'] = install_summary
-                code = 0
+            code, payload = run_apply(auto, args.config)
         elif args.command == 'start':
             client, auto, _ = _connect(args)
-            res = auto.action('start')
-            payload = {
-                'ok': True,
-                'action': 'start',
-                'status': public_status(res) if isinstance(res, dict) else res,
-                'recent_ims_events': read_redacted_ims_events(client, 30),
-            }
-            code = 0
+            code, payload = run_start(client, auto)
         elif args.command == 'status':
             client, auto, _ = _connect(args)
-            payload = {
-                'ok': True,
-                'action': 'status',
-                'probe': sanitize_probe(auto.probe()),
-                'recent_ims_events': read_redacted_ims_events(client, args.lines),
-            }
-            code = 0
+            code, payload = run_status(client, auto, args.lines)
         elif args.command == 'restore':
             _, auto, _ = _connect(args)
-            try:
-                disabled = auto.action('disable')
-            except Exception as exc:
-                disabled = {'note': str(exc)}
-            deadline = time.time() + 30.0
-            while time.time() < deadline:
-                try:
-                    st = auto.action('status')
-                except Exception:
-                    break
-                if not isinstance(st, dict) or not st.get('manager_alive'):
-                    break
-                time.sleep(1.5)
-            cleared = auto.clear_exp_trial()
-            payload = {
-                'ok': True,
-                'action': 'restore',
-                'trial_config_removed': bool(cleared.get('cleared')),
-                'disable_result': public_status(disabled) if isinstance(disabled, dict) and 'phase' in disabled else disabled,
-            }
-            code = 0
+            code, payload = run_restore(auto)
         else:
             code, payload = 1, {'ok': False, 'error': 'unknown_command'}
     except Exception as exc:

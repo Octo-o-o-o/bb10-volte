@@ -56,6 +56,67 @@ def mobile_radio_state():
     return None
 
 
+def _radio_control_rpc(msg, dat_line, id_prefix, timeout, err_prefix, accept_err_reply=False,
+                       read_size=262144, max_polls=None):
+    """Send one bounded PPS request to cellular-control and await its matching reply."""
+    identifier = id_prefix + '-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
+    request = ('msg::' + msg + '\nid::' + identifier + '\n' + dat_line + '\n').encode('ascii')
+    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
+    has_err = False
+    try:
+        assert os.write(fd, request) == len(request), err_prefix + '_write_failed'
+        acknowledged = False
+        if max_polls is not None:
+            for unused in range(max_polls):
+                ready, unused1, unused2 = select.select([fd], [], [], 0.5)
+                if not ready:
+                    continue
+                try:
+                    reply = n.attrs(os.read(fd, read_size))
+                except (IOError, OSError) as error:
+                    if error.errno == errno.EAGAIN:
+                        continue
+                    raise
+                if n.value(reply, 'id') != identifier:
+                    continue
+                if 'res' in reply or 'err' in reply:
+                    if accept_err_reply:
+                        assert n.value(reply, 'res') == msg, err_prefix + '_rejected'
+                        has_err = 'err' in reply
+                    else:
+                        assert n.value(reply, 'res') == msg and 'err' not in reply, err_prefix + '_rejected'
+                    acknowledged = True
+                    break
+        else:
+            deadline = time.time() + timeout
+            reads = 0
+            while time.time() < deadline and reads < 200:
+                reads += 1
+                ready, unused1, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
+                if not ready:
+                    break
+                try:
+                    reply = n.attrs(os.read(fd, read_size))
+                except (IOError, OSError) as error:
+                    if error.errno == errno.EAGAIN:
+                        continue
+                    raise
+                if n.value(reply, 'id') != identifier:
+                    continue
+                if 'res' in reply or 'err' in reply:
+                    if accept_err_reply:
+                        assert n.value(reply, 'res') == msg, err_prefix + '_rejected'
+                        has_err = 'err' in reply
+                    else:
+                        assert n.value(reply, 'res') == msg and 'err' not in reply, err_prefix + '_rejected'
+                    acknowledged = True
+                    break
+        assert acknowledged, err_prefix + '_reply_timeout'
+    finally:
+        os.close(fd)
+    return has_err
+
+
 def enable_mobile_network():
     """One ON request during explicit setup; never cycle or poll-retry power.
 
@@ -74,31 +135,8 @@ def enable_mobile_network():
     if current == 'ON':
         return {'before': before, 'after': 'ON', 'changed': False}
     assert current == 'OFF', 'mobile_network_state_unknown'
-    identifier = 'bb10-auto-power-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
-    request = ('msg::power\nid::' + identifier + '\ndat:json:{"state":"ON"}\n').encode('ascii')
-    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
-    try:
-        assert os.write(fd, request) == len(request), 'mobile_network_write_failed'
-        acknowledged = False
-        for unused in range(20):
-            ready, unused1, unused2 = select.select([fd], [], [], 0.5)
-            if not ready:
-                continue
-            try:
-                reply = n.attrs(os.read(fd, 65536))
-            except (IOError, OSError) as error:
-                if error.errno == errno.EAGAIN:
-                    continue
-                raise
-            if n.value(reply, 'id') != identifier:
-                continue
-            if 'res' in reply or 'err' in reply:
-                assert n.value(reply, 'res') == 'power' and 'err' not in reply, 'mobile_network_rejected'
-                acknowledged = True
-                break
-        assert acknowledged, 'mobile_network_reply_timeout'
-    finally:
-        os.close(fd)
+    _radio_control_rpc('power', 'dat:json:{"state":"ON"}', 'bb10-auto-power', 10,
+                       'mobile_network', read_size=65536, max_polls=20)
     for unused in range(31):
         if mobile_radio_state() == 'ON':
             return {'before': before, 'after': 'ON', 'changed': True}
@@ -168,32 +206,8 @@ def request_mode(value):
     # capability/carrier-filtered setter at 0x5ef7c, then persists the selection.
     # Its 0x5af70 table maps LTE to 16 (the QMI NAS mask uses different bits).
     value = wire_mode(value)
-    identifier = 'bb10-auto-rat-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
-    request = ('msg::configure_rats\nid::' + identifier + '\ndat:json:' + json.dumps(value) + '\n').encode('ascii')
-    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
-    try:
-        assert os.write(fd, request) == len(request)
-        deadline = time.time() + 15
-        acknowledged = False
-        while time.time() < deadline:
-            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
-            if not ready:
-                break
-            try:
-                reply = n.attrs(os.read(fd, 262144))
-            except (IOError, OSError) as error:
-                if error.errno == errno.EAGAIN:
-                    continue
-                raise
-            if n.value(reply, 'id') != identifier:
-                continue
-            if 'res' in reply or 'err' in reply:
-                assert n.value(reply, 'res') == 'configure_rats' and 'err' not in reply, 'network_mode_rejected'
-                acknowledged = True
-                break
-        assert acknowledged, 'network_mode_reply_timeout'
-    finally:
-        os.close(fd)
+    _radio_control_rpc('configure_rats', 'dat:json:' + json.dumps(value),
+                       'bb10-auto-rat', 15, 'network_mode')
     for unused in range(8):
         try:
             if same_mode(mode_snapshot(), value):
@@ -240,34 +254,8 @@ def serving_network_snapshot():
 def request_scan_mode(mode):
     assert mode in ('AUTO', 'MANUAL'), 'invalid_scan_mode'
     assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
-    identifier = 'bb10-auto-scan-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
-    request = ('msg::scan_mode\nid::' + identifier + '\ndat::' + mode + '\n').encode('ascii')
-    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
-    has_err = False
-    try:
-        assert os.write(fd, request) == len(request)
-        deadline = time.time() + 15
-        acknowledged = False
-        while time.time() < deadline:
-            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
-            if not ready:
-                break
-            try:
-                reply = n.attrs(os.read(fd, 262144))
-            except (IOError, OSError) as error:
-                if error.errno == errno.EAGAIN:
-                    continue
-                raise
-            if n.value(reply, 'id') != identifier:
-                continue
-            if 'res' in reply or 'err' in reply:
-                assert n.value(reply, 'res') == 'scan_mode', 'scan_mode_rejected'
-                has_err = 'err' in reply
-                acknowledged = True
-                break
-        assert acknowledged, 'scan_mode_reply_timeout'
-    finally:
-        os.close(fd)
+    has_err = _radio_control_rpc('scan_mode', 'dat::' + mode, 'bb10-auto-scan', 15,
+                                 'scan_mode', accept_err_reply=True)
     # Global 3GPP+3GPP2 SKUs (e.g. SQC100-3) may report 3GPP2 manual-mode
     # unsupported while 3GPP scan_mode transitions cleanly. Verify readback.
     for unused in range(6):
@@ -284,32 +272,7 @@ def request_network_select(mcc, mnc, rat=16):
     assert type(rat) is int and rat == 16, 'invalid_rat'
     assert n.digest(n.read(CELLULAR_IMAGE)) == CELLULAR_HASH, 'unknown_radio_controller'
     payload = json.dumps({'mcc': mcc, 'mnc': mnc, 'rat': rat}, separators=(',', ':'))
-    identifier = 'bb10-auto-plmn-' + str(os.getpid()) + '-' + str(int(time.time() * 1000))
-    request = ('msg::network_select\nid::' + identifier + '\ndat:json:' + payload + '\n').encode('ascii')
-    fd = os.open(RADIO_CONTROL + '?wait', os.O_RDWR | os.O_NONBLOCK)
-    try:
-        assert os.write(fd, request) == len(request)
-        deadline = time.time() + 35
-        acknowledged = False
-        while time.time() < deadline:
-            ready, unused, unused2 = select.select([fd], [], [], max(0, deadline - time.time()))
-            if not ready:
-                break
-            try:
-                reply = n.attrs(os.read(fd, 262144))
-            except (IOError, OSError) as error:
-                if error.errno == errno.EAGAIN:
-                    continue
-                raise
-            if n.value(reply, 'id') != identifier:
-                continue
-            if 'res' in reply or 'err' in reply:
-                assert n.value(reply, 'res') == 'network_select' and 'err' not in reply, 'network_select_rejected'
-                acknowledged = True
-                break
-        assert acknowledged, 'network_select_reply_timeout'
-    finally:
-        os.close(fd)
+    _radio_control_rpc('network_select', 'dat:json:' + payload, 'bb10-auto-plmn', 35, 'network_select')
 
 
 def configured_network_lock(sim_sha256=None):
@@ -738,6 +701,26 @@ def prepare(selected, allow_rplmn_attach=False):
     return True
 
 
+def restore_radio_overrides(raise_error=True, preserve_locked_sim=None):
+    """Release owned network-selection and LTE-only overrides, preserving first error."""
+    first_error = None
+    try:
+        if preserve_locked_sim is None:
+            restore_network_selection()
+        else:
+            restore_network_selection(preserve_locked_sim=preserve_locked_sim)
+    except Exception as error:
+        first_error = error
+    try:
+        restore_lte_mode()
+    except Exception as error:
+        if first_error is None:
+            first_error = error
+    if raise_error and first_error is not None:
+        raise first_error
+    return first_error
+
+
 def restore_original():
     first_error = None
     result = None
@@ -745,16 +728,9 @@ def restore_original():
         result = set_usage(0, {'operator': 'original', 'sim_sha256': None})
     except Exception as error:
         first_error = error
-    try:
-        restore_network_selection(preserve_locked_sim=None)
-    except Exception as error:
-        if first_error is None:
-            first_error = error
-    try:
-        restore_lte_mode()
-    except Exception as error:
-        if first_error is None:
-            first_error = error
+    radio_error = restore_radio_overrides(raise_error=False, preserve_locked_sim=None)
+    if first_error is None:
+        first_error = radio_error
     if first_error is not None:
         raise first_error
     return result

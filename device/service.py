@@ -70,6 +70,7 @@ startup_timing = {}
 last_status_snapshot = None
 last_status_write = None
 route_log_state = {'inode': None, 'offset': 0}
+pending_ims_routes = []
 ACTIVE_REQUEST = profiles.request()
 ACTIVE_PROFILE = ACTIVE_REQUEST['profile']
 
@@ -288,6 +289,12 @@ def profile_updates(profile, mcc, mnc):
         ims_fields['SilentRedial'] = 'b:' + ('true' if ims_pps['SilentRedial'] else 'false')
     if 'SIP_Timer_CSFB' in ims_pps:
         ims_fields['SIP_Timer_CSFB'] = 'n:' + str(ims_pps['SIP_Timer_CSFB'])
+    if 'IPsec' in ims_pps:
+        ims_fields['IPsec'] = 'b:' + ('true' if ims_pps['IPsec'] else 'false')
+    if 'SIP_transport' in ims_pps:
+        ims_fields['SIP_transport'] = ':' + ims_pps['SIP_transport']
+    if 'RegExpiration' in ims_pps:
+        ims_fields['RegExpiration'] = 'n:' + str(ims_pps['RegExpiration'])
     result = {VOICE: {'voice_domain_preference_EUTRAN': 'n:3'},
               IMS: ims_fields,
               CDSC: {'cdsc_xml': ':' + APN}}
@@ -295,7 +302,7 @@ def profile_updates(profile, mcc, mnc):
     if ir92:
         ir92_fields = {}
         if 'UsePreconditions' in ir92:
-            ir92_fields['UsePreconditions'] = 'n:' + str(ir92['UsePreconditions'])
+            ir92_fields['UsePreconditions'] = 'b:' + ('true' if ir92['UsePreconditions'] else 'false')
         if 'SMS_Format' in ir92:
             ir92_fields['SMS_Format'] = ':' + ir92['SMS_Format']
         if 'amr_modeset_list' in ir92:
@@ -342,6 +349,23 @@ def wait_for_ims_apn(expected_imsi):
     raise RuntimeError('Timeout: dedicated IMS APN after 3 bounded attempts')
 
 
+def wait_for_ims_profile_loaded(timeout=8):
+    """Short bounded wait for cnice to expose the overridden IMS APN when always_on=False."""
+    target = ACTIVE_PROFILE['ims']['apn'].lower()
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if stopping():
+            raise RuntimeError('Stopped while waiting for IMS profile reload')
+        try:
+            item = n.value(n.attrs(n.read(DATA)), 'ims', {})
+            if isinstance(item, dict) and profiles.normalize_apn(item.get('apn')) == target:
+                return True
+        except (IOError, OSError, ValueError, TypeError, AttributeError):
+            pass
+        time.sleep(0.5)
+    return False
+
+
 def applied_updates():
     # Restore the exact values that were applied, even if a different operator
     # profile was selected later. Pre-v0.3 journals use the original baseline.
@@ -349,8 +373,8 @@ def applied_updates():
 
 
 def _overseas_profile_active():
-    return (isinstance(ACTIVE_PROFILE, dict) and
-            ('experimental' in ACTIVE_PROFILE or ACTIVE_PROFILE.get('carrier', {}).get('mcc') != '460'))
+    mcc = ACTIVE_PROFILE.get('carrier', {}).get('mcc') if isinstance(ACTIVE_PROFILE, dict) else None
+    return isinstance(mcc, str) and bool(mcc) and mcc != '460'
 
 
 def known_empty_cdsc_overlay(name):
@@ -406,23 +430,35 @@ def known_empty_cdsc_overlay(name):
 
 
 def _valid_initial_pps_value(path, key, value, unified=False):
+    overseas = bool(unified and _overseas_profile_active())
     if path == CDSC and key == 'cdsc_xml':
         return value in (None, ':') if unified else value == ':'
     if path == VOICE and key == 'voice_domain_preference_EUTRAN':
+        if overseas:
+            return value in (None, 'n:0', 'n:1', 'n:2', 'n:3')
         return value in (None, 'n:0', 'n:1', 'n:2') if unified else value is None
     if path == IMS:
-        if key in ('SMS_Over_IP_Network_Indication', 'SilentRedial'):
+        if key in ('SMS_Over_IP_Network_Indication', 'SilentRedial', 'IPsec'):
             return value in (None, 'b:true', 'b:false')
-        if key == 'SIP_Timer_CSFB':
+        if key in ('SIP_Timer_CSFB', 'RegExpiration'):
             return value is None or (isinstance(value, str) and re.match(r'\An:[0-9]{1,6}\Z', value) is not None)
+        if key == 'SIP_transport':
+            return value in (None, ':', ':UDP', ':TCP', ':TLS')
         if key == 'Home_network_domain_name':
             if value in (None, ':'):
                 return True
-            return bool(unified and _overseas_profile_active() and isinstance(value, str) and value.startswith(':'))
-        return value is None or (unified and value == 'json:[]')
+            return bool(overseas and isinstance(value, str) and value.startswith(':'))
+        if value is None or (unified and value == 'json:[]'):
+            return True
+        if overseas and isinstance(value, str) and value.startswith('json:['):
+            try:
+                return isinstance(json.loads(value[5:]), list)
+            except (ValueError, TypeError):
+                return False
+        return False
     if path == IR92:
         if key == 'UsePreconditions':
-            return value in (None, 'n:0', 'n:1')
+            return value in (None, 'b:false', 'b:true', 'n:0', 'n:1')
         if key == 'SMS_Format':
             return value in (None, ':', ':3GPP', ':3GPP2')
         if key in ('amr_modeset_list', 'amrwb_modeset_list'):
@@ -548,17 +584,37 @@ def _is_ipv6_literal(text):
         return False
 
 
-def _redact_ipv6_token(match):
+def _redact_ipv6_token(match, placeholder='[redacted-ip]'):
     prefix = match.group(1) or ''
     token = match.group(2)
     for keep, body in (('', prefix + token), (prefix, token)):
         if not body:
             continue
-        if body.endswith(':') and _is_ipv6_literal(body[:-1]):
-            return keep + '[redacted-ip]:'
         if _is_ipv6_literal(body):
-            return keep + '[redacted-ip]'
+            return keep + placeholder
+        suffix = ':' if body.endswith(':') else ''
+        core = body[:-1] if suffix else body
+        if suffix and _is_ipv6_literal(core):
+            return keep + placeholder + suffix
+        if core.count(':') == 8:
+            head, tail = core.rsplit(':', 1)
+            if tail.isdigit() and 1 <= int(tail) <= 65535 and _is_ipv6_literal(head):
+                return keep + placeholder + suffix
     return match.group(0)
+
+
+def redact_ipv6_addresses(text, placeholder='[redacted-ip]'):
+    """Redact bracketed, bare, PPS-prefixed, IPv4-mapped and :port IPv6 literals."""
+    if not isinstance(text, str) or ':' not in text:
+        return text
+    text = re.sub(
+        r'\[([0-9a-fA-F:.]+(?:%[^\s\]]+)?)\](?::\d{1,5})?',
+        lambda m: placeholder if ':' in m.group(1) and _is_ipv6_literal(m.group(1)) else m.group(0),
+        text)
+    return re.sub(
+        r'(?<![0-9a-zA-Z_])([A-Za-z_][A-Za-z0-9_-]*:{1,2})?([0-9a-fA-F:]*:[0-9a-fA-F:.]+(?:%[A-Za-z0-9_.-]+)?)(?![0-9a-zA-Z_])',
+        lambda m: _redact_ipv6_token(m, placeholder),
+        text)
 
 
 def redact_ims_event_line(line):
@@ -569,11 +625,11 @@ def redact_ims_event_line(line):
     line = re.sub(r'(?i)\b(?:sips?|tel):[^\s>;,"\'()<>]+', '[redacted-uri]', line)
     line = re.sub(r'(?i)\b(Call-ID\s*:\s*)\S+', r'\1[redacted-call-id]', line)
     line = re.sub(r'(?i)\b(imsi|impi|impu|iccid|msisdn)(\s*[:=]\s*)\S+', r'\1\2[redacted-id]', line)
+    line = redact_ipv6_addresses(line, '[redacted-ip]')
     line = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?![\w.])', '[redacted-ip]', line)
-    line = re.sub(r'\[[0-9a-fA-F:.]+(?:%[^\s\]]+)?\](?::\d{1,5})?', '[redacted-ip]', line)
-    line = re.sub(
-        r'(?<![0-9a-zA-Z_])([A-Za-z_][A-Za-z0-9_-]*:)?([0-9a-fA-F:]*:[0-9a-fA-F:]+(?:%[A-Za-z0-9_.-]+)?)(?![0-9a-zA-Z_])',
-        _redact_ipv6_token, line)
+    line = re.sub(r'(?i)\b((?:dial|caller|callee|from|to|number|phone|dest|orig|party|user)\s*[:=]\s*["\']?)\+?(?:\d-?){6,14}\d\b',
+                  r'\1[redacted-id]', line)
+    line = re.sub(r'(?<![\w+])\+(?:\d[\s-]?){6,14}\d(?!\d)', '[redacted-id]', line)
     line = re.sub(r'(?<!\d)\+?\d{11,20}(?!\d)', '[redacted-id]', line)
     for index, uid in enumerate(uids):
         line = line.replace('vpn_login response: uid= __VPN_UID_%d__' % index, 'vpn_login response: uid= ' + uid)
@@ -615,7 +671,7 @@ def _run_route(argv, timeout=5):
     """Run /sbin/route with bounded output; never raises on non-zero status."""
     try:
         with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
-            proc = subprocess.Popen(argv, stdout=out, stderr=err)
+            proc = subprocess.Popen(argv, stdout=out, stderr=err, close_fds=True)
             deadline = time.time() + timeout
             while proc.poll() is None and time.time() < deadline:
                 time.sleep(0.05)
@@ -675,6 +731,20 @@ def _safe_pps_value(attrs, key):
         return False, None
 
 
+def _pps_truthy(val):
+    if type(val) is bool:
+        return val
+    if type(val) is int and val in (0, 1):
+        return bool(val)
+    if isinstance(val, str):
+        low = val.strip().lower()
+        if low in ('yes', 'true', '1'):
+            return True
+        if low in ('no', 'false', '0'):
+            return False
+    return None
+
+
 def live_cellular_gateways():
     """Return verified live cellular gateways/local IPs from active msm* interfaces.
 
@@ -715,16 +785,19 @@ def live_cellular_gateways():
         ok_v6, ip6_ok = _safe_pps_value(attrs, 'ip6_ok')
         if not (ok_up and ok_conn and ok_v4 and ok_v6):
             incomplete = True
-        if up_val is False or conn_val is False:
+        up_flag = _pps_truthy(up_val)
+        conn_flag = _pps_truthy(conn_val)
+        v4_flag = _pps_truthy(ip_ok)
+        v6_flag = _pps_truthy(ip6_ok)
+        if up_flag is False or conn_flag is False:
             continue
-        if not any(flag is True for flag in (ip_ok, ip6_ok, up_val, conn_val)):
+        if not any(flag is True for flag in (v4_flag, v6_flag, up_flag, conn_flag)):
             continue
-        for key in ('ip_gateway', 'ip6_gateway'):
-            ok_field, val = _safe_pps_value(attrs, key)
-            if not ok_field:
-                incomplete = True
-            else:
-                peer_gws.update(_extract_ip_candidates(val))
+        ok_gw, gw_val = _safe_pps_value(attrs, 'ip_gateway')
+        if not ok_gw:
+            incomplete = True
+        else:
+            peer_gws.update(_extract_ip_candidates(gw_val))
         ok_addrs, addr_val = _safe_pps_value(attrs, 'ip_addresses')
         if not ok_addrs:
             incomplete = True
@@ -751,9 +824,9 @@ def _route_summary(owned, status_name=None, verified=False):
     }
 
 
-def sync_ims_routes():
+def sync_ims_routes(drain_all=False):
     """Execute P-CSCF host routes denied to non-root ims_rrm on active msm* interfaces."""
-    global route_log_state
+    global route_log_state, pending_ims_routes
     if j is None or j.get('boot') != boot_token() or not j.get('native_pid'):
         return
     path = STATE + '/native.log'
@@ -773,7 +846,8 @@ def sync_ims_routes():
         try:
             with open(path, 'rb') as stream:
                 stream.seek(route_log_state['offset'])
-                for unused in range(4):
+                max_chunks = 64 if drain_all else 4
+                for unused in range(max_chunks):
                     remaining = st.st_size - route_log_state['offset']
                     if remaining <= 0:
                         break
@@ -801,7 +875,8 @@ def sync_ims_routes():
                                 ops.append(('del', host[0], host[1], None))
         except (IOError, OSError):
             return
-    if not ops and not owned:
+    combined_ops = list(pending_ims_routes) + ops
+    if not combined_ops and not owned:
         return
     peer_gws, local_ips, incomplete = live_cellular_gateways()
     status_name = old_summary.get('status', 'idle')
@@ -836,13 +911,25 @@ def sync_ims_routes():
         owned = kept
         if swept:
             status_name = 'synced' if owned else 'deleted'
-    for kind, family, host, gw in ops:
+    next_pending = []
+    max_retries = 15
+    def queue_pending(entry, attempts):
+        next_pending[:] = [item for item in next_pending if not (item[1] == entry[1] and item[2] == entry[2])]
+        if attempts + 1 < max_retries and len(next_pending) < MAX_OWNED_ROUTES:
+            next_pending.append((entry[0], entry[1], entry[2], entry[3], attempts + 1))
+    for item in combined_ops:
+        if len(item) == 5:
+            kind, family, host, gw, attempts = item
+        else:
+            kind, family, host, gw = item
+            attempts = 0
         if not route_available:
             status_name = 'unavailable'
             break
         existing_idx = next((idx for idx, item in enumerate(owned)
                              if item['family'] == family and item['host'] == host), None)
         if kind == 'del':
+            next_pending[:] = [item for item in next_pending if not (item[1] == family and item[2] == host)]
             if existing_idx is None:
                 continue
             argv = [ROUTE_BIN, '-n', 'delete'] + (['-inet6'] if family == 'ipv6' else []) + ['-host', host]
@@ -854,7 +941,9 @@ def sync_ims_routes():
                 status_name = 'route_error'
             continue
         if peer_gws is None or local_ips is None:
-            status_name = 'gateway_unverified'
+            if not owned:
+                status_name = 'gateway_unverified'
+            queue_pending(('add', family, host, gw), attempts)
             continue
         gw_key = (family, gw)
         if gw_key in peer_gws:
@@ -866,6 +955,7 @@ def sync_ims_routes():
         if not gw_ok:
             if not owned:
                 status_name = 'gateway_unverified'
+            queue_pending(('add', family, host, gw), attempts)
             continue
         verified_any = True
         if existing_idx is not None:
@@ -876,6 +966,7 @@ def sync_ims_routes():
             d_rc, d_out, d_err = _run_route(del_argv)
             if not (d_rc == 0 or 'not in table' in (d_out + d_err).lower()):
                 status_name = 'route_error'
+                queue_pending(('add', family, host, gw), attempts)
                 continue
             owned.pop(existing_idx)
         if len(owned) >= MAX_OWNED_ROUTES:
@@ -890,8 +981,11 @@ def sync_ims_routes():
             if not owned:
                 status_name = 'existing_kept'
         else:
-            if not owned:
-                status_name = 'route_error'
+            status_name = 'route_error'
+            queue_pending(('add', family, host, gw), attempts)
+    pending_ims_routes = next_pending
+    if not next_pending and owned and status_name in ('gateway_unverified', 'route_error'):
+        status_name = 'synced'
     new_summary = _route_summary(owned, status_name=status_name, verified=verified_any)
     if owned != old_owned or new_summary != old_summary:
         j['owned_ims_routes'] = owned
@@ -901,8 +995,9 @@ def sync_ims_routes():
 
 def cleanup_ims_routes(current_boot=True):
     """Remove only host routes owned by this boot's IMS service."""
-    global route_log_state
+    global route_log_state, pending_ims_routes
     route_log_state = {'inode': None, 'offset': 0}
+    pending_ims_routes = []
     if j is None:
         return
     owned = [dict(item) for item in (j.get('owned_ims_routes') or []) if isinstance(item, dict)]
@@ -990,11 +1085,12 @@ def collect_vpn_evidence():
     if known != set(j.get('known_vpn_uids', [])):
         j['known_vpn_uids'] = sorted(known)
         save_journal()
+    need_truncate = os.path.isfile(path) and os.stat(path).st_size > 1048576
     try:
-        sync_ims_routes()
+        sync_ims_routes(drain_all=need_truncate)
     except Exception:
         pass  # Optional route sync never disrupts live IMS or VPN evidence.
-    if os.path.isfile(path) and os.stat(path).st_size > 1048576:
+    if need_truncate:
         # Ownership was saved first. Keep one bounded private previous log;
         # O_APPEND on the child's descriptor permits truncation of this inode.
         n.atomic(STATE + '/native-previous.log', n.read(path)[-1048576:])
@@ -1166,11 +1262,14 @@ def configure():
     n.update_pps(CFG, {'IMS_platform': ':common'})
     os.chmod(CFG, 0o644)
     assert n.attrs(n.read(CFG)) == {'IMS_platform': ':common'}
-    impi = imsi + '@' + profiles.home_domain(ACTIVE_PROFILE, network['mcc'], network['mnc'])
-    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<ims><ImsConfig>'
-           '<Impi>%s</Impi><Imsi>%s</Imsi><ImpuList><Impu>sip:%s</Impu></ImpuList>'
-           '</ImsConfig></ims>\n' % (impi, imsi, impi)).encode('ascii')
-    write_owned(XML, xml, 0o600, 453, 31)
+    use_native_isim = (bool(ACTIVE_PROFILE.get('experimental', {}).get('allow_isim')) and
+                       bool((network.get('sim_type') or 0) & 16))
+    if not use_native_isim:
+        impi = imsi + '@' + profiles.home_domain(ACTIVE_PROFILE, network['mcc'], network['mnc'])
+        xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<ims><ImsConfig>'
+               '<Impi>%s</Impi><Imsi>%s</Imsi><ImpuList><Impu>sip:%s</Impu></ImpuList>'
+               '</ImsConfig></ims>\n' % (impi, imsi, impi)).encode('ascii')
+        write_owned(XML, xml, 0o600, 453, 31)
     policy = n.voice_policy()
     assert policy in (0, 3), 'Unexpected modem policy'
     if policy == 0:
@@ -1191,6 +1290,8 @@ def configure():
     apply_fields(CDSC)
     if ACTIVE_PROFILE['ims'].get('always_on', True):
         wait_for_ims_apn(imsi)
+    else:
+        wait_for_ims_profile_loaded()
     apply_fields(IMS)
     if IR92 in applied_updates():
         apply_fields(IR92)
@@ -1435,6 +1536,10 @@ def monitor_native():
                 except Exception:
                     pass
                 try:
+                    cleanup_ims_routes(current_boot=(j is not None and j.get('boot') == boot_token()))
+                except Exception:
+                    pass
+                try:
                     status('native_exited', 'Native IMS exited; explicit stop restores configuration')
                 except Exception:
                     pass
@@ -1468,10 +1573,11 @@ def monitor_native():
                 except Exception:
                     pass  # Diagnostic/display failures never tear down live IMS.
                 last_collect = now
-            elif fast and phase != 'running':
+            elif fast or pending_ims_routes:
                 try:
                     log_path = STATE + '/native.log'
-                    if os.path.isfile(log_path) and os.stat(log_path).st_size != route_log_state.get('offset', 0):
+                    if (pending_ims_routes or
+                            (os.path.isfile(log_path) and os.stat(log_path).st_size != route_log_state.get('offset', 0))):
                         sync_ims_routes()
                 except Exception:
                     pass
@@ -1481,7 +1587,15 @@ def monitor_native():
                 pass  # A full disk or unreadable status receipt is not an IMS failure.
             # Native IMS handles re-registration itself. Prolonged unknown or
             # disconnected states also stop fast polling, without automatic retries.
-            waiter.wait(ACTIVE_PROFILE['runtime']['poll_seconds'] if fast else 300)
+            if pending_ims_routes and fast:
+                wait_seconds = 1
+            elif fast:
+                wait_seconds = ACTIVE_PROFILE['runtime']['poll_seconds']
+            elif pending_ims_routes or (j and j.get('owned_ims_routes')):
+                wait_seconds = 30
+            else:
+                wait_seconds = 300
+            waiter.wait(wait_seconds)
             previous_phase, previous_state, was_steady = phase, state, steady
             count += 1
         return True
@@ -1525,7 +1639,7 @@ def serve():
         stdout_fd = os.open(STATE + '/native.log', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_APPEND, 0o600)
         with os.fdopen(stdout_fd, 'wb') as output:
             child = subprocess.Popen([BIN, '-U', '453:31,80,387,427,521,1001'], stdout=output,
-                                     stderr=subprocess.STDOUT)
+                                     stderr=subprocess.STDOUT, close_fds=True)
         j['native_pid'] = child.pid
         save_journal()
         status('registering')

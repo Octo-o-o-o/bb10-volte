@@ -69,9 +69,16 @@ class OverseasCatalogTests(unittest.TestCase):
         self.assertIn('Apache License 2.0', notice)
         self.assertIn('overseas-carriers.json', notice)
         entries = overseas_carrier.load_catalog()
-        self.assertGreaterEqual(len(entries), 250)
+        self.assertEqual(len(entries), 297)
         self.assertFalse(any(e['mcc'] == '460' for e in entries))
         self.assertTrue(all(e.get('bb10_status') == 'untested' for e in entries))
+        # Verify deep-copy isolation of cached catalog
+        entries[0]['name'] = 'MUTATED'
+        self.assertNotEqual(overseas_carrier.load_catalog()[0]['name'], 'MUTATED')
+        # Verify Tier-1 MNO ranking fixes and zero lab/reserved junk
+        self.assertEqual(overseas_carrier.lookup_plmn_code('311-480')['name'], 'Verizon Wireless')
+        self.assertEqual(overseas_carrier.lookup_plmn_code('440-10')['name'], 'NTT DOCOMO')
+        self.assertIsNone(overseas_carrier.lookup_plmn_code('001-01'))
         for plmn in ('450-08', '450-05', '440-10', '440-20', '302-490', '310-260', '262-01', '260-03', '454-00', '466-92'):
             found = overseas_carrier.lookup_plmn_code(plmn)
             self.assertIsNotNone(found, plmn)
@@ -112,13 +119,14 @@ class DeviceEngineOverseasTests(unittest.TestCase):
                         'always_on': False, 'request_signalling_bearer_via_pco': True, 'disable_dad': True,
                         'ir92': {'UsePreconditions': 0, 'SMS_Format': '3GPP',
                                  'amr_modeset_list': '0,2,4,7', 'amrwb_modeset_list': '0,1,2'},
-                        'ims_pps': {'SilentRedial': False, 'SIP_Timer_CSFB': 5000},
+                        'ims_pps': {'SilentRedial': False, 'SIP_Timer_CSFB': 6,
+                                    'IPsec': True, 'SIP_transport': 'UDP', 'RegExpiration': 3600},
                     },
                 },
                 {
                     'mcc': '440', 'mncs': ['20'],
                     'allow_isim': False, 'allow_stock_default_xml': True,
-                    'data_apns': ['plus.4g'],
+                    'data_apns': ['plus.4g', 'a.first.apn'],
                     'ims': {'apn': 'ims', 'ip_family': 'IPv6', 'home_domain': 'auto', 'sms': True},
                 },
             ],
@@ -127,18 +135,33 @@ class DeviceEngineOverseasTests(unittest.TestCase):
         self.assertEqual(profiles.exp_trial_summary(validated)['plmns'], ['302-490', '440-20'])
         prof = profiles.exp_trial_profile('302', '490', trial=validated)
         self.assertEqual(prof['experimental']['ue_usage'], 'data_centric')
+        # Explicit APN priority order must be preserved for experimental profiles
+        prof_sb = profiles.exp_trial_profile('440', '20', trial=validated)
+        self.assertEqual(prof_sb['carrier']['data_apns'], ['plus.4g', 'a.first.apn'])
+        # 460-15 must remain blocked from overseas overrides
+        with self.assertRaises(ValueError):
+            profiles.validate_exp_trial({'schema': 2, 'enabled': True, 'mcc': '460', 'mncs': ['15'], 'data_apns': ['cbnet']})
+        # Out-of-range SIP_Timer_CSFB (>120 seconds) must be rejected
+        with self.assertRaises(ValueError):
+            profiles.validate_exp_trial({
+                'schema': 2, 'enabled': True, 'mcc': '302', 'mncs': ['490'], 'data_apns': ['auto'],
+                'ims': {'apn': 'ims', 'ims_pps': {'SIP_Timer_CSFB': 5000}},
+            })
         sec = profiles.ims_section(prof)
         self.assertIn(b'<AlwaysOn>false</AlwaysOn>', sec)
         self.assertIn(b'<DisableDAD>true</DisableDAD>', sec)
         self.assertIn(b'<RequestSignallingBearerViaPCO>true</RequestSignallingBearerViaPCO>', sec)
         updates = s.profile_updates(prof, '302', '490')
         self.assertIn(s.IR92, updates)
-        self.assertEqual(updates[s.IR92]['UsePreconditions'], 'n:0')
+        self.assertEqual(updates[s.IR92]['UsePreconditions'], 'b:false')
         self.assertEqual(updates[s.IR92]['SMS_Format'], ':3GPP')
         self.assertEqual(updates[s.IR92]['amr_modeset_list'], ':0,2,4,7')
         self.assertEqual(updates[s.IR92]['amrwb_modeset_list'], ':0,1,2')
         self.assertEqual(updates[s.IMS]['SilentRedial'], 'b:false')
-        self.assertEqual(updates[s.IMS]['SIP_Timer_CSFB'], 'n:5000')
+        self.assertEqual(updates[s.IMS]['SIP_Timer_CSFB'], 'n:6')
+        self.assertEqual(updates[s.IMS]['IPsec'], 'b:true')
+        self.assertEqual(updates[s.IMS]['SIP_transport'], ':UDP')
+        self.assertEqual(updates[s.IMS]['RegExpiration'], 'n:3600')
 
         # patch_carrier handles 0 existing IMS blocks + tag attributes
         patched = profiles.patch_carrier(NO_IMS_XML, prof)
@@ -172,17 +195,19 @@ class DeviceEngineOverseasTests(unittest.TestCase):
                     self.assertFalse(s.known_empty_cdsc_overlay('0.json'))
 
     def test_lte_bands_disabled_strict_non_false_positive_diagnostics(self):
+        # True ONLY when radio is ON, LTE is False, and LTE capability mask itself is 0
         self.assertTrue(compat.lte_bands_disabled({
+            'radio_on': True, 'lte': False, 'lte_band_capability_mask': 0, 'lte_active_band_mask': 0,
+        }))
+        # Non-zero capability with active_band_mask == 0 is normal on 3G/2G/searching -> MUST be False!
+        self.assertFalse(compat.lte_bands_disabled({
             'radio_on': True, 'lte': False, 'lte_band_capability_mask': 0x10045, 'lte_active_band_mask': 0,
         }))
         self.assertFalse(compat.lte_bands_disabled({
-            'radio_on': False, 'lte': False, 'lte_band_capability_mask': 0x10045, 'lte_active_band_mask': 0,
+            'radio_on': False, 'lte': False, 'lte_band_capability_mask': 0, 'lte_active_band_mask': 0,
         }))
         self.assertFalse(compat.lte_bands_disabled({
-            'radio_on': True, 'lte': True, 'lte_band_capability_mask': 0x10045, 'lte_active_band_mask': 0,
-        }))
-        self.assertFalse(compat.lte_bands_disabled({
-            'radio_on': True, 'lte': False, 'lte_band_capability_mask': 0, 'lte_active_band_mask': 0,
+            'radio_on': True, 'lte': True, 'lte_band_capability_mask': 0, 'lte_active_band_mask': 0,
         }))
         self.assertFalse(compat.lte_bands_disabled({
             'radio_on': True, 'lte': False, 'lte_band_capability_mask': 0x10045, 'lte_active_band_mask': 0x4,
@@ -190,7 +215,7 @@ class DeviceEngineOverseasTests(unittest.TestCase):
         snap = {
             'sim_state': 'READY', 'sim_read_error': False, 'mcc': '460', 'mnc': '01',
             'sim_type': 2, 'identity_matches': True, 'radio_on': True, 'lte': False,
-            'lte_band_capability_mask': 0x10045, 'lte_active_band_mask': 0, 'lte_bands_disabled': True,
+            'lte_band_capability_mask': 0, 'lte_active_band_mask': 0, 'lte_bands_disabled': True,
             'apn_matches': False, 'data_connected': False, 'network_read_error': False,
         }
         checks = {c['id']: c for c in compat.network_checks(snap, profiles.default())}
@@ -357,9 +382,10 @@ class PcscfRouteSyncAndRedactionTests(unittest.TestCase):
 
 
 class UpgradeChainAndLockTests(unittest.TestCase):
-    def test_r58_payload_hash_registered_and_payload_count_invariant(self):
+    def test_r58_and_r59_payload_hashes_registered_and_payload_count_invariant(self):
         self.assertEqual(len(u.PAYLOAD_FILES), 18)
         self.assertIn('499b01a9e316c4957fe1143945d1cc86196bf30761bef039debcf4513357a8f6', unified_install.PREVIOUS_PAYLOADS)
+        self.assertIn('ed79b28d87995d7071f86c80cda303dd6ac8651acdf153f8b6da1234535bc6e7', unified_install.PREVIOUS_PAYLOADS)
 
     def test_exp_trial_manage_actions_require_idle_and_validate_cleanly(self):
         cfg = overseas_carrier.build_trial_config('450', ['08'], ['auto', 'lte.ktfwing.com'], allow_isim=True)
@@ -415,9 +441,9 @@ class ZeroClutterChinaUiTests(unittest.TestCase):
         }
         kr_resp = mobile_worker.inspection_response({'language': 'en'}, kr_probe, {}, folder=str(ROOT))
         self.assertTrue(kr_resp['details'].get('overseas_prompt'))
-        self.assertEqual(kr_resp['details'].get('overseas_preset_name'), 'KT')
+        self.assertNotIn('overseas_preset_name', kr_resp['details'])
         self.assertTrue(kr_resp['details'].get('lte_bands_disabled'))
-        self.assertIn('active LTE band mask is 0', kr_resp['display']['message'])
+        self.assertIn('LTE band capability mask is 0', kr_resp['display']['message'])
 
     def test_configure_always_on_false_skips_ims_apn_wait_and_restores_ir92(self):
         cfg = overseas_carrier.build_trial_config(
@@ -503,13 +529,15 @@ class ZeroClutterChinaUiTests(unittest.TestCase):
                     ):
                         stack.enter_context(patch.object(obj, attr, **kw))
                     mock_wait_apn = stack.enter_context(patch.object(s, 'wait_for_ims_apn'))
+                    mock_wait_prof = stack.enter_context(patch.object(s, 'wait_for_ims_profile_loaded'))
                     s.j['crypto_boot'] = ['b1']
                     s.j['provider'] = 7
                     pps_store[str(base / 'pps_cfg/ims')] = {}
                     (base / 'pps_cfg/ims').write_text('@ims\n', encoding='utf-8')
                     s.configure()
                     mock_wait_apn.assert_not_called()
-                    self.assertEqual(pps_store[s.IR92]['UsePreconditions'], 'n:0')
+                    mock_wait_prof.assert_called_once()
+                    self.assertEqual(pps_store[s.IR92]['UsePreconditions'], 'b:false')
                     self.assertEqual(pps_store[s.IMS]['SilentRedial'], 'b:false')
                     self.assertEqual(s.j['pps_before'][s.IR92]['UsePreconditions'], 'n:1')
                     self.assertEqual(s.j['pps_before'][s.IMS]['SilentRedial'], 'b:true')
@@ -776,19 +804,17 @@ class ZeroClutterChinaUiTests(unittest.TestCase):
                 self.assertTrue(r_ins['ok'])
                 self.assertEqual(r_ins['overseas_state']['observed_data_apn'], '')
                 self.assertTrue(r_ins['overseas_state']['active'])
-                # overseas-save returns overseas_state + overseas_saved
+                # overseas-save returns overseas_state cleanly
                 r_save = mobile_worker.dispatch('overseas-save', {'language': 'en', 'overseas_config': saved_cfg}, tmp)
                 self.assertTrue(r_save['ok'])
-                self.assertTrue(r_save['overseas_saved'])
                 self.assertIn('overseas_state', r_save)
                 # invalid config returns structured invalid_overseas_config error
                 r_bad = mobile_worker.dispatch('overseas-save', {'language': 'en', 'overseas_config': {'mcc': 'BAD'}}, tmp)
                 self.assertFalse(r_bad['ok'])
                 self.assertEqual(r_bad['error']['code'], 'invalid_overseas_config')
-                # overseas-clear returns overseas_state + overseas_cleared
+                # overseas-clear returns overseas_state cleanly
                 r_clr = mobile_worker.dispatch('overseas-clear', {'language': 'en'}, tmp)
                 self.assertTrue(r_clr['ok'])
-                self.assertTrue(r_clr['overseas_cleared'])
                 self.assertIn('overseas_state', r_clr)
 
     def test_overseas_cli_apply_sanitizes_local_path_and_restore_waits_for_stop(self):
@@ -838,6 +864,312 @@ class ZeroClutterChinaUiTests(unittest.TestCase):
                 rc2 = overseas_carrier.main(['restore'])
             self.assertEqual(rc2, 0)
             self.assertTrue(fake_auto.cleared)
+
+
+class R60HardeningAndRegressionTests(unittest.TestCase):
+    def test_configure_skips_synthetic_xml_for_real_isim_under_allow_isim(self):
+        cfg = overseas_carrier.build_trial_config('450', ['08'], ['lte.ktfwing.com'], allow_isim=True)
+        prof = profiles.exp_trial_profile('450', '08', trial=cfg)
+        for sim_type, expect_xml in ((18, False), (2, True)):
+            pps_store = {
+                s.VOICE: {'voice_domain_preference_EUTRAN': 'n:0'},
+                s.IMS: {'IMS_profilesV2': 'json:[]', 'supported_networks': 'json:[]',
+                        'IMS_services': 'json:[]', 'SMS_Over_IP_Network_Indication': 'b:false',
+                        'Home_network_domain_name': ':'},
+                s.CDSC: {'cdsc_xml': ':'},
+            }
+            written_paths = []
+
+            def fake_write(path, *args, **kwargs):
+                written_paths.append(path)
+
+            def fake_read(path):
+                if path in pps_store:
+                    return ('@obj\n' + '\n'.join(k + ':' + v for k, v in pps_store[path].items() if v is not None) + '\n').encode('utf-8')
+                return b'stock-bytes'
+
+            def fake_update(path, updates):
+                pps_store.setdefault(path, {})
+                for k, v in updates.items():
+                    if v is None:
+                        pps_store[path].pop(k, None)
+                    else:
+                        pps_store[path][k] = v
+
+            with tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                for sub in ('state', 'runtime/carrier', 'pps_cfg'):
+                    (base / sub).mkdir(parents=True, exist_ok=True)
+                (base / 'pps_cfg/ims').write_text('@ims\n', encoding='utf-8')
+                pps_store[str(base / 'pps_cfg/ims')] = {'IMS_platform': ':common'}
+                old_req, old_prof, old_j = s.ACTIVE_REQUEST, s.ACTIVE_PROFILE, s.j
+                try:
+                    s.ACTIVE_REQUEST = profiles.request(prof, True)
+                    s.ACTIVE_PROFILE = prof
+                    s.j = {
+                        'owner': 'q10-unicom-volte-v1', 'original_voice_policy': 0,
+                        'pps_before': copy.deepcopy(pps_store), 'known_vpn_uids': [],
+                        'vpn_before_uids': [], 'native_pid': None, 'managed_files': {},
+                        'restore_completed': True, 'crypto_boot': ['b1'], 'provider': 7,
+                    }
+                    with contextlib.ExitStack() as stack:
+                        for obj, attr, kw in (
+                            (s, 'BASE', {'new': str(base)}),
+                            (s, 'STATE', {'new': str(base / 'state')}),
+                            (s, 'RUNTIME', {'new': str(base / 'runtime')}),
+                            (s, 'JOURNAL', {'new': str(base / 'state/journal.json')}),
+                            (s, 'BIN', {'new': str(base / 'runtime/ims_rrm')}),
+                            (s, 'APN', {'new': str(base / 'runtime/carrier/0-ims.xml')}),
+                            (s, 'XML', {'new': str(base / 'imsconfig_user.xml')}),
+                            (s, 'CFG_DIR', {'new': str(base / 'pps_cfg')}),
+                            (s, 'CFG', {'new': str(base / 'pps_cfg/ims')}),
+                            (s, 'ready', {'return_value': True}),
+                            (s, 'current_usim', {'return_value': '45008' + '1' * 10}),
+                            (s.compatibility, 'read_network', {'return_value': {'mcc': '450', 'mnc': '08', 'sim_type': sim_type}}),
+                            (profiles, 'carrier_template', {'return_value': ({'path': '/etc/carrier/config/0.xml'}, b'<xml/>')}),
+                            (s, 'init_journal', {}),
+                            (s, 'collect_vpn_evidence', {}),
+                            (s, 'cleanup_vpn', {}),
+                            (s, 'temporary_binary', {'return_value': (b'patched-bin', ['p1'])}),
+                            (s, 'write_owned', {'side_effect': fake_write}),
+                            (s, 'wait_for_ims_apn', {}),
+                            (s, 'boot_token', {'return_value': ['b1']}),
+                            (s, 'save_journal', {}),
+                            (s.os, 'chmod', {}),
+                            (s.n, 'read', {'side_effect': fake_read}),
+                            (s.n, 'update_pps', {'side_effect': fake_update}),
+                            (s.n, 'ims_pids', {'return_value': []}),
+                            (s.n, 'vpn_ids', {'return_value': []}),
+                            (s.n, 'vpn_configs', {'return_value': {}}),
+                            (s.n, 'voice_policy', {'return_value': 3}),
+                            (s.n, 'crypto_policy', {'return_value': {'swcr_id': 7, 'crypto_support': 1}}),
+                            (s.n, 'command', {'return_value': b''}),
+                        ):
+                            stack.enter_context(patch.object(obj, attr, **kw))
+                        s.configure()
+                    xml_written = str(base / 'imsconfig_user.xml') in written_paths
+                    self.assertEqual(xml_written, expect_xml, (sim_type, written_paths))
+                finally:
+                    s.ACTIVE_REQUEST, s.ACTIVE_PROFILE, s.j = old_req, old_prof, old_j
+
+    def test_enhanced_ipv6_and_overseas_phone_redaction(self):
+        uid = 'c81347c0-d9f4-11f1-ac01-001122334455'
+        line = (
+            'key::2001:db8::1 full 2001:0db8:0001:0002:0003:0004:0005:0006:5060 '
+            'colon 2001:0db8:0001:0002:0003:0004:0005:0006:5060: fail '
+            'arr[0] SMS_Format::3GPP vpn_login response: uid= ' + uid + ' +82-10-9876-5432 caller=01087654321'
+        )
+        red = s.redact_ims_event_line(line)
+        self.assertIn('arr[0]', red)
+        self.assertIn('SMS_Format::3GPP', red)
+        self.assertIn(uid, red)
+        self.assertIn('fail', red)
+        for secret in ('2001:db8::1', '2001:0db8:0001', '5060', '9876-5432', '01087654321'):
+            self.assertNotIn(secret, red)
+        scrubbed = feedback.scrub('key::2001:db8::1 2001:0db8:0001:0002:0003:0004:0005:0006:5060: fail arr[0]')
+        self.assertIn('arr[0]', scrubbed)
+        self.assertNotIn('2001:db8', scrubbed)
+        self.assertNotIn('2001:0db8', scrubbed)
+        self.assertNotIn('5060', scrubbed)
+
+    def test_pcscf_route_sync_pending_retry_queue_and_partial_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / 'state'
+            net_dir = Path(tmp) / 'net'
+            state_dir.mkdir()
+            net_dir.mkdir()
+            (state_dir / 'native.log').write_text(
+                'add host 10.99.0.9: gateway 10.99.0.1: Permission denied\n', encoding='utf-8')
+            (net_dir / 'msm0').write_text(
+                '@msm0\ntype::cellular_system\nip_ok:b:true\nip_gateway:json:["10.99.0.1"]\n', encoding='utf-8')
+            fake_route = Path(tmp) / 'route'
+            fake_route.write_bytes(b'#!/bin/sh\n')
+            attempts = iter([(1, '', 'route: writing to routing socket: Network is unreachable\n'), (0, '', '')])
+            old_j, old_cursor = s.j, dict(s.route_log_state)
+            try:
+                s.j = {
+                    'owner': 'q10-unicom-volte-v1', 'boot': ['b1'], 'native_pid': 42,
+                    'owned_ims_routes': [], 'pending_ims_routes': [],
+                    'ims_route_summary': {'status': 'idle', 'family': 'none', 'count': 0, 'verified': False},
+                }
+                s.route_log_state = {'inode': None, 'offset': 0}
+                with patch.object(s, 'STATE', str(state_dir)), \
+                     patch.object(s, 'NET_INTERFACES', str(net_dir)), \
+                     patch.object(s, 'ROUTE_BIN', str(fake_route)), \
+                     patch.object(s, 'boot_token', return_value=['b1']), \
+                     patch.object(s.n, 'read', side_effect=lambda p: Path(p).read_bytes()), \
+                     patch.object(s, '_run_route', side_effect=lambda argv, timeout=5: next(attempts)), \
+                     patch.object(s, 'save_journal'):
+                    s.sync_ims_routes()
+                    self.assertEqual(s.j['ims_route_summary']['status'], 'route_error')
+                    self.assertEqual(len(s.pending_ims_routes), 1)
+                    # Retry without any new log lines succeeds via pending_ims_routes queue!
+                    s.sync_ims_routes()
+                    self.assertEqual(s.j['ims_route_summary']['status'], 'synced')
+                    self.assertEqual(s.pending_ims_routes, [])
+                    self.assertEqual(len(s.j['owned_ims_routes']), 1)
+            finally:
+                s.j, s.route_log_state, s.pending_ims_routes = old_j, old_cursor, []
+
+    def test_pre_native_retry_available_after_unsupported_sim_when_overseas_saved(self):
+        card = {'state': 'READY', 'mcc': '450', 'mnc': '08', 'kind': 18, 'imsi': '45008' + '1' * 10}
+        sim_hash = u.ready_sim_hash(card)
+        self.assertIsNotNone(sim_hash)
+        cfg = overseas_carrier.build_trial_config('450', ['08'], ['auto'], allow_isim=True)
+        prof = profiles.exp_trial_profile('450', '08', trial=cfg)
+        raw = {
+            'phase': 'unsupported_sim', 'enabled': True, 'manager_alive': False,
+            'native_alive': False, 'status_from_current_boot': True, 'current': {},
+        }
+        saved_sel = {'operator': 'other', 'boot': ['b1'], 'sim_sha256': sim_hash}
+        with patch.object(u, 'verify'), \
+             patch.object(u, 'boot_token', return_value=['b1']), \
+             patch.object(u.s, 'read_status', return_value=raw), \
+             patch.object(u, 'boot_start_state', return_value=None), \
+             patch.object(u.device_info, 'read_identity', return_value={'variant': 'SQC100-5', 'os_version': '10.3.3.3216'}), \
+             patch.object(unified_install, 'installed_management_schema', return_value=2), \
+             patch.object(unified_dca, 'serving_network_snapshot', return_value={'mcc': '450', 'mnc': '08'}), \
+             patch.object(u.os.path, 'isfile', side_effect=lambda p: p in (u.BASE + '/enabled', u.SELECTION)), \
+             patch.object(u.s, 'load', return_value=saved_sel), \
+             patch.object(u, 'card', return_value=card), \
+             patch.object(u.policy, 'select', return_value={'sim_sha256': sim_hash, 'request': profiles.request(prof, True)}), \
+             patch.object(u.n, 'read', side_effect=OSError('no sms pps')), \
+             patch.object(u.s, 'public_route_summary', return_value={'pcscf_route_status': 'idle', 'pcscf_route_family': 'none', 'pcscf_route_count': 0, 'pcscf_route_verified': False}), \
+             patch.object(u, 'pre_native_retryable', return_value=True) as mock_retry:
+            pub = u.public_status()
+            self.assertTrue(pub['current_sim_matches'])
+            self.assertTrue(pub['pre_native_retry_available'])
+            mock_retry.assert_called_with(['b1'], saved_sel, sim_hash)
+
+            # Fallback via ready_sim_hash when policy.select raises ValueError
+            with patch.object(u.policy, 'select', side_effect=ValueError('carrier_not_validated')):
+                pub_unmatched = u.public_status()
+                self.assertTrue(pub_unmatched['current_sim_matches'])
+                self.assertFalse(pub_unmatched['pre_native_retry_available'])
+
+        # Mobile worker surfaces retry_ready (primary_action='enable') on unsupported_sim + pre_native_retry_available
+        probe_retry = {
+            'variant': 'SQC100-5', 'family': 'classic', 'installed': True, 'sim_supported': True,
+            'sim_plmn': '450-08', 'operator': 'other', 'exp_trial_active': True,
+            'status': {'enabled': True, 'phase': 'unsupported_sim', 'manager_alive': False,
+                       'status_from_current_boot': True, 'pre_native_retry_available': True},
+        }
+        resp = mobile_worker.inspection_response({'language': 'en'}, probe_retry, {}, folder=str(ROOT))
+        self.assertEqual(resp['state'], 'retry_ready')
+        self.assertEqual(resp['primary_action'], 'enable')
+        self.assertIn('enable', resp['actions'])
+
+    def test_bind_template_0xml_keeps_bootstrap_eligible_and_china_exp_never_relaxes_gates(self):
+        cfg = overseas_carrier.build_trial_config('450', ['08'], ['lte.ktfwing.com'], allow_isim=True, allow_stock_default_xml=True)
+        prof = profiles.exp_trial_profile('450', '08', trial=cfg)
+        selected = {'request': profiles.request(prof, True)}
+        bound = policy.bind_template(selected, {'path': '/etc/carrier/config/0.xml', 'sha256': 'a' * 64})
+        bound_prof = bound['request']['profile']
+        self.assertEqual(bound_prof['carrier']['stock_config'], '0')
+
+        sha0 = hashlib.sha256(STOCK_0_XML).hexdigest()
+        pps = {
+            '/pps/services/cellular/uicc/card0/status_private': b'@s\nuicc_state:json:{"state":"READY"}\nuicc_type:n:18\nhplmn:json:{"mcc":"450","mnc":"08"}\n',
+            '/pps/services/cellular/uicc/card0/status_restricted': ('@r\nimsi::' + '45008' + '1' * 10 + '\n').encode('ascii'),
+            '/pps/services/cellular/radioctrl/status_public': b'@rc\npower_status::ON\nnetwork_technology:json:["lte"]\nnetwork_service:n:2097152\n',
+            '/pps/services/cds/cnice/status': b'@c\ndata_services_status::ON\ninternet:json:{"active":false,"connectable":false,"enabled":true}\n',
+            '/pps/services/cds/cnice/status_persistent': b'@cp\ndata_service_mode::ON\n',
+            '/pps/services/carriermanager/status_private': b'@cm\ntrue_home_carrier:json:{"mcc":450,"mnc":8,"preloadedConfigFile":"/etc/carrier/config/0.xml"}\n',
+            '/etc/carrier/config/0.xml': STOCK_0_XML,
+        }
+        with patch.object(compat.n, 'read', side_effect=lambda p: pps[p]), \
+             patch.object(compat.os.path, 'islink', return_value=False), \
+             patch.object(profiles, 'STOCK_DEFAULT_CONFIG_SHA256', sha0):
+            snap = compat.read_network(bound_prof)
+        self.assertTrue(snap['stock_apn_bootstrap_eligible'])
+        self.assertEqual(compat.network_state(snap, bound_prof), 'ready')
+
+        # Experimental profile with MCC 460 MUST NOT relax China overseas gates!
+        old_prof = s.ACTIVE_PROFILE
+        try:
+            s.ACTIVE_PROFILE = {'carrier': {'mcc': '460', 'mncs': ['01']}, 'experimental': {'allow_isim': True}}
+            self.assertFalse(s._overseas_profile_active())
+            s.ACTIVE_PROFILE = {'experimental': {'allow_isim': True}}
+            self.assertFalse(s._overseas_profile_active())
+            s.ACTIVE_PROFILE = bound_prof
+            self.assertTrue(s._overseas_profile_active())
+        finally:
+            s.ACTIVE_PROFILE = old_prof
+
+    def test_mobile_job_response_maps_stock_apn_mismatch_and_default_apn_required(self):
+        for code in ('stock_apn_mismatch', 'default_apn_required'):
+            job = {
+                'schema': 2, 'worker_safety': mobile_worker.SAFE_JOB_GUARD,
+                'id': 'a' * 32, 'action': 'install', 'state': 'failed', 'phase': 'enabling_mobile_network',
+                'error_code': code, 'resumable_failure': False, 'commit_outcome_unknown': False,
+                'public_result': {'sim_plmn': '450-08'},
+            }
+            resp = mobile_worker.job_response(job, {'language': 'en'})
+            self.assertEqual(resp['primary_action'], 'status')
+            self.assertEqual(resp['details'].get('sim_reason'), code)
+
+    def test_pcscf_route_retry_cap_drops_unverified_wifi_gateway_and_keeps_synced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / 'state'
+            net_dir = Path(tmp) / 'net'
+            state_dir.mkdir()
+            net_dir.mkdir()
+            (state_dir / 'native.log').write_text(
+                'add host 10.99.0.6: gateway 192.168.1.1: Permission denied\n'
+                'add host 10.99.0.7: gateway 10.99.0.1: Permission denied\n',
+                encoding='utf-8',
+            )
+            (net_dir / 'msm0').write_text(
+                '@msm0\ntype::cellular_system\nip_ok:b:true\nip_gateway:json:["10.99.0.1"]\n', encoding='utf-8')
+            fake_route = Path(tmp) / 'route'
+            fake_route.write_bytes(b'#!/bin/sh\n')
+            old_j, old_cursor, old_pend = s.j, dict(s.route_log_state), list(s.pending_ims_routes)
+            try:
+                s.j = {
+                    'owner': 'q10-unicom-volte-v1', 'boot': ['b1'], 'native_pid': 42,
+                    'owned_ims_routes': [], 'ims_route_summary': {'status': 'idle', 'family': 'none', 'count': 0, 'verified': False},
+                }
+                s.route_log_state = {'inode': None, 'offset': 0}
+                s.pending_ims_routes = []
+                with patch.object(s, 'STATE', str(state_dir)), \
+                     patch.object(s, 'NET_INTERFACES', str(net_dir)), \
+                     patch.object(s, 'ROUTE_BIN', str(fake_route)), \
+                     patch.object(s, 'boot_token', return_value=['b1']), \
+                     patch.object(s.n, 'read', side_effect=lambda p: Path(p).read_bytes()), \
+                     patch.object(s, '_run_route', return_value=(0, '', '')), \
+                     patch.object(s, 'save_journal'):
+                    for _ in range(20):
+                        s.sync_ims_routes()
+                    self.assertEqual(s.pending_ims_routes, [])
+                    self.assertEqual(s.j['ims_route_summary']['status'], 'synced')
+                    self.assertEqual(len(s.j['owned_ims_routes']), 1)
+            finally:
+                s.j, s.route_log_state, s.pending_ims_routes = old_j, old_cursor, old_pend
+
+    def test_entry_decode64_accepts_full_16kib_json_and_rejects_oversize(self):
+        import base64
+        import entry as mobile_entry
+        raw_ok = json.dumps({'a': 'x' * 16000}).encode('utf-8')
+        self.assertLessEqual(len(raw_ok), 16384)
+        b64_ok = base64.b64encode(raw_ok).decode('ascii')
+        self.assertGreater(len(b64_ok), 16384)
+        self.assertEqual(mobile_entry.decode64(b64_ok), raw_ok)
+        raw_big = b'x' * 16385
+        with self.assertRaises(mobile_entry.MobileError):
+            mobile_entry.decode64(base64.b64encode(raw_big).decode('ascii'))
+
+    def test_kt_isim_trial_wrapper_and_ai_skill_overseas_catalog(self):
+        import ai_skill
+        import io
+        import kt_isim_trial
+        self.assertTrue(callable(kt_isim_trial.main))
+        buf = io.StringIO()
+        with patch.object(sys, 'stdout', buf):
+            rc = ai_skill.main(['--lang', 'en', 'overseas', 'catalog', '--query', '311-480'])
+        self.assertEqual(rc, 0)
+        res = json.loads(buf.getvalue())
+        self.assertTrue(res['ok'])
+        self.assertEqual(res['carriers'][0]['name'], 'Verizon Wireless')
 
 
 if __name__ == '__main__':

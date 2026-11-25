@@ -109,7 +109,7 @@ MobileController::MobileController(QObject *parent)
       m_pickerOpen(false), m_pickerClosed(false), m_pickerResultHandled(false), m_refreshPending(false), m_reconcilingCalls(false),
       m_cachedStatus(false), m_allowAutoPoll(false), m_invalidPendingIdentity(false), m_oneShotActive(false),
       m_preservePendingForRequest(false), m_newPendingForRequest(false),
-      m_network(this), m_reply(0), m_downloadBytes(0), m_redirects(0)
+      m_network(this), m_reply(0), m_compatLoaded(false), m_overseasCatalogLoaded(false), m_downloadBytes(0), m_redirects(0)
 {
     m_language = m_settings.value("language", QLocale::system().name().startsWith("zh") ? "zh" : "en").toString();
     if (m_language != "zh") m_language = "en";
@@ -448,10 +448,16 @@ QString MobileController::deviceText() const
 
 QString MobileController::compatibilityText() const
 {
-    QFile file(QDir::current().absoluteFilePath("app/native/assets/materials/compatibility-matrix.json"));
-    if (!file.open(QIODevice::ReadOnly) || file.size() > 131072) return QString();
-    const QVariantMap data = parseObject(file.readAll());
-    const QVariantMap row = data.value("models").toMap().value(deviceText()).toMap();
+    const QString path = QDir::current().absoluteFilePath("app/native/assets/materials/compatibility-matrix.json");
+    if (!m_compatLoaded || m_compatPath != path) {
+        m_compatLoaded = true;
+        m_compatPath = path;
+        m_compatModels.clear();
+        QFile file(path);
+        if (file.open(QIODevice::ReadOnly) && file.size() <= 131072)
+            m_compatModels = parseObject(file.readAll()).value("models").toMap();
+    }
+    const QVariantMap row = m_compatModels.value(deviceText()).toMap();
     return row.value("summary").toMap().value(m_language == "en" ? "en" : "zh").toString().left(2048);
 }
 
@@ -481,6 +487,7 @@ QString MobileController::detailText() const
         else if (value == "unknown") value = label("unknown");
         else if (i.key() == "phase") value = label("phase_" + value);
         else if (i.key() == "pcscf_route_status") value = label("pcscf_route_" + value);
+        else if (i.key() == "pcscf_route_family" && value == "none") value = label("pcscf_route_family_none");
         else if (i.key() == "error_code") {
             value = label(value);
             if (value.isEmpty()) value = label("check_unknown");
@@ -846,6 +853,14 @@ void MobileController::fail(const QString &code)
     emit modelChanged();
 }
 
+void MobileController::failOverseas(const QString &action, const QString &code)
+{
+    const QString safe = QRegExp("^[a-z0-9_-]{1,80}$").exactMatch(code) ? code : "operation_failed";
+    m_overseasFeedback = safe;
+    emit overseasActionFinished(action, false, safe);
+    emit modelChanged();
+}
+
 static bool isOverseasAction(const QString &action)
 {
     return action == "overseas-inspect" || action == "overseas-save" || action == "overseas-clear";
@@ -856,22 +871,33 @@ static void normalizeOverseasImsMap(QVariantMap &ims)
     if (ims.contains("ir92")) {
         QVariantMap ir92 = ims.value("ir92").toMap();
         if (ir92.contains("UsePreconditions")) {
-            bool ok = false;
-            const double num = ir92.value("UsePreconditions").toDouble(&ok);
-            if (ok && num == static_cast<int>(num)) ir92.insert("UsePreconditions", static_cast<int>(num));
+            const QVariant raw = ir92.value("UsePreconditions");
+            if (raw.type() == QVariant::Bool) {
+                ir92.insert("UsePreconditions", raw.toBool());
+            } else {
+                bool ok = false;
+                const double num = raw.toDouble(&ok);
+                if (ok && (num == 0.0 || num == 1.0)) ir92.insert("UsePreconditions", num != 0.0);
+            }
         }
         ims.insert("ir92", ir92);
     }
     if (ims.contains("ims_pps")) {
         QVariantMap pps = ims.value("ims_pps").toMap();
-        if (pps.contains("SIP_Timer_CSFB")) {
-            bool ok = false;
-            const double num = pps.value("SIP_Timer_CSFB").toDouble(&ok);
-            if (ok && num == static_cast<int>(num)) pps.insert("SIP_Timer_CSFB", static_cast<int>(num));
+        const QStringList intKeys = QString("SIP_Timer_CSFB,RegExpiration").split(',');
+        for (int i = 0; i < intKeys.size(); ++i) {
+            const QString key = intKeys.at(i);
+            if (pps.contains(key)) {
+                bool ok = false;
+                const double num = pps.value(key).toDouble(&ok);
+                if (ok && num == static_cast<int>(num)) pps.insert(key, static_cast<int>(num));
+            }
         }
-        if (pps.contains("SilentRedial")) {
-            const QVariant raw = pps.value("SilentRedial");
-            if (raw.type() == QVariant::Bool) pps.insert("SilentRedial", raw.toBool());
+        const QStringList boolKeys = QString("SilentRedial,IPsec").split(',');
+        for (int i = 0; i < boolKeys.size(); ++i) {
+            const QString key = boolKeys.at(i);
+            if (pps.contains(key) && pps.value(key).type() == QVariant::Bool)
+                pps.insert(key, pps.value(key).toBool());
         }
         ims.insert("ims_pps", pps);
     }
@@ -883,7 +909,7 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     // does not, and must leave the one-shot intent queued until it finishes.
     if (!m_oneShotActive && (action == "inspect" || action == "status" || action == "poll")) m_coldPollJobId.clear();
     if (!allowed(action) || m_process.state() != QProcess::NotRunning) {
-        if (isOverseasAction(action)) m_overseasFeedback = "action_unavailable";
+        if (isOverseasAction(action)) { failOverseas(action, "action_unavailable"); return; }
         fail("action_unavailable");
         return;
     }
@@ -895,12 +921,12 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     QByteArray entryBytes;
     QString bundlePath;
     if (!verifyEntry(&entryBytes, &bundlePath)) {
-        if (isOverseasAction(action)) { m_overseasFeedback = m_error.isEmpty() ? "operation_failed" : m_error; emit modelChanged(); }
+        if (isOverseasAction(action)) failOverseas(action, m_error.isEmpty() ? "operation_failed" : m_error);
         return;
     }
     if (!QFileInfo("/bin/__root").isExecutable()) {
-        if (isOverseasAction(action)) m_overseasFeedback = "root_not_ready";
-        if (readAction(action) && !isOverseasAction(action) && restoreCachedAfterReadFailure("root_not_ready")) return;
+        if (isOverseasAction(action)) { failOverseas(action, "root_not_ready"); return; }
+        if (readAction(action) && restoreCachedAfterReadFailure("root_not_ready")) return;
         fail("root_not_ready");
         scheduleRefresh();
         return;
@@ -984,10 +1010,14 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     bb::data::JsonDataAccess json;
     QByteArray payload;
     json.saveToBuffer(request, &payload);
-    if (json.hasError() || payload.size() > 16384) {
+    const QByteArray payloadB64 = payload.toBase64();
+    if (json.hasError() || payload.size() > 16384 || payloadB64.size() > 24576) {
         if (m_newPendingForRequest) { clearPendingOperation(); m_settings.sync(); m_newPendingForRequest = false; }
-        if (isOverseasAction(action)) m_overseasFeedback = payload.size() > 16384 ? "exp_trial_too_large" : "invalid_response";
-        fail(payload.size() > 16384 && isOverseasAction(action) ? "exp_trial_too_large" : "invalid_response"); return;
+        if (isOverseasAction(action)) {
+            failOverseas(action, (payload.size() > 16384 || payloadB64.size() > 24576) ? "exp_trial_too_large" : "invalid_response");
+            return;
+        }
+        fail("invalid_response"); return;
     }
     m_action = action;
     m_requestedLegacyProfile = action == "legacy-inspect" ? extra.value("profile_id").toString() : QString();
@@ -995,9 +1025,11 @@ void MobileController::invoke(const QString &action, const QVariantMap &extra)
     m_progressScanOffset = 0;
     m_requestElapsed.start();
     m_timedOut = false;
-    m_runtimeError = false;
-    m_waitingForRoot = false;
-    m_error.clear();
+    if (!isOverseasAction(action)) {
+        m_runtimeError = false;
+        m_waitingForRoot = false;
+        m_error.clear();
+    }
     if (!m_oneShotActive) m_notice.clear();
     m_busy = true;
     // The app-writable source is never reopened for Root execution. The bytes
@@ -1050,7 +1082,12 @@ void MobileController::processOutput()
         m_progressScanOffset = end + 1;
         end = m_output.indexOf('\n', m_progressScanOffset);
     }
-    if (m_output.size() > MAX_RESPONSE) { m_timedOut = true; m_process.kill(); fail("invalid_response"); }
+    if (m_output.size() > MAX_RESPONSE) {
+        m_timedOut = true;
+        m_process.kill();
+        if (isOverseasAction(m_action)) m_overseasFeedback = "invalid_response";
+        else fail("invalid_response");
+    }
 }
 
 int MobileController::requestTimeoutForElapsed(qint64 elapsed)
@@ -1074,16 +1111,17 @@ void MobileController::processError(QProcess::ProcessError error)
 {
     if (error != QProcess::FailedToStart) return;
     const bool updateRequest = updateTaskRequest();
+    const QString failedAction = m_action;
     m_deadline.stop();
     m_busy = false;
     m_reconcilingCalls = false;
     if (m_newPendingForRequest) { clearPendingOperation(); m_settings.sync(); m_newPendingForRequest = false; }
     if (updateRequest) m_updateFeedback = "root_not_ready";
-    if (isOverseasAction(m_action)) m_overseasFeedback = "root_not_ready";
-    const bool restored = readAction(m_action) && !isOverseasAction(m_action) && restoreCachedAfterReadFailure("root_not_ready");
+    const bool restored = readAction(failedAction) && !isOverseasAction(failedAction) && restoreCachedAfterReadFailure("root_not_ready");
     m_action.clear();
     m_preservePendingForRequest = false;
     if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; }
+    if (isOverseasAction(failedAction)) { failOverseas(failedAction, "root_not_ready"); return; }
     if (restored) { emit modelChanged(); return; }
     fail("root_not_ready");
     scheduleRefresh();
@@ -1162,6 +1200,7 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
     processOutput();
     processErrorOutput();
     m_busy = false;
+    const QString finishedAction = m_action;
     bool updateRequest = updateTaskRequest();
     bool acceptedResponse = false;
     QVariantMap response = parseObject(m_output.trimmed());
@@ -1175,19 +1214,29 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
     if (m_timedOut) {
         // A complete matching ACK remains useful if the Root shell's cleanup
         // finishes late. Otherwise only a fresh read may resolve the result.
-        if (m_action == "confirm-calls" && confirmedCallResponse(response)) {
+        if (finishedAction == "confirm-calls" && confirmedCallResponse(response)) {
             m_error.clear();
             acceptResponse(response);
             m_reconcilingCalls = false;
             m_refreshPending = false;
-        } else if (m_action == "confirm-calls") {
+        } else if (finishedAction == "confirm-calls") {
             reconcileCallConfirmation();
         } else {
             m_reconcilingCalls = false;
         }
         if (updateRequest && !m_error.isEmpty()) m_updateFeedback = m_error;
-        if (isOverseasAction(m_action) && m_overseasFeedback.isEmpty())
-            m_overseasFeedback = !m_error.isEmpty() ? m_error : (readAction(m_action) ? "request_timeout" : "operation_unknown");
+        if (isOverseasAction(finishedAction)) {
+            if (m_overseasFeedback.isEmpty())
+                m_overseasFeedback = readAction(finishedAction) ? "request_timeout" : "operation_unknown";
+            m_action.clear();
+            m_preservePendingForRequest = false;
+            m_newPendingForRequest = false;
+            if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; m_refreshLegacy = false; }
+            emit overseasActionFinished(finishedAction, false, m_overseasFeedback);
+            scheduleRefresh();
+            emit modelChanged();
+            return;
+        }
         m_action.clear();
         m_preservePendingForRequest = false;
         m_newPendingForRequest = false;
@@ -1197,24 +1246,25 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
         return;
     }
     if (response.isEmpty()) {
-        if (m_action == "confirm-calls") reconcileCallConfirmation();
+        if (finishedAction == "confirm-calls") reconcileCallConfirmation();
         else {
             m_reconcilingCalls = false;
-            const bool report = m_action == "compatibility" ||
-                (m_action == "export" && (m_preservePendingForRequest || m_operationAction != "backup-export"));
-            const QString reason = !readAction(m_action) ? (report ? "report_unknown" : "operation_unknown") :
+            const bool report = finishedAction == "compatibility" ||
+                (finishedAction == "export" && (m_preservePendingForRequest || m_operationAction != "backup-export"));
+            const QString reason = !readAction(finishedAction) ? (report ? "report_unknown" : "operation_unknown") :
                 (code != 0 || status != QProcess::NormalExit ? "root_not_ready" : "invalid_response");
-            if (isOverseasAction(m_action)) m_overseasFeedback = reason;
-            else if (!(readAction(m_action) && restoreCachedAfterReadFailure(reason))) fail(reason);
+            if (isOverseasAction(finishedAction)) m_overseasFeedback = reason;
+            else if (!(readAction(finishedAction) && restoreCachedAfterReadFailure(reason))) fail(reason);
         }
-    } else if (m_action == "confirm-calls" && !confirmedCallResponse(response) &&
+    } else if (finishedAction == "confirm-calls" && !confirmedCallResponse(response) &&
                !callPreSaveRejection(response) && !entryPreDispatchRejection(response)) {
         // Only a matching acknowledgement or a proven pre-save rejection can
         // settle this request. Other outcomes get one check, never a new save.
         reconcileCallConfirmation();
     } else if (response.value("schema").toInt() != 2) {
         m_reconcilingCalls = false;
-        fail("protocol_mismatch");
+        if (isOverseasAction(finishedAction)) m_overseasFeedback = "protocol_mismatch";
+        else fail("protocol_mismatch");
     } else {
         acceptedResponse = acceptResponse(response);
         if (acceptedResponse && response.value("job").toMap().value("action").toString() == "update") updateRequest = true;
@@ -1225,14 +1275,18 @@ void MobileController::processFinished(int code, QProcess::ExitStatus status)
         else if (acceptedResponse && response.value("ok").type() == QVariant::Bool && response.value("ok").toBool())
             m_updateFeedback = response.value("state").toString() == "job_outcome_unknown" ? "operation_unknown" : QString();
     }
-    if ((m_action == "overseas-inspect" || m_action == "overseas-save" || m_action == "overseas-clear") &&
-        !acceptedResponse && m_overseasFeedback.isEmpty() && !m_error.isEmpty()) {
-        m_overseasFeedback = m_error;
-    }
     m_action.clear();
     m_preservePendingForRequest = false;
     m_newPendingForRequest = false;
     if (m_oneShotActive) { m_oneShotActive = false; m_allowAutoPoll = false; m_refreshPending = false; m_refreshLegacy = false; }
+    if (isOverseasAction(finishedAction)) {
+        if (acceptedResponse) {
+            emit overseasActionFinished(finishedAction, true, QString());
+        } else {
+            if (m_overseasFeedback.isEmpty()) m_overseasFeedback = "operation_failed";
+            emit overseasActionFinished(finishedAction, false, m_overseasFeedback);
+        }
+    }
     scheduleRefresh();
     emit modelChanged();
 }
@@ -1337,16 +1391,17 @@ bool MobileController::acceptResponse(const QVariantMap &response)
             return false;
         }
     }
+    if (isOverseasAction(m_action)) {
+        if (hasJobMetadata || response.value("ok").type() != QVariant::Bool || !response.value("ok").toBool()) {
+            const QString code = bounded(response.value("error").toMap().value("code"), 80);
+            m_overseasFeedback = code.isEmpty() ? "operation_failed" : code;
+            return false;
+        }
+    }
     if (!m_preservePendingForRequest &&
         (invalidIdentity || (safeId(responseId) && (wrongJob || wrongOperation)))) {
         // A different client's task cannot establish the result of ours.
         fail("operation_unknown");
-        return false;
-    }
-    if ((m_action == "overseas-inspect" || m_action == "overseas-save" || m_action == "overseas-clear") &&
-        response.value("ok").type() == QVariant::Bool && !response.value("ok").toBool()) {
-        const QString code = bounded(response.value("error").toMap().value("code"), 80);
-        m_overseasFeedback = code.isEmpty() ? "operation_failed" : code;
         return false;
     }
     if (readAction(m_action) && !hasJobMetadata && response.value("ok").type() == QVariant::Bool &&
@@ -1363,6 +1418,11 @@ bool MobileController::acceptResponse(const QVariantMap &response)
         m_overseasFeedback = "overseas_cleared_notice";
     }
     const bool overseasUpdated = isOverseasAction(m_action) && response.value("ok").toBool();
+    if (overseasUpdated) {
+        m_error.clear();
+        m_runtimeError = false;
+        m_waitingForRoot = false;
+    }
     m_model = response;
     if (overseasUpdated) emit overseasStateChanged();
     m_cachedStatus = m_oneShotActive && jobRunning();
@@ -1898,30 +1958,83 @@ QString MobileController::overseasFeedback() const
     return text.isEmpty() ? label("operation_failed") : text;
 }
 
-QVariantList MobileController::overseasCatalog(const QString &query) const
+void MobileController::ensureOverseasCatalogLoaded() const
 {
-    QVariantList result;
-    QFile file(QDir::current().absoluteFilePath("app/native/assets/materials/overseas-carriers.json"));
-    if (!file.open(QIODevice::ReadOnly) || file.size() > 262144) return result;
-    const QVariantMap carriers = parseObject(file.readAll()).value("carriers").toMap();
-    const QString needle = query.trimmed().toLower();
-    for (QVariantMap::const_iterator it = carriers.begin(); it != carriers.end() && result.size() < 300; ++it) {
+    const QString path = QDir::current().absoluteFilePath("app/native/assets/materials/overseas-carriers.json");
+    if (m_overseasCatalogLoaded && m_overseasCatalogPath == path) return;
+    m_overseasCatalogLoaded = true;
+    m_overseasCatalogPath = path;
+    m_overseasCatalogCache.clear();
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly) || file.size() > 262144) return;
+    const QVariantMap root = parseObject(file.readAll());
+    const int schema = root.value("schema").toInt();
+    if (schema != 1 && schema != 2) return;
+    const QVariantMap mccRegions = root.value("mcc_regions").toMap();
+    const QString defaultStatus = root.value("default_bb10_status", QString("untested")).toString();
+    const QVariantMap carriers = root.value("carriers").toMap();
+    for (QVariantMap::const_iterator it = carriers.begin(); it != carriers.end(); ++it) {
         QVariantMap item = it.value().toMap();
-        if (item.value("mcc").toString() == "460") continue;
-        item.insert("plmn", it.key());
+        const QString plmn = it.key();
+        const int dash = plmn.indexOf('-');
+        const QString plmnMcc = dash > 0 ? plmn.left(dash) : QString();
+        const QString plmnMnc = dash > 0 ? plmn.mid(dash + 1) : QString();
+        const QString mcc = item.value("mcc").toString().isEmpty() ? plmnMcc : item.value("mcc").toString();
+        const QString mnc = item.value("mnc").toString().isEmpty() ? plmnMnc : item.value("mnc").toString();
+        if (mcc.isEmpty() || mnc.isEmpty() || mcc == "460") continue;
+        item.insert("plmn", plmn);
+        item.insert("mcc", mcc);
+        item.insert("mnc", mnc);
+        const QVariantList geo = mccRegions.value(mcc).toList();
+        if (item.value("country").toString().isEmpty() && geo.size() >= 1)
+            item.insert("country", geo.at(0).toString());
+        if (item.value("region").toString().isEmpty() && geo.size() >= 2)
+            item.insert("region", geo.at(1).toString());
+        if (item.value("bb10_status").toString().isEmpty())
+            item.insert("bb10_status", defaultStatus);
         if (!item.contains("ip_family") && item.contains("ims_ip_family"))
             item.insert("ip_family", item.value("ims_ip_family"));
-        if (!needle.isEmpty()) {
-            QString hay = (it.key() + " " + item.value("country").toString() + " " +
-                           item.value("region").toString() + " " +
-                           item.value("name").toString() + " " + item.value("ims_apn").toString()).toLower();
-            const QVariantList apns = item.value("data_apns").toList();
-            for (int j = 0; j < apns.size(); ++j) hay += " " + apns.at(j).toString().toLower();
-            if (!hay.contains(needle)) continue;
-        }
-        result.append(item);
+        if (!item.contains("ip_family"))
+            item.insert("ip_family", QString("IPv4v6"));
+        if (!item.contains("ims_apn"))
+            item.insert("ims_apn", QString("ims"));
+        m_overseasCatalogCache.append(item);
+    }
+}
+
+static bool overseasItemMatches(const QVariantMap &item, const QString &needle)
+{
+    if (needle.isEmpty()) return true;
+    QString hay = (item.value("plmn").toString() + " " + item.value("country").toString() + " " +
+                   item.value("region").toString() + " " + item.value("name").toString() + " " +
+                   item.value("ims_apn").toString()).toLower();
+    const QVariantList apns = item.value("data_apns").toList();
+    for (int j = 0; j < apns.size(); ++j) hay += " " + apns.at(j).toString().toLower();
+    return hay.contains(needle);
+}
+
+QVariantList MobileController::overseasCatalog(const QString &query) const
+{
+    ensureOverseasCatalogLoaded();
+    QVariantList result;
+    const QString needle = query.trimmed().toLower();
+    for (int i = 0; i < m_overseasCatalogCache.size() && result.size() < 50; ++i) {
+        const QVariantMap item = m_overseasCatalogCache.at(i).toMap();
+        if (overseasItemMatches(item, needle)) result.append(item);
     }
     return result;
+}
+
+int MobileController::overseasCatalogTotal(const QString &query) const
+{
+    ensureOverseasCatalogLoaded();
+    const QString needle = query.trimmed().toLower();
+    if (needle.isEmpty()) return m_overseasCatalogCache.size();
+    int total = 0;
+    for (int i = 0; i < m_overseasCatalogCache.size(); ++i) {
+        if (overseasItemMatches(m_overseasCatalogCache.at(i).toMap(), needle)) ++total;
+    }
+    return total;
 }
 
 void MobileController::inspectOverseasConfig()
@@ -1931,10 +2044,12 @@ void MobileController::inspectOverseasConfig()
 
 void MobileController::saveOverseasConfig(const QVariantMap &fields)
 {
-    if (!allowed("overseas-save")) { fail("action_unavailable"); return; }
+    if (!allowed("overseas-save")) { failOverseas("overseas-save", "action_unavailable"); return; }
     const QString mcc = fields.value("mcc").toString().trimmed();
-    const QString mncs = fields.value("mncs").toString();
-    const QString dataApns = fields.value("data_apns").toString();
+    QString mncs = fields.value("mncs").toString();
+    mncs.replace(QString::fromUtf8("，"), QString(","));
+    QString dataApns = fields.value("data_apns").toString();
+    dataApns.replace(QString::fromUtf8("，"), QString(","));
     const QString imsApn = fields.value("ims_apn").toString().trimmed();
     const QString ipFamily = fields.value("ip_family").toString().trimmed();
     const bool sms = fields.contains("sms") ? fields.value("sms").toBool() : true;
@@ -1945,7 +2060,7 @@ void MobileController::saveOverseasConfig(const QVariantMap &fields)
     const bool sigPco = fields.value("request_signalling_bearer_via_pco").toBool();
     const bool disableDad = fields.value("disable_dad").toBool();
     const QString ueUsage = fields.value("ue_usage").toString().trimmed();
-    const QString usePreconditions = fields.value("use_preconditions").toString().trimmed();
+    const QString usePreconditions = fields.value("use_preconditions").toString().trimmed().toLower();
     const QString smsFormat = fields.value("sms_format").toString().trimmed();
 
     QVariantList mncList;
@@ -1970,7 +2085,8 @@ void MobileController::saveOverseasConfig(const QVariantMap &fields)
     if (sigPco) ims.insert("request_signalling_bearer_via_pco", true);
     if (disableDad) ims.insert("disable_dad", true);
     QVariantMap ir92;
-    if (usePreconditions == "0" || usePreconditions == "1") ir92.insert("UsePreconditions", usePreconditions.toInt());
+    if (usePreconditions == "false" || usePreconditions == "0") ir92.insert("UsePreconditions", false);
+    else if (usePreconditions == "true" || usePreconditions == "1") ir92.insert("UsePreconditions", true);
     if (smsFormat == "3GPP" || smsFormat == "3GPP2") ir92.insert("SMS_Format", smsFormat);
     const QString amrList = fields.value("amr_modeset_list").toString().trimmed();
     if (!amrList.isEmpty()) ir92.insert("amr_modeset_list", amrList);
@@ -2024,6 +2140,6 @@ void MobileController::saveOverseasConfig(const QVariantMap &fields)
 
 void MobileController::clearOverseasConfig()
 {
-    if (!allowed("overseas-clear")) { fail("action_unavailable"); return; }
+    if (!allowed("overseas-clear")) { failOverseas("overseas-clear", "action_unavailable"); return; }
     invoke("overseas-clear");
 }

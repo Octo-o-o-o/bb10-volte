@@ -202,6 +202,10 @@ def safe_error(error):
     return code if re.match(r'\A[a-z][a-z0-9_]{0,63}\Z', code) else 'preflight_or_recovery_check_failed'
 
 
+LTE_BANDS_DISABLED_ZH = '只读诊断：无线已开启且未接入 LTE，且基带报告的 LTE 频段能力位图为 0（工具不会改写基带，请核对移动网络模式与运营商入网）。'
+LTE_BANDS_DISABLED_EN = 'Read-only diagnostic: radio is ON and not on LTE, and the baseband reports LTE band capability mask is 0 (this tool does not rewrite baseband NV; check mobile network mode and carrier provisioning).'
+
+
 def ui(state, language, action='status', details=None, ok=True, actions=None, **extra):
     values = MESSAGES.get(state, MESSAGES['error'])
     display_language = 'en' if language == 'en' else 'zh'
@@ -213,8 +217,8 @@ def ui(state, language, action='status', details=None, ok=True, actions=None, **
         localized['zh']['message'] += '\n此运营商尚未实测，实际通话、短信和数据能力需验证。'
         localized['en']['message'] += '\nThis carrier is untested. Verify calls, SMS and data on the phone.'
     if details and details.get('lte_bands_disabled') is True:
-        localized['zh']['message'] += '\n只读诊断：无线已开启且硬件支持 LTE，但当前活跃 LTE 频段位图为 0。工具不会自动改写基带，请核对移动网络模式或联系运营商。'
-        localized['en']['message'] += '\nRead-only diagnostic: radio is ON and hardware supports LTE, but the active LTE band mask is 0. Check mobile network mode or carrier provisioning; this tool does not alter baseband NV.'
+        localized['zh']['message'] += '\n' + LTE_BANDS_DISABLED_ZH
+        localized['en']['message'] += '\n' + LTE_BANDS_DISABLED_EN
     result = {'schema': 2, 'ok': ok, 'state': state, 'title_code': state,
               'message_code': state, 'primary_action': action,
               'actions': actions if actions is not None else [action, 'compatibility'],
@@ -245,6 +249,18 @@ def sim_unsupported_ui(result, language, details, actions=None):
         response['display_i18n']['zh']['message'] = zh_msg
         response['display_i18n']['en']['message'] = en_msg
         response['display']['message'] = en_msg if language == 'en' else zh_msg
+    elif reason == 'stock_apn_mismatch':
+        zh_msg = '原厂运营商模板中的数据 APN 与当前配置不匹配。请补充实际数据 APN 或启用 0.xml 回落后重试。'
+        en_msg = 'The stock carrier template data APN does not match this configuration. Add the live data APN or enable 0.xml fallback and try again.'
+        response['display_i18n']['zh']['message'] = zh_msg
+        response['display_i18n']['en']['message'] = en_msg
+        response['display']['message'] = en_msg if language == 'en' else zh_msg
+    elif reason == 'default_apn_required':
+        zh_msg = '当前 SIM 使用通用 0.xml 且尚未读到实时数据 APN。请至少填写一个具体数据 APN（不能仅填 auto）后重试。'
+        en_msg = 'This SIM uses generic 0.xml and no live data APN was observed yet. Enter at least one concrete data APN (not only auto) and try again.'
+        response['display_i18n']['zh']['message'] = zh_msg
+        response['display_i18n']['en']['message'] = en_msg
+        response['display']['message'] = en_msg if language == 'en' else zh_msg
     if key == 'sim_carrier_unrecognized' and plmn:
         zh_msg = '当前 SIM 归属网络（' + plmn + '）不在中国移动、联通、电信已支持的号段内。请核对 SIM 卡状态或导出诊断报告。'
         en_msg = ('This SIM home network (' + plmn +
@@ -255,6 +271,12 @@ def sim_unsupported_ui(result, language, details, actions=None):
         response['display_i18n']['zh']['message'] = zh_msg
         response['display_i18n']['en']['message'] = en_msg
         response['display']['message'] = en_msg if language == 'en' else zh_msg
+    if result.get('lte_bands_disabled') is True:
+        if LTE_BANDS_DISABLED_ZH not in response['display_i18n']['zh']['message']:
+            response['display_i18n']['zh']['message'] += '\n' + LTE_BANDS_DISABLED_ZH
+        if LTE_BANDS_DISABLED_EN not in response['display_i18n']['en']['message']:
+            response['display_i18n']['en']['message'] += '\n' + LTE_BANDS_DISABLED_EN
+        response['display']['message'] = response['display_i18n'][response['display_language']]['message']
     response['state'] = 'sim_unsupported'
     return response
 
@@ -397,7 +419,9 @@ def prepare_activation_network(job, manager):
             result = manager.manage('prepare-network', operation_id=job['id'])
         except Exception as error:
             if str(error) in ('china_broadnet_unsupported', 'sim_route_unsupported',
-                              'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable'):
+                              'downloaded_carrier_config_present', 'carrier_not_validated',
+                              'experimental_stock_template_unavailable', 'stock_apn_mismatch',
+                              'default_apn_required'):
                 base = getattr(manager, 'BASE', None)
                 job['resumable_failure'] = isinstance(base, str) and os.path.isfile(base + '/install-pending.json')
                 try:
@@ -415,10 +439,10 @@ def prepare_activation_network(job, manager):
 def usable_observed_apn(value):
     if not isinstance(value, str):
         return ''
-    cleaned = value.strip().lower()
+    cleaned = re.sub(r'\.mnc[0-9]{2,3}\.mcc[0-9]{3}\.gprs\Z', '', value.strip().lower())
     if cleaned in ('', 'other', 'unknown', 'auto'):
         return ''
-    return cleaned if re.match(r'\A[a-z0-9][a-z0-9.-]{0,98}[a-z0-9]?\Z', cleaned) else ''
+    return cleaned if re.match(r'\A[a-z0-9](?:[a-z0-9.-]{0,98}[a-z0-9])?\Z', cleaned) else ''
 
 
 def lookup_overseas_preset(folder, plmn):
@@ -431,22 +455,31 @@ def lookup_overseas_preset(folder, plmn):
         catalog = e.json_bytes(e.regular(path, 262144))
         carriers = catalog.get('carriers')
         item = carriers.get(plmn) if isinstance(carriers, dict) else None
-        if isinstance(item, dict) and item.get('mcc') != '460':
-            fam = item.get('ims_ip_family') or item.get('ip_family')
-            return {
-                'plmn': plmn,
-                'mcc': str(item.get('mcc', '')),
-                'mnc': str(item.get('mnc', '')),
-                'country': str(item.get('country', ''))[:8],
-                'region': str(item.get('region', ''))[:48],
-                'name': str(item.get('name', plmn))[:80],
-                'data_apns': [str(a) for a in (item.get('data_apns') or [])[:8]],
-                'ims_apn': str(item.get('ims_apn', 'ims'))[:64],
-                'ip_family': fam if fam in ('IPv4', 'IPv6', 'IPv4v6') else 'IPv4v6',
-            }
+        if not isinstance(item, dict):
+            return None
+        plmn_mcc, plmn_mnc = plmn.split('-', 1)
+        mcc = str(item.get('mcc') or plmn_mcc)
+        mnc = str(item.get('mnc') or plmn_mnc)
+        if mcc == '460':
+            return None
+        mcc_regions = catalog.get('mcc_regions') if isinstance(catalog.get('mcc_regions'), dict) else {}
+        geo = mcc_regions.get(mcc)
+        geo_country = str(geo[0]) if isinstance(geo, list) and len(geo) >= 1 else ''
+        geo_region = str(geo[1]) if isinstance(geo, list) and len(geo) >= 2 else ''
+        fam = item.get('ims_ip_family') or item.get('ip_family')
+        return {
+            'plmn': plmn,
+            'mcc': mcc,
+            'mnc': mnc,
+            'country': str(item.get('country') or geo_country)[:8],
+            'region': str(item.get('region') or geo_region)[:48],
+            'name': str(item.get('name', plmn))[:80],
+            'data_apns': [str(a) for a in (item.get('data_apns') or [])[:8]],
+            'ims_apn': str(item.get('ims_apn', 'ims'))[:64],
+            'ip_family': fam if fam in ('IPv4', 'IPv6', 'IPv4v6') else 'IPv4v6',
+        }
     except Exception:
         return None
-    return None
 
 
 def _overseas_state_payload(folder, probe_res, exp_res, details):
@@ -469,6 +502,45 @@ def _overseas_error_code(error):
     if isinstance(error, ValueError):
         return 'invalid_overseas_config'
     return safe_error(error)
+
+
+def _dispatch_overseas(action, request, folder, language):
+    details = inspection_details(folder)
+    if action == 'overseas-save':
+        cfg = request.get('overseas_config')
+        if not isinstance(cfg, dict):
+            details['error_code'] = 'invalid_overseas_config'
+            return ui('error', language, 'status', details, ok=False,
+                      actions=['status', 'compatibility'], error={'code': 'invalid_overseas_config'})
+    else:
+        cfg = None
+    try:
+        if action == 'overseas-inspect':
+            with engine().management_lock():
+                probe_res = engine().manage('probe')
+                exp_res = engine().manage('get-exp-trial')
+                response = inspection_response(request, probe_res, details, folder=folder)
+                response['overseas_state'] = _overseas_state_payload(folder, probe_res, exp_res, response['details'])
+                return response
+        with job_lock():
+            require_current_selection(folder)
+            current = active_job()
+            e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
+                      'operation_in_progress')
+            with engine().management_lock():
+                if action == 'overseas-save':
+                    res = engine().manage('set-exp-trial', exp_config=cfg)
+                else:
+                    res = engine().manage('clear-exp-trial')
+                exp_res = engine().manage('get-exp-trial')
+                response = inspection_response(request, res['probe'], details, folder=folder)
+                response['overseas_state'] = _overseas_state_payload(folder, res['probe'], exp_res, response['details'])
+                return response
+    except Exception as error:
+        code = _overseas_error_code(error)
+        details['error_code'] = code
+        return ui('error', language, 'status', details, ok=False,
+                  actions=['status', 'compatibility'], error={'code': code})
 
 
 def inspect(request, folder):
@@ -525,9 +597,6 @@ def inspection_response(request, result, details, confirmed_context=None, folder
         (bool(sim_plmn) and not sim_plmn.startswith('460-'))))
     if overseas_prompt:
         details['overseas_prompt'] = True
-        preset = lookup_overseas_preset(folder, sim_plmn)
-        if preset is not None:
-            details['overseas_preset_name'] = preset['name']
     details['installed'] = bool(result.get('installed'))
     details['service_state'] = 'unknown'
     if not result.get('scope_error'):
@@ -754,6 +823,8 @@ def inspection_response(request, result, details, confirmed_context=None, folder
                 details['policy_restart_suggestion_used'] = True
                 return ui(hint, language, details=details, actions=['status', 'export', 'compatibility'])
         return recovery_required_ui(language, details, actions)
+    if status.get('phase') in ('unsupported_sim', 'stopped') and status.get('pre_native_retry_available') is True:
+        return ui('retry_ready', language, 'enable', details, actions=actions + ['enable'])
     if status.get('phase') == 'registering':
         if status.get('sms_service_busy') is True:
             return ui('waiting_sms', language, details=details, actions=actions)
@@ -1035,7 +1106,8 @@ def diagnostic_job_summary(expected_job=None):
                       'invalid_zip_archive', 'rollback_component_too_old', 'backup_location_unavailable',
                       'backup_readback_failed', 'china_broadnet_unsupported', 'sim_route_unsupported',
                       'downloaded_carrier_config_present', 'carrier_not_validated',
-                      'experimental_stock_template_unavailable', 'unvalidated_legacy_installation',
+                      'experimental_stock_template_unavailable', 'stock_apn_mismatch',
+                      'default_apn_required', 'unvalidated_legacy_installation',
                       'legacy_install_interrupted', 'legacy_payload_changed', 'root_scheme_not_supported',
                       'root_boot_script_changed', 'root_addon_directory_changed',
                       'network_mode_rejected', 'network_mode_readback_failed', 'usage_restore_unconfirmed',
@@ -1103,7 +1175,9 @@ def job_response(job, request):
         state = 'recovery_required'
     action = 'poll' if job['state'] in ('queued', 'running', 'waiting_reboot') else 'resume' if resume else 'status'
     sim_errors = ('china_broadnet_unsupported', 'sim_route_unsupported',
-                  'downloaded_carrier_config_present', 'carrier_not_validated', 'experimental_stock_template_unavailable')
+                  'downloaded_carrier_config_present', 'carrier_not_validated',
+                  'experimental_stock_template_unavailable', 'stock_apn_mismatch',
+                  'default_apn_required')
     if job['state'] == 'failed' and job.get('error_code') in sim_errors:
         public = dict(job.get('public_result') or {})
         result = sim_unsupported_ui({'sim_reason': job['error_code'], 'sim_plmn': public.get('sim_plmn')},
@@ -1768,65 +1842,8 @@ def dispatch(action, request, folder):
                 details = inspection_details(folder)
                 result, context = check_confirmation(request)
                 return inspection_response(request, result, details, context, folder=folder)
-    if action == 'overseas-inspect':
-        details = inspection_details(folder)
-        try:
-            with engine().management_lock():
-                probe_res = engine().manage('probe')
-                exp_res = engine().manage('get-exp-trial')
-                response = inspection_response(request, probe_res, details, folder=folder)
-                response['overseas_state'] = _overseas_state_payload(folder, probe_res, exp_res, response['details'])
-                return response
-        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
-            code = _overseas_error_code(error)
-            details['error_code'] = code
-            return ui('error', language, 'status', details, ok=False,
-                      actions=['status', 'compatibility'], error={'code': code})
-    if action == 'overseas-save':
-        details = inspection_details(folder)
-        cfg = request.get('overseas_config')
-        if not isinstance(cfg, dict):
-            details['error_code'] = 'invalid_overseas_config'
-            return ui('error', language, 'status', details, ok=False,
-                      actions=['status', 'compatibility'], error={'code': 'invalid_overseas_config'})
-        try:
-            with job_lock():
-                require_current_selection(folder)
-                current = active_job()
-                e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
-                          'operation_in_progress')
-                with engine().management_lock():
-                    saved = engine().manage('set-exp-trial', exp_config=cfg)
-                    exp_res = engine().manage('get-exp-trial')
-                    response = inspection_response(request, saved['probe'], details, folder=folder)
-                    response['overseas_state'] = _overseas_state_payload(folder, saved['probe'], exp_res, response['details'])
-                    response['overseas_saved'] = True
-                    return response
-        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
-            code = _overseas_error_code(error)
-            details['error_code'] = code
-            return ui('error', language, 'status', details, ok=False,
-                      actions=['status', 'compatibility'], error={'code': code})
-    if action == 'overseas-clear':
-        details = inspection_details(folder)
-        try:
-            with job_lock():
-                require_current_selection(folder)
-                current = active_job()
-                e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
-                          'operation_in_progress')
-                with engine().management_lock():
-                    cleared = engine().manage('clear-exp-trial')
-                    exp_res = engine().manage('get-exp-trial')
-                    response = inspection_response(request, cleared['probe'], details, folder=folder)
-                    response['overseas_state'] = _overseas_state_payload(folder, cleared['probe'], exp_res, response['details'])
-                    response['overseas_cleared'] = True
-                    return response
-        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
-            code = _overseas_error_code(error)
-            details['error_code'] = code
-            return ui('error', language, 'status', details, ok=False,
-                      actions=['status', 'compatibility'], error={'code': code})
+    if action in ('overseas-inspect', 'overseas-save', 'overseas-clear'):
+        return _dispatch_overseas(action, request, folder, language)
     if action == 'compatibility' or (action == 'export' and request.get('export_kind', 'diagnostics') == 'diagnostics'):
         # Reports remain available while another transaction awaits a reboot;
         # they never replace that transaction's active-job pointer.

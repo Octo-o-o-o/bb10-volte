@@ -122,29 +122,41 @@ def check(check_git=False):
     overseas_path = ROOT / 'materials/overseas-carriers.json'
     assert overseas_path.stat().st_size <= 131072, 'Overseas carrier catalog exceeds size bound'
     overseas = json.loads(overseas_path.read_text(encoding='utf-8'))
-    assert overseas.get('schema') == 1 and overseas.get('license') == 'Apache-2.0'
-    assert isinstance(overseas.get('carriers'), dict) and overseas.get('entry_count') == len(overseas['carriers'])
+    assert overseas.get('schema') == 2 and overseas.get('license') == 'Apache-2.0'
+    assert overseas.get('default_bb10_status') == 'untested', 'Overseas catalog default_bb10_status must be untested'
+    assert isinstance(overseas.get('mcc_regions'), dict) and isinstance(overseas.get('carriers'), dict)
+    assert overseas.get('entry_count') == len(overseas['carriers'])
     carrier_sources = json.loads((ROOT / 'materials/carrier-data-sources.json').read_text(encoding='utf-8'))
     pinned_overseas = carrier_sources.get('overseas_catalog', {})
-    assert overseas.get('sources') == {
+    import build_overseas_catalog
+    expected_sources = {
         'aosp_apns_url': pinned_overseas.get('aosp_apns_url'),
         'aosp_apns_commit': pinned_overseas.get('aosp_apns_commit'),
         'aosp_apns_sha256': pinned_overseas.get('aosp_apns_sha256'),
         'aosp_carrier_list_url': pinned_overseas.get('aosp_carrier_list_url'),
         'aosp_carrier_list_commit': pinned_overseas.get('aosp_carrier_list_commit'),
         'aosp_carrier_list_sha256': pinned_overseas.get('aosp_carrier_list_sha256'),
-    }, 'Overseas catalog sources do not match carrier-data-sources.json'
+    }
+    assert overseas.get('sources') == expected_sources, 'Overseas catalog sources do not match carrier-data-sources.json'
+    assert expected_sources['aosp_apns_sha256'] == build_overseas_catalog.AOSP_APNS_SHA256
+    assert expected_sources['aosp_carrier_list_sha256'] == build_overseas_catalog.AOSP_CID_SHA256
     apn_pat = re.compile(r'^[a-z0-9](?:[a-z0-9.-]{0,98}[a-z0-9])?$')
     ip_pat = re.compile(r'(?:\b(?:\d{1,3}\.){3}\d{1,3}\b|::)')
     for plmn, item in overseas['carriers'].items():
         assert re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', plmn), 'Invalid overseas PLMN: ' + plmn
-        assert str(item.get('mcc', '')) + '-' + str(item.get('mnc', '')) == plmn, 'Overseas PLMN mismatch: ' + plmn
-        assert not plmn.startswith('460-') and item.get('mcc') != '460', 'MCC 460 forbidden in overseas catalog'
+        mcc = plmn.split('-', 1)[0]
+        assert mcc != '460', 'MCC 460 forbidden in overseas catalog'
+        assert plmn not in build_overseas_catalog.JUNK_PLMNS, 'Junk PLMN in overseas catalog: ' + plmn
+        assert not build_overseas_catalog.JUNK_CARRIER_RE.search(str(item.get('name') or '')), 'Junk carrier name: ' + plmn
+        assert mcc in overseas['mcc_regions'], 'Missing mcc_regions entry for: ' + mcc
         assert item.get('ims_ip_family') in ('IPv4', 'IPv6', 'IPv4v6'), 'Invalid overseas IP family: ' + plmn
         assert apn_pat.match(str(item.get('ims_apn') or '')), 'Invalid overseas IMS APN: ' + plmn
         assert all(apn_pat.match(str(a)) for a in item.get('data_apns', ())), 'Invalid overseas data APN: ' + plmn
-        assert item.get('bb10_status') == 'untested', 'Overseas catalog must stay untested: ' + plmn
+        assert item.get('bb10_status', overseas['default_bb10_status']) == 'untested', 'Overseas catalog must stay untested: ' + plmn
         assert not ip_pat.search(json.dumps(item, ensure_ascii=False)), 'Raw IP in overseas catalog: ' + plmn
+    project_meta = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
+    site_latest = json.loads((ROOT / 'website/src/mobile/latest.json').read_text(encoding='utf-8'))
+    assert site_latest.get('version') == project_meta.get('mobile_version'), 'website/src/mobile/latest.json version mismatch'
     issues = []
     hashes = {}
     recordings = recording_files()

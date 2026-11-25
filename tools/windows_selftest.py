@@ -194,6 +194,49 @@ def run(output):
     assert automatic.completion_dialog.winfo_exists()
     automatic.completion_dialog.done_button.invoke()
     automatic.close()
+    import overseas_carrier
+    from overseas_carrier_gui import OverseasCarrierDialog
+    overseas_catalog = overseas_carrier.load_catalog()
+    assert len(overseas_catalog) >= 250 and all(not item['plmn'].startswith('460-') for item in overseas_catalog)
+    assert overseas_carrier.lookup_plmn('450', '08') is not None
+    assert (bundle / 'licenses/APACHE-2.0.txt').is_file()
+    assert (bundle / 'NOTICE.md').is_file()
+    prev_lang = i18n.LANGUAGE
+    try:
+        for test_lang in ('zh', 'en'):
+            i18n.LANGUAGE = test_lang
+            ov_dlg = OverseasCarrierDialog(
+                root, lambda: None,
+                {'sim_plmn': '450-08', 'sim_has_isim': True, 'exp_trial_active': False, 'observed_data_apn': 'lte.ktfwing.com'})
+            ov_dlg.transient('')
+            ov_dlg.attributes('-alpha', 0.0)
+            ov_dlg.deiconify()
+            ov_dlg.update()
+            ov_dlg.update_idletasks()
+            dw, dh = ov_dlg.winfo_width(), ov_dlg.winfo_height()
+            assert dw >= 860 and dh >= 600
+            for widget in (ov_dlg.status_label, ov_dlg.import_btn, ov_dlg.export_btn,
+                           ov_dlg.clear_btn, ov_dlg.save_btn, ov_dlg.close_btn):
+                wx = widget.winfo_rootx() - ov_dlg.winfo_rootx()
+                wy = widget.winfo_rooty() - ov_dlg.winfo_rooty()
+                assert widget.winfo_width() > 30 and widget.winfo_height() > 16
+                assert 0 <= wx and wx + widget.winfo_width() <= dw
+                assert 0 <= wy and wy + widget.winfo_height() <= dh
+            ov_dlg._close()
+            ac_ov = AutoCarrierWindow(root, 'bb10-root', '')
+            ac_ov.window.transient('')
+            ac_ov.window.attributes('-alpha', 0.0)
+            ac_ov.window.deiconify()
+            ac_ov.report = {'variant': 'SQC100-5', 'installed': True, 'sim_plmn': '450-08',
+                            'sim_supported': False, 'sim_reason': 'carrier_not_validated', 'exp_trial_active': False}
+            ac_ov.refresh()
+            ac_ov.window.update()
+            ac_ov.window.update_idletasks()
+            assert ac_ov.overseas_bar.winfo_ismapped()
+            assert ac_ov.details.winfo_height() >= 50
+            ac_ov.close()
+    finally:
+        i18n.LANGUAGE = prev_lang
     editor = ProfileEditor(root, app.profile, app.set_profile)
     editor.withdraw()
     assert editor.value() == app.profile
@@ -428,6 +471,8 @@ def run(output):
               'automatic_carrier_payload_files_verified': len(auto_manifest['files']),
               'automatic_carrier_management_ui_verified': True,
               'automatic_carrier_extra_reboot_workflow_verified': True,
+              'overseas_catalog_and_dialog_geometry_verified': True,
+              'overseas_catalog_entries': len(overseas_catalog),
               'qnx_stage_cleanup_resource_present': True,
               'offline_staging_inputs_verified': len(transferred),
               'profiles_loaded': len(presets()), 'editor_roundtrip': True,

@@ -33,6 +33,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r59 / mobile 0.2.4.0 before r60 overseas reliability, catalog schema 2 and GUI/QML fixes.
+                    'ed79b28d87995d7071f86c80cda303dd6ac8651acdf153f8b6da1234535bc6e7',
                     # r56/r57/r58 / mobile 0.2.2.0-0.2.3.0 before r59 overseas carrier support and P-CSCF route sync.
                     '499b01a9e316c4957fe1143945d1cc86196bf30761bef039debcf4513357a8f6',
                     # r55 / mobile 0.2.1.0 before r56 legacy migration and LTE rollback fixes.
@@ -221,6 +223,11 @@ def management_lock(blocking=False):
     assert not os.path.islink(path), 'management_lock_changed'
     fd = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
     try:
+        try:
+            flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+            fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+        except (IOError, OSError, AttributeError):
+            pass
         opened, current = os.fstat(fd), os.lstat(path)
         assert stat.S_ISREG(opened.st_mode) and opened.st_uid == 0 and opened.st_nlink == 1
         assert opened.st_mode & 0o077 == 0 and (opened.st_dev, opened.st_ino) == (current.st_dev, current.st_ino)
@@ -531,7 +538,17 @@ def with_sim_status(result, facts):
             result['network_lock_enabled'] = None
     except (IOError, OSError, ValueError) as error:
         result['sim_supported'] = False
-        result['sim_reason'] = str(error) if isinstance(error, ValueError) else 'sim_not_ready'
+        if isinstance(error, ValueError):
+            msg = str(error)
+            if msg == 'Stock data APN does not match selected profile':
+                msg = 'stock_apn_mismatch'
+            elif msg == 'No concrete data APN available for 0.xml bootstrap':
+                msg = 'default_apn_required'
+            elif not re.match(r'\A[a-z][a-z0-9_]{0,63}\Z', msg):
+                msg = 'experimental_stock_template_unavailable'
+            result['sim_reason'] = msg
+        else:
+            result['sim_reason'] = 'sim_not_ready'
         result['can_install'] = False
         result['network_lock_enabled'] = False
     result['scan_mode'] = network.scan_mode_snapshot()
@@ -1514,17 +1531,23 @@ def main():
         options['receipt'] = json.loads(staged_raw.decode('ascii'))
     elif action == 'set-exp-trial':
         staged_file = sys.argv[2]
-        assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}/exp-trial\.json\Z', staged_file)
-        assert os.path.realpath(staged_file) == staged_file and not os.path.islink(staged_file)
-        staged_raw = n.read(staged_file)
-        assert len(staged_raw) <= 16384, 'exp_trial_too_large'
-        options['exp_config'] = json.loads(staged_raw.decode('utf-8'))
     if action in ('set-exp-trial', 'clear-exp-trial'):
         try:
+            if action == 'set-exp-trial':
+                assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}/exp-trial\.json\Z', staged_file)
+                assert os.path.realpath(staged_file) == staged_file and not os.path.islink(staged_file)
+                staged_raw = n.read(staged_file)
+                assert len(staged_raw) <= 16384, 'exp_trial_too_large'
+                options['exp_config'] = json.loads(staged_raw.decode('utf-8'))
             result = manage(action, **options)
-        except (AssertionError, ValueError, RuntimeError) as error:
-            if staged_file is not None and os.path.isfile(staged_file) and n.read(staged_file) == staged_raw:
-                os.unlink(staged_file)
+        except (AssertionError, ValueError, RuntimeError, IOError, OSError) as error:
+            try:
+                if (staged_file is not None and staged_raw is not None and
+                        os.path.isfile(staged_file) and not os.path.islink(staged_file) and
+                        n.read(staged_file) == staged_raw):
+                    os.unlink(staged_file)
+            except (IOError, OSError):
+                pass
             code = str(error)
             if code.startswith('Invalid experimental trial'):
                 code = 'invalid_overseas_config'

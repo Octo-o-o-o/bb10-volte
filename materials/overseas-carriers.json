@@ -2,2847 +2,1874 @@
   "attribution": "Derived from Android Open Source Project (AOSP) device/sample apns-full-conf.xml and TelephonyProvider carrier_list.textpb",
   "carriers": {
     "202-01": {
-      "bb10_status": "untested",
-      "country": "GR",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "202",
-      "mnc": "01",
-      "name": "Cosmote Internet",
-      "region": "Greece",
+      "name": "COSMOTE",
       "source": "aosp-apns"
     },
     "204-04": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "live.vodafone.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "04",
-      "name": "Vodafone Internet",
-      "region": "Netherlands",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
     "204-07": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "move.dataxs.mobi"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "204",
-      "mnc": "07",
       "name": "Tata Move",
-      "region": "Netherlands",
       "source": "aosp-apns"
     },
     "204-08": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "08",
       "name": "KPN Mobiel",
-      "region": "Netherlands",
       "source": "aosp-apns"
     },
     "204-16": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "smartsites.t-mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "16",
       "name": "Odido",
-      "region": "Netherlands",
       "source": "aosp-apns"
     },
     "204-17": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "internet.lebara.nl"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "17",
-      "name": "Lebara NL",
-      "region": "Netherlands",
+      "name": "Lebara",
       "source": "aosp-apns"
     },
     "204-20": {
-      "bb10_status": "untested",
-      "country": "NL",
       "data_apns": [
         "smartsites.t-mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "20",
       "name": "T-Mobile Internet",
-      "region": "Netherlands",
-      "source": "aosp-apns"
-    },
-    "204-69": {
-      "bb10_status": "untested",
-      "country": "NL",
-      "data_apns": [
-        "internet"
-      ],
-      "ims_apn": "ims",
-      "ims_ip_family": "IPv4v6",
-      "mcc": "204",
-      "mnc": "69",
-      "name": "KPN Lab",
-      "region": "Netherlands",
       "source": "aosp-apns"
     },
     "206-01": {
-      "bb10_status": "untested",
-      "country": "BE",
       "data_apns": [
         "internet.proximus.be"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "206",
-      "mnc": "01",
       "name": "Proximus",
-      "region": "Belgium",
       "source": "aosp-apns"
     },
     "206-10": {
-      "bb10_status": "untested",
-      "country": "BE",
       "data_apns": [
         "mworld.be"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "206",
-      "mnc": "10",
       "name": "Orange",
-      "region": "Belgium",
       "source": "aosp-apns"
     },
     "208-01": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "orange"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "01",
-      "name": "Orange World",
-      "region": "France",
+      "name": "Orange",
       "source": "aosp-apns"
     },
     "208-09": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "sl2sfr"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "09",
       "name": "SFR",
-      "region": "France",
       "source": "aosp-apns"
     },
     "208-10": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "sl2sfr"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "10",
       "name": "SFR",
-      "region": "France",
       "source": "aosp-apns"
     },
     "208-15": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "free"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "15",
       "name": "Free",
-      "region": "France",
       "source": "aosp-carrier-list"
     },
     "208-20": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "mmsbouygtel.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "20",
       "name": "Bouygues Telecom",
-      "region": "France",
       "source": "aosp-apns"
     },
     "208-38": {
-      "bb10_status": "untested",
-      "country": "FR",
       "data_apns": [
         "fr.lebara.mobi"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "208",
-      "mnc": "38",
-      "name": "Lebara France",
-      "region": "France",
+      "name": "Lebara",
       "source": "aosp-apns"
     },
     "214-01": {
-      "bb10_status": "untested",
-      "country": "ES",
       "data_apns": [
         "airtelwap.es"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "214",
-      "mnc": "01",
-      "name": "Internet móvil",
-      "region": "Spain",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
+    "214-03": {
+      "data_apns": [
+        "orangeworld"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Orange",
+      "source": "aosp-apns"
+    },
+    "214-04": {
+      "data_apns": [
+        "internet"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Yoigo",
+      "source": "aosp-carrier-list"
+    },
     "214-05": {
-      "bb10_status": "untested",
-      "country": "ES",
       "data_apns": [
         "telefonica.es"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "214",
-      "mnc": "05",
       "name": "Movistar",
-      "region": "Spain",
       "source": "aosp-apns"
     },
     "214-07": {
-      "bb10_status": "untested",
-      "country": "ES",
       "data_apns": [
         "telefonica.es"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "214",
-      "mnc": "07",
       "name": "Movistar",
-      "region": "Spain",
       "source": "aosp-apns"
     },
     "214-15": {
-      "bb10_status": "untested",
-      "country": "ES",
       "data_apns": [
         "datos"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "214",
-      "mnc": "15",
       "name": "PTV Telecom",
-      "region": "Spain",
       "source": "aosp-apns"
     },
     "214-22": {
-      "bb10_status": "untested",
-      "country": "ES",
       "data_apns": [
         "internet.digimobil.es"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "214",
-      "mnc": "22",
       "name": "Digi Spain",
-      "region": "Spain",
       "source": "aosp-apns"
     },
     "216-03": {
-      "bb10_status": "untested",
-      "country": "HU",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "216",
-      "mnc": "03",
       "name": "DIGI HU internet",
-      "region": "Hungary",
       "source": "aosp-apns"
     },
     "216-30": {
-      "bb10_status": "untested",
-      "country": "HU",
       "data_apns": [
         "internet.telekom"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "216",
-      "mnc": "30",
       "name": "Magyar Telekom",
-      "region": "Hungary",
       "source": "aosp-apns"
     },
     "216-70": {
-      "bb10_status": "untested",
-      "country": "HU",
       "data_apns": [
         "internet.vodafone.net"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "216",
-      "mnc": "70",
-      "name": "Vodafone Internet",
-      "region": "Hungary",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
     "219-01": {
-      "bb10_status": "untested",
-      "country": "HR",
       "data_apns": [
         "internet.ht.hr"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "219",
-      "mnc": "01",
       "name": "Hrvatski Telekom",
-      "region": "Croatia",
       "source": "aosp-apns"
     },
     "219-10": {
-      "bb10_status": "untested",
-      "country": "HR",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "219",
-      "mnc": "10",
       "name": "A1/Tomato",
-      "region": "Croatia",
       "source": "aosp-apns"
     },
     "222-01": {
-      "bb10_status": "untested",
-      "country": "IT",
       "data_apns": [
         "wap.tim.it"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "222",
-      "mnc": "01",
       "name": "TIM",
-      "region": "Italy",
       "source": "aosp-apns"
     },
     "222-10": {
-      "bb10_status": "untested",
-      "country": "IT",
       "data_apns": [
         "mobile.vodafone.it"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "222",
-      "mnc": "10",
-      "name": "MMS Vodafone",
-      "region": "Italy",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
     "222-36": {
-      "bb10_status": "untested",
-      "country": "IT",
       "data_apns": [
         "digi.mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "222",
-      "mnc": "36",
       "name": "Digi Italy",
-      "region": "Italy",
       "source": "aosp-apns"
     },
+    "222-50": {
+      "data_apns": [
+        "iliad"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Iliad",
+      "source": "aosp-apns"
+    },
+    "222-88": {
+      "data_apns": [
+        "internet.it"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "WINDTRE",
+      "source": "aosp-carrier-list"
+    },
     "226-01": {
-      "bb10_status": "untested",
-      "country": "RO",
       "data_apns": [
         "live.vodafone.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "226",
-      "mnc": "01",
       "name": "Vodafone",
-      "region": "Romania",
       "source": "aosp-apns"
     },
     "226-05": {
-      "bb10_status": "untested",
-      "country": "RO",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "226",
-      "mnc": "05",
       "name": "Digi.Mobil",
-      "region": "Romania",
       "source": "aosp-apns"
     },
     "226-10": {
-      "bb10_status": "untested",
-      "country": "RO",
       "data_apns": [
         "net"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "226",
-      "mnc": "10",
       "name": "Orange",
-      "region": "Romania",
       "source": "aosp-apns"
     },
     "228-01": {
-      "bb10_status": "untested",
-      "country": "CH",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "228",
-      "mnc": "01",
       "name": "Swisscom",
-      "region": "Switzerland",
       "source": "aosp-carrier-list"
     },
     "228-02": {
-      "bb10_status": "untested",
-      "country": "CH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "228",
-      "mnc": "02",
       "name": "Sunrise",
-      "region": "Switzerland",
       "source": "aosp-apns"
     },
     "228-03": {
-      "bb10_status": "untested",
-      "country": "CH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "228",
-      "mnc": "03",
       "name": "Salt",
-      "region": "Switzerland",
       "source": "aosp-apns"
     },
     "230-01": {
-      "bb10_status": "untested",
-      "country": "CZ",
       "data_apns": [
         "internet.t-mobile.cz"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "230",
-      "mnc": "01",
       "name": "T-Mobile",
-      "region": "Czechia",
       "source": "aosp-apns"
     },
     "230-02": {
-      "bb10_status": "untested",
-      "country": "CZ",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "230",
-      "mnc": "02",
       "name": "O2",
-      "region": "Czechia",
       "source": "aosp-apns"
     },
     "230-03": {
-      "bb10_status": "untested",
-      "country": "CZ",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "230",
-      "mnc": "03",
       "name": "Vodafone",
-      "region": "Czechia",
       "source": "aosp-apns"
     },
     "231-01": {
-      "bb10_status": "untested",
-      "country": "SK",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "231",
-      "mnc": "01",
-      "name": "Orange Internet",
-      "region": "Slovakia",
+      "name": "Orange",
       "source": "aosp-apns"
     },
     "231-02": {
-      "bb10_status": "untested",
-      "country": "SK",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "231",
-      "mnc": "02",
       "name": "Slovak Telekom",
-      "region": "Slovakia",
       "source": "aosp-apns"
     },
     "232-01": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "a1.net"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "232",
-      "mnc": "01",
-      "name": "live!",
-      "region": "Austria",
+      "name": "A1",
       "source": "aosp-apns"
     },
     "232-03": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "internet.t-mobile.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "232",
-      "mnc": "03",
       "name": "Magenta Telekom",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "232-04": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "internet.t-mobile.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "232",
-      "mnc": "04",
       "name": "T-Mobile A Internet",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "232-05": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "drei.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "232",
-      "mnc": "05",
       "name": "Drei",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "232-07": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "internet.t-mobile.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "232",
-      "mnc": "07",
       "name": "Magenta Telekom",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "232-10": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "drei.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "232",
-      "mnc": "10",
       "name": "Drei",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "232-14": {
-      "bb10_status": "untested",
-      "country": "AT",
       "data_apns": [
         "drei.at"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "232",
-      "mnc": "14",
       "name": "Planet 3",
-      "region": "Austria",
       "source": "aosp-apns"
     },
     "234-05": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "spitfire1"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "05",
       "name": "Spitfire Network Services Ltd",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-10": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "mobile.o2.co.uk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "10",
       "name": "O2",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-15": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "wap.vodafone.co.uk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "15",
-      "name": "Vodafone UK Data",
-      "region": "United Kingdom",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
     "234-20": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "three.co.uk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "20",
       "name": "Three Mobile",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-27": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "move.dataxs.mobi"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "234",
-      "mnc": "27",
       "name": "Tata Move UK",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-30": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "everywhere"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "30",
       "name": "EE",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-33": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "everywhere"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "33",
       "name": "EE",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-34": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "34",
       "name": "EE IMS",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-38": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "goto.virginmobile.uk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "38",
-      "name": "Virgin IMS",
-      "region": "United Kingdom",
+      "name": "Virgin",
       "source": "aosp-apns"
     },
     "234-53": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "globaldata"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "53",
       "name": "TANGO",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-57": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "mobile.sky"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "57",
       "name": "Sky",
-      "region": "United Kingdom",
       "source": "aosp-apns"
     },
     "234-87": {
-      "bb10_status": "untested",
-      "country": "GB",
       "data_apns": [
         "uk.lebara.mobi"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "234",
-      "mnc": "87",
-      "name": "Lebara UK",
-      "region": "United Kingdom",
+      "name": "Lebara",
       "source": "aosp-apns"
     },
     "238-01": {
-      "bb10_status": "untested",
-      "country": "DK",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "238",
-      "mnc": "01",
       "name": "TDC Mobil",
-      "region": "Denmark",
       "source": "aosp-apns"
     },
     "238-02": {
-      "bb10_status": "untested",
-      "country": "DK",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "238",
-      "mnc": "02",
       "name": "Telenor",
-      "region": "Denmark",
       "source": "aosp-apns"
     },
     "238-06": {
-      "bb10_status": "untested",
-      "country": "DK",
       "data_apns": [
         "data.tre.dk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "238",
-      "mnc": "06",
       "name": "3",
-      "region": "Denmark",
       "source": "aosp-apns"
     },
     "238-20": {
-      "bb10_status": "untested",
-      "country": "DK",
       "data_apns": [
         "www.internet.mtelia.dk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "238",
-      "mnc": "20",
       "name": "Telia",
-      "region": "Denmark",
       "source": "aosp-apns"
     },
     "238-30": {
-      "bb10_status": "untested",
-      "country": "DK",
       "data_apns": [
         "www.internet.mtelia.dk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "238",
-      "mnc": "30",
       "name": "Telia",
-      "region": "Denmark",
       "source": "aosp-apns"
     },
     "240-01": {
-      "bb10_status": "untested",
-      "country": "SE",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "240",
-      "mnc": "01",
       "name": "Telia Sverige AB",
-      "region": "Sweden",
       "source": "aosp-carrier-list"
     },
     "240-02": {
-      "bb10_status": "untested",
-      "country": "SE",
       "data_apns": [
         "data.tre.se"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "240",
-      "mnc": "02",
       "name": "3 (Hi3G Access AB)",
-      "region": "Sweden",
       "source": "aosp-apns"
     },
     "240-06": {
-      "bb10_status": "untested",
-      "country": "SE",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "240",
-      "mnc": "06",
       "name": "Vimla",
-      "region": "Sweden",
       "source": "aosp-apns"
     },
     "240-07": {
-      "bb10_status": "untested",
-      "country": "SE",
       "data_apns": [
         "internet.tele2.se"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "240",
-      "mnc": "07",
       "name": "Tele2/Comviq Sverige/Com Hem",
-      "region": "Sweden",
       "source": "aosp-apns"
     },
     "240-08": {
-      "bb10_status": "untested",
-      "country": "SE",
       "data_apns": [
         "services.telenor.se"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "240",
-      "mnc": "08",
       "name": "Telenor Sverige AB",
-      "region": "Sweden",
       "source": "aosp-apns"
     },
     "242-01": {
-      "bb10_status": "untested",
-      "country": "NO",
       "data_apns": [
         "telenor.smart"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "242",
-      "mnc": "01",
       "name": "Telenor",
-      "region": "Norway",
       "source": "aosp-apns"
     },
     "242-02": {
-      "bb10_status": "untested",
-      "country": "NO",
       "data_apns": [
         "telia"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "242",
-      "mnc": "02",
       "name": "Telia",
-      "region": "Norway",
       "source": "aosp-apns"
     },
     "242-05": {
-      "bb10_status": "untested",
-      "country": "NO",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "242",
-      "mnc": "05",
       "name": "OneCall",
-      "region": "Norway",
       "source": "aosp-apns"
     },
     "242-13": {
-      "bb10_status": "untested",
-      "country": "NO",
       "data_apns": [
         "ixt"
       ],
       "ims_apn": "ixtims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "242",
-      "mnc": "13",
       "name": "IXT",
-      "region": "Norway",
       "source": "aosp-apns"
     },
     "242-14": {
-      "bb10_status": "untested",
-      "country": "NO",
       "data_apns": [
         "ice.net"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "242",
-      "mnc": "14",
       "name": "Ice Norway",
-      "region": "Norway",
       "source": "aosp-apns"
     },
     "244-05": {
-      "bb10_status": "untested",
-      "country": "FI",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "244",
-      "mnc": "05",
       "name": "Elisa",
-      "region": "Finland",
       "source": "aosp-apns"
     },
     "244-12": {
-      "bb10_status": "untested",
-      "country": "FI",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "244",
-      "mnc": "12",
       "name": "DNA",
-      "region": "Finland",
       "source": "aosp-apns"
     },
     "244-13": {
-      "bb10_status": "untested",
-      "country": "FI",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "244",
-      "mnc": "13",
       "name": "DNA",
-      "region": "Finland",
       "source": "aosp-apns"
     },
     "244-91": {
-      "bb10_status": "untested",
-      "country": "FI",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "244",
-      "mnc": "91",
       "name": "Telia",
-      "region": "Finland",
       "source": "aosp-apns"
     },
     "246-01": {
-      "bb10_status": "untested",
-      "country": "LT",
       "data_apns": [
         "omnitel"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "246",
-      "mnc": "01",
       "name": "Telia",
-      "region": "Lithuania",
       "source": "aosp-apns"
     },
     "247-01": {
-      "bb10_status": "untested",
-      "country": "LV",
       "data_apns": [
         "internet.lmt.lv"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "247",
-      "mnc": "01",
       "name": "LMT",
-      "region": "Latvia",
       "source": "aosp-apns"
     },
     "247-10": {
-      "bb10_status": "untested",
-      "country": "LV",
       "data_apns": [
         "internet.lmt.lv"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "247",
-      "mnc": "10",
       "name": "LMT Internet",
-      "region": "Latvia",
       "source": "aosp-apns"
     },
     "248-01": {
-      "bb10_status": "untested",
-      "country": "EE",
       "data_apns": [
         "internet.emt.ee"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "248",
-      "mnc": "01",
       "name": "Telia",
-      "region": "Estonia",
       "source": "aosp-apns"
     },
     "248-02": {
-      "bb10_status": "untested",
-      "country": "EE",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "248",
-      "mnc": "02",
       "name": "Elisa",
-      "region": "Estonia",
       "source": "aosp-apns"
     },
     "250-01": {
-      "bb10_status": "untested",
-      "country": "RU",
       "data_apns": [
         "internet.mts.ru"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "250",
-      "mnc": "01",
       "name": "МТС",
-      "region": "Russia",
       "source": "aosp-apns"
     },
     "250-02": {
-      "bb10_status": "untested",
-      "country": "RU",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "250",
-      "mnc": "02",
       "name": "MegaFon",
-      "region": "Russia",
       "source": "aosp-apns"
     },
     "250-20": {
-      "bb10_status": "untested",
-      "country": "RU",
       "data_apns": [
         "internet.tele2.ru"
       ],
       "ims_apn": "ims.tele2.ru",
       "ims_ip_family": "IPv4v6",
-      "mcc": "250",
-      "mnc": "20",
       "name": "Tele2",
-      "region": "Russia",
       "source": "aosp-apns"
     },
     "250-99": {
-      "bb10_status": "untested",
-      "country": "RU",
       "data_apns": [
         "internet.beeline.ru"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "250",
-      "mnc": "99",
       "name": "Билайн",
-      "region": "Russia",
       "source": "aosp-apns"
     },
     "259-15": {
-      "bb10_status": "untested",
-      "country": "MD",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "259",
-      "mnc": "15",
-      "name": "IDC Internet",
-      "region": "Moldova",
+      "name": "IDC",
       "source": "aosp-apns"
     },
     "260-01": {
-      "bb10_status": "untested",
-      "country": "PL",
       "data_apns": [
         "plus"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "260",
-      "mnc": "01",
       "name": "Plus",
-      "region": "Poland",
       "source": "aosp-apns"
     },
     "260-02": {
-      "bb10_status": "untested",
-      "country": "PL",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "260",
-      "mnc": "02",
       "name": "T-Mobile",
-      "region": "Poland",
       "source": "aosp-apns"
     },
     "260-03": {
-      "bb10_status": "untested",
-      "country": "PL",
       "data_apns": [
         "internetipv6"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "260",
-      "mnc": "03",
       "name": "Orange",
-      "region": "Poland",
       "source": "aosp-apns"
     },
     "260-06": {
-      "bb10_status": "untested",
-      "country": "PL",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "260",
-      "mnc": "06",
       "name": "PLAY",
-      "region": "Poland",
       "source": "aosp-apns"
     },
     "262-01": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "internet.v6.telekom"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "01",
       "name": "Telekom",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-02": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "web.vodafone.de"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "02",
       "name": "Vodafone",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-03": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "03",
       "name": "O2",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-06": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "internet.v6.telekom"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "06",
       "name": "Telekom",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-07": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "07",
       "name": "O2",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-08": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "08",
       "name": "o2 DE IMS",
-      "region": "Germany",
-      "source": "aosp-apns"
-    },
-    "262-09": {
-      "bb10_status": "untested",
-      "country": "DE",
-      "data_apns": [
-        "web32.testnetz-vd2.de"
-      ],
-      "ims_apn": "ims32.testnetz-vd2.de",
-      "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "09",
-      "name": "Vodafone Lab",
-      "region": "Germany",
-      "source": "aosp-apns"
-    },
-    "262-14": {
-      "bb10_status": "untested",
-      "country": "DE",
-      "data_apns": [
-        "internet.lebara.de"
-      ],
-      "ims_apn": "ims",
-      "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "14",
-      "name": "Group 3G UMTS GmbH (Quam)",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "262-23": {
-      "bb10_status": "untested",
-      "country": "DE",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "262",
-      "mnc": "23",
       "name": "1&1",
-      "region": "Germany",
       "source": "aosp-apns"
     },
     "268-01": {
-      "bb10_status": "untested",
-      "country": "PT",
       "data_apns": [
         "net2.vodafone.pt"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "268",
-      "mnc": "01",
-      "name": "Vodafone Net2",
-      "region": "Portugal",
+      "name": "Vodafone",
       "source": "aosp-apns"
     },
     "268-89": {
-      "bb10_status": "untested",
-      "country": "PT",
       "data_apns": [
         "net2.vodafone.pt"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "268",
-      "mnc": "89",
       "name": "Vodafone Net2",
-      "region": "Portugal",
       "source": "aosp-apns"
     },
     "270-01": {
-      "bb10_status": "untested",
-      "country": "LU",
       "data_apns": [
         "web.pt.lu"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "270",
-      "mnc": "01",
       "name": "P&T Luxembourg",
-      "region": "Luxembourg",
       "source": "aosp-apns"
     },
     "272-01": {
-      "bb10_status": "untested",
-      "country": "IE",
       "data_apns": [
         "live.vodafone.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "272",
-      "mnc": "01",
       "name": "Vodafone",
-      "region": "Ireland",
       "source": "aosp-apns"
     },
     "272-03": {
-      "bb10_status": "untested",
-      "country": "IE",
       "data_apns": [
         "data.myeirmobile.ie"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "272",
-      "mnc": "03",
       "name": "Meteor Mobile Communications Ltd.",
-      "region": "Ireland",
       "source": "aosp-apns"
     },
     "284-03": {
-      "bb10_status": "untested",
-      "country": "BG",
       "data_apns": [
         "internet.vivacom.bg"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "284",
-      "mnc": "03",
       "name": "VIVACOM",
-      "region": "Bulgaria",
       "source": "aosp-apns"
     },
     "286-01": {
-      "bb10_status": "untested",
-      "country": "TR",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "286",
-      "mnc": "01",
       "name": "Paycell | Turkcell",
-      "region": "Turkey",
       "source": "aosp-apns"
     },
     "286-02": {
-      "bb10_status": "untested",
-      "country": "TR",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "286",
-      "mnc": "02",
       "name": "Vodafone",
-      "region": "Turkey",
       "source": "aosp-apns"
     },
     "286-03": {
-      "bb10_status": "untested",
-      "country": "TR",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "286",
-      "mnc": "03",
       "name": "Türk Telekom",
-      "region": "Turkey",
       "source": "aosp-apns"
     },
     "290-03": {
-      "bb10_status": "untested",
-      "country": "GL",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "290",
-      "mnc": "03",
-      "name": "Tuullik MMS",
-      "region": "Greenland",
+      "name": "Tuullik Internet",
+      "source": "aosp-apns"
+    },
+    "302-220": {
+      "data_apns": [
+        "sp.telus.com"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "TELUS Mobility",
       "source": "aosp-apns"
     },
     "302-370": {
-      "bb10_status": "untested",
-      "country": "CA",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "302",
-      "mnc": "370",
-      "name": "Rogers IMS",
-      "region": "Canada",
+      "name": "MTS Mobility",
       "source": "aosp-apns"
     },
     "302-490": {
-      "bb10_status": "untested",
-      "country": "CA",
       "data_apns": [
         "internet.freedommobile.ca"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "302",
-      "mnc": "490",
       "name": "Freedom Mobile",
-      "region": "Canada",
+      "source": "aosp-carrier-list"
+    },
+    "302-500": {
+      "data_apns": [
+        "media.ng"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Videotron",
       "source": "aosp-carrier-list"
     },
     "302-610": {
-      "bb10_status": "untested",
-      "country": "CA",
       "data_apns": [
         "pda.bell.ca"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "302",
-      "mnc": "610",
       "name": "Bell Mobility",
-      "region": "Canada",
       "source": "aosp-apns"
     },
     "302-720": {
-      "bb10_status": "untested",
-      "country": "CA",
       "data_apns": [
         "ltemobile.apn"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "302",
-      "mnc": "720",
       "name": "Rogers",
-      "region": "Canada",
       "source": "aosp-apns"
     },
     "302-780": {
-      "bb10_status": "untested",
-      "country": "CA",
       "data_apns": [
         "pda.stm.sk.ca"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "302",
-      "mnc": "780",
       "name": "Sask Tel Mobility",
-      "region": "Canada",
       "source": "aosp-carrier-list"
     },
     "310-004": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "internet",
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "004",
       "name": "Verizon",
-      "region": "United States",
-      "source": "aosp-apns"
-    },
-    "310-028": {
-      "bb10_status": "untested",
-      "country": "US",
-      "data_apns": [
-        "vzwinternet"
-      ],
-      "ims_apn": "vzwims",
-      "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "028",
-      "name": "ALU Test-SIM",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-040": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "040",
       "name": "MTA Communications dba MTA Wireless",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-120": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "sprint",
         "cinet.spcs"
       ],
       "ims_apn": "sprint",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "120",
       "name": "Sprint",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-130": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "home.cww.com"
       ],
       "ims_apn": "home.cww.com",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "130",
       "name": "Carolina West Wireless",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-260": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "260",
       "name": "T-Mobile - US",
-      "region": "United States",
       "source": "aosp-carrier-list"
     },
     "310-360": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "360",
       "name": "Cellular Network Partnership dba Pioneer Cellular",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-410": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "410",
       "name": "AT&T",
-      "region": "United States",
       "source": "aosp-carrier-list"
     },
     "310-580": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "580",
       "name": "Inland Cellular",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-600": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "600",
       "name": "cellcom",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-750": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "750",
       "name": "East Kentucky Network LLC dba Appalachian Wireless",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-900": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "900",
       "name": "Mid-Rivers",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-920": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "920",
       "name": "James Valley",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "310-930": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "310",
-      "mnc": "930",
       "name": "Copper Valley Wireless",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-050": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "050",
       "name": "Thumb Cellular Limited Partnership",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-310": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "310",
       "name": "Leaco Rural Telephone Company Inc",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-340": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "340",
       "name": "Illinois Valley Cellular",
-      "region": "United States",
-      "source": "aosp-apns"
-    },
-    "311-390": {
-      "bb10_status": "untested",
-      "country": "US",
-      "data_apns": [
-        "vzwinternet"
-      ],
-      "ims_apn": "vzwims",
-      "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "390",
-      "name": "Midwest Wireless Holdings LLC",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-410": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "410",
       "name": "Iowa RSA No.2 Ltd Partnership",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-420": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "420",
       "name": "northwestcell",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-440": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "440",
       "name": "Bluegrass Cellular LLC",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-450": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "450",
       "name": "PTCI",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-480": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "480",
       "name": "Verizon Wireless",
-      "region": "United States",
       "source": "aosp-apns"
     },
+    "311-580": {
+      "data_apns": [
+        "usccinternet"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "U.S. Cellular",
+      "source": "aosp-carrier-list"
+    },
     "311-600": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "vzwinternet"
       ],
       "ims_apn": "vzwims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "600",
       "name": "COX",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "311-670": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "lte.internet.pinebelt.net"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "311",
-      "mnc": "670",
       "name": "Pine Belt",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "312-630": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "data"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "312",
-      "mnc": "630",
-      "name": "NetGenuity IMS",
-      "region": "United States",
+      "name": "NetGenuity",
       "source": "aosp-apns"
     },
+    "313-100": {
+      "data_apns": [],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "FirstNet",
+      "source": "aosp-carrier-list"
+    },
+    "313-340": {
+      "data_apns": [],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Home",
+      "source": "aosp-carrier-list"
+    },
     "313-770": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "globaldata"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "313",
-      "mnc": "770",
       "name": "TANGO",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "314-720": {
-      "bb10_status": "untested",
-      "country": "US",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "314",
-      "mnc": "720",
       "name": "OXIO",
-      "region": "United States",
       "source": "aosp-apns"
     },
     "334-020": {
-      "bb10_status": "untested",
-      "country": "MX",
       "data_apns": [
         "internet.itelcel.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "334",
-      "mnc": "020",
       "name": "Telcel",
-      "region": "Mexico",
       "source": "aosp-apns"
     },
-    "334-140": {
-      "bb10_status": "untested",
-      "country": "MX",
+    "334-030": {
       "data_apns": [
-        "internet.altan"
+        "internet.movistar.mx"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "334",
-      "mnc": "140",
-      "name": "ALTAN - Internal Use",
-      "region": "Mexico",
+      "name": "Movistar",
       "source": "aosp-apns"
     },
+    "334-050": {
+      "data_apns": [],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "AT&T MX",
+      "source": "aosp-carrier-list"
+    },
     "334-170": {
-      "bb10_status": "untested",
-      "country": "MX",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "334",
-      "mnc": "170",
       "name": "OXIO",
-      "region": "Mexico",
       "source": "aosp-apns"
     },
     "340-01": {
-      "bb10_status": "untested",
-      "country": "GP",
       "data_apns": [
         "orangeweb"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "340",
-      "mnc": "01",
       "name": "Orange Caraïbe Mobiles",
-      "region": "Guadeloupe",
       "source": "aosp-apns"
     },
     "363-01": {
-      "bb10_status": "untested",
-      "country": "AW",
       "data_apns": [
         "internet.setar.aw"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "363",
-      "mnc": "01",
       "name": "SETAR",
-      "region": "Aruba",
       "source": "aosp-apns"
     },
     "364-49": {
-      "bb10_status": "untested",
-      "country": "BS",
       "data_apns": [
         "pda.newcomobile.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "364",
-      "mnc": "49",
       "name": "ALIV BS",
-      "region": "Bahamas",
       "source": "aosp-apns"
     },
     "404-02": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "airtelfun.com",
         "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "02",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-03": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "03",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-10": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "10",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-16": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "16",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-31": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "31",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-40": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "40",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-45": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "45",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-49": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "49",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-70": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "70",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-90": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "90",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-92": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "92",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-93": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "93",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-94": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "94",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-95": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "95",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-96": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "96",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-97": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "97",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "404-98": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "404",
-      "mnc": "98",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-51": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "51",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-52": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "52",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-53": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "53",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-54": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "54",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-55": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "55",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-56": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
-        "airtelgprs.com",
-        "airtelfun.com"
+        "airtelfun.com",
+        "airtelgprs.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "56",
       "name": "Airtel",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-840": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "840",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-854": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "854",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-855": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "855",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-856": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "856",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-857": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "857",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-858": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "858",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-859": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "859",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-860": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "860",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-861": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "861",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-862": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "862",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-863": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "863",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-864": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "864",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-865": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "865",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-866": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "866",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-867": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "867",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-868": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "868",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-869": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "869",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-870": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "870",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-871": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "871",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-872": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "872",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-873": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "873",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "405-874": {
-      "bb10_status": "untested",
-      "country": "IN",
       "data_apns": [
         "jionet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "405",
-      "mnc": "874",
       "name": "Reliance Jio",
-      "region": "India",
       "source": "aosp-apns"
     },
     "417-50": {
-      "bb10_status": "untested",
-      "country": "SY",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "417",
-      "mnc": "50",
       "name": "Rcell",
-      "region": "Syria",
       "source": "aosp-apns"
     },
     "420-01": {
-      "bb10_status": "untested",
-      "country": "SA",
       "data_apns": [
         "jawalnet.com.sa"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "420",
-      "mnc": "01",
       "name": "STC",
-      "region": "Saudi Arabia",
       "source": "aosp-apns"
     },
     "421-11": {
-      "bb10_status": "untested",
-      "country": "YE",
       "data_apns": [
         "ymdata"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "421",
-      "mnc": "11",
       "name": "YemenMobile",
-      "region": "Yemen",
       "source": "aosp-apns"
     },
     "424-02": {
-      "bb10_status": "untested",
-      "country": "AE",
       "data_apns": [
         "etisalat.ae"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "424",
-      "mnc": "02",
       "name": "e& UAE",
-      "region": "UAE",
       "source": "aosp-apns"
     },
     "424-03": {
-      "bb10_status": "untested",
-      "country": "AE",
       "data_apns": [
         "du"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "424",
-      "mnc": "03",
       "name": "du",
-      "region": "UAE",
       "source": "aosp-apns"
     },
     "432-08": {
-      "bb10_status": "untested",
-      "country": "IR",
       "data_apns": [
         "shatelmobile"
       ],
       "ims_apn": "shm-ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "432",
-      "mnc": "08",
       "name": "shatelmobile",
-      "region": "Iran",
       "source": "aosp-apns"
     },
     "436-04": {
-      "bb10_status": "untested",
-      "country": "TJ",
       "data_apns": [
         "default"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "436",
-      "mnc": "04",
       "name": "Babilon-Mobile",
-      "region": "Tajikistan",
       "source": "aosp-apns"
     },
     "440-10": {
-      "bb10_status": "untested",
-      "country": "JP",
       "data_apns": [
         "spmode.ne.jp",
         "ocn.ne.jp",
@@ -2850,1200 +1877,1105 @@
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "440",
-      "mnc": "10",
-      "name": "DOCOMO MVNO",
-      "region": "Japan",
+      "name": "NTT DOCOMO",
       "source": "aosp-apns"
     },
     "440-11": {
-      "bb10_status": "untested",
-      "country": "JP",
       "data_apns": [
         "rakuten.jp"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "440",
-      "mnc": "11",
       "name": "Rakuten Mobile(MNO)",
-      "region": "Japan",
       "source": "aosp-apns"
     },
     "440-20": {
-      "bb10_status": "untested",
-      "country": "JP",
       "data_apns": [
         "plus.acs.jp"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "440",
-      "mnc": "20",
       "name": "SoftBank",
-      "region": "Japan",
       "source": "aosp-apns"
     },
-    "440-51": {
-      "bb10_status": "untested",
-      "country": "JP",
-      "data_apns": [
-        "a.rmobile.jp"
-      ],
+    "440-50": {
+      "data_apns": [],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "440",
-      "mnc": "51",
-      "name": "Rakuten",
-      "region": "Japan",
+      "name": "au",
+      "source": "aosp-carrier-list"
+    },
+    "440-51": {
+      "data_apns": [],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "au",
       "source": "aosp-carrier-list"
     },
     "450-05": {
-      "bb10_status": "untested",
-      "country": "KR",
       "data_apns": [
         "lte.sktelecom.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "450",
-      "mnc": "05",
       "name": "SK Telecom",
-      "region": "South Korea",
       "source": "aosp-apns"
     },
     "450-06": {
-      "bb10_status": "untested",
-      "country": "KR",
       "data_apns": [
         "internet.lguplus.co.kr"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "450",
-      "mnc": "06",
       "name": "LG U+",
-      "region": "South Korea",
       "source": "aosp-apns"
     },
     "450-08": {
-      "bb10_status": "untested",
-      "country": "KR",
       "data_apns": [
         "lte.ktfwing.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "450",
-      "mnc": "08",
       "name": "KT",
-      "region": "South Korea",
       "source": "aosp-apns"
     },
     "452-04": {
-      "bb10_status": "untested",
-      "country": "VN",
       "data_apns": [
         "v-internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "452",
-      "mnc": "04",
       "name": "Viettel Telecom",
-      "region": "Vietnam",
       "source": "aosp-apns"
     },
     "454-00": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "00",
       "name": "1O1O / csl / Club Sim",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-02": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "02",
       "name": "3G Radio System/HKCSL3G",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-03": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile.three.com.hk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "03",
       "name": "Hutchison HK",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-04": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile.three.com.hk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "04",
       "name": "Hutchison 2G",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-05": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile.three.com.hk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "05",
       "name": "Hutchison 2G",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-06": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "smartone"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "06",
       "name": "SmarTone HK",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-10": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "hkcsl"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "10",
       "name": "GSM1800New World PCS Ltd.",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-12": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "cmhk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "12",
       "name": "中國移動香港 China Mobile HK",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-14": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile.three.com.hk"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "454",
-      "mnc": "14",
       "name": "Hutchison HK",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-16": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "16",
       "name": "PCCW",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-18": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "18",
       "name": "GSM7800/Hong Kong CSL Ltd.",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "454-19": {
-      "bb10_status": "untested",
-      "country": "HK",
       "data_apns": [
         "mobile"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "19",
       "name": "1O1O / csl / Club Sim",
-      "region": "Hong Kong",
-      "source": "aosp-apns"
-    },
-    "454-20": {
-      "bb10_status": "untested",
-      "country": "HK",
-      "data_apns": [],
-      "ims_apn": "ims",
-      "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "20",
-      "name": "Public Mobile Networks/Reserved",
-      "region": "Hong Kong",
-      "source": "aosp-apns"
-    },
-    "454-29": {
-      "bb10_status": "untested",
-      "country": "HK",
-      "data_apns": [],
-      "ims_apn": "ims",
-      "ims_ip_family": "IPv6",
-      "mcc": "454",
-      "mnc": "29",
-      "name": "Public Mobile Networks/Reserved",
-      "region": "Hong Kong",
       "source": "aosp-apns"
     },
     "455-01": {
-      "bb10_status": "untested",
-      "country": "MO",
       "data_apns": [
         "ctm-mobile",
         "ctmprepaid"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "455",
-      "mnc": "01",
       "name": "CTM",
-      "region": "Macao",
       "source": "aosp-apns"
     },
     "455-02": {
-      "bb10_status": "untested",
-      "country": "MO",
       "data_apns": [
         "ctnet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "455",
-      "mnc": "02",
-      "name": "CTNET",
-      "region": "Macao",
+      "name": "CTWAP",
       "source": "aosp-apns"
     },
     "455-04": {
-      "bb10_status": "untested",
-      "country": "MO",
       "data_apns": [
         "ctm-mobile",
         "ctmprepaid"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "455",
-      "mnc": "04",
       "name": "CTM",
-      "region": "Macao",
       "source": "aosp-apns"
     },
     "455-05": {
-      "bb10_status": "untested",
-      "country": "MO",
       "data_apns": [
         "mobile.three.com.mo"
       ],
       "ims_apn": "mobile.three.com.mo",
       "ims_ip_family": "IPv4v6",
-      "mcc": "455",
-      "mnc": "05",
       "name": "3 Macau",
-      "region": "Macao",
       "source": "aosp-apns"
     },
     "455-07": {
-      "bb10_status": "untested",
-      "country": "MO",
       "data_apns": [
         "ctnet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "455",
-      "mnc": "07",
-      "name": "CTNET",
-      "region": "Macao",
+      "name": "CTWAP",
       "source": "aosp-apns"
     },
     "466-01": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "466",
-      "mnc": "01",
       "name": "遠傳電信 Far EasTone Telecom",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-02": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "466",
-      "mnc": "02",
       "name": "遠傳電信 Far EasTone Telecom",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-05": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "gtnet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "466",
-      "mnc": "05",
       "name": "遠傳電信Far EasTone Telecom(原亞太電信)",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-89": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "466",
-      "mnc": "89",
       "name": "台灣大哥大(原台灣之星) Taiwan Mobile Telecom",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-92": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "466",
-      "mnc": "92",
       "name": "中華電信_Chunghwa Telecom",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-97": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "466",
-      "mnc": "97",
       "name": "台灣大哥大 Taiwan Mobile Telecom",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "466-99": {
-      "bb10_status": "untested",
-      "country": "TW",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "466",
-      "mnc": "99",
       "name": "TransAsia Telecoms",
-      "region": "Taiwan",
       "source": "aosp-apns"
     },
     "502-12": {
-      "bb10_status": "untested",
-      "country": "MY",
       "data_apns": [
         "unet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "502",
-      "mnc": "12",
       "name": "Maxis/Hotlink",
-      "region": "Malaysia",
       "source": "aosp-apns"
     },
     "502-152": {
-      "bb10_status": "untested",
-      "country": "MY",
       "data_apns": [
         "yesnet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "502",
-      "mnc": "152",
       "name": "Yes 5G",
-      "region": "Malaysia",
       "source": "aosp-apns"
     },
+    "502-16": {
+      "data_apns": [
+        "diginet"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Digi",
+      "source": "aosp-carrier-list"
+    },
+    "502-18": {
+      "data_apns": [
+        "my3g"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "U Mobile",
+      "source": "aosp-carrier-list"
+    },
+    "502-19": {
+      "data_apns": [
+        "celcom3g"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Celcom",
+      "source": "aosp-carrier-list"
+    },
     "505-01": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "telstra.wap"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "01",
       "name": "Telstra",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "505-02": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "yesinternet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "02",
       "name": "Optus",
-      "region": "Australia",
       "source": "aosp-carrier-list"
     },
     "505-03": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "live.vodafone.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "03",
       "name": "Vodafone",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "505-52": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "optitel"
       ],
       "ims_apn": "optitel.ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "52",
       "name": "OptiTel",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "505-71": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "telstra.wap",
         "hos"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "71",
       "name": "Telstra",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "505-72": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "telstra.wap",
         "hos"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "72",
       "name": "Telstra",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "505-88": {
-      "bb10_status": "untested",
-      "country": "AU",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "505",
-      "mnc": "88",
       "name": "Pivotel",
-      "region": "Australia",
       "source": "aosp-apns"
     },
     "520-00": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "00",
       "name": "CAT CDMA",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-01": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "01",
       "name": "AIS GSM",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-03": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "03",
       "name": "AIS",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-04": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "04",
       "name": "TrueMove H 4G LTE",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-05": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "www.dtac.co.th"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "05",
       "name": "dtac",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-15": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "15",
       "name": "ACT Mobile",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-18": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "www.dtac.co.th"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "18",
       "name": "dtac",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "520-47": {
-      "bb10_status": "untested",
-      "country": "TH",
       "data_apns": [
         "www.dtac.co.th"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "520",
-      "mnc": "47",
       "name": "TOT",
-      "region": "Thailand",
       "source": "aosp-apns"
     },
     "525-01": {
-      "bb10_status": "untested",
-      "country": "SG",
       "data_apns": [
         "e-ideas",
         "hicard"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "525",
-      "mnc": "01",
       "name": "Singtel",
-      "region": "Singapore",
       "source": "aosp-apns"
     },
     "525-03": {
-      "bb10_status": "untested",
-      "country": "SG",
       "data_apns": [
         "sunsurf"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "525",
-      "mnc": "03",
       "name": "M1",
-      "region": "Singapore",
       "source": "aosp-apns"
     },
     "525-05": {
-      "bb10_status": "untested",
-      "country": "SG",
       "data_apns": [
         "shwap",
         "shppd"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "525",
-      "mnc": "05",
       "name": "StarHub",
-      "region": "Singapore",
       "source": "aosp-apns"
     },
+    "525-10": {
+      "data_apns": [
+        "tpg"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "SIMBA",
+      "source": "aosp-carrier-list"
+    },
     "530-01": {
-      "bb10_status": "untested",
-      "country": "NZ",
       "data_apns": [
         "vodafone"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "530",
-      "mnc": "01",
       "name": "Vodafone",
-      "region": "New Zealand",
       "source": "aosp-carrier-list"
     },
     "530-05": {
-      "bb10_status": "untested",
-      "country": "NZ",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "530",
-      "mnc": "05",
       "name": "Spark",
-      "region": "New Zealand",
+      "source": "aosp-carrier-list"
+    },
+    "530-24": {
+      "data_apns": [
+        "internet"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "2degrees",
       "source": "aosp-carrier-list"
     },
     "606-01": {
-      "bb10_status": "untested",
-      "country": "LY",
       "data_apns": [
         "default"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "606",
-      "mnc": "01",
       "name": "Madar",
-      "region": "Libya",
       "source": "aosp-apns"
     },
     "647-00": {
-      "bb10_status": "untested",
-      "country": "RE",
       "data_apns": [
         "orangerun"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "647",
-      "mnc": "00",
       "name": "Orange La Réunion",
-      "region": "Reunion",
       "source": "aosp-apns"
     },
     "655-01": {
-      "bb10_status": "untested",
-      "country": "ZA",
       "data_apns": [
         "lte.vodacom.za",
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "655",
-      "mnc": "01",
       "name": "Vodacom",
-      "region": "South Africa",
       "source": "aosp-apns"
     },
     "655-10": {
-      "bb10_status": "untested",
-      "country": "ZA",
       "data_apns": [
         "mymtn"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "655",
-      "mnc": "10",
       "name": "MTN",
-      "region": "South Africa",
       "source": "aosp-apns"
     },
     "716-06": {
-      "bb10_status": "untested",
-      "country": "PE",
       "data_apns": [
         "movistar.pe"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "716",
-      "mnc": "06",
       "name": "Movistar",
-      "region": "Peru",
       "source": "aosp-apns"
     },
     "716-10": {
-      "bb10_status": "untested",
-      "country": "PE",
       "data_apns": [
         "claro.pe"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "716",
-      "mnc": "10",
       "name": "Claro PE",
-      "region": "Peru",
       "source": "aosp-apns"
     },
     "716-17": {
-      "bb10_status": "untested",
-      "country": "PE",
       "data_apns": [
         "entel.pe"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "716",
-      "mnc": "17",
       "name": "Entel",
-      "region": "Peru",
       "source": "aosp-apns"
     },
     "722-07": {
-      "bb10_status": "untested",
-      "country": "AR",
       "data_apns": [
         "wap.gprs.unifon.com.ar"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "722",
-      "mnc": "07",
       "name": "Movistar",
-      "region": "Argentina",
       "source": "aosp-apns"
     },
     "722-310": {
-      "bb10_status": "untested",
-      "country": "AR",
       "data_apns": [
         "igprs.claro.com.ar"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "722",
-      "mnc": "310",
       "name": "Claro AR",
-      "region": "Argentina",
       "source": "aosp-apns"
     },
     "722-34": {
-      "bb10_status": "untested",
-      "country": "AR",
       "data_apns": [
         "datos.personal.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "722",
-      "mnc": "34",
       "name": "Telecom Personal S.A.",
-      "region": "Argentina",
       "source": "aosp-apns"
     },
     "722-341": {
-      "bb10_status": "untested",
-      "country": "AR",
       "data_apns": [
         "datos.personal.com"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "722",
-      "mnc": "341",
       "name": "Telecom Personal S.A.",
-      "region": "Argentina",
       "source": "aosp-apns"
     },
     "724-02": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "timbrasil.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "724",
-      "mnc": "02",
       "name": "TIM",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-03": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "timbrasil.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "724",
-      "mnc": "03",
       "name": "TIM",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-04": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "timbrasil.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "724",
-      "mnc": "04",
       "name": "TIM",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
+    "724-05": {
+      "data_apns": [
+        "java.claro.com.br"
+      ],
+      "ims_apn": "ims",
+      "ims_ip_family": "IPv4v6",
+      "name": "Claro BR",
+      "source": "aosp-carrier-list"
+    },
     "724-06": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "zap.vivo.com.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "06",
       "name": "Vivo",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-10": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "zap.vivo.com.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "10",
       "name": "Vivo",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-11": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "zap.vivo.com.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "11",
       "name": "Vivo",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-21": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "internet.ligue.vc"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "21",
       "name": "Telerj Cel",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-23": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "zap.vivo.com.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "23",
       "name": "Vivo",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-29": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
         "unifique.br"
       ],
       "ims_apn": "unifique.br",
       "ims_ip_family": "IPv4v6",
-      "mcc": "724",
-      "mnc": "29",
       "name": "Unifique",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "724-54": {
-      "bb10_status": "untested",
-      "country": "BR",
       "data_apns": [
-        "portoconecta.br",
-        "timbrasil.br"
+        "timbrasil.br",
+        "portoconecta.br"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "724",
-      "mnc": "54",
       "name": "TIM",
-      "region": "Brazil",
       "source": "aosp-apns"
     },
     "730-02": {
-      "bb10_status": "untested",
-      "country": "CL",
       "data_apns": [
         "wap.tmovil.cl"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "730",
-      "mnc": "02",
       "name": "Movistar",
-      "region": "Chile",
       "source": "aosp-apns"
     },
     "730-03": {
-      "bb10_status": "untested",
-      "country": "CL",
       "data_apns": [
         "bam.clarochile.cl"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "730",
-      "mnc": "03",
       "name": "Claro CL",
-      "region": "Chile",
       "source": "aosp-apns"
     },
     "730-09": {
-      "bb10_status": "untested",
-      "country": "CL",
       "data_apns": [
         "internet"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4",
-      "mcc": "730",
-      "mnc": "09",
       "name": "WOM",
-      "region": "Chile",
       "source": "aosp-apns"
     },
     "732-101": {
-      "bb10_status": "untested",
-      "country": "CO",
       "data_apns": [
         "internet.comcel.com.co"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "732",
-      "mnc": "101",
       "name": "Claro CO",
-      "region": "Colombia",
       "source": "aosp-apns"
     },
     "732-123": {
-      "bb10_status": "untested",
-      "country": "CO",
       "data_apns": [
         "internet.movistar.com.co"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "732",
-      "mnc": "123",
       "name": "Movistar",
-      "region": "Colombia",
       "source": "aosp-apns"
     },
     "732-360": {
-      "bb10_status": "untested",
-      "country": "CO",
       "data_apns": [
         "internet.wom.co"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "732",
-      "mnc": "360",
       "name": "WOM",
-      "region": "Colombia",
       "source": "aosp-apns"
     },
     "740-00": {
-      "bb10_status": "untested",
-      "country": "EC",
       "data_apns": [
         "internet.movistar.com.ec"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv4v6",
-      "mcc": "740",
-      "mnc": "00",
       "name": "Movistar",
-      "region": "Ecuador",
       "source": "aosp-apns"
     },
     "901-54": {
-      "bb10_status": "untested",
-      "country": "INTL",
       "data_apns": [
         "move.dataxs.mobi"
       ],
       "ims_apn": "ims",
       "ims_ip_family": "IPv6",
-      "mcc": "901",
-      "mnc": "54",
       "name": "Tata Move IOT",
-      "region": "International",
       "source": "aosp-apns"
     }
   },
   "copyright": "Copyright (C) The Android Open Source Project",
+  "default_bb10_status": "untested",
   "disclaimer": "Public APN and carrier name suggestions only; not BB10 hardware or VoLTE certification. Excludes MCC 460.",
-  "entry_count": 287,
+  "entry_count": 297,
   "license": "Apache-2.0",
   "license_file": "licenses/APACHE-2.0.txt",
-  "modifications": "Filtered non-460 carrier APN/IMS metadata into a compact offline lookup table with bb10_status marked untested and ITU-T E.212 country/region tags added.",
-  "schema": 1,
+  "mcc_regions": {
+    "202": [
+      "GR",
+      "Greece"
+    ],
+    "204": [
+      "NL",
+      "Netherlands"
+    ],
+    "206": [
+      "BE",
+      "Belgium"
+    ],
+    "208": [
+      "FR",
+      "France"
+    ],
+    "214": [
+      "ES",
+      "Spain"
+    ],
+    "216": [
+      "HU",
+      "Hungary"
+    ],
+    "219": [
+      "HR",
+      "Croatia"
+    ],
+    "222": [
+      "IT",
+      "Italy"
+    ],
+    "226": [
+      "RO",
+      "Romania"
+    ],
+    "228": [
+      "CH",
+      "Switzerland"
+    ],
+    "230": [
+      "CZ",
+      "Czechia"
+    ],
+    "231": [
+      "SK",
+      "Slovakia"
+    ],
+    "232": [
+      "AT",
+      "Austria"
+    ],
+    "234": [
+      "GB",
+      "United Kingdom"
+    ],
+    "238": [
+      "DK",
+      "Denmark"
+    ],
+    "240": [
+      "SE",
+      "Sweden"
+    ],
+    "242": [
+      "NO",
+      "Norway"
+    ],
+    "244": [
+      "FI",
+      "Finland"
+    ],
+    "246": [
+      "LT",
+      "Lithuania"
+    ],
+    "247": [
+      "LV",
+      "Latvia"
+    ],
+    "248": [
+      "EE",
+      "Estonia"
+    ],
+    "250": [
+      "RU",
+      "Russia"
+    ],
+    "259": [
+      "MD",
+      "Moldova"
+    ],
+    "260": [
+      "PL",
+      "Poland"
+    ],
+    "262": [
+      "DE",
+      "Germany"
+    ],
+    "268": [
+      "PT",
+      "Portugal"
+    ],
+    "270": [
+      "LU",
+      "Luxembourg"
+    ],
+    "272": [
+      "IE",
+      "Ireland"
+    ],
+    "284": [
+      "BG",
+      "Bulgaria"
+    ],
+    "286": [
+      "TR",
+      "Turkey"
+    ],
+    "290": [
+      "GL",
+      "Greenland"
+    ],
+    "302": [
+      "CA",
+      "Canada"
+    ],
+    "310": [
+      "US",
+      "United States"
+    ],
+    "311": [
+      "US",
+      "United States"
+    ],
+    "312": [
+      "US",
+      "United States"
+    ],
+    "313": [
+      "US",
+      "United States"
+    ],
+    "314": [
+      "US",
+      "United States"
+    ],
+    "334": [
+      "MX",
+      "Mexico"
+    ],
+    "340": [
+      "GP",
+      "Guadeloupe"
+    ],
+    "363": [
+      "AW",
+      "Aruba"
+    ],
+    "364": [
+      "BS",
+      "Bahamas"
+    ],
+    "404": [
+      "IN",
+      "India"
+    ],
+    "405": [
+      "IN",
+      "India"
+    ],
+    "417": [
+      "SY",
+      "Syria"
+    ],
+    "420": [
+      "SA",
+      "Saudi Arabia"
+    ],
+    "421": [
+      "YE",
+      "Yemen"
+    ],
+    "424": [
+      "AE",
+      "UAE"
+    ],
+    "432": [
+      "IR",
+      "Iran"
+    ],
+    "436": [
+      "TJ",
+      "Tajikistan"
+    ],
+    "440": [
+      "JP",
+      "Japan"
+    ],
+    "450": [
+      "KR",
+      "South Korea"
+    ],
+    "452": [
+      "VN",
+      "Vietnam"
+    ],
+    "454": [
+      "HK",
+      "Hong Kong"
+    ],
+    "455": [
+      "MO",
+      "Macao"
+    ],
+    "466": [
+      "TW",
+      "Taiwan"
+    ],
+    "502": [
+      "MY",
+      "Malaysia"
+    ],
+    "505": [
+      "AU",
+      "Australia"
+    ],
+    "520": [
+      "TH",
+      "Thailand"
+    ],
+    "525": [
+      "SG",
+      "Singapore"
+    ],
+    "530": [
+      "NZ",
+      "New Zealand"
+    ],
+    "606": [
+      "LY",
+      "Libya"
+    ],
+    "647": [
+      "RE",
+      "Reunion"
+    ],
+    "655": [
+      "ZA",
+      "South Africa"
+    ],
+    "716": [
+      "PE",
+      "Peru"
+    ],
+    "722": [
+      "AR",
+      "Argentina"
+    ],
+    "724": [
+      "BR",
+      "Brazil"
+    ],
+    "730": [
+      "CL",
+      "Chile"
+    ],
+    "732": [
+      "CO",
+      "Colombia"
+    ],
+    "740": [
+      "EC",
+      "Ecuador"
+    ],
+    "901": [
+      "INTL",
+      "International"
+    ]
+  },
+  "modifications": "Filtered non-460 carrier APN/IMS metadata into a compact offline lookup table with default_bb10_status=untested, lab/reserved entries removed, and ITU-T E.212 mcc_regions added.",
+  "schema": 2,
   "sources": {
     "aosp_apns_commit": "73f904fbeb872f5675cb5f18cd9dfb15856425a6",
     "aosp_apns_sha256": "9e44015793ec01d0773123103dca19b181fbc5fdd43cfc1b1d5cfacbda622726",

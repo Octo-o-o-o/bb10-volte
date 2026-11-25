@@ -1,3 +1,18 @@
+# r60 / mobile 0.2.5.0
+
+- Fixes desktop `OverseasCarrierDialog` / `AutoCarrierWindow` scrolling and bottom-button clipping (verified live in zh/en inside the frozen Windows EXE `--self-test`), plus mobile `OverseasCarrier.qml` `loadingForm` initialization deadlock and Home error isolation.
+- Normalizes `IR.92` `UsePreconditions` to native PPS booleans (`b:false`/`b:true`), validates `SIP_Timer_CSFB` in seconds (`0..120`), adds allowlisted `IPsec`/`SIP_transport`/`RegExpiration` IMS PPS keys, preserves native ISIM credentials when `allow_isim=True` on USIM+ISIM cards, fixes `lte_bands_disabled` false positives on 3G/2G/searching, adds bounded P-CSCF route retry/cleanup, unifies IPv6 + overseas E.164/dial-number redaction, and deduplicates `unified_dca` radio rollback helpers.
+- Upgrades `materials/overseas-carriers.json` to Schema 2 (297 clean entries, -33% size, full Apache-2.0 attribution retained), removes 4 unread historical intake JSONs from mobile packages (-214 KB), adds `overseas` subcommand to `tools/ai_skill.py`, and registers `r59` in `PREVIOUS_PAYLOADS`.
+
+[Release notes](RELEASE-r60.en.md)
+
+# r59 / mobile 0.2.4.0
+
+- Adds an offline AOSP (Apache-2.0) global overseas carrier reference catalog and opt-in Desktop/Mobile/CLI configuration with zero Mainland China regression or clutter.
+- Adds clean-room P-CSCF host route sync, read-only `lte_bands_disabled` diagnostics, and `inet_pton(AF_INET6)` IPv6 redaction.
+
+[Release notes](RELEASE-r59.en.md)
+
 # r50 / mobile 0.1.0.50
 
 - Boot handoff retries a transient native probe timeout and obtains fresh evidence. If the service did not start on this boot, the app can offer a checked retry.

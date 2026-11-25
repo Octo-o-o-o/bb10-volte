@@ -7,6 +7,7 @@
 
 - **Windows 刷机驱动**：即使开机状态下 USB 网络已就绪，首次 Root 或原版系统升级进入 Bootrom 阶段仍需要 BlackBerry 原厂 USB（`RimUsb`）驱动与 `BlackBerry Device Manager`。请在“首次使用 → Windows 驱动”页自动准备并安装；如上次刷写中断暂停，点击顶部 **查看刷写日志并解除暂停…** 核对日志后解除。
 - **问题反馈**：各主要步骤（含手机应用安装、升级、驱动和三网自动适配）均提供 **遇到问题 / 反馈**，可预览并保存脱敏 ZIP（包含近期错误代码、状态摘要与脱敏刷写日志摘录）。详见 [反馈说明](FEEDBACK.md)。
+- **海外非 `460` 运营商试测（r59/r60+）**：插入非 `460` SIM 卡或已有海外试验配置时，“三网自动适配”窗口和手机版管理页会显示海外运营商设置入口（中国大陆 `460-*` 卡默认隐藏，保持一键零配置）。支持搜索 297 项离线 AOSP（Apache-2.0 Schema 2）参考参数、自定义数据/IMS APN、可选 `allow_isim`（真实 ISIM 卡保留 SIM 原生凭据）、原厂 `0.xml` 安全回落、`IR.92`（`UsePreconditions` 布尔值）与白名单 `ims` PPS 参数（`SilentRedial`、`SIP_Timer_CSFB` 秒级、`IPsec`、`SIP_transport`、`RegExpiration`），并可在停用服务后保存或一键清除。
 - **macOS 说明**：macOS 版已封板停留在 `v0.5.0-r43`，不再更新；Windows 桌面版与 BB10 手机版持续维护。
 
 以下 0.3/0.4 版本说明保留为旧单运营商入口、连接和首次 Root 功能的历史说明；其中旧单卡引擎的 Passport 限制不再适用于上述统一三网自动适配入口。

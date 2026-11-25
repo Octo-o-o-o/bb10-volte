@@ -1138,6 +1138,100 @@ int main(int argc, char **argv)
             settingsClearPending();
         }
         {
+            // Overseas catalog (Schema 2), payload normalization, signal delivery,
+            // and Home error isolation when an overseas action fails.
+            settingsClearPending();
+            CHECK(QDir().mkpath(ROOT + "/working/app/native/assets/materials"));
+            QFile::remove(ROOT + "/working/app/native/assets/materials/overseas-carriers.json");
+            CHECK(QFile::copy("/work/materials/overseas-carriers.json",
+                              ROOT + "/working/app/native/assets/materials/overseas-carriers.json"));
+            MobileController c(&parent); c.m_cachedStatus = false;
+            c.m_model.insert("state", "disabled");
+            c.m_model.insert("actions", QVariantList() << "status" << "enable" << "overseas-inspect" << "overseas-save" << "overseas-clear");
+            CHECK(c.canManageOverseas());
+            const QVariantList all50 = c.overseasCatalog("");
+            const int totalAll = c.overseasCatalogTotal("");
+            CHECK(all50.size() == 50 && totalAll >= 250 && totalAll == c.overseasCatalogTotal("   "));
+            const QVariantList vzw = c.overseasCatalog("311-480");
+            CHECK(!vzw.isEmpty() && vzw.at(0).toMap().value("name").toString() == "Verizon Wireless");
+            CHECK(vzw.at(0).toMap().value("country").toString() == "US");
+            CHECK(vzw.at(0).toMap().value("region").toString() == "United States");
+            CHECK(vzw.at(0).toMap().value("bb10_status").toString() == "untested");
+            const QVariantList docomo = c.overseasCatalog("440-10");
+            CHECK(!docomo.isEmpty() && docomo.at(0).toMap().value("name").toString() == "NTT DOCOMO");
+            CHECK(docomo.at(0).toMap().value("country").toString() == "JP");
+            CHECK(docomo.at(0).toMap().value("region").toString() == "Japan");
+            CHECK(c.overseasCatalogTotal("United States") >= 5);
+            CHECK(c.overseasCatalog("460").isEmpty());
+
+            QString lastAct, lastErr; bool lastOk = false; int sigCount = 0;
+            QObject::connect(&c, &MobileController::overseasActionFinished,
+                             [&](const QString &act, bool ok, const QString &err) {
+                                 lastAct = act; lastOk = ok; lastErr = err; ++sigCount;
+                             });
+
+            QVariantMap imsPps; imsPps.insert("SIP_Timer_CSFB", 6.0); imsPps.insert("SilentRedial", true);
+            QVariantMap otherIr92; otherIr92.insert("UsePreconditions", 1.0);
+            QVariantMap otherPps; otherPps.insert("RegExpiration", 3600.0);
+            QVariantMap otherIms; otherIms.insert("apn", "ims"); otherIms.insert("ir92", otherIr92); otherIms.insert("ims_pps", otherPps);
+            QVariantMap otherCarrier; otherCarrier.insert("mcc", "440"); otherCarrier.insert("mncs", QVariantList() << "10");
+            otherCarrier.insert("data_apns", QVariantList() << "spmode.ne.jp"); otherCarrier.insert("ims", otherIms);
+            QVariantMap fields;
+            fields.insert("mcc", "450");
+            fields.insert("mncs", QString::fromUtf8("08，02"));
+            fields.insert("data_apns", QString::fromUtf8("lte.ktfwing.com，auto"));
+            fields.insert("ims_apn", "ims");
+            fields.insert("ip_family", "IPv4v6");
+            fields.insert("use_preconditions", "false");
+            fields.insert("sms_format", "3GPP");
+            fields.insert("ims_pps", imsPps);
+            fields.insert("extra_carriers", QVariantList() << otherCarrier);
+            QVariantMap okResp; okResp.insert("schema", 2); okResp.insert("ok", true);
+            okResp.insert("state", "disabled");
+            okResp.insert("actions", QVariantList() << "status" << "enable");
+            response(okResp);
+            c.saveOverseasConfig(fields); finish(c);
+            CHECK(sigCount == 1 && lastAct == "overseas-save" && lastOk && lastErr.isEmpty());
+            const QVariantMap req = requestFromCommand("overseas-save");
+            const QVariantMap cfg = req.value("overseas_config").toMap();
+            CHECK(cfg.value("schema").toInt() == 2 && cfg.value("enabled").toBool());
+            const QVariantList carriers = cfg.value("carriers").toList();
+            CHECK(carriers.size() == 2);
+            const QVariantMap c0 = carriers.at(0).toMap();
+            CHECK(c0.value("mncs").toList().size() == 2 && c0.value("mncs").toList().at(0).toString() == "08" && c0.value("mncs").toList().at(1).toString() == "02");
+            CHECK(c0.value("data_apns").toList().size() == 2 && c0.value("data_apns").toList().at(0).toString() == "lte.ktfwing.com");
+            const QVariantMap c0Ir92 = c0.value("ims").toMap().value("ir92").toMap();
+            CHECK(c0Ir92.value("UsePreconditions").type() == QVariant::Bool && !c0Ir92.value("UsePreconditions").toBool());
+            CHECK(c0.value("ims").toMap().value("ims_pps").toMap().value("SIP_Timer_CSFB").toInt() == 6);
+            const QVariantMap c1 = carriers.at(1).toMap();
+            CHECK(c1.value("ims").toMap().value("ir92").toMap().value("UsePreconditions").type() == QVariant::Bool);
+            CHECK(c1.value("ims").toMap().value("ir92").toMap().value("UsePreconditions").toBool());
+            CHECK(c1.value("ims").toMap().value("ims_pps").toMap().value("RegExpiration").toInt() == 3600);
+
+            // Structured overseas error must NOT poison Home m_error.
+            QVariantMap errObj; errObj.insert("code", "service_active");
+            QVariantMap errResp; errResp.insert("schema", 2); errResp.insert("ok", false);
+            errResp.insert("state", "error"); errResp.insert("error", errObj);
+            response(errResp);
+            c.clearOverseasConfig(); finish(c);
+            CHECK(sigCount == 2 && lastAct == "overseas-clear" && !lastOk && lastErr == "service_active");
+            CHECK(c.m_error.isEmpty() && c.m_overseasFeedback == "service_active" && !c.overseasFeedback().isEmpty());
+
+            // Pre-dispatch rejection when pending job blocks overseas actions.
+            c.m_jobId = JOB;
+            CHECK(!c.canManageOverseas());
+            c.clearOverseasConfig();
+            CHECK(sigCount == 3 && lastAct == "overseas-clear" && !lastOk && lastErr == "action_unavailable");
+            CHECK(c.m_error.isEmpty());
+            c.m_jobId.clear();
+
+            // New translated labels exist in both zh and en.
+            c.setLanguage("zh");
+            CHECK(!c.label("pcscf_route_family_none").isEmpty() && !c.label("stock_apn_mismatch").isEmpty() && !c.label("default_apn_required").isEmpty());
+            c.setLanguage("en");
+            CHECK(!c.label("pcscf_route_family_none").isEmpty() && !c.label("stock_apn_mismatch").isEmpty() && !c.label("default_apn_required").isEmpty());
+        }
+        {
             // A changed boot/SIM is enforced by the real worker tests; here the
             // cached UI cannot inject a write when local settings are unwritable.
             QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, "/proc/bb10-unwritable");

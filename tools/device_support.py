@@ -119,6 +119,8 @@ def error_message(code, sim_plmn=None):
         'exp_trial_readback_failed': tr('手机端海外试测配置写入后回读核验失败，请重新检查设备。'),
         'exp_trial_clear_failed': tr('未能确认手机端海外试测配置已清除，请重新检查设备。'),
         'exp_trial_too_large': tr('海外运营商配置超过大小上限，请精简参数后重试。'),
+        'stock_apn_mismatch': tr('原厂运营商模板中的数据 APN 与当前配置不匹配。请补充实际数据 APN 或启用 0.xml 回落后重试。'),
+        'default_apn_required': tr('当前 SIM 使用通用 0.xml 且尚未读到实时数据 APN。请至少填写一个具体数据 APN（不能仅填 auto）后重试。'),
     }.get(code)
 
 

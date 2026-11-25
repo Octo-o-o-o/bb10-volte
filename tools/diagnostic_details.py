@@ -134,7 +134,7 @@ def network_rows(report):
         ('lte_data_service', tr('无线层有 LTE 数据服务'), tr('为“是”仍须结合 APN 连接和实际移动数据测试，不能代替通话验收。')),
         ('lte_active_band_mask', tr('LTE 活跃频段位图'), tr('原始位图及解码频段，不单独证明正常入网或运营商归属。')),
         ('lte_band_capability_mask', tr('LTE 频段能力位图'), tr('原始位图及解码频段；频段能力不证明当前地区覆盖或正常入网。')),
-        ('lte_bands_disabled', tr('LTE 活跃频段全部禁用'), tr('无线已开启、硬件支持 LTE 但活跃频段位图为 0；请核对系统网络模式与运营商入网，工具不会自动改写基带。')),
+        ('lte_bands_disabled', tr('LTE 频段能力全部禁用'), tr('无线已开启且未接入 LTE，且基带报告的 LTE 频段能力位图为 0；请核对系统网络模式与运营商入网，工具不会自动改写基带。')),
     )
     rows = []
     for key, title, hint in items:

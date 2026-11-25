@@ -146,9 +146,7 @@ def bundle_inputs(key, version=MOBILE_VERSION):
     for source in sorted((ROOT / 'profiles').glob('*.json')):
         blobs['profiles/' + source.name] = source.read_bytes()
     blobs.update(trial_inputs())
-    for name in ('compatibility-matrix.json', 'overseas-carriers.json',
-                 'unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json',
-                 'sqw100-1-intake-2026-11-06.json', 'sqc100-4-intake-2026-11-06.json'):
+    for name in ('compatibility-matrix.json', 'overseas-carriers.json'):
         blobs['materials/' + name] = (ROOT / 'materials' / name).read_bytes()
     # Apache-2.0 §4(a)/(d): keep license text and NOTICE inside materials/ so
     # standalone mobile BAR and OTA update ZIPs remain self-contained and compatible

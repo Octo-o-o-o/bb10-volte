@@ -24,6 +24,8 @@
   ],
   "overseas_catalog": {
     "output": "materials/overseas-carriers.json",
+    "schema": 2,
+    "entry_count": 297,
     "generator": "tools/build_overseas_catalog.py",
     "license": "Apache-2.0",
     "license_file": "licenses/APACHE-2.0.txt",
@@ -33,7 +35,7 @@
     "aosp_carrier_list_url": "https://android.googlesource.com/platform/packages/providers/TelephonyProvider/+/bca387f553a4493c88e24455172225fd1049c91f/assets/latest_carrier_id/carrier_list.textpb",
     "aosp_carrier_list_commit": "bca387f553a4493c88e24455172225fd1049c91f",
     "aosp_carrier_list_sha256": "a6a8cc44afb9ad091bda816da98e546c0d8eac86851ee28656ee6802e5ca0825",
-    "scope": "Offline build-time filtered extract of non-460 overseas carrier names, data APNs, and IMS APN/IP-family suggestions; never certifies BB10 VoLTE acceptance."
+    "scope": "Offline build-time Schema 2 filtered extract of 297 non-460 overseas carrier names, data APNs, and IMS APN/IP-family suggestions (lab/reserved/junk rows excluded, ITU-T E.212 mcc_regions hoisted); never certifies BB10 VoLTE acceptance."
   },
   "runtime_defaults": "Project-defined wait values, SMS capability and stock-selection rules; not supplied by AOSP",
   "hardware_evidence": "Only Q10 SQN100-3 / OS 10.3.3.3216 / Beijing Unicom 460-01 / USIM without ISIM has recorded call evidence",

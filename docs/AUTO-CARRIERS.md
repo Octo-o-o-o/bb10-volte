@@ -2,7 +2,7 @@
 
 [English](AUTO-CARRIERS.en.md) · [Windows](WINDOWS-EXE.md) · [macOS](MACOS.md)
 
-> **r42 及以上更新说明**：当前已开放 Q10、Q20 Classic、Passport、P’9983 全部 **16 个目录型号**与移动／联通／电信 12 个归属网号段（含原厂回落 `0.xml` 号段及重启保留提供器方案），详见[机型与运营商矩阵](../materials/compatibility-matrix.json)。**通话期间请勿进入或切换“设置 → 网络与连接 → 移动网络”**，以免系统重配无线状态导致断话。下文保留 r14 历史基线说明。
+> **r42 及以上更新说明**：当前已开放 Q10、Q20 Classic、Passport、P’9983 全部 **16 个目录型号**与移动／联通／电信 12 个归属网号段（含原厂回落 `0.xml` 号段及重启保留提供器方案），详见[机型与运营商矩阵](../materials/compatibility-matrix.json)。**r59/r60 起**额外提供基于公开 AOSP（Apache-2.0 Schema 2，297 项）的离线海外非 `460` 运营商参考库与自定义试测入口（桌面端、手机版原生页、`tools/overseas_carrier.py` 及 `tools/ai_skill.py overseas`），所有海外条目诚实标注为 `untested`，且中国大陆 `460-*` SIM 卡保持零回归与字节不变。**通话期间请勿进入或切换“设置 → 网络与连接 → 移动网络”**，以免系统重配无线状态导致断话。下文保留 r14 历史基线说明。
 
 历史基线（**0.5.0-r14**）：Windows 与 Mac 使用同一安装流程和手机载荷；配置在手机正常开机时按当前 SIM 生成，后续关机换卡无需电脑或重新刷机。下文较早的验收描述应结合最新矩阵与各型号实机记录阅读。
 

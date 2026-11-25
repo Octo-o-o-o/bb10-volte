@@ -31,7 +31,7 @@ TRIAL_OPERATORS = {'mobile': ('00', ['cmnet']), 'unicom': ('01', ['3gnet']),
 UNSUPPORTED_OPERATORS = {}
 OPTIONAL_IMS_KEYS = ('always_on', 'request_signalling_bearer_via_pco', 'disable_dad', 'ir92', 'ims_pps')
 IR92_KEYS = ('UsePreconditions', 'SMS_Format', 'amr_modeset_list', 'amrwb_modeset_list')
-IMS_PPS_KEYS = ('SilentRedial', 'SIP_Timer_CSFB')
+IMS_PPS_KEYS = ('SilentRedial', 'SIP_Timer_CSFB', 'IPsec', 'SIP_transport', 'RegExpiration')
 UE_USAGE_MODES = ('auto', 'voice_centric', 'data_centric')
 MODESET_RE = r'(?:none|[0-8](?:,[0-8]){0,8})'
 OPERATOR_MNCS = {
@@ -39,6 +39,16 @@ OPERATOR_MNCS = {
     'unicom': ('01', '06', '09'),
     'telecom': ('03', '05', '11', '12'),
 }
+
+
+def _valid_label(value):
+    return isinstance(value, str) and 1 <= len(value) <= 80 and all(ord(c) >= 32 and ord(c) != 127 for c in value)
+
+
+def _valid_home_domain(domain):
+    return (domain == 'auto' or (isinstance(domain, str) and len(domain) <= 253 and '.' in domain and
+            re.search('[a-z]', domain) is not None and
+            all(match(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label) for label in domain.split('.'))))
 
 
 def _validate_modeset(value, max_mode):
@@ -60,7 +70,9 @@ def _validate_optional_ims(ims, need):
         ir92 = ims['ir92']
         need(isinstance(ir92, dict) and set(ir92) <= set(IR92_KEYS), 'ims.ir92')
         if 'UsePreconditions' in ir92:
-            need(type(ir92['UsePreconditions']) is int and ir92['UsePreconditions'] in (0, 1), 'ims.ir92.UsePreconditions')
+            val = ir92['UsePreconditions']
+            need(type(val) is bool or (type(val) is int and val in (0, 1)), 'ims.ir92.UsePreconditions')
+            ir92['UsePreconditions'] = bool(val)
         if 'SMS_Format' in ir92:
             need(ir92['SMS_Format'] in ('3GPP', '3GPP2'), 'ims.ir92.SMS_Format')
         if 'amr_modeset_list' in ir92:
@@ -73,7 +85,13 @@ def _validate_optional_ims(ims, need):
         if 'SilentRedial' in pps:
             need(type(pps['SilentRedial']) is bool, 'ims.ims_pps.SilentRedial')
         if 'SIP_Timer_CSFB' in pps:
-            need(type(pps['SIP_Timer_CSFB']) is int and 0 <= pps['SIP_Timer_CSFB'] <= 60000, 'ims.ims_pps.SIP_Timer_CSFB')
+            need(type(pps['SIP_Timer_CSFB']) is int and 0 <= pps['SIP_Timer_CSFB'] <= 120, 'ims.ims_pps.SIP_Timer_CSFB')
+        if 'IPsec' in pps:
+            need(type(pps['IPsec']) is bool, 'ims.ims_pps.IPsec')
+        if 'SIP_transport' in pps:
+            need(pps['SIP_transport'] in ('UDP', 'TCP', 'TLS'), 'ims.ims_pps.SIP_transport')
+        if 'RegExpiration' in pps:
+            need(type(pps['RegExpiration']) is int and 60 <= pps['RegExpiration'] <= 86400, 'ims.ims_pps.RegExpiration')
 
 
 def carrier_adaptation_blocked(variant, mcc, mncs):
@@ -86,6 +104,14 @@ def normalize_apn(value):
     """Normalize APN case/whitespace and strip any 3GPP TS 23.003 OI suffix."""
     text = value.strip().lower() if isinstance(value, str) else ''
     return re.sub(r'\.mnc[0-9]{2,3}\.mcc[0-9]{3}\.gprs\Z', '', text)
+
+
+def usable_observed_apn(value):
+    """Normalize an observed APN and reject placeholders such as other/unknown/auto."""
+    norm = normalize_apn(value)
+    if not norm or norm in ('other', 'unknown', 'auto') or not match(APN_RE, norm):
+        return ''
+    return norm
 
 
 # This original BB10 carrier file assigns the legacy CTWAP proxy to the
@@ -150,8 +176,7 @@ def validate(value):
     p = copy.deepcopy(value)
     need(type(p['schema']) is int and p['schema'] == 1, 'schema')
     need(match(r'[a-z0-9][a-z0-9_-]{0,63}', p['id']), 'id')
-    need(isinstance(p['label'], str) and 1 <= len(p['label']) <= 80 and
-         all(ord(c) >= 32 and ord(c) != 127 for c in p['label']), 'label')
+    need(_valid_label(p['label']), 'label')
     for section in ('carrier', 'runtime'):
         need(isinstance(p[section], dict) and set(p[section]) == set(DEFAULT[section]), section + ' keys')
     need(isinstance(p['ims'], dict) and set(DEFAULT['ims']) <= set(p['ims']), 'ims keys')
@@ -178,7 +203,7 @@ def validate(value):
         if key == 'data_apns' and 'experimental' in p:
             need(all(item == 'auto' or match(pattern, item) for item in values), 'carrier.' + key)
             need(len(set(values)) == len(values), 'carrier.' + key + ' duplicates')
-            c[key] = (['auto'] if 'auto' in values else []) + sorted(item for item in values if item != 'auto')
+            c[key] = (['auto'] if 'auto' in values else []) + [item for item in values if item != 'auto']
         else:
             need(all(match(pattern, item) for item in values), 'carrier.' + key)
             need(len(set(values)) == len(values), 'carrier.' + key + ' duplicates')
@@ -187,10 +212,7 @@ def validate(value):
     need(c['stock_sha256'] == '' or match(r'[a-f0-9]{64}', c['stock_sha256']), 'carrier.stock_sha256')
     need(match(APN_RE, ims['apn']), 'ims.apn')
     need(ims['ip_family'] in ('IPv4', 'IPv6', 'IPv4v6'), 'ims.ip_family')
-    domain = ims['home_domain']
-    need(domain == 'auto' or (isinstance(domain, str) and len(domain) <= 253 and '.' in domain and
-         re.search('[a-z]', domain) is not None and all(match(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?',
-         label) for label in domain.split('.'))), 'ims.home_domain')
+    need(_valid_home_domain(ims['home_domain']), 'ims.home_domain')
     need(type(ims['sms']) is bool and type(runtime['autostart']) is bool, 'boolean options')
     for key, limits in RANGES.items():
         need(type(runtime[key]) is int and limits[0] <= runtime[key] <= limits[1], 'runtime.' + key)
@@ -413,8 +435,7 @@ def _validate_exp_entry(raw, schema_version, need, prefix=''):
     need(type(entry['allow_stock_default_xml']) is bool, prefix + 'allow_stock_default_xml')
     need(match(r'[0-9]{3}', entry['mcc']), prefix + 'mcc')
     if 'label' in entry:
-        need(isinstance(entry['label'], str) and 1 <= len(entry['label']) <= 80 and
-             all(ord(c) >= 32 and ord(c) != 127 for c in entry['label']), prefix + 'label')
+        need(_valid_label(entry['label']), prefix + 'label')
     if 'stock_config' in entry:
         need(entry['stock_config'] in ('auto', '0') or match(r'[0-9]{1,6}', entry['stock_config']),
              prefix + 'stock_config')
@@ -424,6 +445,7 @@ def _validate_exp_entry(raw, schema_version, need, prefix=''):
     need(isinstance(mncs, list) and 1 <= len(mncs) <= 16, prefix + 'mncs')
     need(all(match(r'[0-9]{2,3}', item) for item in mncs), prefix + 'mncs')
     need(len(set(mncs)) == len(mncs), prefix + 'mncs duplicates')
+    need(not (entry['mcc'] == '460' and '15' in mncs), prefix + 'mncs')
     entry['mncs'] = mncs
     raw_apns = entry['data_apns']
     need(isinstance(raw_apns, list) and 1 <= len(raw_apns) <= 16, prefix + 'data_apns')
@@ -446,10 +468,7 @@ def _validate_exp_entry(raw, schema_version, need, prefix=''):
     ims['apn'] = normalize_apn(ims['apn'])
     need(match(APN_RE, ims['apn']), prefix + 'ims.apn')
     need(ims['ip_family'] in ('IPv4', 'IPv6', 'IPv4v6'), prefix + 'ims.ip_family')
-    domain = ims['home_domain']
-    need(domain == 'auto' or (isinstance(domain, str) and len(domain) <= 253 and '.' in domain and
-         re.search('[a-z]', domain) is not None and all(match(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?',
-         label) for label in domain.split('.'))), prefix + 'ims.home_domain')
+    need(_valid_home_domain(ims['home_domain']), prefix + 'ims.home_domain')
     need(type(ims['sms']) is bool, prefix + 'ims.sms')
     return entry
 
@@ -599,8 +618,8 @@ def live_data_apn():
     try:
         attrs = n.attrs(n.read('/pps/services/cds/cnice/status'))
         internet = n.value(attrs, 'internet', {})
-        apn = normalize_apn(internet.get('apn') if isinstance(internet, dict) else '')
-        return apn if match(APN_RE, apn) else None
+        apn = usable_observed_apn(internet.get('apn') if isinstance(internet, dict) else '')
+        return apn or None
     except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
         return None
 

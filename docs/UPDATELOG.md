@@ -1,3 +1,18 @@
+# r60 / 手机版 0.2.5.0
+
+- 修复桌面 `OverseasCarrierDialog` / `AutoCarrierWindow` 按钮与滚屏布局（纳入 Windows EXE 离线双语几何自检）及手机 `OverseasCarrier.qml` `loadingForm` 初始卡死与主页错误隔离。
+- 设备端将 `IR.92` `UsePreconditions` 规范为布尔 `b:false`/`b:true`、`SIP_Timer_CSFB` 改为秒级（`0..120`）并扩展 `IPsec`/`SIP_transport`/`RegExpiration`；勾选 `allow_isim` 且检测到真实 ISIM 时保留原生 ISIM 凭据；修正 `lte_bands_disabled` 避免 3G/2G/搜网期误报；增强 P-CSCF 主机路由重试队列、退出清理与跨端 IPv6/海外号码脱敏；统一 `unified_dca` 无线 PPS 回滚路径。
+- `materials/overseas-carriers.json` 升级至 Schema 2（297 项干净条目，体积 -33%，保留 Apache-2.0 声明），手机包移除 4 份未读取的历史收机记录（瘦身 214 KB）；`tools/ai_skill.py` 新增 `overseas` 子命令，`r59` 纳入 `PREVIOUS_PAYLOADS`。
+
+[Release notes](RELEASE-r60.md)
+
+# r59 / 手机版 0.2.4.0
+
+- 新增基于公开 AOSP（Apache-2.0）的离线全球海外运营商参考库与桌面/手机/CLI 试测入口，中国大陆 `460-*` 保持零回归、零干扰。
+- 引入纯净自研 P-CSCF 主机路由同步、只读 `lte_bands_disabled` 诊断与 `inet_pton(AF_INET6)` 脱敏。
+
+[Release notes](RELEASE-r59.md)
+
 # r50 / 手机版 0.1.0.50
 
 - 开机交接遇到暂时的原生探测超时会重新取证。后台本次开机未启动时，通过检查后可重试连接。

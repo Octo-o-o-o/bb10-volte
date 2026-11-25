@@ -83,18 +83,20 @@ def decode_lte_bands(mask):
 
 
 def lte_bands_disabled(values):
-    """True only when radio is ON, not on LTE, hardware supports LTE, and active mask is 0."""
+    """True only when radio is ON, not on LTE, and modem reports zero LTE band capability.
+
+    Note: on BB10 10.3.3.3216, radioctrl active_bands['lte'] reflects the
+    currently camped serving band (0 whenever camped on 3G/2G or searching),
+    so active_bands['lte'] == 0 with cap > 0 is normal and must NOT alert.
+    """
     if values.get('radio_read_error') is True:
         return None
     if values.get('radio_on') is None or values.get('lte') is None:
         return None
     cap = values.get('lte_band_capability_mask')
-    active = values.get('lte_active_band_mask')
-    if type(cap) is not int or type(active) is not int:
+    if type(cap) is not int or not (0 <= cap <= 0xffffffffffffffff):
         return None
-    if not (0 <= cap <= 0xffffffffffffffff and 0 <= active <= 0xffffffffffffffff):
-        return None
-    return bool(values.get('radio_on') is True and values.get('lte') is False and cap > 0 and active == 0)
+    return bool(values.get('radio_on') is True and values.get('lte') is False and cap == 0)
 
 
 def public_network_diagnostics(values):
@@ -205,6 +207,15 @@ def incoming_diagnostics():
     dca = object_at('/pps/services/carrier_config/radio_common/cellular_protocol_configuration')
     ir92 = object_at('/pps/services/carrier_config/ims/ir92')
     ran = field(ims, 'default_ran', ('LTE', 'lte', 'WLAN', 'wlan'), str)
+    raw_precond = None
+    try:
+        v = n.value(ir92, 'UsePreconditions')
+        if type(v) is bool:
+            raw_precond = 1 if v else 0
+        elif type(v) is int and v in (0, 1):
+            raw_precond = v
+    except (ValueError, TypeError, AttributeError):
+        raw_precond = None
     return {'scope': 'configuration_observation_only', 'call_acceptance': 'not_assessed',
             'ims_state': field(ims, 'status', ('connected', 'disconnected', 'idle'), str),
             'ims_ran': ran.upper() if ran else None,
@@ -212,7 +223,7 @@ def incoming_diagnostics():
             'engineering_voice_override': field(engineering, 'voice_domain_preference_EUTRAN_override',
                                                 ('2', '3', '4', '5', '6'), str),
             'dca_voice_preference': field(dca, 'voice_domain_preference_EUTRAN', (0, 1, 2, 3), int),
-            'use_preconditions': field(ir92, 'UsePreconditions', (0, 1), int)}
+            'use_preconditions': raw_precond}
 
 
 def read_network(profile=None):
@@ -290,6 +301,7 @@ def read_network(profile=None):
     mcc, mnc = result.get('mcc'), result.get('mnc')
     exp_default_bootstrap = (
         p.get('experimental', {}).get('allow_stock_default_xml') is True and
+        p['carrier']['stock_config'] in ('auto', '0') and
         any(item != 'auto' for item in p['carrier']['data_apns'])
     )
     if (not result.get('network_read_error') and not result.get('data_settings_read_error') and
@@ -308,7 +320,7 @@ def read_network(profile=None):
                             not os.path.islink(preloaded) and
                             n.digest(n.read(preloaded)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
                         result['stock_apn_bootstrap_eligible'] = True
-                elif (exp_default_bootstrap and
+                elif (exp_default_bootstrap and result.get('data_connected') is True and
                         not os.path.islink(profiles.STOCK_DEFAULT_CONFIG_PATH) and
                         n.digest(n.read(profiles.STOCK_DEFAULT_CONFIG_PATH)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
                     result['stock_apn_bootstrap_eligible'] = True

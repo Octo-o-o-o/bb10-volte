@@ -92,7 +92,7 @@
             </div>
             <a class="hero-mac-link" data-download="mac" href="https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer"><svg class="icon icon-fill" aria-hidden="true"><use href="#icon-apple"/></svg><span class="button-copy"><span>Download macOS final release r43</span><small>Apple Silicon macOS 11+ · Intel macOS 10.15+</small></span><svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
             <p class="hero-note"><strong>v0.5.0-r43 is the final macOS release.</strong> Due to limited maintenance capacity, no further macOS maintenance or updates will be provided. Downloads remain available; Windows and the phone app are unaffected.</p>
-            <p class="hero-note">Mobile 0.2.4.0 · desktop r59. <a href="#variant-matrix">See the model table</a></p>
+            <p class="hero-note">Mobile 0.2.5.0 · desktop r60. <a href="#variant-matrix">See the model table</a></p>
 
           </div>
 
@@ -114,15 +114,15 @@
 
     <section class="region" id="release" aria-labelledby="release-title">
       <div class="shell">
-        <div class="chapter"><span>00 / r59 · 0.2.4.0</span><span>Only what changed.</span></div>
+        <div class="chapter"><span>00 / r60 · 0.2.5.0</span><span>Only what changed.</span></div>
         <div class="section-heading">
           <h2 id="release-title">What changed.</h2>
-          <p>Fixes Windows flash pause lockouts, PowerShell driver checks, non-ASCII SSH keys, legacy blocker guidance and runtime error codes.<br>Mobile is now 0.2.4.0.</p>
+          <p>Hardens the desktop/mobile overseas non-460 editor and native engine, upgrades the offline 297-carrier reference catalog, and slims the mobile bundle with zero China regressions.<br>Mobile is now 0.2.5.0.</p>
         </div>
         <div class="principles">
-          <article><span>Flashing & drivers</span><h3>See flash errors and clear pauses safely</h3><p>Incomplete flashes pause with log excerpts and offer safe pause recovery without deleting files; Windows Bootrom driver installation stays unblocked.</p></article>
-          <article><span>Pairing & migration</span><h3>Non-ASCII usernames and legacy guidance</h3><p>Fixes SSH public-key parsing on non-ASCII Windows usernames/hostnames and gives clear cleanup instructions for legacy VoLTE directories.</p></article>
-          <article><span>Runtime & recovery</span><h3>Error codes and pre-native rollback</h3><p>Surfaces allowlisted error codes, removes stage-cleanup lock contention, and restores 4G/3G/2G selection if pre-journal startup fails.</p></article>
+          <article><span>Overseas &amp; UI</span><h3>Desktop/mobile editor fixes &amp; Schema 2 catalog</h3><p>Fixes desktop dialog clipping and mobile QML loading deadlock while preserving multi-carrier configs; upgrades the Apache-2.0 catalog to 297 clean entries (untested) and trims 214 KB from the mobile bundle.</p></article>
+          <article><span>Engine &amp; ISIM</span><h3>Boolean preconditions, ISIM preservation &amp; route retry</h3><p>Writes UsePreconditions as native PPS booleans, validates SIP_Timer_CSFB in seconds, preserves native ISIM credentials under allow_isim, and adds bounded P-CSCF route retry and exit cleanup.</p></article>
+          <article><span>Diagnostics</span><h3>No 3G/2G band false positives &amp; unified redaction</h3><p>Restricts lte_bands_disabled to zero LTE capability masks, unifies IPv6 and overseas number redaction across device and feedback logs, and verifies dialog geometry in Windows self-test.</p></article>
         </div>
       </div>
     </section>
@@ -174,7 +174,7 @@
           <p>Check Root and the native installation route.<br>Back up and activate inside the app.<br>Then verify real calls and messages.</p>
         </div>
         <div class="journey-grid">
-          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>Wait for Root to be ready</h3><p>Unlock, wait for the Root notification and check your exact model.</p></div><span class="step-mark">First Root is a separate step</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>Install the native app</h3><p>Use a compatible BAR installer, or matching desktop assistance. Verify the installed version.</p></div><span class="step-mark">Current mobile release 0.2.4.0</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>Back up, activate and restart</h3><p>Follow the app’s steps. Passport may need an extra normal restart for network policy changes.</p></div><span class="step-mark">Manage everyday use on the phone</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>Make real calls</h3><p>Call out, receive a call and call again, each connected for at least two minutes. Check audio, LTE and SMS.</p></div><span class="step-mark">Save the checks for your current SIM</span></li></ol>
+          <ol class="journey-steps"><li><span class="journey-number">01</span><div><small>ROOT</small><h3>Wait for Root to be ready</h3><p>Unlock, wait for the Root notification and check your exact model.</p></div><span class="step-mark">First Root is a separate step</span></li><li><span class="journey-number">02</span><div><small>BAR</small><h3>Install the native app</h3><p>Use a compatible BAR installer, or matching desktop assistance. Verify the installed version.</p></div><span class="step-mark">Current mobile release 0.2.5.0</span></li><li><span class="journey-number">03</span><div><small>ENABLE</small><h3>Back up, activate and restart</h3><p>Follow the app’s steps. Passport may need an extra normal restart for network policy changes.</p></div><span class="step-mark">Manage everyday use on the phone</span></li><li><span class="journey-number">04</span><div><small>CALL</small><h3>Make real calls</h3><p>Call out, receive a call and call again, each connected for at least two minutes. Check audio, LTE and SMS.</p></div><span class="step-mark">Save the checks for your current SIM</span></li></ol>
 
           <article class="acceptance-paper">
             <div class="paper-heading"><span>FIELD CHECK / 3 MODELS</span><svg class="icon" aria-hidden="true"><use href="#icon-phone"/></svg></div>
@@ -219,7 +219,7 @@
         <div class="chapter"><span>04 / DOWNLOAD</span><span>Desktop downloads below; see the mobile guide for native BAR installation.</span></div>
         <div class="section-heading">
           <h2 id="download-title">Which computer do you use?<br><em>Get the matching version.</em></h2>
-          <div class="release-summary"><p>Current public release<br><strong data-release-version>Latest release</strong> · Experimental prerelease</p><a class="text-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r59" target="_blank" rel="noopener noreferrer">Release notes<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+          <div class="release-summary"><p>Current public release<br><strong data-release-version>Latest release</strong> · Experimental prerelease</p><a class="text-link" data-release-link href="https://github.com/Octo-o-o-o/bb10-volte/releases/tag/v0.5.0-r60" target="_blank" rel="noopener noreferrer">Release notes<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
         </div>
         <div class="download-grid">
           <article class="download-card">
@@ -228,7 +228,7 @@
             <p class="platform-spec">Windows 10 / 11 · 64-bit (x64)</p>
             <p class="platform-detail">Windows 7, 8 / 8.1 and 32-bit systems are not supported.</p>
             <p>Download and open the EXE. Required components are included; no separate Python or OpenSSH installation is needed.</p>
-            <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>Download for Windows</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">SHA-256 checksum<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
+            <div class="download-actions"><a class="button button-primary" data-download="windows" href="https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-windows-x64.exe" target="_blank" rel="noopener noreferrer"><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>Download for Windows</a><a class="checksum-link" data-download="windows-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-windows-x64.exe.sha256" target="_blank" rel="noopener noreferrer">SHA-256 checksum<svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>
             <small class="package-note">The EXE has no publisher signature. Check the checksum before you run it.</small>
           </article>
           <article class="download-card">
@@ -242,7 +242,7 @@
             <small class="package-note">Signed and notarized. It has started on Apple silicon. Intel has not been tried.</small>
           </article>
         </div>
-        <div class="source-download"><p><strong>Prefer to run from source?</strong>Install Python 3.14 with Tk, then run <code>python tools/gui.py</code>.</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip" target="_blank" rel="noopener noreferrer">Source ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">Source checksum</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r59/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">All checksums</a></div></div><div class="mirror-note"><p><strong>Direct downloads via Cloudflare R2.</strong> No GitHub connection is needed. Use the same-version GitHub copy below if this route is unavailable; file bytes and SHA-256 checksums match.</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub Source ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r59/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
+        <div class="source-download"><p><strong>Prefer to run from source?</strong>Install Python 3.14 with Tk, then run <code>python tools/gui.py</code>.</p><div><a data-download="source" href="https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-experimental.zip" target="_blank" rel="noopener noreferrer">Source ZIP</a><a data-download="source-sha" href="https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-experimental.zip.sha256" target="_blank" rel="noopener noreferrer">Source checksum</a><a data-release-checksums href="https://bb10-downloads.octoooo.com/v0.5.0-r60/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">All checksums</a></div></div><div class="mirror-note"><p><strong>Direct downloads via Cloudflare R2.</strong> No GitHub connection is needed. Use the same-version GitHub copy below if this route is unavailable; file bytes and SHA-256 checksums match.</p><p><a data-github-download="windows" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r60/bb10-volte-0.5.0-r60-windows-x64.exe" target="_blank" rel="noopener noreferrer">GitHub Windows</a> · <a data-github-download="mac" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg" target="_blank" rel="noopener noreferrer">GitHub macOS</a> · <a data-github-download="source" href="https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r60/bb10-volte-0.5.0-r60-experimental.zip" target="_blank" rel="noopener noreferrer">GitHub Source ZIP</a> · <a href="https://bb10-downloads.octoooo.com/v0.5.0-r60/SHA256SUMS.txt" target="_blank" rel="noopener noreferrer">SHA-256</a></p></div>
         <p class="download-guide-link"><a class="text-link" href="guide.html#verify">Downloaded? Verify the file, then follow the guide<svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></a></p>
       </div>
     </section>

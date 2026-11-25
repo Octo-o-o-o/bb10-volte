@@ -50,14 +50,14 @@ Verified by SHA-256 in [sources.json](../../../../materials/sources.json) before
 
 ---
 
-## 3. Carrier Selection & Runtime Architecture (`r49` / Mobile `0.1.0.49`)
+## 3. Carrier Selection & Runtime Architecture (`r60` / Mobile `0.2.5.0`)
 
 1. **Automatic Home-PLMN Selection**:
    - Reads the active USIM's home PLMN (`MCC=460`, no ISIM required; SIM `kind` must have USIM bit `2` set and ISIM bit `16` clear; China Broadnet `460-15` is explicitly reported as `china_broadnet_unsupported`):
      - `460-00`, `02`, `04`, `07`, `08` → `mobile` (China Mobile, APN `cmnet` / `cmwap`, SHA-256-pinned stock fallback `404.xml` + OI-normalized empty/default-APN bootstrap when BB10 maps newer HPLMNs to `0.xml`)
      - `460-01`, `06`, `09` → `unicom` (China Unicom, APN `3gnet` / `wonet` / `uninet`, SHA-256-pinned stock fallback `36.xml`)
      - `460-03`, `05`, `11`, `12` → `telecom` (China Telecom, APN `ctnet` / `ctlte`, SHA-256-pinned stock fallback `446.xml` with dead `10.0.0.200:80` CTWAP proxy stripped)
-   - Releases from r55 can try China Mobile `460-13` and other home PLMNs when the current USIM and stock carrier XML match. The app labels the route untested. ISIM and lack of normal LTE are separate diagnostics. See [the PLMN and KT investigation](../../../../docs/NETWORK-DIAGNOSTICS.md).
+   - Releases from r55 can try China Mobile `460-13` and other home PLMNs when the current USIM and stock carrier XML match. From r59/r60, explicit opt-in overseas / custom Schema 2 carrier profiles (`/var/bb10_volte-exp-trial.json`, backed by the offline Apache-2.0 AOSP reference catalog `materials/overseas-carriers.json`) allow testing non-460 SIMs including optional `allow_isim` (which preserves native ISIM `EF_IMPU`/`EF_IMPI` on USIM+ISIM cards), `allow_stock_default_xml` (`0.xml` bootstrap), optional IR.92/IMS PPS knobs (`UsePreconditions` boolean, `SIP_Timer_CSFB` in seconds, `IPsec`, `SIP_transport`, `RegExpiration`), and automatic P-CSCF host route sync on verified active `msm*` cellular interfaces. All overseas catalog entries remain `untested` on BB10 hardware. See [the PLMN and diagnostics guide](../../../../docs/NETWORK-DIAGNOSTICS.md).
    - Also applies volatile SE.13 operator-name overlay and numeric `current_ons` display fallback (`中国移动` / `中国联通` / `中国电信`) across all 12 admitted MNCs without touching read-only `/base/etc/network/BBSE-se13-network-override-list.txt`.
 2. **Read-Only Stock Binary Integrity**:
    - `/radio/bin/ims_rrm` and the other 5 stock QNX radio/system binaries are **never modified on `/radio` or `/base`**.

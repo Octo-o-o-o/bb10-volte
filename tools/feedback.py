@@ -6,13 +6,18 @@ from pathlib import Path
 import platform
 import queue
 import re
-import socket
+import sys
 import threading
 import traceback
 import uuid
 import zipfile
 
 from desktop_paths import private_root, resource_root, desktop_release_version
+
+_DEVICE_DIR = str(resource_root() / 'device')
+if _DEVICE_DIR not in sys.path:
+    sys.path.insert(0, _DEVICE_DIR)
+from service import redact_ipv6_addresses
 
 MAX_EVENTS = 400
 MAX_SESSIONS = 5
@@ -25,30 +30,6 @@ SAFE_CONSOLE_MARKERS = (
     '[Device password input requested in native console]',
     '[Device identity or password prompt omitted]',
 )
-
-
-def _is_ipv6_literal(text):
-    core = text.split('%', 1)[0]
-    if ':' not in core:
-        return False
-    try:
-        socket.inet_pton(socket.AF_INET6, core)
-        return True
-    except (OSError, ValueError):
-        return False
-
-
-def _redact_ipv6_token(match):
-    prefix = match.group(1) or ''
-    token = match.group(2)
-    for keep, body in (('', prefix + token), (prefix, token)):
-        if not body:
-            continue
-        if body.endswith(':') and _is_ipv6_literal(body[:-1]):
-            return keep + '[address removed]:'
-        if _is_ipv6_literal(body):
-            return keep + '[address removed]'
-    return match.group(0)
 
 
 def scrub(value):
@@ -72,11 +53,8 @@ def scrub(value):
     text = re.sub(r'(?<!\w)/(?:Users|home|tmp|private|var|mnt|data|accounts)/[^\r\n<>]*', '[path removed]', text)
     text = re.sub(r'[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}', '[email removed]', text)
     text = re.sub(r'(?i)\b(?:imei|imsi|iccid|pin|msisdn|phone|serial|手机号|号码)\s*[:=：]\s*\S+', '[identifier removed]', text)
+    text = redact_ipv6_addresses(text, '[address removed]')
     text = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?![\w.])', '[address removed]', text)
-    text = re.sub(r'\[[0-9a-fA-F:.]+(?:%[^\s\]]+)?\](?::\d{1,5})?', '[address removed]', text)
-    text = re.sub(
-        r'(?<![0-9a-zA-Z_])([A-Za-z_][A-Za-z0-9_-]*:)?([0-9a-fA-F:]*:[0-9a-fA-F:]+(?:%[A-Za-z0-9_.-]+)?)(?![0-9a-zA-Z_])',
-        _redact_ipv6_token, text)
     text = re.sub(r'(?<!\w)\+?\d[\d ()-]{6,}\d(?!\w)', '[number removed]', text)
     text = re.sub(r'\b[A-Za-z0-9+/=_-]{40,}\b', '[token removed]', text)
     for token, marker in preserved:
@@ -95,9 +73,12 @@ BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'bootrom_driver_ready',
                'installed', 'installation_pending', 'update_pending', 'update_available', 'registered',
                'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot', 'operator_trial', 'sim_has_isim', 'radio_lte', 'lte_data_connected',
                'lte_bands_disabled', 'exp_trial_active', 'pcscf_route_verified',
+               'mobile_network_off', 'current_sim_matches', 'payload_update_required',
+               'downloaded_carrier_config_present',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
                'sim_supported', 'automatic_start', 'fallback_used', 'stock_apn_bootstrap_eligible'}
 CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'error_code', 'status_error', 'selected_operator',
+               'operator', 'isim_status',
                'managed_adapter', 'registration', 'ims', 'ran', 'ims_observation_scope',
                'pcscf_route_status', 'pcscf_route_family',
                'scope_error', 'sim_reason'}
@@ -125,6 +106,21 @@ def trial_projection(value):
     return result
 
 
+def exp_trial_projection(value):
+    if not isinstance(value, dict):
+        return None
+    out = {}
+    if type(value.get('schema')) is int and value['schema'] in (1, 2):
+        out['schema'] = value['schema']
+    if type(value.get('enabled')) is bool:
+        out['enabled'] = value['enabled']
+    plmns = value.get('plmns')
+    if isinstance(plmns, list):
+        out['plmns'] = [item for item in plmns[:16]
+                        if isinstance(item, str) and re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', item)]
+    return out
+
+
 def project(value, depth=0):
     """Reject unknown fields, paths, raw logs, connection material and identifiers."""
     if depth > 7:
@@ -137,10 +133,15 @@ def project(value, depth=0):
     for key, item in value.items():
         if key == 'variant_trial':
             out[key] = trial_projection(item)
+        elif key == 'exp_trial_summary':
+            out[key] = exp_trial_projection(item)
         elif key in BOOL_FIELDS and type(item) is bool:
             out[key] = item
         elif key in CODE_FIELDS and isinstance(item, str):
             out[key] = code(item)
+        elif key == 'preloaded_carrier_config' and isinstance(item, str) and (
+                item == '' or re.fullmatch(r'[0-9]{1,6}\.xml', item)):
+            out[key] = item
         elif key == 'status' and item in ('pass', 'fail', 'warn', 'wait', 'blocked', 'block', 'adapt', 'skip', 'unknown'):
             out[key] = item
         elif key in CONTAINERS and isinstance(item, (dict, list)):
@@ -155,6 +156,8 @@ def project(value, depth=0):
             out[key] = item if re.fullmatch(r'\d{1,2}(?:\.\d{1,4}){2,3}', item) else 'unknown'
         elif key in ('usb_count', 'attempt', 'max_attempts', 'seconds_per_attempt', 'pcscf_route_count') and type(item) is int:
             out[key] = max(0, min(item, 10000))
+        elif key in ('lte_active_band_mask', 'lte_band_capability_mask') and type(item) is int and 0 <= item <= 0xffffffffffffffff:
+            out[key] = item
         elif key == 'register_status' and isinstance(item, str):
             out[key] = item if item in ('200 OK', '403 Forbidden', '408 Request Timeout', 'not_registered') else 'unknown'
     return out

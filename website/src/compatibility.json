@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "release": "v0.5.0-r59",
-  "as_of": "2026-11-15",
+  "release": "v0.5.0-r60",
+  "as_of": "2026-11-25",
   "models": [
     {
       "variant": "SQN100-1",
@@ -419,11 +419,5 @@
         "en": "SQK100-2 · All carriers open\nMobile: Theoretical / untested / Unicom: Theoretical / untested / Telecom: Theoretical / untested\nOfficially documented with LTE B2/B4/B5/B17; no functional tests. Trial available with existing Root and matching native files; a local first-flash recipe is not verified."
       }
     }
-  ],
-  "unpublished_candidate_scope": {
-    "desktop_revision": 38,
-    "mobile": "0.1.0.39",
-    "variant": "SQC100-3",
-    "manual_acceptance_precompleted": false
-  }
+  ]
 }
