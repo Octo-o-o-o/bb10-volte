@@ -2,11 +2,11 @@
 
 **macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
 
-**Desktop r61 · mobile 0.2.5.0.** Q10, Q20, Passport and P’9983 keep one-click mainland China profiles and include an offline global overseas carrier reference catalog (Apache-2.0 Schema 2, 297 entries) plus custom experimental configuration. The app labels untested carriers. Windows can place later downloads and new flash preparation on another disk.
+**Desktop r62 · mobile 0.2.5.0.** Q10, Q20, Passport and P’9983 keep one-click mainland China profiles and include an offline global overseas carrier reference catalog (Apache-2.0 Schema 2, 297 entries) plus custom experimental configuration. The app labels untested carriers. Windows can place later downloads and new flash preparation on another disk.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r61.en.md)
+[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r62.en.md)
 
 Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior remains in the current Windows download; device validation remains pending.
 
@@ -62,10 +62,10 @@ If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same 
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r61/bb10-volte-0.5.0-r61-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/bb10-volte-0.5.0-r61-windows-x64.exe) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r62/bb10-volte-0.5.0-r62-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/bb10-volte-0.5.0-r62-windows-x64.exe) |
 | macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r61/bb10-volte-0.5.0-r61-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/bb10-volte-0.5.0-r61-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r61/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/SHA256SUMS.txt) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r62/bb10-volte-0.5.0-r62-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/bb10-volte-0.5.0-r62-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r62/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

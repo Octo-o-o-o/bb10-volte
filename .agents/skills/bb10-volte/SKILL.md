@@ -35,7 +35,7 @@ Operate `bb10-volte` safely and deterministically across all **16 supported Blac
    - IMS `200 OK` registration is necessary but **not** final acceptance: always ask the human user to verify outbound + inbound native dialer calls (`>= 00:35` connected audio), LTE retention, and SMS.
 7. **License Boundary**:
    - Licensed under [PolyForm Noncommercial License 1.0.0](../../../LICENSE): free for personal/noncommercial use; paid flashing/installation services, pre-installed phone sales, or commercial redistribution require prior paid commercial licensing via `octoooo@octoooo.com`.
-   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r61`) and the native BB10 mobile app (`0.2.5.0`) continue to receive updates. The r61 Windows change is an optional large-file folder and checked cleanup. The phone payload is unchanged.
+   - macOS desktop builds are frozen at `v0.5.0-r43`; Windows desktop (`r62`) and the native BB10 mobile app (`0.2.5.0`) continue to receive updates. The r62 Windows change is an optional large-file folder and checked cleanup. The phone payload is unchanged.
    - Offline overseas carrier reference metadata (`materials/overseas-carriers.json`) is derived from AOSP (Apache-2.0); `licenses/APACHE-2.0.txt` and `NOTICE.md` ship in source and Windows EXE bundles, and `materials/APACHE-2.0.txt` and `materials/NOTICE.md` ship inside mobile BAR/update bundles. All overseas catalog entries are `untested` on BB10 hardware and never claim hardware validation.
 
 ---

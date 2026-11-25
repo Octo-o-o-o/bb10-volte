@@ -198,12 +198,12 @@ class StorageLocationTests(unittest.TestCase):
         self.assertEqual(download, self.work / 'downloads')
         self.assertEqual(calls['n'], 1)
 
-    def test_non_windows_keeps_the_original_directories(self):
+    def test_macos_keeps_the_original_directories(self):
         self.assertEqual(storage.set_work_root(self.stable, self.work), 'saved')
         with patch.object(storage.sys, 'platform', 'darwin'):
             self.assertEqual(storage.preparation_parent(self.stable), self.stable)
             self.assertEqual(storage.active_download_root(self.stable), self.bundle / 'downloads')
-            self.assertEqual(storage.location_status(self.stable)['problem'], 'windows_only')
+            self.assertEqual(storage.location_status(self.stable)['problem'], 'macos_frozen')
 
     def test_frozen_program_directory_is_rejected(self):
         program = Path(self.temp.name) / 'program'

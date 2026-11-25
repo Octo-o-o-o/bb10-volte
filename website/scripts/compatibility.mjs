@@ -4,7 +4,7 @@ export const operators = { mobile: {zh:'移动',en:'Mobile'}, unicom: {zh:'联�
 const evidence = { passed:{zh:'能用',en:'Works'}, issues:{zh:'有问题',en:'Issues'}, failed:{zh:'没通过',en:'Did not work'}, untested:{zh:'还没测',en:'Not tested'} };
 const families = {q10:'Q10',classic:'Q20 / Classic',passport:'Passport',p9983:'P’9983'};
 const escape = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-export function instructions(model, language, rev = 'r61') {
+export function instructions(model, language, rev = 'r62') {
  const en=language==='en';
  return (en ? [
  `BB10 VoLTE ${rev} — ${model.variant} testing instructions`,
@@ -41,7 +41,7 @@ function matrix(data,language) {
 }
 function trialPage(data,language) {
  const en=language==='en',prefix=en?'../':'';
- const rev=(String(data.release||'').match(/r\d+/)||['r61'])[0];
+ const rev=(String(data.release||'').match(/r\d+/)||['r62'])[0];
  return `<section class="guide-hero" aria-labelledby="trials-title"><div class="shell"><p class="eyebrow">${data.release} · ${data.as_of}</p><h1 id="trials-title">${en?'Test your exact model':'按完整型号自主测试'}</h1><p class="guide-intro">${en?'Pick your model and test it. Skip checks you already finished.':'选中你的型号再测。已经做过的项目不用重测。'}</p><a class="button button-primary" href="${prefix}trials/instructions-${language}.txt" download>${en?'Download all instructions':'下载全部说明'}</a></div></section><div class="shell trial-layout"><nav class="trial-picker" id="choose-variant">${data.models.map(m=>`<a href="#${m.variant.toLowerCase()}">${m.variant}</a>`).join('')}</nav>${data.models.map(m=>{const id=m.variant.toLowerCase();const extra=m.note[language].trim();return `<section class="trial-card" id="${id}" aria-labelledby="${id}-title"><h2 id="${id}-title">${families[m.family]} · ${m.variant}</h2>${extra?`<p>${escape(extra)}</p>`:''}<div class="trial-actions"><button class="button button-primary" type="button" data-copy-trial="${id}-message" hidden>${en?'Copy instructions + form':'复制说明和反馈表'}</button><a class="button button-secondary" href="${prefix}trials/${m.variant}.${language}.txt" download>${en?'Download TXT':'下载 TXT'}</a></div><p class="copy-status" data-copy-status role="status" aria-live="polite"></p><details class="trial-details"><summary>${en?'Instructions and feedback form':'操作说明与反馈表'}</summary><pre class="trial-message" id="${id}-message">${escape(instructions(m,language,rev))}</pre></details></section>`;}).join('\n')}<section id="not-open"><h2>${en?'Requirements':'使用条件'}</h2><p>${en?'The result label does not stop you. You still need Root, a matching system and native files, and a backup you can restore.':'结果不会拦你。仍要 Root、对得上的系统和原生文件，以及能恢复的备份。'}</p><a href="index.html#variant-matrix">${en?'Full matrix':'完整适配表'}</a></section></div>`;
 }
 export async function renderCompatibility(source,output) {

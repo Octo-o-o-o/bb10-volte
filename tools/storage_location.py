@@ -197,8 +197,10 @@ def _resolve(stable=None, setting=None):
         setting = read_setting(stable)
     download = default_download_location(stable)
     work = setting.get('work_root')
-    if sys.platform != 'win32':
-        return stable, download, 'windows_only' if work else None
+    # The published Mac app stays on r43. Source checkouts on macOS keep the
+    # original directories so a chosen folder cannot split downloads from kits.
+    if sys.platform == 'darwin':
+        return stable, download, 'macos_frozen' if work else None
     if not work:
         return stable, download, None
     ok, problem = usable_work_directory(work, stable)
@@ -258,7 +260,7 @@ def search_roots(stable=None):
         ordered.append(path)
 
     work = setting['work_root']
-    if sys.platform == 'win32' and work:
+    if sys.platform != 'darwin' and work:
         ok, _problem = usable_work_directory(work, stable)
         if ok:
             add(work, True)
