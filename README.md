@@ -2,20 +2,20 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r60 · 手机版 0.2.5.0。** Q10、Q20、Passport、P’9983 可一键尝试大陆三网，并支持海外非 `460` 运营商离线参考库（Apache-2.0 Schema 2，297 项）与自定义试验参数。界面会标明尚未实测的运营商。
+**桌面 r61 · 手机版 0.2.5.0。** Q10、Q20、Passport、P’9983 可一键尝试大陆三网，并支持海外非 `460` 运营商离线参考库（Apache-2.0 Schema 2，297 项）与自定义试验参数。界面会标明尚未实测的运营商。Windows 可以选择其他磁盘存放之后的下载和新的刷机准备。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r60.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r61.md)
 
 本版包含[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。新行为尚待对应版本的真机验收。
 
 ## 这版改了什么
 
-- 双端海外配置页与交互修复（中国大陆零回归、零干扰）：修复桌面 `OverseasCarrierDialog` / `AutoCarrierWindow` 按钮裁切与滚屏布局（纳入 Windows EXE 离线几何自检）及手机 `OverseasCarrier.qml` 初始加载卡死与主页错误串扰；支持多运营商条目保留、全角逗号分隔、中文/英文完整校验提示。大陆 `460-*` SIM 卡保持一键零配置且 XML/PPS 完全不变。
-- 设备端海外与原生引擎加固：`IR.92` `UsePreconditions` 写入原生布尔 `b:false`/`b:true`、`SIP_Timer_CSFB` 秒级范围校验（`0..120`）并扩展 `IPsec`/`SIP_transport`/`RegExpiration`；勾选 `allow_isim` 且检测到真实 ISIM 时保留 SIM 原生凭据（跳过合成 `imsconfig_user.xml`）；修正 `lte_bands_disabled` 消除 3G/2G/搜网误报；增强 P-CSCF 主机路由重试队列、进程退出清理及跨端 IPv6/海外号码脱敏。
-- 海外参考库 Schema 2 升级与手机包瘦身：`materials/overseas-carriers.json` 升级至 297 项干净条目（体积缩减 33%，修复一级 MNO 排名并排除测试/预留项，完整保留 Apache-2.0 许可证与归属声明）；手机 BAR 与 OTA 更新包移除 4 份未读取的历史收机记录（瘦身 214 KB）；`r59` 纳入 `PREVIOUS_PAYLOADS` 支持原地安全更新。
-- 命令行与 AI Skill 同步：精简 `tools/kt_isim_trial.py` 为兼容封装，为 `tools/ai_skill.py` 新增 `overseas` 子命令（支持目录查询与受管配置读写）。
+- Windows 可以另选一个文件夹，存放之后开始的下载，以及新的 Root 和原版升级准备。不选也能继续使用。已有文件不搬走，正在进行的下载、准备和刷写不改道。
+- 所选文件夹缺失、是符号链接或目录联接、位于程序或个人材料目录内部，或者不能写入时，新的下载和准备回到原来的位置，并在界面说明。连接、安装和状态查看不依赖这个选择。
+- 清理按项勾选，每一项显示用途和大小，默认不勾选。密钥、连接、日志和刷写记录不会列出。正在下载、准备或刷写的项不能勾选。刷写完成后会询问是否清理这一次，默认不清理。
+- 手机版仍是 0.2.5.0，macOS 仍固定为封板 r43。本版没有新的通话、短信或数据验收。
 
 ## 怎么用
 
@@ -56,16 +56,16 @@ Windows 11 和 Apple 芯片试过启动。Windows 10 和 Intel 还没试。详�
 
 反复准备或失败后磁盘占用较大时，见[保存位置与手动清理说明](docs/DISK-CLEANUP.md)。r43 已包含缓存复用与构建残留清理修复。
 
-Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r60 下载中。
+Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方当前 Windows 下载中。
 
 打不开 GitHub 时，用官网的 Cloudflare R2。两边是同一份文件，运行前对一下 SHA-256。
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r60/bb10-volte-0.5.0-r60-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r61/bb10-volte-0.5.0-r61-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/bb10-volte-0.5.0-r61-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r60/bb10-volte-0.5.0-r60-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r60/bb10-volte-0.5.0-r60-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r60/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r60/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r61/bb10-volte-0.5.0-r61-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/bb10-volte-0.5.0-r61-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r61/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r61/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

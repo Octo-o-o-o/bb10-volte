@@ -314,20 +314,36 @@ def prepare_root_kit(variant, progress, proxy=None, cache_dir=None, offline=Fals
         raise SetupError('windows_root_required')
     from preparation_cache import (preparation_lock, clean_abandoned_roots, reusable_root_kit,
                                    mark_ready, clean_failed_root, trim_intermediates)
-    private = private_root()
-    with preparation_lock(private):
-        clean_abandoned_roots(private, progress)
-        existing = reusable_root_kit(private, variant, 'win32', progress)
+    from storage_location import current_placement, search_roots
+    stable = private_root()
+    with preparation_lock(stable):
+        # Read the destination once. A later change in the storage window applies
+        # to the next run, not to files this preparation is about to write.
+        target, cache = current_placement(stable)
+        if cache_dir:
+            cache = Path(cache_dir)
+        for root in search_roots(stable):
+            if root.exists() and not root.is_symlink() and not root.is_junction():
+                clean_abandoned_roots(root, progress)
+        existing = None
+        for root in search_roots(stable):
+            if not root.exists() or root.is_symlink() or root.is_junction():
+                continue
+            existing = reusable_root_kit(root, variant, 'win32', progress)
+            if existing:
+                break
         if existing:
             return existing
-        if shutil.disk_usage(private).free < 15 * 1024 ** 3:
+        usage = target if target.exists() else target.parent
+        if shutil.disk_usage(usage).free < 15 * 1024 ** 3:
             raise SetupError('insufficient_disk')
-        folder = private / ('root-kit-' + uuid.uuid4().hex[:12])
+        target.mkdir(parents=True, exist_ok=True)
+        folder = target / ('root-kit-' + uuid.uuid4().hex[:12])
         try:
-            _prepare_root_kit_windows(folder, variant, progress, proxy, cache_dir, offline)
+            _prepare_root_kit_windows(folder, variant, progress, proxy, cache, offline)
             mark_ready(folder)
         except BaseException:
-            clean_failed_root(private, folder, progress)
+            clean_failed_root(target, folder, progress)
             raise
         trim_intermediates(folder, variant, progress)
         return str(folder)
@@ -393,8 +409,18 @@ def prepared_images(folder, allowed_stages=('prepared',)):
 
 def prepared_kit_history():
     """Read bounded preparation journals; listing is never flash authorization."""
+    from storage_location import search_roots
     result = []
-    folders = [private_root() / 'root-kit'] + sorted(private_root().glob('root-kit-*'))
+    folders = []
+    for root in search_roots(private_root()):
+        folders.append(root / 'root-kit')
+        try:
+            folders.extend(sorted(root.glob('root-kit-*')))
+        except OSError:
+            continue
+        if len(folders) >= 200:
+            folders = folders[:200]
+            break
     for folder in folders:
         if folder.is_symlink() or folder.is_junction():
             continue
@@ -448,16 +474,17 @@ def _lock_kit_dir(lock_data):
     if not isinstance(raw_kit, str) or not raw_kit:
         return None
     try:
-        priv = private_root()
-        if priv.is_symlink() or priv.is_junction():
-            return None
+        from storage_location import KIT_NAME, search_roots
         candidate = Path(raw_kit)
         if candidate.is_symlink() or candidate.is_junction():
             return None
         resolved = candidate.resolve()
-        if (resolved.parent == priv.resolve() and
-                (resolved.name == 'root-kit' or resolved.name.startswith('root-kit-')) and
-                resolved.is_dir()):
+        allowed = []
+        for root in search_roots(private_root()):
+            if root.is_symlink() or root.is_junction():
+                continue
+            allowed.append(root.resolve())
+        if resolved.parent in allowed and KIT_NAME.fullmatch(resolved.name) and resolved.is_dir():
             return resolved
     except OSError:
         return None

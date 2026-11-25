@@ -369,7 +369,7 @@ class FlashVisibilityAndLockRecoveryR55Tests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             private = Path(tmp) / 'private'
-            kit = private / 'root-kit-abc'
+            kit = private / 'root-kit-abcdefabcdef'
             kit.mkdir(parents=True)
             lock = private / 'root-flash.lock'
             (kit / 'flash-os.log').write_text('Connecting to bootrom:\nError: failed\n', encoding='utf-8')

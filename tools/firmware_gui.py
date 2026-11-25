@@ -415,6 +415,12 @@ class FirmwareDialog(tk.Toplevel):
                     self.stage = upgrade.read_state(value)['stage']
                     self.refresh_history()
                     self.status.configure(text=tr('准备完成。') if action == 'prepared' else tr('请等待手机开机，然后点击验证系统版本。'))
+                    if action == 'flashed':
+                        try:
+                            show_storage_help(self, scope_kit=value)
+                        except Exception:
+                            # Opening cleanup must not discard the success text or stop this window.
+                            pass
                 elif action == 'resumed':
                     folder, state = value
                     if state['stage'] == 'uncertain' and not root.root_lock_path().exists():

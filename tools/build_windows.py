@@ -188,7 +188,7 @@ def main():
     assert not any(any(token in name for token in forbidden) for name in index)
     archive_modules = reader.open_embedded_archive('PYZ.pyz').toc
     assert {'root_setup', 'root_images', 'setup_wizard', 'prepare_root', 'prepare_usb_drivers', 'build_root',
-            'preparation_cache', 'storage_help',
+            'preparation_cache', 'storage_help', 'storage_gui', 'storage_location',
             'connection_recovery', 'recovery_gui', 'phone_pairing', 'connection_dialog',
             'connection_flow', 'connection_materials', 'ui_theme', 'ui_responsiveness', 'i18n', 'translations_en',
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',

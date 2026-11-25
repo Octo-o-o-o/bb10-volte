@@ -22,6 +22,7 @@ from ui_theme import apply_theme, AutoScrollbar
 from connection import matching_alias, saved_connection, resolve_connection, save_connection
 from connection_flow import guidance
 from completion_dialog import CompletionDialog
+from storage_gui import open_storage
 from mac_help import CONNECTION_HINT, show_guide as show_mac_guide
 from auto_carrier_view import status_view as unified_status_view, restart_guidance as unified_restart_guidance
 
@@ -244,6 +245,7 @@ class App:
         self.menu.add_command(label=tr('候选机型本地试测'), command=self.variant_trials)
         self.menu.add_command(label=tr('海外 / 自定义运营商设置…'), command=self.overseas_carrier_settings)
         self.menu.add_separator()
+        self.menu.add_command(label=tr('存储位置与磁盘清理'), command=lambda: open_storage(self.root))
         self.menu.add_command(label=tr('使用与恢复指南'), command=self.guide)
         self.menu.add_command(label=tr('社区研究与适配进展'), command=lambda: self.show_document(
             tr('社区研究与适配进展'), ROOT / 'docs/COMMUNITY-RESEARCH.md'))

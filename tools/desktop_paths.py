@@ -36,7 +36,8 @@ def private_root():
 
 
 def download_root():
-    return private_root() / 'downloads' if frozen() else resource_root() / 'downloads'
+    from storage_location import active_download_root
+    return active_download_root()
 
 
 def prepare_external_programs():

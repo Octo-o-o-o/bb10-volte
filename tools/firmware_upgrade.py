@@ -66,24 +66,37 @@ def prepare_upgrade(variant, progress, proxy=None, cache_dir=None, offline=False
         raise root.SetupError('root_platform_mismatch')
     from preparation_cache import (preparation_lock, clean_abandoned_roots,
                                    reusable_root_kit, remove_owned_tree)
-    private = private_root()
-    with preparation_lock(private):
-        clean_abandoned_roots(private, progress)
-        existing = reusable_root_kit(private, variant, sys.platform, progress)
-        if existing and (Path(existing) / JOURNAL).exists():
-            verify_kit(existing)
-            return existing
-        if existing:
-            remove_owned_tree(private, Path(existing), 'stock-upgrade')
+    from storage_location import owner_of, preparation_parent, search_roots
+    stable = private_root()
+    with preparation_lock(stable):
+        for managed in search_roots(stable):
+            if managed.exists() and not managed.is_symlink() and not managed.is_junction():
+                clean_abandoned_roots(managed, progress)
+        existing = None
+        for managed in search_roots(stable):
+            if not managed.exists() or managed.is_symlink() or managed.is_junction():
+                continue
+            found = reusable_root_kit(managed, variant, sys.platform, progress)
+            if not found:
+                continue
+            if (Path(found) / JOURNAL).exists():
+                verify_kit(found)
+                return found
+            existing = found
+            remove_owned_tree(owner_of(existing, stable), Path(existing), 'stock-upgrade')
+            break
         # Reusing a Windows kit adds only a small upgrade journal. A Mac kit
         # still needs space for the signed stock partitions when not yet split.
+        parent = owner_of(existing, stable) if existing else preparation_parent(stable)
         required = (8 if existing else 24) if sys.platform == 'darwin' else (0 if existing else 24)
-        if shutil.disk_usage(private).free < required * 1024 ** 3:
+        usage = parent if Path(parent).exists() else Path(parent).parent
+        if shutil.disk_usage(usage).free < required * 1024 ** 3:
             raise root.SetupError('upgrade_insufficient_disk')
     # One prepared kit binds stock and Root to the same model, source and keys.
     # The Root builder's source hash check also verifies the extracted stock EXE.
     folder = Path(existing or root.prepare_root_kit(variant, progress, proxy, cache_dir, offline))
-    with preparation_lock(private):
+    owner = owner_of(folder, stable)
+    with preparation_lock(stable):
         if (folder / JOURNAL).exists():
             verify_kit(folder)
             return str(folder)
@@ -92,7 +105,7 @@ def prepare_upgrade(variant, progress, proxy=None, cache_dir=None, offline=False
         except BaseException:
             if not (folder / JOURNAL).exists():
                 try:
-                    remove_owned_tree(private, folder, 'stock-upgrade')
+                    remove_owned_tree(owner, folder, 'stock-upgrade')
                 except OSError:
                     pass
             raise
@@ -113,11 +126,12 @@ def _prepare_upgrade(folder, variant, progress):
     elif sys.platform == 'darwin':
         from macos_root import verified_tools, native_environment
         from preparation_cache import remove_owned_tree, linked, run_preparation
+        from storage_location import owner_of
         tools = verified_tools(folder / 'autoroot')
         output = folder / 'stock-upgrade'
         # A crash during an offline split is retried in this same kit, with its
         # original keys. Never reset a journal or append another stock copy.
-        remove_owned_tree(private_root(), folder, 'stock-upgrade')
+        remove_owned_tree(owner_of(folder, private_root()), folder, 'stock-upgrade')
         log_path = folder / 'stock-split.log'
         if linked(log_path):
             raise root.SetupError('image_not_verified')
@@ -257,12 +271,20 @@ def verify_boot(folder):
 
 
 def pending_upgrades():
+    from storage_location import search_roots
     result = []
-    for folder in sorted(private_root().glob('root-kit-*'))[:200]:
+    for managed in search_roots(private_root()):
         try:
-            state = read_state(folder)
-            result.append({'folder': str(folder), 'variant': state['variant'], 'stage': state['stage'],
-                           'platform': state['platform']})
-        except (OSError, ValueError, KeyError, root.SetupError):
+            folders = sorted(managed.glob('root-kit-*'))
+        except OSError:
             continue
+        for folder in folders:
+            if len(result) >= 200:
+                return result
+            try:
+                state = read_state(folder)
+                result.append({'folder': str(folder), 'variant': state['variant'], 'stage': state['stage'],
+                               'platform': state['platform']})
+            except (OSError, ValueError, KeyError, root.SetupError):
+                continue
     return result

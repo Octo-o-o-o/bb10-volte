@@ -62,7 +62,10 @@ def root_kit_configs(folder):
 def candidate_connections():
     saved = saved_connection()
     result = [dict(saved, saved=True)] if saved else []
-    paths = root_kit_configs(private_root())
+    from storage_location import search_roots
+    paths = []
+    for root in search_roots(private_root()):
+        paths.extend(root_kit_configs(root))
     paths += [Path.home() / '.ssh/config', Path(sys.executable).parent / 'ssh_config']
     roots = [resource_root()] if not frozen() else []
     # A portable executable next to its source checkout can reuse that owner's

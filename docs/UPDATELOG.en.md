@@ -1,3 +1,10 @@
+# r61 / mobile 0.2.5.0
+
+- Windows can place later downloads and new Root or stock-upgrade preparation on another disk. An unset, missing or unwritable choice keeps the original location and does not interrupt work already running.
+- Cleanup is opt-in by purpose and size. Keys, connection files, logs and flash records are never listed, and items still in progress cannot be selected. After flashing, the prompt defaults to keeping this run’s files.
+
+[Release notes](RELEASE-r61.en.md)
+
 # r60 / mobile 0.2.5.0
 
 - Fixes desktop `OverseasCarrierDialog` / `AutoCarrierWindow` scrolling and bottom-button clipping (verified live in zh/en inside the frozen Windows EXE `--self-test`), plus mobile `OverseasCarrier.qml` `loadingForm` initialization deadlock and Home error isolation.

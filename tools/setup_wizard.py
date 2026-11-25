@@ -884,6 +884,13 @@ class SetupWizard(tk.Toplevel):
                         self.refresh_history()
                         self.tabs.select(0)
                         self.status.configure(text=tr('刷写已结束。请完成手机首次设置，打开一次 BlackBerry World，再重新检测 Root。'))
+                        try:
+                            kit = Path(result['config']).parent
+                            if kit.is_dir():
+                                show_storage_help(self, scope_kit=kit)
+                        except Exception:
+                            # Opening cleanup must not discard the success text or stop this window.
+                            pass
                     elif action == 'drivers':
                         self.status.configure(text=tr('驱动安装完成，请按 Windows 提示重启后重新检测。') if result['reboot_required'] else
                                               tr('驱动安装完成，请重新连接手机并检测。'))
