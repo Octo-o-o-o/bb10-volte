@@ -218,7 +218,8 @@ class SetupWizard(tk.Toplevel):
         carrier_row = ttk.Frame(root_tab)
         carrier_row.pack(fill='x', pady=8)
         ttk.Label(carrier_row, text=tr('计划使用的运营商')).pack(side='left', padx=(0, 12))
-        self.operator_options = [tr('连接后核对 SIM'), tr('中国移动'), tr('中国联通'), tr('中国电信')]
+        self.operator_options = [tr('连接后核对 SIM'), tr('中国移动'), tr('中国联通'), tr('中国电信'),
+                                 tr('海外 / 其他运营商（实验试测）')]
         self.operator_picker = ttk.Combobox(carrier_row, textvariable=self.operator,
                                             values=self.operator_options, state='readonly', width=22)
         self.operator_picker.current(0)
@@ -415,7 +416,7 @@ class SetupWizard(tk.Toplevel):
             self.mac_flash_check.configure(state='disabled' if self.busy else 'normal')
 
     def selected_operator(self):
-        return dict(zip(self.operator_options, (None, 'mobile', 'unicom', 'telecom'))).get(self.operator.get())
+        return dict(zip(self.operator_options, (None, 'mobile', 'unicom', 'telecom', None))).get(self.operator.get())
 
     def root_version_gate(self):
         if sys.platform == 'win32' and self.usb.get('usb_count') == 1:

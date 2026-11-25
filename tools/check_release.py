@@ -12,7 +12,7 @@ from support_config import SUPPORT_ICON, bundled_receipt_images
 ROOT = Path(__file__).resolve().parents[1]
 TOP = {SUPPORT_ICON, '.gitignore', '.gitattributes', 'README.md', 'README.en.md', 'CONTRIBUTING.md',
        'KT-ISIM-TRIAL-README.md', 'kt-45008-trial.json',
-       'LICENSE', 'NOTICE.md', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
+       'LICENSE', 'NOTICE.md', 'licenses/APACHE-2.0.txt', 'project.json', '.github/workflows/check.yml', 'Start-GUI.cmd',
        'tools/windows-freeze-requirements.txt', 'tools/macos-freeze-requirements.txt',
        'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'assets/app.icns',
        'website/.gitignore', 'website/README.md', 'website/package.json',
@@ -116,6 +116,35 @@ def check(check_git=False):
     assert set(diagnostics['files']) == {'tools/root_probe.py', 'tools/stage_cleanup.py'}
     for name, digest in diagnostics['files'].items():
         assert name in names and hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, 'Stale diagnostic manifest: ' + name
+    apache_license = ROOT / 'licenses/APACHE-2.0.txt'
+    assert hashlib.sha256(apache_license.read_bytes()).hexdigest() == (
+        'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30'), 'Unexpected Apache-2.0 license text'
+    overseas_path = ROOT / 'materials/overseas-carriers.json'
+    assert overseas_path.stat().st_size <= 131072, 'Overseas carrier catalog exceeds size bound'
+    overseas = json.loads(overseas_path.read_text(encoding='utf-8'))
+    assert overseas.get('schema') == 1 and overseas.get('license') == 'Apache-2.0'
+    assert isinstance(overseas.get('carriers'), dict) and overseas.get('entry_count') == len(overseas['carriers'])
+    carrier_sources = json.loads((ROOT / 'materials/carrier-data-sources.json').read_text(encoding='utf-8'))
+    pinned_overseas = carrier_sources.get('overseas_catalog', {})
+    assert overseas.get('sources') == {
+        'aosp_apns_url': pinned_overseas.get('aosp_apns_url'),
+        'aosp_apns_commit': pinned_overseas.get('aosp_apns_commit'),
+        'aosp_apns_sha256': pinned_overseas.get('aosp_apns_sha256'),
+        'aosp_carrier_list_url': pinned_overseas.get('aosp_carrier_list_url'),
+        'aosp_carrier_list_commit': pinned_overseas.get('aosp_carrier_list_commit'),
+        'aosp_carrier_list_sha256': pinned_overseas.get('aosp_carrier_list_sha256'),
+    }, 'Overseas catalog sources do not match carrier-data-sources.json'
+    apn_pat = re.compile(r'^[a-z0-9](?:[a-z0-9.-]{0,98}[a-z0-9])?$')
+    ip_pat = re.compile(r'(?:\b(?:\d{1,3}\.){3}\d{1,3}\b|::)')
+    for plmn, item in overseas['carriers'].items():
+        assert re.fullmatch(r'[0-9]{3}-[0-9]{2,3}', plmn), 'Invalid overseas PLMN: ' + plmn
+        assert str(item.get('mcc', '')) + '-' + str(item.get('mnc', '')) == plmn, 'Overseas PLMN mismatch: ' + plmn
+        assert not plmn.startswith('460-') and item.get('mcc') != '460', 'MCC 460 forbidden in overseas catalog'
+        assert item.get('ims_ip_family') in ('IPv4', 'IPv6', 'IPv4v6'), 'Invalid overseas IP family: ' + plmn
+        assert apn_pat.match(str(item.get('ims_apn') or '')), 'Invalid overseas IMS APN: ' + plmn
+        assert all(apn_pat.match(str(a)) for a in item.get('data_apns', ())), 'Invalid overseas data APN: ' + plmn
+        assert item.get('bb10_status') == 'untested', 'Overseas catalog must stay untested: ' + plmn
+        assert not ip_pat.search(json.dumps(item, ensure_ascii=False)), 'Raw IP in overseas catalog: ' + plmn
     issues = []
     hashes = {}
     recordings = recording_files()

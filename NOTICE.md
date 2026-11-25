@@ -12,6 +12,12 @@ BlackBerry/QNX firmware, stock IMS binaries and carrier XML are supplied by the 
 
 libusb, LZO, OpenSSL, Git for Windows, Zig and 7-Zip retain their respective licenses. Preparation scripts use pinned sources or verified installed files and retain the associated local license files where implemented. The [design notes](docs/DESIGN.md) identify the public standards and implementation references used in the investigation; offsets and ABI details were validated against the actual device files.
 
+## Overseas carrier APN catalog / 海外运营商 APN 目录（Apache-2.0）
+
+[materials/overseas-carriers.json](materials/overseas-carriers.json) is a filtered, transformed JSON extract generated at build time by `tools/build_overseas_catalog.py` from two Android Open Source Project (AOSP) files (`device/sample/etc/apns-full-conf.xml` commit `73f904fbeb872f5675cb5f18cd9dfb15856425a6` and `platform/packages/providers/TelephonyProvider/assets/latest_carrier_id/carrier_list.textpb` commit `bca387f553a4493c88e24455172225fd1049c91f`; exact URLs and SHA-256 digests are pinned in [materials/carrier-data-sources.json](materials/carrier-data-sources.json)). Copyright (C) The Android Open Source Project. This AOSP-derived data remains licensed under the **Apache License 2.0** ([licenses/APACHE-2.0.txt](licenses/APACHE-2.0.txt)) and is not relicensed under the PolyForm Noncommercial License 1.0.0. Entries provide public APN and carrier-name suggestions only and do not imply BB10 VoLTE certification.
+
+[materials/overseas-carriers.json](materials/overseas-carriers.json) 由 `tools/build_overseas_catalog.py` 在构建期离线提取自 Android Open Source Project (AOSP) 的两份公开数据（`apns-full-conf.xml` 与 `carrier_list.textpb`，具体提交与 SHA-256 锁定在 [materials/carrier-data-sources.json](materials/carrier-data-sources.json)）。该衍生数据保留原作者版权（Copyright (C) The Android Open Source Project）与 **Apache License 2.0**（[licenses/APACHE-2.0.txt](licenses/APACHE-2.0.txt)），不转为 PolyForm Noncommercial 1.0.0 许可；仅作海外运营商公开 APN 参考建议，不代表已完成 BB10 实机 VoLTE 验收。
+
 ## 中文说明
 
 本仓库原创的 Python、shell、C 辅助模块、文档和测试按 **PolyForm Noncommercial License 1.0.0**（[LICENSE](LICENSE)）提供：个人自用、学习研究与非商业用途免费；任何商业用途（包括但不限于付费代刷/代安装服务、预装或捆绑销售手机设备、付费分发）均须事先联系 `octoooo@octoooo.com` 获取付费商业授权。辅助模块完整源码位于 `driver/volte_swcrypto.c`；构建后的模块也由本项目源码生成。

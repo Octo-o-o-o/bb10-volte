@@ -11,6 +11,7 @@ from connection_flow import guidance
 from completion_dialog import CompletionDialog
 from i18n import tr
 from auto_carrier_view import status_view, restart_guidance, retry_available, operator_trial_note
+from overseas_carrier_gui import OverseasCarrierDialog, should_show_overseas_banner, overseas_banner_text
 import device_support
 
 
@@ -52,9 +53,15 @@ class AutoCarrierWindow:
         self.status = ttk.Label(box, text=tr('请连接已完成 Root 的手机，程序将检查完整型号、系统和当前 SIM 的适配范围。'),
                                 wraplength=680, justify='left')
         self.status.pack(anchor='w', pady=12)
+        self.overseas_bar = ttk.Frame(box)
+        self.overseas_label = ttk.Label(self.overseas_bar, text='', wraplength=500, justify='left', foreground='#9A610B')
+        self.overseas_label.pack(side='left', fill='x', expand=True, padx=(0, 8))
+        self.overseas_button = ttk.Button(self.overseas_bar, text=tr('配置海外运营商…'), command=self.open_overseas_dialog)
+        self.overseas_button.pack(side='right')
         self.window._feedback_status_labels = [self.status]
-        row = ttk.Frame(box)
-        row.pack(fill='x', pady=8)
+        self.action_row = ttk.Frame(box)
+        self.action_row.pack(fill='x', pady=8)
+        row = self.action_row
         self.buttons = {}
         for action, title in (('probe', '检查设备'), ('install', '备份并安装自动适配'),
                               ('status', '刷新状态'), ('enable', '启用自动适配'), ('disable', '停用自动适配')):
@@ -105,6 +112,33 @@ class AutoCarrierWindow:
         self.buttons['status'].configure(text=self.status_button_override or status_view(report.get('status', {}))['status_button'])
         self.buttons['probe'].configure(text=tr('重新检查连接') if self.reconnect_pending else tr('检查设备'))
         self.buttons['enable'].configure(text=tr('重试连接') if retry_available(report.get('status', {})) else tr('启用自动适配'))
+        if should_show_overseas_banner(report):
+            self.overseas_label.configure(text=overseas_banner_text(report))
+            self.overseas_button.configure(state='disabled' if self.busy else 'normal')
+            if not self.overseas_bar.winfo_manager():
+                self.overseas_bar.pack(fill='x', before=self.action_row, pady=(0, 8))
+        elif self.overseas_bar.winfo_manager():
+            self.overseas_bar.pack_forget()
+
+    def _ensure_client(self):
+        if self.client is None:
+            transport, unused = resolve_connection(self.host, self.config)
+            self.client = AutoClient(transport)
+        return self.client
+
+    def open_overseas_dialog(self):
+        if self.busy:
+            return
+        self.window.grab_release()
+        def saved(res):
+            if self.window.winfo_exists():
+                self.window.grab_set()
+                self.run('probe')
+        dialog = OverseasCarrierDialog(self.window, self._ensure_client, self.report, on_saved=saved)
+        def restore_grab(event):
+            if event.widget is dialog and self.window.winfo_exists() and not self.busy:
+                self.window.grab_set()
+        dialog.bind('<Destroy>', restore_grab, add='+')
 
     def run(self, action):
         if self.busy:
@@ -235,6 +269,8 @@ class AutoCarrierWindow:
                             details += '\n\n' + operator_trial_note()
                         if result.get('sim_has_isim') is True and result.get('radio_lte') is False:
                             details += '\n\n' + tr('系统未接入 LTE。请先在系统设置或向运营商确认入网；SIM 的 ISIM 限制需另行验证。')
+                        if result.get('lte_bands_disabled') is True:
+                            details += '\n\n' + tr('只读诊断：无线已开启且硬件支持 LTE，但当前活跃 LTE 频段位图为 0。工具不会自动改写基带，请核对手机移动网络模式（确保允许 4G/LTE）或联系运营商。')
                     elif action == 'install':
                         self.report = dict(self.report or {}, installed=True, can_install=False, can_update=False,
                                            installation_pending=False, update_pending=False, update_available=False,

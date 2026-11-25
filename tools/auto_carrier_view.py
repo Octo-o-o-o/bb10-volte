@@ -136,6 +136,20 @@ def status_view(state):
     if state.get('sim_plmn') or state.get('serving_plmn'):
         details += '\n' + tr('SIM 归属网（PLMN）{}\n当前服务网（PLMN）{}').format(
             state.get('sim_plmn') or '—', state.get('serving_plmn') or '—')
+    route_status = state.get('pcscf_route_status')
+    if route_status in ('synced', 'deleted', 'existing_kept', 'gateway_unverified', 'route_error', 'unavailable'):
+        route_labels = {
+            'synced': tr('已同步'),
+            'deleted': tr('已清理'),
+            'existing_kept': tr('保留现有路由'),
+            'gateway_unverified': tr('等待核实蜂窝网关'),
+            'route_error': tr('执行未完成'),
+            'unavailable': tr('系统路由命令不可用'),
+        }
+        details += '\n' + tr('P-CSCF 路由同步：{}（{}，{} 条）').format(
+            route_labels.get(route_status, route_status),
+            state.get('pcscf_route_family') or 'none',
+            state.get('pcscf_route_count') or 0)
     if state.get('operator_trial') is True:
         details += '\n' + operator_trial_note()
     return {'ready': ready, 'title': title, 'guidance': guidance,

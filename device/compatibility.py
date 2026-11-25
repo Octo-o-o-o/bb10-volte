@@ -33,7 +33,8 @@ NETWORK_FLAGS = ('radio_on', 'lte', 'apn_matches', 'data_connected',
                  'radio_read_error', 'data_read_error', 'network_read_error',
                  'internet_present', 'internet_enabled', 'internet_connectable', 'internet_active',
                  'data_settings_read_error', 'emergency_service', 'lte_data_service',
-                 'stock_apn_bootstrap_eligible', 'roaming', 'serving_home_operator')
+                 'stock_apn_bootstrap_eligible', 'roaming', 'serving_home_operator',
+                 'lte_bands_disabled')
 NETWORK_NUMBERS = {'network_service': 0xffffffff, 'lte_active_band_mask': 0xffffffffffffffff,
                    'lte_band_capability_mask': 0xffffffffffffffff}
 NETWORK_ENUMS = ('data_services_status', 'data_service_mode', 'data_roaming_mode')
@@ -81,6 +82,21 @@ def decode_lte_bands(mask):
     return [bit + 1 for bit in range(64) if mask & (1 << bit)]
 
 
+def lte_bands_disabled(values):
+    """True only when radio is ON, not on LTE, hardware supports LTE, and active mask is 0."""
+    if values.get('radio_read_error') is True:
+        return None
+    if values.get('radio_on') is None or values.get('lte') is None:
+        return None
+    cap = values.get('lte_band_capability_mask')
+    active = values.get('lte_active_band_mask')
+    if type(cap) is not int or type(active) is not int:
+        return None
+    if not (0 <= cap <= 0xffffffffffffffff and 0 <= active <= 0xffffffffffffffff):
+        return None
+    return bool(values.get('radio_on') is True and values.get('lte') is False and cap > 0 and active == 0)
+
+
 def public_network_diagnostics(values):
     values = values if isinstance(values, dict) else {}
     result = public_flags(values, NETWORK_FLAGS)
@@ -95,6 +111,7 @@ def public_network_diagnostics(values):
     result.update(network_service_flags(result['network_service']))
     result['lte_active_bands'] = decode_lte_bands(result['lte_active_band_mask'])
     result['lte_capability_bands'] = decode_lte_bands(result['lte_band_capability_mask'])
+    result['lte_bands_disabled'] = lte_bands_disabled(result)
     apn = values.get('observed_data_apn')
     result['observed_data_apn'] = apn if apn in PUBLIC_APNS + ('other',) else 'unknown'
     result['scope'] = 'snapshot_only_not_registration_or_band_proof'
@@ -251,7 +268,9 @@ def read_network(profile=None):
         present = bool(norm_apn)
         connected = internet.get('connected')
         profile_apns = set(item.lower() for item in p['carrier']['data_apns'])
-        result.update(apn_matches=norm_apn in profile_apns if present else None,
+        auto_apn = 'auto' in profile_apns and 'experimental' in p
+        matched = (profiles.match(profiles.APN_RE, norm_apn) if auto_apn else norm_apn in profile_apns) if present else None
+        result.update(apn_matches=matched,
                       data_connected=connected if type(connected) is bool else None,
                       observed_data_apn=norm_apn if norm_apn in PUBLIC_APNS else 'other' if present else 'unknown')
     except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
@@ -269,21 +288,29 @@ def read_network(profile=None):
         result['data_settings_read_error'] = True
     result['stock_apn_bootstrap_eligible'] = False
     mcc, mnc = result.get('mcc'), result.get('mnc')
+    exp_default_bootstrap = (
+        p.get('experimental', {}).get('allow_stock_default_xml') is True and
+        any(item != 'auto' for item in p['carrier']['data_apns'])
+    )
     if (not result.get('network_read_error') and not result.get('data_settings_read_error') and
             not result.get('apn_matches') and
             result.get('data_service_mode') == 'ON' and cdsc_xml in (None, ':', '') and
-            (mcc, mnc) in profiles.STOCK_FALLBACK_TEMPLATES and
+            ((mcc, mnc) in profiles.STOCK_FALLBACK_TEMPLATES or exp_default_bootstrap) and
             mcc == p['carrier']['mcc'] and mnc in p['carrier']['mncs']):
         try:
             cm = n.attrs(n.read('/pps/services/carriermanager/status_private'))
             home = n.value(cm, 'true_home_carrier', {})
             preloaded = home.get('preloadedConfigFile')
             if (home.get('mcc') == int(mcc) and home.get('mnc') == int(mnc) and
-                    not home.get('downloadedConfigFile') and
-                    preloaded in (None, '', profiles.STOCK_DEFAULT_CONFIG_PATH)):
-                if preloaded != profiles.STOCK_DEFAULT_CONFIG_PATH or (
-                        not os.path.islink(preloaded) and
-                        n.digest(n.read(preloaded)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
+                    not home.get('downloadedConfigFile')):
+                if preloaded in (None, '', profiles.STOCK_DEFAULT_CONFIG_PATH):
+                    if preloaded != profiles.STOCK_DEFAULT_CONFIG_PATH or (
+                            not os.path.islink(preloaded) and
+                            n.digest(n.read(preloaded)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
+                        result['stock_apn_bootstrap_eligible'] = True
+                elif (exp_default_bootstrap and
+                        not os.path.islink(profiles.STOCK_DEFAULT_CONFIG_PATH) and
+                        n.digest(n.read(profiles.STOCK_DEFAULT_CONFIG_PATH)) == profiles.STOCK_DEFAULT_CONFIG_SHA256):
                     result['stock_apn_bootstrap_eligible'] = True
         except (IOError, OSError, ValueError, TypeError, AttributeError, KeyError):
             pass
@@ -316,8 +343,10 @@ def network_checks(s, profile=None):
     emergency = flags['emergency_service'] is True
     radio_data = flags['emergency_service'] is False and flags['lte_data_service'] is True
     online = s.get('radio_on') and s.get('lte') and radio_data
+    bands_off = lte_bands_disabled(s) is True
     add('lte', 'pass' if online else 'wait',
         'lte_emergency_only' if emergency else
+        'lte_bands_disabled' if bands_off else
         'lte_not_ready' if not s.get('radio_on') or not s.get('lte') else
         'lte_service_unknown' if flags['lte_data_service'] is None else
         'lte_data_unavailable' if not radio_data else 'lte_ready')

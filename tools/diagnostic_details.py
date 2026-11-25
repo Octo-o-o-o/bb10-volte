@@ -134,6 +134,7 @@ def network_rows(report):
         ('lte_data_service', tr('无线层有 LTE 数据服务'), tr('为“是”仍须结合 APN 连接和实际移动数据测试，不能代替通话验收。')),
         ('lte_active_band_mask', tr('LTE 活跃频段位图'), tr('原始位图及解码频段，不单独证明正常入网或运营商归属。')),
         ('lte_band_capability_mask', tr('LTE 频段能力位图'), tr('原始位图及解码频段；频段能力不证明当前地区覆盖或正常入网。')),
+        ('lte_bands_disabled', tr('LTE 活跃频段全部禁用'), tr('无线已开启、硬件支持 LTE 但活跃频段位图为 0；请核对系统网络模式与运营商入网，工具不会自动改写基带。')),
     )
     rows = []
     for key, title, hint in items:
@@ -155,6 +156,8 @@ def network_rows(report):
             problem = bool(value is True and values.get('data_roaming_mode') == 'OFF')
         elif key == 'data_roaming_mode':
             problem = bool(value == 'OFF' and values.get('roaming') is True)
+        elif key == 'lte_bands_disabled':
+            problem = value is True
         else:
             problem = value == 'OFF' or value is False
         rows.append({'title': title, 'state': tr('未知') if value is None else tr('只读快照'),

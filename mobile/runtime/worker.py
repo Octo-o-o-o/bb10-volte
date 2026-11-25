@@ -212,6 +212,9 @@ def ui(state, language, action='status', details=None, ok=True, actions=None, **
     if details and details.get('operator_trial') is True:
         localized['zh']['message'] += '\n此运营商尚未实测，实际通话、短信和数据能力需验证。'
         localized['en']['message'] += '\nThis carrier is untested. Verify calls, SMS and data on the phone.'
+    if details and details.get('lte_bands_disabled') is True:
+        localized['zh']['message'] += '\n只读诊断：无线已开启且硬件支持 LTE，但当前活跃 LTE 频段位图为 0。工具不会自动改写基带，请核对移动网络模式或联系运营商。'
+        localized['en']['message'] += '\nRead-only diagnostic: radio is ON and hardware supports LTE, but the active LTE band mask is 0. Check mobile network mode or carrier provisioning; this tool does not alter baseband NV.'
     result = {'schema': 2, 'ok': ok, 'state': state, 'title_code': state,
               'message_code': state, 'primary_action': action,
               'actions': actions if actions is not None else [action, 'compatibility'],
@@ -409,6 +412,65 @@ def prepare_activation_network(job, manager):
         progress(job, 'mobile_network_ready', mobile_network=result.get('mobile_network'))
 
 
+def usable_observed_apn(value):
+    if not isinstance(value, str):
+        return ''
+    cleaned = value.strip().lower()
+    if cleaned in ('', 'other', 'unknown', 'auto'):
+        return ''
+    return cleaned if re.match(r'\A[a-z0-9][a-z0-9.-]{0,98}[a-z0-9]?\Z', cleaned) else ''
+
+
+def lookup_overseas_preset(folder, plmn):
+    if not folder or not isinstance(plmn, str) or '-' not in plmn or plmn.startswith('460-'):
+        return None
+    path = folder + '/materials/overseas-carriers.json'
+    if not os.path.isfile(path):
+        return None
+    try:
+        catalog = e.json_bytes(e.regular(path, 262144))
+        carriers = catalog.get('carriers')
+        item = carriers.get(plmn) if isinstance(carriers, dict) else None
+        if isinstance(item, dict) and item.get('mcc') != '460':
+            fam = item.get('ims_ip_family') or item.get('ip_family')
+            return {
+                'plmn': plmn,
+                'mcc': str(item.get('mcc', '')),
+                'mnc': str(item.get('mnc', '')),
+                'country': str(item.get('country', ''))[:8],
+                'region': str(item.get('region', ''))[:48],
+                'name': str(item.get('name', plmn))[:80],
+                'data_apns': [str(a) for a in (item.get('data_apns') or [])[:8]],
+                'ims_apn': str(item.get('ims_apn', 'ims'))[:64],
+                'ip_family': fam if fam in ('IPv4', 'IPv6', 'IPv4v6') else 'IPv4v6',
+            }
+    except Exception:
+        return None
+    return None
+
+
+def _overseas_state_payload(folder, probe_res, exp_res, details):
+    sim_plmn = details.get('sim_plmn') or ''
+    return {
+        'active': bool(exp_res.get('active')) if isinstance(exp_res, dict) else False,
+        'config': exp_res.get('config') if isinstance(exp_res, dict) else None,
+        'sim_plmn': sim_plmn,
+        'sim_has_isim': probe_res.get('sim_has_isim') is True,
+        'observed_data_apn': usable_observed_apn(details.get('observed_data_apn')),
+        'preloaded_carrier_config': details.get('preloaded_carrier_config') or '',
+        'matched_preset': lookup_overseas_preset(folder, sim_plmn),
+    }
+
+
+def _overseas_error_code(error):
+    text = str(error)
+    if re.match(r'\A[a-z][a-z0-9_]{0,63}\Z', text):
+        return text
+    if isinstance(error, ValueError):
+        return 'invalid_overseas_config'
+    return safe_error(error)
+
+
 def inspect(request, folder):
     details = {}
     try:
@@ -417,7 +479,7 @@ def inspect(request, folder):
         # lock. Keep the probe and derived display in one coherent snapshot.
         with engine().management_lock():
             result = engine().manage('probe')
-            return inspection_response(request, result, details)
+            return inspection_response(request, result, details, folder=folder)
     except Exception as error:
         details['error_code'] = safe_error(error)
         # A failed probe does not establish that the device is unsupported.
@@ -436,7 +498,7 @@ def inspect(request, folder):
                   actions=['status', 'compatibility'], error={'code': details['error_code']})
 
 
-def inspection_response(request, result, details, confirmed_context=None):
+def inspection_response(request, result, details, confirmed_context=None, folder=None):
     # A confirmation renders the same observation that authorized its save.
     # A second full probe after committing can lose or misreport a completed
     # save when the native client's request deadline expires.
@@ -444,13 +506,28 @@ def inspection_response(request, result, details, confirmed_context=None):
     details['carrier'] = result.get('operator', 'unknown')
     if result.get('operator_trial') is True:
         details['operator_trial'] = True
-    for field in ('sim_has_isim', 'radio_lte', 'lte_data_connected'):
+    for field in ('sim_has_isim', 'radio_lte', 'lte_data_connected', 'lte_bands_disabled', 'exp_trial_active'):
         if type(result.get(field)) is bool:
             details[field] = result[field]
     for field in ('sim_plmn', 'serving_plmn'):
         plmn = result.get(field)
         if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
             details[field] = plmn
+    preloaded = result.get('preloaded_carrier_config')
+    if isinstance(preloaded, str) and re.match(r'\A[0-9]{1,6}\.xml\Z', preloaded):
+        details['preloaded_carrier_config'] = preloaded
+    obs_apn = usable_observed_apn(result.get('observed_data_apn'))
+    if obs_apn:
+        details['observed_data_apn'] = obs_apn
+    sim_plmn = details.get('sim_plmn') or ''
+    overseas_prompt = (not result.get('scope_error') and (
+        result.get('exp_trial_active') is True or
+        (bool(sim_plmn) and not sim_plmn.startswith('460-'))))
+    if overseas_prompt:
+        details['overseas_prompt'] = True
+        preset = lookup_overseas_preset(folder, sim_plmn)
+        if preset is not None:
+            details['overseas_preset_name'] = preset['name']
     details['installed'] = bool(result.get('installed'))
     details['service_state'] = 'unknown'
     if not result.get('scope_error'):
@@ -593,6 +670,12 @@ def inspection_response(request, result, details, confirmed_context=None):
         plmn = status.get(field)
         if isinstance(plmn, str) and re.match(r'\A[0-9]{3}-[0-9]{2,3}\Z', plmn):
             details[field] = plmn
+    route_status = status.get('pcscf_route_status')
+    if route_status in ('synced', 'deleted', 'existing_kept', 'gateway_unverified', 'route_error', 'unavailable'):
+        details['pcscf_route_status'] = route_status
+        family = status.get('pcscf_route_family')
+        if family in ('none', 'ipv4', 'ipv6', 'dual'):
+            details['pcscf_route_family'] = family
     actions = ['status', 'disable', 'export', 'compatibility', 'uninstall']
     if result.get('can_update'):
         actions.append('update')
@@ -1684,7 +1767,66 @@ def dispatch(action, request, folder):
             with engine().management_lock():
                 details = inspection_details(folder)
                 result, context = check_confirmation(request)
-                return inspection_response(request, result, details, context)
+                return inspection_response(request, result, details, context, folder=folder)
+    if action == 'overseas-inspect':
+        details = inspection_details(folder)
+        try:
+            with engine().management_lock():
+                probe_res = engine().manage('probe')
+                exp_res = engine().manage('get-exp-trial')
+                response = inspection_response(request, probe_res, details, folder=folder)
+                response['overseas_state'] = _overseas_state_payload(folder, probe_res, exp_res, response['details'])
+                return response
+        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
+            code = _overseas_error_code(error)
+            details['error_code'] = code
+            return ui('error', language, 'status', details, ok=False,
+                      actions=['status', 'compatibility'], error={'code': code})
+    if action == 'overseas-save':
+        details = inspection_details(folder)
+        cfg = request.get('overseas_config')
+        if not isinstance(cfg, dict):
+            details['error_code'] = 'invalid_overseas_config'
+            return ui('error', language, 'status', details, ok=False,
+                      actions=['status', 'compatibility'], error={'code': 'invalid_overseas_config'})
+        try:
+            with job_lock():
+                require_current_selection(folder)
+                current = active_job()
+                e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
+                          'operation_in_progress')
+                with engine().management_lock():
+                    saved = engine().manage('set-exp-trial', exp_config=cfg)
+                    exp_res = engine().manage('get-exp-trial')
+                    response = inspection_response(request, saved['probe'], details, folder=folder)
+                    response['overseas_state'] = _overseas_state_payload(folder, saved['probe'], exp_res, response['details'])
+                    response['overseas_saved'] = True
+                    return response
+        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
+            code = _overseas_error_code(error)
+            details['error_code'] = code
+            return ui('error', language, 'status', details, ok=False,
+                      actions=['status', 'compatibility'], error={'code': code})
+    if action == 'overseas-clear':
+        details = inspection_details(folder)
+        try:
+            with job_lock():
+                require_current_selection(folder)
+                current = active_job()
+                e.require(current is None or (current['state'] in TERMINAL and not protected_job(current)),
+                          'operation_in_progress')
+                with engine().management_lock():
+                    cleared = engine().manage('clear-exp-trial')
+                    exp_res = engine().manage('get-exp-trial')
+                    response = inspection_response(request, cleared['probe'], details, folder=folder)
+                    response['overseas_state'] = _overseas_state_payload(folder, cleared['probe'], exp_res, response['details'])
+                    response['overseas_cleared'] = True
+                    return response
+        except (ValueError, AssertionError, RuntimeError, e.MobileError) as error:
+            code = _overseas_error_code(error)
+            details['error_code'] = code
+            return ui('error', language, 'status', details, ok=False,
+                      actions=['status', 'compatibility'], error={'code': code})
     if action == 'compatibility' or (action == 'export' and request.get('export_kind', 'diagnostics') == 'diagnostics'):
         # Reports remain available while another transaction awaits a reboot;
         # they never replace that transaction's active-job pointer.

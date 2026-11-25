@@ -1230,6 +1230,15 @@ def public_status():
         value['sms_service_busy'] = busy if type(busy) is bool else None
     except (IOError, OSError, ValueError, TypeError):
         value['sms_service_busy'] = None
+    try:
+        if token is not None and raw.get('status_from_current_boot') is True:
+            value.update(s.public_route_summary())
+        else:
+            value.update(pcscf_route_status='idle', pcscf_route_family='none',
+                         pcscf_route_count=0, pcscf_route_verified=False)
+    except Exception:
+        value.update(pcscf_route_status='idle', pcscf_route_family='none',
+                     pcscf_route_count=0, pcscf_route_verified=False)
     value['pre_native_retry_available'] = bool(
         value.get('enabled') is True and value.get('manager_alive') is False and
         value.get('status_from_current_boot') is True and value.get('selected_this_boot') is True and

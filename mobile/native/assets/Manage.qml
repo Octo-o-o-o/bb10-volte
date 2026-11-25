@@ -130,6 +130,12 @@ Page {
                 Button { text: page.t("rollback"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("rollback"); onClicked: volteController.requestAction("rollback") }
                 Button { text: page.t("compatibility"); horizontalAlignment: HorizontalAlignment.Fill; enabled: page.allows("compatibility"); onClicked: volteController.requestAction("compatibility") }
                 Button {
+                    text: page.t("overseas_title")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    enabled: volteController.canManageOverseas
+                    onClicked: page.appNavigation.push(overseasPage.createObject())
+                }
+                Button {
                     text: page.t("legacy")
                     horizontalAlignment: HorizontalAlignment.Fill
                     enabled: !volteController.busy && !volteController.jobRunning
@@ -142,6 +148,7 @@ Page {
         ComponentDefinition { id: pairingPage; source: "Pairing.qml" },
         ComponentDefinition { id: experimentalPage; source: "Experimental.qml" },
         ComponentDefinition { id: callPage; source: "CallCheck.qml" },
+        ComponentDefinition { id: overseasPage; source: "OverseasCarrier.qml" },
         FilePicker {
             id: packagePicker
             title: page.t("pick_package")

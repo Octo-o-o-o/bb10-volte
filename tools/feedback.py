@@ -6,6 +6,7 @@ from pathlib import Path
 import platform
 import queue
 import re
+import socket
 import threading
 import traceback
 import uuid
@@ -24,6 +25,30 @@ SAFE_CONSOLE_MARKERS = (
     '[Device password input requested in native console]',
     '[Device identity or password prompt omitted]',
 )
+
+
+def _is_ipv6_literal(text):
+    core = text.split('%', 1)[0]
+    if ':' not in core:
+        return False
+    try:
+        socket.inet_pton(socket.AF_INET6, core)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def _redact_ipv6_token(match):
+    prefix = match.group(1) or ''
+    token = match.group(2)
+    for keep, body in (('', prefix + token), (prefix, token)):
+        if not body:
+            continue
+        if body.endswith(':') and _is_ipv6_literal(body[:-1]):
+            return keep + '[address removed]:'
+        if _is_ipv6_literal(body):
+            return keep + '[address removed]'
+    return match.group(0)
 
 
 def scrub(value):
@@ -47,8 +72,11 @@ def scrub(value):
     text = re.sub(r'(?<!\w)/(?:Users|home|tmp|private|var|mnt|data|accounts)/[^\r\n<>]*', '[path removed]', text)
     text = re.sub(r'[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}', '[email removed]', text)
     text = re.sub(r'(?i)\b(?:imei|imsi|iccid|pin|msisdn|phone|serial|手机号|号码)\s*[:=：]\s*\S+', '[identifier removed]', text)
-    text = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])', '[address removed]', text)
-    text = re.sub(r'(?i)(?<!\w)(?:[0-9a-f]{0,4}:){2,}[0-9a-f:]{0,39}(?!\w)', '[address removed]', text)
+    text = re.sub(r'(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?::\d{1,5})?(?![\w.])', '[address removed]', text)
+    text = re.sub(r'\[[0-9a-fA-F:.]+(?:%[^\s\]]+)?\](?::\d{1,5})?', '[address removed]', text)
+    text = re.sub(
+        r'(?<![0-9a-zA-Z_])([A-Za-z_][A-Za-z0-9_-]*:)?([0-9a-fA-F:]*:[0-9a-fA-F:]+(?:%[A-Za-z0-9_.-]+)?)(?![0-9a-zA-Z_])',
+        _redact_ipv6_token, text)
     text = re.sub(r'(?<!\w)\+?\d[\d ()-]{6,}\d(?!\w)', '[number removed]', text)
     text = re.sub(r'\b[A-Za-z0-9+/=_-]{40,}\b', '[token removed]', text)
     for token, marker in preserved:
@@ -66,10 +94,12 @@ BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'bootrom_driver_ready',
                'can_install', 'can_update', 'can_start',
                'installed', 'installation_pending', 'update_pending', 'update_available', 'registered',
                'enabled', 'manager_alive', 'native_alive', 'status_from_current_boot', 'selected_this_boot', 'operator_trial', 'sim_has_isim', 'radio_lte', 'lte_data_connected',
+               'lte_bands_disabled', 'exp_trial_active', 'pcscf_route_verified',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
                'sim_supported', 'automatic_start', 'fallback_used', 'stock_apn_bootstrap_eligible'}
 CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'error_code', 'status_error', 'selected_operator',
                'managed_adapter', 'registration', 'ims', 'ran', 'ims_observation_scope',
+               'pcscf_route_status', 'pcscf_route_family',
                'scope_error', 'sim_reason'}
 CONTAINERS = {'preflight', 'checks', 'device', 'usb', 'installation', 'current', 'startup_wait', 'status',
               'support', 'network_diagnostics', 'baseline', 'network_service', 'data_service', 'apn'}
@@ -123,7 +153,7 @@ def project(value, depth=0):
             out[key] = item
         elif key in ('os', 'os_version', 'PlatformVersion') and isinstance(item, str):
             out[key] = item if re.fullmatch(r'\d{1,2}(?:\.\d{1,4}){2,3}', item) else 'unknown'
-        elif key in ('usb_count', 'attempt', 'max_attempts', 'seconds_per_attempt') and type(item) is int:
+        elif key in ('usb_count', 'attempt', 'max_attempts', 'seconds_per_attempt', 'pcscf_route_count') and type(item) is int:
             out[key] = max(0, min(item, 10000))
         elif key == 'register_status' and isinstance(item, str):
             out[key] = item if item in ('200 OK', '403 Forbidden', '408 Request Timeout', 'not_registered') else 'unknown'

@@ -142,6 +142,13 @@ NavigationPane {
                         else volteController.primary();
                     }
                 }
+                Button {
+                    text: navigation.t("overseas_configure")
+                    horizontalAlignment: HorizontalAlignment.Fill
+                    visible: volteController.overseasPromptVisible
+                    enabled: volteController.canManageOverseas
+                    onClicked: navigation.push(overseasPage.createObject())
+                }
                 Label {
                     text: volteController.notice
                     visible: text.length > 0
@@ -163,6 +170,7 @@ NavigationPane {
         ComponentDefinition { id: supportPage; source: "Support.qml" },
         ComponentDefinition { id: managePage; source: "Manage.qml" },
         ComponentDefinition { id: callPage; source: "CallCheck.qml" },
+        ComponentDefinition { id: overseasPage; source: "OverseasCarrier.qml" },
         Dialog {
             id: operationProgress
             onOpened: navigation.syncOperationDialog()

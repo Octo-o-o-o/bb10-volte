@@ -112,6 +112,13 @@ def error_message(code, sim_plmn=None):
         'legacy_directory_changed': tr('检测到旧版 VoLTE 目录状态异常，已暂停自动迁移。请保留现场并导出报告。'),
         'unknown_legacy_owner': tr('检测到来源不明的旧版 VoLTE 目录，已暂停自动迁移。请保留现场并导出报告。'),
         'unfinished_nas_trial': tr('检测到旧版尚未结束的实验恢复记录，已暂停自动迁移。请先完成恢复并正常重启。'),
+        'service_active': tr('VoLTE 后台服务正在运行。请先停用自动适配并等待恢复完成，再修改海外运营商配置。'),
+        'invalid_overseas_config': tr('海外运营商配置参数无效，请核对 MCC、MNC 和 APN 后重试。'),
+        'management_busy': tr('另一项管理操作正在进行，请稍候重试。'),
+        'exp_trial_path_changed': tr('手机端海外试测配置文件路径异常（包含符号链接），已拒绝写入。'),
+        'exp_trial_readback_failed': tr('手机端海外试测配置写入后回读核验失败，请重新检查设备。'),
+        'exp_trial_clear_failed': tr('未能确认手机端海外试测配置已清除，请重新检查设备。'),
+        'exp_trial_too_large': tr('海外运营商配置超过大小上限，请精简参数后重试。'),
     }.get(code)
 
 

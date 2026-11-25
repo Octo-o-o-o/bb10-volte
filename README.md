@@ -2,20 +2,20 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r58 · 手机版 0.2.3.0。** Q10、Q20、Passport、P’9983 可尝试大陆三网及匹配原厂配置的其他运营商。界面会标明尚未实测的运营商。
+**桌面 r59 · 手机版 0.2.4.0。** Q10、Q20、Passport、P’9983 可一键尝试大陆三网，并支持海外非 `460` 运营商离线参考库（Apache-2.0，287 项）与自定义试验参数。界面会标明尚未实测的运营商。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r58.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r59.md)
 
 本版包含[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。新行为尚待对应版本的真机验收。
 
 ## 这版改了什么
 
-- 全 16 型号旧版自动迁移：校验完整的标准旧版 `/var/rootdata/q10_volte` 现已在全部 16 个目录型号上自动安全迁移，不再卡在旧版目录阻断；跨机型专属目录、多目录冲突与篡改仍严格拦截。
-- 彻底修补 LTE-only 回滚与错误遮蔽：覆盖 `restore()`、`restore_original()`、`reconcile()` 与 `disable` 的 5 处选网回滚缺口，补齐 `scan_mode_rejected` / `ims_apn_timeout` 等错误码，修复手机端 `cleanup_required` 与桌面 `sim_not_ready` 错误遮蔽。
-- 根本修复 Windows 驱动漏装与刷写稳定性：`pnputil` 退出码 `259` 不再阻断 `BlackBerry Device Manager` MSI 安装；禁用刷写控制台 QuickEdit 点击冻结；32 位 ANSI `cap.exe` 自动使用纯 ASCII 路径与 `TEMP`；多阶段刷写锁防止第二阶段掩盖第一阶段写入；Windows ACL 改用纯 ASCII SID（修复中文用户名 `icacls`）。
-- 桌面与文档引导完善：升级窗口新增 Windows 驱动直达按钮与 Bootrom（`RimUsb`）驱动提示，未安装服务的 Passport 主界面直达三网自动适配，手机应用安装窗补齐反馈入口，同步更新内置指南。
+- 全球海外运营商离线参考库与双端试测入口（中国大陆零回归、零干扰）：内置源自公开 AOSP（Apache-2.0）的 287 项非 `460` 运营商参考参数，桌面端、手机端原生页与 CLI（`tools/overseas_carrier.py`）均支持管理锁保护下的预设套用与自定义试测；大陆 `460-*` SIM 卡保持一键零配置且 XML/PPS 完全不变。
+- Schema 2 海外试验配置与原厂 `0.xml` 安全回落：支持多运营商配置、`'auto'` 数据 APN、可选 `AlwaysOn` / `PCO` / `DisableDAD` / `ue_usage` 及白名单 `IR.92` / `ims` PPS 字段（全量日志备份还原）；海外显式 opt-in 可跳过旧数字 XML 安全回落至校验过的原厂 `0.xml` 并放行非 IMS v3 CDSC 覆盖。
+- 纯净自研 P-CSCF 主机路由同步与清理：增量解析受管 `native.log`，仅对经实时蜂窝接口（`msm*`）校验的合法网关以 Root 权限同步 P-CSCF 主机路由，绝不抢占既有路由，网关变化或停用时自动清理。
+- 只读 LTE 活跃频段归零诊断与精确 IPv6 脱敏：新增无误报 `lte_bands_disabled` 只读提示（不改写基带 NV），基于 `inet_pton(AF_INET6)` 精准擦除各类 IPv6 字面量，并纳入 Windows `prepare_driver_kit` 瞬态清理加固。
 
 ## 怎么用
 
@@ -56,16 +56,16 @@ Windows 11 和 Apple 芯片试过启动。Windows 10 和 Intel 还没试。详�
 
 反复准备或失败后磁盘占用较大时，见[保存位置与手动清理说明](docs/DISK-CLEANUP.md)。r43 已包含缓存复用与构建残留清理修复。
 
-Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r58 下载中。
+Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](docs/WINDOWS-UI-PERFORMANCE.md)已包含在下方 r59 下载中。
 
 打不开 GitHub 时，用官网的 Cloudflare R2。两边是同一份文件，运行前对一下 SHA-256。
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r58/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r59/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

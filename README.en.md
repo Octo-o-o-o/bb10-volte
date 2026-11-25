@@ -2,20 +2,20 @@
 
 **macOS maintenance ended (2026-11-09):** Due to limited maintenance capacity, **v0.5.0-r43 is the final macOS release**. No further maintenance or updates will be provided for macOS. Its installer and source remain available to download. This change does not affect Windows or the phone app.
 
-**Desktop r58 · mobile 0.2.3.0.** Q10, Q20, Passport and P’9983 can try the established mainland China profiles and other carriers with matching stock configuration. The app labels untested carriers.
+**Desktop r59 · mobile 0.2.4.0.** Q10, Q20, Passport and P’9983 keep one-click mainland China profiles and now add an offline global overseas carrier reference catalog (Apache-2.0, 287 entries) plus custom experimental configuration. The app labels untested carriers.
 
 The owner reports all three carriers passed on SQC100-1 and P’9983 SQK100-1. SQK100-2 is untested. SQW100-2 has no confirmed identity. You still need Root, OS 10.3.3.3216, matching native files and a backup you can restore.
 
-[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r58.en.md)
+[Model table](docs/COMPATIBILITY.en.md) · [Release notes](docs/RELEASE-r59.en.md)
 
-Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r58; device validation remains pending.
+Read the [network waiting, safe retry and optional selection guide](docs/NETWORK-RESILIENCE.en.md). The behavior is included in r59; device validation remains pending.
 
 ## What changed
 
-- Legacy `/var/rootdata/q10_volte` auto-migration on all 16 catalog variants: verified standard `q10-unicom-volte-v1` installations now migrate automatically across Q10, Q20, Passport, and P’9983 instead of deadlocking; foreign variant dirs, multi-dir collisions, and tampered installs still fail closed.
-- Five LTE-only rollback gaps & error-masking fixes: closes rollback leaks in `restore()`, `restore_original()`, `reconcile()`, and `disable`; fixes `scan_mode_rejected` classification and adds `ims_apn_timeout` / `voice_policy_failed`; fixes `worker.py` hiding `cleanup_required` behind `disabled` and `AutoCarrierWindow` overwriting failure guidance with `sim_not_ready`.
-- Windows driver installer, ANSI autoloader & flash-lock root fixes: treats `pnputil` exit `259` as staged so `BlackBerry Device Manager` MSI always runs; disables Console QuickEdit click-to-freeze; stages pure-ASCII paths and `TEMP` for 32-bit ANSI `cap.exe`; inspects all flash phases and checks process creation time + `flash-active.json`; uses pure-ASCII SIDs for Windows ACLs (`icacls`).
-- Desktop UX & guides: adds a Windows driver button, Bootrom (`RimUsb`) status, and live history refresh to Firmware Upgrade; adds direct Automatic carrier setup CTA for uninstalled Passport devices; adds the Feedback bar to Mobile App Install; and updates in-app `docs/GUI.md`.
+- Offline global overseas carrier catalog & desktop/mobile opt-in editor (zero China clutter): bundles 287 non-`460` reference carriers derived from Apache-2.0 AOSP data across Desktop GUI, native Mobile QML, and CLI (`tools/overseas_carrier.py`), guarded by the management lock; mainland China (`460-*`) SIMs keep byte-identical XML/PPS and the unchanged 1-click UI.
+- Schema 2 overseas trial engine & verified stock `0.xml` fallback: supports multi-carrier profiles, `'auto'` data APN resolution, optional `AlwaysOn` / `PCO` / `DisableDAD` / `ue_usage`, and allowlisted `IR.92` / `ims` PPS parameters with full journaled backup/restore; explicit overseas opt-in can safely fall back from stale numeric carrier XMLs to SHA-256-verified `0.xml` and accepts non-IMS v3 CDSC overlays.
+- Clean-room P-CSCF host route sync & lifecycle cleanup: incrementally reads owned `native.log`, validates gateways against live cellular interfaces (`msm*`), installs verified P-CSCF host routes via `/sbin/route` as Root without claiming `File exists` routes, and removes owned routes on stale gateway or stop.
+- Read-only LTE disabled-band diagnostic, exact IPv6 redaction & Windows cleanup hardening: adds a non-false-positive `lte_bands_disabled` read-only check (never touches baseband NV), exact `inet_pton(AF_INET6)` IPv6 log/feedback scrubbing, and Windows `prepare_driver_kit` transient `PermissionError` cleanup hardening.
 
 ## How to use it
 
@@ -56,16 +56,16 @@ Startup has been tried on Windows 11 and Apple silicon. Windows 10 and Intel hav
 
 For excessive disk use after repeated preparation or failures, see [storage locations and manual cleanup](docs/DISK-CLEANUP.en.md). r43 includes preparation reuse and build cleanup fixes.
 
-A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r58 downloads below.
+A [Windows UI redraw fix and comparison](docs/WINDOWS-UI-PERFORMANCE.en.md) is included in the r59 downloads below.
 
 If GitHub is blocked, use the website’s Cloudflare R2 copy. Both are the same file. Check the SHA-256 before you run it.
 
 | File | R2 direct download | GitHub alternative |
 | --- | --- | --- |
-| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-windows-x64.exe) |
+| Windows x64 EXE | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-windows-x64.exe) |
 | macOS universal DMG (final: r43) | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/bb10-volte-0.5.0-r58-experimental.zip) |
-| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r58/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r58/SHA256SUMS.txt) |
+| Full source ZIP, including website | [Download](https://bb10-downloads.octoooo.com/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip) | [Download](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/bb10-volte-0.5.0-r59-experimental.zip) |
+| SHA-256 checksums | [View](https://bb10-downloads.octoooo.com/v0.5.0-r59/SHA256SUMS.txt) | [View](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r59/SHA256SUMS.txt) |
 
 EXE and DMG include Python and Tk. Windows includes SSH/SCP; Mac uses the system tools. The Windows EXE has no Authenticode publisher signature. The Mac app and DMG have Developer ID signatures, notarization and stapled tickets; Intel architecture is checked inside the package but has not run on Intel hardware. r14 adds Mac/Q20 first Root plus SMS and short bidirectional calls on Q20/Unicom and Passport/Mobile.
 

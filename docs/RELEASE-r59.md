@@ -1,0 +1,8 @@
+# Windows r59 与手机版 0.2.4.0
+
+- **全球海外运营商离线参考库与双端自定义试测入口（中国大陆零回归、零干扰）**：新增源自公开 AOSP（Apache-2.0）的离线全球非 `460` 运营商参考库（`materials/overseas-carriers.json`，287 项，含国家/地区、IMS APN、IP 家族与数据 APN，诚实标注为 `untested` 未实机验收，并完整随源码、Windows EXE 与手机版 BAR/更新包附带 Apache-2.0 许可证与归属声明）。中国大陆（`460-*`）SIM 卡在桌面端与手机端保持一键零配置且 XML/PPS 字节完全不变，界面不出现任何海外提示横幅；非 `460` SIM 或已启用海外试测时，桌面端、手机端原生页与无界面 CLI（`tools/overseas_carrier.py`）均提供管理锁保护下的预设套用、参数自定义、多运营商配置保留与一键清除。
+- **扩展海外试验配置引擎（Schema 2 与原厂 `0.xml` 安全回落）**：支持单/多运营商配置、`data_apns: ["auto", ...]` 自动结合实测 APN、可选 `stock_config` / `ue_usage`（含 `data_centric` 显式 opt-in）、IMS `AlwaysOn` / `RequestSignallingBearerViaPCO` / `DisableDAD`、以及白名单化的 `IR.92`（`UsePreconditions`、`SMS_Format`、`amr_modeset_list`、`amrwb_modeset_list`）与 `ims` PPS 字段（`SilentRedial`、`SIP_Timer_CSFB`），写入前均记录原值并在恢复时按日志还原；海外显式 opt-in 场景下可跳过过时 2015 年数字 XML 并安全回落至经过 SHA-256 校验的原厂 `0.xml`，同时允许不含 `ims` 条目的非 IMS v3 CDSC 覆盖；兼容无既有 IMS 块的 XML 模板补丁。
+- **纯净自研 P-CSCF 主机路由同步与生命周期清理**：解决 BB10 非特权 `ims_rrm` 尝试向内核路由表写入 P-CSCF 主机路由时出现 `Permission denied` 的痛点。在 `device/service.py` 中从受管 `native.log` 增量读取路由意图，仅针对经实测 `/pps/services/networking/all/interfaces/msm*` 蜂窝接口核验过的有效非回环/非 USB 网关以 Root 权限执行 `/sbin/route`，严格记录本服务拥有的路由并在网关失效或停用时按校验安全删除（绝不抢占 `File exists` 既有路由，跨开机清理不误删系统路由）；同步将 `r56/r57/r58` 纳入 `PREVIOUS_PAYLOADS` 以支持原地安全更新。
+- **只读 LTE 活跃频段归零诊断与严格 IPv6 脱敏**：新增严格无误报的只读诊断 `lte_bands_disabled`（仅当无线已开启、未驻留 LTE、硬件支持 LTE 且活跃频段位图为 0 时提示，绝不改写基带 NV）；升级设备端事件日志与桌面反馈脱敏引擎，基于 `socket.inet_pton(AF_INET6)` 精准擦除各类压缩/带后缀冒号/带区域 ID 的 IPv6 字面量，同时完整保留 VPN UID 与技术字段；修复 Windows `prepare_driver_kit` 临时目录清理偶发 `PermissionError` 瞬态异常。
+
+macOS 下载继续固定为封板 r43。新版按实验版发行；海外参考参数与新运行时路径尚未完成实机验收。

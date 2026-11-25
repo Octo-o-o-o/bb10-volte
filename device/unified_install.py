@@ -33,6 +33,8 @@ _lock_pid = None
 # r34/mobile35: accepted before the idle/notice candidate.
 # r35/mobile36: previous idle/notification candidate.
 PREVIOUS_PAYLOADS = (
+                    # r56/r57/r58 / mobile 0.2.2.0-0.2.3.0 before r59 overseas carrier support and P-CSCF route sync.
+                    '499b01a9e316c4957fe1143945d1cc86196bf30761bef039debcf4513357a8f6',
                     # r55 / mobile 0.2.1.0 before r56 legacy migration and LTE rollback fixes.
                     '0d43724ca4ab024e3001599cedfd4b7a72437296cbec80a9026516e12fb8655e',
                     # r53/r54 / mobile 0.2.0.0 before probe legacy-blocker, cleanup-stage and error_code fixes.
@@ -486,11 +488,22 @@ def with_sim_status(result, facts):
         result['radio_lte'] = radio['lte']
         if radio.get('data_read_error') is not True and type(radio.get('data_connected')) is bool:
             result['lte_data_connected'] = radio['lte'] and radio['data_connected']
+    if radio.get('radio_read_error') is not True:
+        if type(radio.get('lte_active_band_mask')) is int:
+            result['lte_active_band_mask'] = radio['lte_active_band_mask']
+        if type(radio.get('lte_band_capability_mask')) is int:
+            result['lte_band_capability_mask'] = radio['lte_band_capability_mask']
+        if type(radio.get('lte_bands_disabled')) is bool:
+            result['lte_bands_disabled'] = radio['lte_bands_disabled']
     if isinstance(radio.get('observed_data_apn'), str):
         result['observed_data_apn'] = radio['observed_data_apn']
     result.update(read_isim_public_status())
     result.update(read_carrier_config_summary())
-    result['exp_trial_active'] = profiles.load_exp_trial() is not None
+    exp_trial = profiles.load_exp_trial()
+    result['exp_trial_active'] = exp_trial is not None
+    exp_summary = profiles.exp_trial_summary(exp_trial)
+    if exp_summary is not None:
+        result['exp_trial_summary'] = exp_summary
     serving = network.serving_network_snapshot()
     if serving.get('mcc') and serving.get('mnc'):
         result['serving_plmn'] = serving['mcc'] + '-' + serving['mnc']
@@ -1353,7 +1366,47 @@ def installed_management_schema():
     return value.get('engine_schema', 2)
 
 
-def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
+def get_exp_trial():
+    cfg = profiles.load_exp_trial()
+    return {'active': cfg is not None, 'config': cfg, 'summary': profiles.exp_trial_summary(cfg)}
+
+
+def set_exp_trial(config):
+    identity()
+    assert s.phone_idle(), 'call_active'
+    if os.path.isfile(BASE + '/payload.json'):
+        u.setup()
+        if u.boot_token(False) is not None:
+            assert not s.read_status().get('manager_alive'), 'service_active'
+    validated = profiles.validate_exp_trial(config)
+    raw = profiles.canonical(validated)
+    assert len(raw) <= 16384, 'exp_trial_too_large'
+    assert not os.path.islink(profiles.EXP_TRIAL_PATH), 'exp_trial_path_changed'
+    persist(profiles.EXP_TRIAL_PATH, raw, 0o600)
+    if validated['enabled']:
+        assert profiles.load_exp_trial() == validated, 'exp_trial_readback_failed'
+    else:
+        assert profiles.load_exp_trial() is None, 'exp_trial_readback_failed'
+    return {'saved': True, 'active': bool(validated['enabled']),
+            'summary': profiles.exp_trial_summary(validated if validated['enabled'] else None),
+            'probe': probe()}
+
+
+def clear_exp_trial():
+    identity()
+    assert s.phone_idle(), 'call_active'
+    if os.path.isfile(BASE + '/payload.json'):
+        u.setup()
+        if u.boot_token(False) is not None:
+            assert not s.read_status().get('manager_alive'), 'service_active'
+    assert not os.path.islink(profiles.EXP_TRIAL_PATH), 'exp_trial_path_changed'
+    if os.path.isfile(profiles.EXP_TRIAL_PATH):
+        os.unlink(profiles.EXP_TRIAL_PATH)
+    assert profiles.load_exp_trial() is None, 'exp_trial_clear_failed'
+    return {'cleared': True, 'active': False, 'probe': probe()}
+
+
+def manage(action, stage=None, receipt=None, archive=None, operation_id=None, exp_config=None):
     """Version 2 entry point for both desktop transports and mobile workers.
 
     The caller keeps its detached worker and result journal outside the BAR.
@@ -1362,11 +1415,13 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
     if sys.flags.optimize or sys.flags.inspect:
         raise RuntimeError('unsafe_python_environment')
     identifier = safe_id(operation_id) if operation_id is not None else nonce()
-    if action in ('probe', 'status', 'cleanup-stage'):
+    if action in ('probe', 'status', 'cleanup-stage', 'get-exp-trial'):
         if action == 'probe':
             result = probe()
         elif action == 'cleanup-stage':
             result = cleanup_stage(stage)
+        elif action == 'get-exp-trial':
+            result = get_exp_trial()
         else:
             pending_name = next((name for name in ('uninstall-pending.json', 'uninstalled.json',
                 'install-pending.json', 'update-pending.json', 'rollback-pending.json') if os.path.isfile(BASE + '/' + name)), None)
@@ -1385,7 +1440,7 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
     else:
         assert action in ('prepare', 'activate', 'record-backup', 'update', 'rollback',
             'uninstall', 'start', 'enable', 'disable', 'prepare-network',
-            'lock-network', 'unlock-network'), 'unknown_action'
+            'lock-network', 'unlock-network', 'set-exp-trial', 'clear-exp-trial'), 'unknown_action'
         with management_lock():
             if os.path.isfile(BASE + '/uninstall-pending.json'):
                 assert action == 'uninstall', 'uninstall_pending'
@@ -1398,6 +1453,10 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
                 result = lock_mobile_network()
             elif action == 'unlock-network':
                 result = unlock_mobile_network()
+            elif action == 'set-exp-trial':
+                result = set_exp_trial(exp_config)
+            elif action == 'clear-exp-trial':
+                result = clear_exp_trial()
             elif action == 'prepare':
                 result = prepare(stage)
             elif action == 'activate':
@@ -1440,21 +1499,48 @@ def manage(action, stage=None, receipt=None, archive=None, operation_id=None):
 def main():
     action = sys.argv[1]
     options = {}
+    staged_file = None
+    staged_raw = None
     if action in ('prepare', 'update', 'cleanup-stage'):
         options['stage'] = sys.argv[2]
     elif action == 'rollback' and len(sys.argv) > 2:
         options['archive'] = sys.argv[2]
     elif action == 'record-backup':
-        path = sys.argv[2]
-        assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}/backup-receipt\.json\Z', path)
-        assert os.path.realpath(path) == path and not os.path.islink(path)
-        raw = n.read(path)
-        assert len(raw) <= 65536, 'backup_receipt_too_large'
-        options['receipt'] = json.loads(raw.decode('ascii'))
+        staged_file = sys.argv[2]
+        assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}/backup-receipt\.json\Z', staged_file)
+        assert os.path.realpath(staged_file) == staged_file and not os.path.islink(staged_file)
+        staged_raw = n.read(staged_file)
+        assert len(staged_raw) <= 65536, 'backup_receipt_too_large'
+        options['receipt'] = json.loads(staged_raw.decode('ascii'))
+    elif action == 'set-exp-trial':
+        staged_file = sys.argv[2]
+        assert re.match(r'\A/var/bb10_auto_stage_[a-f0-9]{12}/exp-trial\.json\Z', staged_file)
+        assert os.path.realpath(staged_file) == staged_file and not os.path.islink(staged_file)
+        staged_raw = n.read(staged_file)
+        assert len(staged_raw) <= 16384, 'exp_trial_too_large'
+        options['exp_config'] = json.loads(staged_raw.decode('utf-8'))
+    if action in ('set-exp-trial', 'clear-exp-trial'):
+        try:
+            result = manage(action, **options)
+        except (AssertionError, ValueError, RuntimeError) as error:
+            if staged_file is not None and os.path.isfile(staged_file) and n.read(staged_file) == staged_raw:
+                os.unlink(staged_file)
+            code = str(error)
+            if code.startswith('Invalid experimental trial'):
+                code = 'invalid_overseas_config'
+            elif not re.match(r'\A[a-z][a-z0-9_]{0,63}\Z', code):
+                code = 'remote_operation_failed'
+            print(json.dumps({'ok': False, 'error': code, 'action': action}))
+            return
+        if staged_file is not None:
+            assert n.read(staged_file) == staged_raw
+            os.unlink(staged_file)
+        print(json.dumps(result))
+        return
     result = manage(action, **options)
-    if action == 'record-backup':
-        assert n.read(path) == raw
-        os.unlink(path)
+    if staged_file is not None:
+        assert n.read(staged_file) == staged_raw
+        os.unlink(staged_file)
     print(json.dumps(result))
 
 

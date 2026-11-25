@@ -50,6 +50,10 @@ class MobileController : public QObject {
     Q_PROPERTY(bool hasUpdate READ hasUpdate NOTIFY modelChanged)
     Q_PROPERTY(bool canApplyBundledUpdate READ canApplyBundledUpdate NOTIFY modelChanged)
     Q_PROPERTY(bool canExportBackup READ canExportBackup NOTIFY modelChanged)
+    Q_PROPERTY(bool overseasPromptVisible READ overseasPromptVisible NOTIFY modelChanged)
+    Q_PROPERTY(bool canManageOverseas READ canManageOverseas NOTIFY modelChanged)
+    Q_PROPERTY(QString overseasFeedback READ overseasFeedback NOTIFY modelChanged)
+    Q_PROPERTY(QVariantMap overseasState READ overseasState NOTIFY overseasStateChanged)
 
 public:
     explicit MobileController(QObject *parent = 0);
@@ -94,6 +98,10 @@ public:
     bool hasUpdate() const { return !m_update.isEmpty(); }
     bool canApplyBundledUpdate() const { return m_model.value("details").toMap().value("bundled_update_available").toBool(); }
     bool canExportBackup() const { return !m_invalidPendingIdentity && !m_cachedStatus && m_operationId.isEmpty() && m_jobId.isEmpty() && allowed("export"); }
+    bool overseasPromptVisible() const { return m_model.value("details").toMap().value("overseas_prompt").toBool(); }
+    bool canManageOverseas() const;
+    QString overseasFeedback() const;
+    QVariantMap overseasState() const { return m_model.value("overseas_state").toMap(); }
 
     Q_INVOKABLE QString label(const QString &key) const;
     Q_INVOKABLE bool allowed(const QString &action) const;
@@ -115,9 +123,14 @@ public:
     Q_INVOKABLE void checkUpdate();
     Q_INVOKABLE void downloadUpdate();
     Q_INVOKABLE void cancelUpdateTransfer();
+    Q_INVOKABLE QVariantList overseasCatalog(const QString &query) const;
+    Q_INVOKABLE void inspectOverseasConfig();
+    Q_INVOKABLE void saveOverseasConfig(const QVariantMap &fields);
+    Q_INVOKABLE void clearOverseasConfig();
 
 signals:
     void modelChanged();
+    void overseasStateChanged();
     void languageChanged();
     void settingsChanged();
     void confirmationNeeded();
@@ -187,6 +200,7 @@ private:
     QString m_expectedUpdateSha256;
     QString m_error;
     QString m_notice;
+    QString m_overseasFeedback;
     QString m_updateFeedback;
     QString m_lastExportPath;
     QString m_jobId;

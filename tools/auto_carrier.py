@@ -101,6 +101,43 @@ class AutoClient:
             report['status']['payload_update_required'] = True
         return report
 
+    def get_exp_trial(self):
+        with self.stage() as stage:
+            return self.execute(stage, 'unified_install.py', ('get-exp-trial',))
+
+    def set_exp_trial(self, config):
+        validated = policy.profiles.validate_exp_trial(config)
+        raw = policy.profiles.canonical(validated)
+        if len(raw) > 16384:
+            raise WorkflowError('exp_trial_too_large')
+        folder = private_root() / 'tmp-exp-trial'
+        folder.mkdir(parents=True, exist_ok=True)
+        local_path = folder / ('exp-' + uuid.uuid4().hex + '.json')
+        local_path.write_bytes(raw)
+        try:
+            with self.stage() as stage:
+                remote_path = stage + '/exp-trial.json'
+                self.upload(local_path, remote_path)
+                result = self.execute(stage, 'unified_install.py', ('set-exp-trial', remote_path))
+        finally:
+            local_path.unlink(missing_ok=True)
+        if result.get('ok') is False:
+            raise WorkflowError(result.get('error') or 'remote_operation_failed', result)
+        probe_report = result.get('probe')
+        if isinstance(probe_report, dict) and probe_report.get('variant') in policy.MODELS:
+            self.variant = probe_report['variant']
+        return result
+
+    def clear_exp_trial(self):
+        with self.stage() as stage:
+            result = self.execute(stage, 'unified_install.py', ('clear-exp-trial',))
+        if result.get('ok') is False:
+            raise WorkflowError(result.get('error') or 'remote_operation_failed', result)
+        probe_report = result.get('probe')
+        if isinstance(probe_report, dict) and probe_report.get('variant') in policy.MODELS:
+            self.variant = probe_report['variant']
+        return result
+
     def install(self):
         with self.stage() as stage:
             before = self.execute(stage, 'unified_install.py', ('probe',))

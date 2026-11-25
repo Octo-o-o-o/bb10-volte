@@ -146,9 +146,15 @@ def bundle_inputs(key, version=MOBILE_VERSION):
     for source in sorted((ROOT / 'profiles').glob('*.json')):
         blobs['profiles/' + source.name] = source.read_bytes()
     blobs.update(trial_inputs())
-    for name in ('compatibility-matrix.json', 'unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json',
+    for name in ('compatibility-matrix.json', 'overseas-carriers.json',
+                 'unified-carrier-acceptance.json', 'sms-device-validation-2026-11-01.json',
                  'sqw100-1-intake-2026-11-06.json', 'sqc100-4-intake-2026-11-06.json'):
         blobs['materials/' + name] = (ROOT / 'materials' / name).read_bytes()
+    # Apache-2.0 §4(a)/(d): keep license text and NOTICE inside materials/ so
+    # standalone mobile BAR and OTA update ZIPs remain self-contained and compatible
+    # with shipped 0.2.3.0 SAFE_NAME rules.
+    blobs['materials/APACHE-2.0.txt'] = (ROOT / 'licenses/APACHE-2.0.txt').read_bytes()
+    blobs['materials/NOTICE.md'] = (ROOT / 'NOTICE.md').read_bytes()
     # Bind the pinned entry to every other signed member and manifest field,
     # without a self-referential hash of the entry itself.
     core = {'schema': 2, 'kind': 'bb10-volte-mobile', 'protocol': 2, 'version': version,

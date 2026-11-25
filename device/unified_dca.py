@@ -714,8 +714,11 @@ def prepare(selected, allow_rplmn_attach=False):
     # although its configured LTE mask stayed enabled. Data-centric is the
     # candidate mitigation for Passport; longer real calls remain a release
     # gate. Apply only through the backed-up, idle-before-IMS transaction.
+    exp_usage = ((selected.get('request') or {}).get('profile', {}).get('experimental', {}).get('ue_usage', 'auto')
+                 if selected.get('operator') == 'other' else 'auto')
     desired = 1 if (selected['operator'] == 'telecom' or
-                    selected['family'] in ('q10', 'p9983', 'passport') and selected['operator'] == 'mobile') else 0
+                    selected['family'] in ('q10', 'p9983', 'passport') and selected['operator'] == 'mobile' or
+                    selected['operator'] == 'other' and exp_usage == 'data_centric') else 0
     record = set_usage(desired, selected)
     policy_boot = record.get('policy_changed_boot', record.get('boot'))
     if selected['family'] == 'passport' and policy_boot == s.boot_token():

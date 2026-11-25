@@ -8,7 +8,7 @@ import argparse
 import json
 import shlex
 import sys
-import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -45,8 +45,12 @@ SAFE_PROBE_FIELDS = (
     'downloaded_carrier_config_present',
     'observed_data_apn',
     'exp_trial_active',
+    'exp_trial_summary',
     'radio_lte',
     'lte_data_connected',
+    'lte_active_band_mask',
+    'lte_band_capability_mask',
+    'lte_bands_disabled',
     'stock_template_verified',
     'mobile_network_off',
     'reboot_required',
@@ -72,22 +76,12 @@ def connect(args):
 
 
 def push_trial_config(client, auto, validated):
-    payload = profiles.canonical(validated)
-    remote_tmp = profiles.EXP_TRIAL_PATH + '.new'
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        tmp.write(payload)
-        local_tmp = Path(tmp.name)
-    try:
-        auto.upload(local_tmp, remote_tmp)
-        client.remote(
-            'chmod 600 ' + shlex.quote(remote_tmp) +
-            ' && mv ' + shlex.quote(remote_tmp) + ' ' + shlex.quote(profiles.EXP_TRIAL_PATH)
-        )
-    finally:
-        local_tmp.unlink(missing_ok=True)
+    return auto.set_exp_trial(validated)
 
 
-def remove_trial_config(client):
+def remove_trial_config(client, auto=None):
+    if auto is not None:
+        return auto.clear_exp_trial()
     client.remote('rm -f ' + shlex.quote(profiles.EXP_TRIAL_PATH) + ' ' + shlex.quote(profiles.EXP_TRIAL_PATH + '.new'))
 
 
@@ -139,10 +133,13 @@ def cmd_apply(args):
         )
         return 0, out
     result = auto.install()
-    out['install_result'] = {
-        k: result[k] for k in ('installed', 'updated', 'reboot_required', 'desktop_backup', 'phone_backup')
+    install_summary = {
+        k: result[k] for k in ('installed', 'updated', 'reboot_required', 'phone_backup')
         if k in result
     }
+    if 'desktop_backup' in result:
+        install_summary['desktop_backup_verified'] = bool(result.get('desktop_backup'))
+    out['install_result'] = install_summary
     if isinstance(result.get('status'), dict):
         out['status'] = public_status(result['status'])
     out['next_step'] = (
@@ -182,7 +179,16 @@ def cmd_restore(args):
         disabled = auto.action('disable')
     except Exception as exc:
         disabled = {'note': str(exc)}
-    remove_trial_config(client)
+    deadline = time.time() + 30.0
+    while time.time() < deadline:
+        try:
+            st = auto.action('status')
+        except Exception:
+            break
+        if not isinstance(st, dict) or not st.get('manager_alive'):
+            break
+        time.sleep(1.5)
+    remove_trial_config(client, auto)
     return 0, {
         'ok': True,
         'action': 'restore',

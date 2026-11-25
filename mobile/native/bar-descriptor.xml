@@ -2,7 +2,7 @@
 <qnx xmlns="http://www.qnx.com/schemas/application/1.0">
     <id>com.octolab.bb10volte</id>
     <name>BB10 VoLTE</name>
-    <versionNumber>0.2.3</versionNumber>
+    <versionNumber>0.2.4</versionNumber>
     <buildId>0</buildId>
     <description>Manage BB10 VoLTE, backups and restoration on your rooted phone.</description>
     <author>OctoLab</author>

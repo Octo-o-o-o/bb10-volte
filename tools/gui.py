@@ -77,6 +77,7 @@ NOTES = {
     'identity_layout_matches': tr('在手机本地核验通过；报告不包含完整标识'),
     'identity_layout_unknown': tr('SIM 身份格式不符，需提供脱敏预检报告排查'),
     'lte_ready': tr('本次快照报告 LTE；不代表已完成网络注册、能上网或已确认频段'), 'lte_not_ready': tr('开启移动网络并等待 LTE'),
+    'lte_bands_disabled': tr('手机无线层已开启但当前活跃 LTE 频段位图为 0（硬件支持 LTE 但未启用任何频段）；此为只读诊断，工具不会自动改写基带，请先在系统网络设置或向运营商核对 LTE 模式与频段。'),
     'lte_emergency_only': tr('手机仍报告紧急服务标志；即使其他项目显示已连接，也不能认定正常入网。'),
     'lte_service_unknown': tr('未取得有效的无线网络服务位图；显示 LTE 或数据已连接仍不足以确认就绪。'),
     'lte_data_unavailable': tr('无线层未报告正常 LTE 数据服务；请先排查入网，能力标志不能代替数据服务。'),
@@ -239,6 +240,7 @@ class App:
         self.menu.add_command(label=tr('高级连接设置'), command=self.toggle_connection_options)
         self.menu.add_command(label=tr('安装手机应用'), command=self.mobile_app)
         self.menu.add_command(label=tr('候选机型本地试测'), command=self.variant_trials)
+        self.menu.add_command(label=tr('海外 / 自定义运营商设置…'), command=self.overseas_carrier_settings)
         self.menu.add_separator()
         self.menu.add_command(label=tr('使用与恢复指南'), command=self.guide)
         self.menu.add_command(label=tr('社区研究与适配进展'), command=lambda: self.show_document(
@@ -381,6 +383,28 @@ class App:
         if not self.busy:
             from variant_trial_gui import VariantTrialDialog
             VariantTrialDialog(self.root, self.check_variant_trial, self.device_info.get('variant', ''))
+
+    def overseas_carrier_settings(self):
+        if not self.busy:
+            from auto_carrier import AutoClient
+            from overseas_carrier_gui import OverseasCarrierDialog
+            def make_client():
+                transport, unused = resolve_connection(self.host.get().strip() or 'bb10-root', self.config.get().strip())
+                return AutoClient(transport)
+            probe_hint = {}
+            report = self.report or {}
+            status = report.get('status') if isinstance(report.get('status'), dict) else {}
+            facts = report.get('facts') if isinstance(report.get('facts'), dict) else {}
+            if status.get('sim_plmn'):
+                probe_hint['sim_plmn'] = status['sim_plmn']
+            elif facts.get('mcc') and facts.get('mnc'):
+                probe_hint['sim_plmn'] = str(facts['mcc']) + '-' + str(facts['mnc'])
+            for key in ('exp_trial_active', 'sim_has_isim', 'observed_data_apn', 'preloaded_carrier_config'):
+                if key in status:
+                    probe_hint[key] = status[key]
+                elif key in report:
+                    probe_hint[key] = report[key]
+            OverseasCarrierDialog(self.root, make_client, probe_hint, on_saved=lambda _: self.run('preflight'))
 
     def check_variant_trial(self, profile):
         if self.busy:

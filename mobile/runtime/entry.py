@@ -36,7 +36,8 @@ ALGORITHM = 'RSASSA-PKCS1-v1_5-SHA256'
 SAFE_NAME = re.compile(r'\A(?:runtime|payload|profiles|materials)/[a-zA-Z0-9_.\-/]+\Z')
 ACTIONS = ('inspect', 'status', 'poll', 'resume', 'install', 'enable', 'disable',
            'update', 'rollback', 'uninstall', 'export', 'compatibility',
-           'confirm-calls', 'legacy-inspect', 'legacy-install', 'legacy-start',
+           'confirm-calls', 'overseas-inspect', 'overseas-save', 'overseas-clear',
+           'legacy-inspect', 'legacy-install', 'legacy-start',
            'legacy-stop', 'legacy-update', 'legacy-uninstall')
 
 
@@ -528,7 +529,8 @@ def main():
     require(isinstance(request, dict) and request.get('schema') == 2, 'invalid_request')
     require(set(request) <= {'schema', 'language', 'backup_location', 'package_path', 'job_id',
             'operation_id', 'experimental', 'profile_id', 'confirmed', 'incoming', 'outgoing',
-            'audio', 'lte', 'call_context', 'export_kind', 'expected_version', 'expected_sha256'}, 'invalid_request_field')
+            'audio', 'lte', 'call_context', 'export_kind', 'expected_version', 'expected_sha256',
+            'overseas_config'}, 'invalid_request_field')
     global BRIDGE_PROGRESS
     BRIDGE_PROGRESS = True
     bridge_progress()

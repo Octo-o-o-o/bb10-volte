@@ -74,9 +74,11 @@ def select(facts, card):
         raise ValueError('sim_not_ready')
     kind = card.get('kind')
     mcc, mnc, imsi = card.get('mcc'), card.get('mnc'), card.get('imsi')
+    if type(kind) is not int or not kind & 2:
+        raise ValueError('sim_route_unsupported')
     exp = profiles.exp_trial_profile(mcc, mnc)
     allow_isim = bool(exp.get('experimental', {}).get('allow_isim')) if exp is not None else False
-    if type(kind) is not int or not kind & 2 or (not allow_isim and kind & 16):
+    if not allow_isim and kind & 16:
         raise ValueError('sim_route_unsupported')
     if profiles.carrier_adaptation_blocked(facts.get('variant'), mcc, (mnc,)):
         raise ValueError('operator_not_supported')

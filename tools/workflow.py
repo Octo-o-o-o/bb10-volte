@@ -108,6 +108,14 @@ def public_status(raw):
     if raw.get('payload_update_required') is True:
         result['payload_update_required'] = True
     result['sms_service_busy'] = raw.get('sms_service_busy') if type(raw.get('sms_service_busy')) is bool else None
+    route_status = raw.get('pcscf_route_status')
+    if route_status in ('idle', 'synced', 'deleted', 'existing_kept', 'gateway_unverified', 'route_error', 'unavailable'):
+        result['pcscf_route_status'] = route_status
+        family = raw.get('pcscf_route_family')
+        result['pcscf_route_family'] = family if family in ('none', 'ipv4', 'ipv6', 'dual') else 'none'
+        count = raw.get('pcscf_route_count')
+        result['pcscf_route_count'] = count if type(count) is int and 0 <= count <= 8 else 0
+        result['pcscf_route_verified'] = raw.get('pcscf_route_verified') is True
     if raw.get('management_schema') == 2:
         result['management_schema'] = 2
         value = raw.get('current_sim_matches')

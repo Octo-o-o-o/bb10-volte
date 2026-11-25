@@ -47,6 +47,7 @@ def runtime_data():
     """Include the QNX cleanup resource, never keys, root images or download tools."""
     names = set(FILES) | {'project.json', 'materials/payload-manifest.json',
                          'materials/windows-runtime.json', 'LICENSE', 'NOTICE.md',
+                         'licenses/APACHE-2.0.txt', 'materials/overseas-carriers.json',
                          'assets/icon.png', 'assets/icon-96.png', 'assets/app.ico', 'tools/stage_cleanup.py',
                          'tools/phone_pairing.py', 'tools/root_probe.py', 'materials/desktop-diagnostics.json',
                          'materials/macos-root-tools.json', 'materials/macos-device-validation-2026-10-28.json',
@@ -142,7 +143,10 @@ def main():
                           'pyinstaller-' + spec['pyinstaller'] + '.dist-info/licenses/COPYING.txt')))]
     license_parts += [(item['component'], fetch(item, args.offline)) for item in spec['licenses']]
     license_parts += [('Microsoft Win32-OpenSSH LICENSE', vendor / 'LICENSE.txt'),
-                      ('Microsoft Win32-OpenSSH NOTICE', vendor / 'NOTICE.txt')]
+                      ('Microsoft Win32-OpenSSH NOTICE', vendor / 'NOTICE.txt'),
+                      ('bb10-volte NOTICE (third-party attributions)', ROOT / 'NOTICE.md'),
+                      ('Apache License 2.0 (materials/overseas-carriers.json derived from AOSP)',
+                       ROOT / 'licenses/APACHE-2.0.txt')]
     notices = work / 'THIRD-PARTY-NOTICES.txt'
     notices.write_text('\n\n'.join(title + '\n' + '=' * len(title) + '\n' +
                                   path.read_text(encoding='utf-8') for title, path in license_parts), encoding='utf-8')
@@ -189,6 +193,7 @@ def main():
             'connection_flow', 'connection_materials', 'ui_theme', 'ui_responsiveness', 'i18n', 'translations_en',
             'firmware_policy', 'firmware_upgrade', 'firmware_flash', 'firmware_gui', 'pairing_instructions',
             'auto_carrier', 'auto_carrier_gui', 'auto_carrier_managed', 'auto_carrier_view', 'carrier_policy', 'device_support',
+            'overseas_carrier', 'overseas_carrier_gui',
             'variant_trials', 'variant_trial_gui', 'feedback', 'feedback_gui',
             'mobile_app_gui', 'mobile_app_install',
             'unified_service', 'unified_install', 'completion_dialog', 'support_config'} <= set(archive_modules)
