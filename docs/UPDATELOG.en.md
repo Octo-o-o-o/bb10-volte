@@ -1,3 +1,11 @@
+# r63 / mobile 0.2.5.0
+
+- Feedback bundle capture now skips hidden/unmapped status labels so unlocked sessions no longer export a phantom flash-pause warning; `SetupWizard` and `FirmwareDialog` also clear that label when unlocked.
+- Windows driver installation now names the exact conflicting running process (such as `nginx` or `RimDeviceManager`) in the status bar and adds a pre-install reminder on the Windows driver tab.
+- Local USB discovery now records a scrubbed `discovery_reason` code (such as `no_link_local_30`, `http_401`, `http_403`, `timeout`, or `connection_refused`) in both the connection wizard and feedback bundles when USB networking is up but model metadata is empty.
+
+[Release notes](RELEASE-r63.en.md)
+
 # r62 / mobile 0.2.5.0
 
 - Windows can place later downloads and new Root or stock-upgrade preparation on another disk. An unset, missing or unwritable choice keeps the original location and does not interrupt work already running.

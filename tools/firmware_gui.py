@@ -49,8 +49,7 @@ class FirmwareDialog(tk.Toplevel):
         self.support_notice.pack(fill='x', pady=(8, 0))
         self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
         self.flash_lock_bar = ttk.Frame(body)
-        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=480, justify='left',
-                                          text=tr('检测到上次刷写处于暂停状态，升级与重新准备已锁定（仍可安装 Windows 驱动）。'))
+        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=480, justify='left', text='')
         self.flash_lock_label.pack(side='left', fill='x', expand=True, padx=(0, 10))
         self.unlock_flash_button = ttk.Button(self.flash_lock_bar, text=tr('查看刷写日志并解除暂停…'),
                                               command=self.review_flash_lock)
@@ -179,13 +178,17 @@ class FirmwareDialog(tk.Toplevel):
             button.configure(state='normal' if allowed and not self.busy else 'disabled')
         locked = root.root_lock_path().exists()
         if locked:
+            self.flash_lock_label.configure(
+                text=tr('检测到上次刷写处于暂停状态，升级与重新准备已锁定（仍可安装 Windows 驱动）。'))
             if not self.flash_lock_bar.winfo_manager():
                 self.flash_lock_bar.pack(fill='x', before=self.page_frame, pady=(8, 0))
             self.unlock_flash_button.configure(state='disabled' if self.busy else 'normal')
             if self.install_drivers_lock_button is not None:
                 self.install_drivers_lock_button.configure(state='disabled' if self.busy else 'normal')
-        elif self.flash_lock_bar.winfo_manager():
-            self.flash_lock_bar.pack_forget()
+        else:
+            self.flash_lock_label.configure(text='')
+            if self.flash_lock_bar.winfo_manager():
+                self.flash_lock_bar.pack_forget()
         state(self.detect_button, True)
         state(self.prepare_button, target_valid and not locked and (not self.kit or self.stage == 'uncertain') and sys.platform in ('win32', 'darwin') and version.state not in ('newer', 'ready'))
         state(self.import_local_button, target_valid)

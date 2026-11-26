@@ -19,6 +19,32 @@ def help_row(parent, owner, step):
     return row
 
 
+def _widget_visible_in(widget, ancestor):
+    """True unless widget or an ancestor inside the dialog is unpacked or on a hidden tab."""
+    if not hasattr(widget, 'winfo_manager'):
+        return True
+    master = getattr(widget, 'master', None)
+    if master is not ancestor:
+        try:
+            if not widget.winfo_manager():
+                return False
+        except (tk.TclError, AttributeError):
+            return False
+    cur = master
+    while cur is not None and cur is not ancestor:
+        try:
+            if not cur.winfo_manager():
+                return False
+            parent_of_cur = getattr(cur, 'master', None)
+            if isinstance(parent_of_cur, ttk.Notebook):
+                if str(parent_of_cur.tab(cur, 'state')) == 'hidden':
+                    return False
+        except (tk.TclError, AttributeError):
+            return False
+        cur = parent_of_cur
+    return True
+
+
 class FeedbackDialog(tk.Toplevel):
     def __init__(self, parent, step):
         super().__init__(parent)
@@ -29,15 +55,15 @@ class FeedbackDialog(tk.Toplevel):
         self.previous_grab = self.grab_current()
         self.grab_set()
         self.journal, self.step = journal_for(parent), step
-        # Capture only explicitly named status labels, never entries, clipboard,
-        # password fields or the whole screen. Scrubbing happens before storage.
+        # Capture only explicitly named visible status labels, never hidden banners,
+        # entries, clipboard, password fields or the whole screen. Scrubbing happens before storage.
         labels = getattr(parent, '_feedback_status_labels', None)
         if labels is None:
             labels = [getattr(parent, name, None) for name in
                       ('status', 'root_hint', 'facts', 'device', 'progress_text', 'gate_label', 'flash_lock_label', 'details')]
         visible = []
         for label in labels:
-            if label is not None:
+            if label is not None and _widget_visible_in(label, parent):
                 try:
                     text = label.get('1.0', 'end-1c')[:1600] if isinstance(label, tk.Text) else str(label.cget('text'))
                     if text.strip():

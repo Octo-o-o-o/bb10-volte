@@ -2,19 +2,19 @@
 
 **macOS 版停止维护（2026-11-09）：**由于维护精力有限，macOS 版封板于 **v0.5.0-r43**，后续不再维护或发布更新。该版安装包与源码继续保留下载。Windows 版和手机版不受此次调整影响。
 
-**桌面 r62 · 手机版 0.2.5.0。** Q10、Q20、Passport、P’9983 可一键尝试大陆三网，并支持海外非 `460` 运营商离线参考库（Apache-2.0 Schema 2，297 项）与自定义试验参数。界面会标明尚未实测的运营商。Windows 可以选择其他磁盘存放之后的下载和新的刷机准备。
+**桌面 r63 · 手机版 0.2.5.0。** Q10、Q20、Passport、P’9983 可一键尝试大陆三网，并支持海外非 `460` 运营商离线参考库（Apache-2.0 Schema 2，297 项）与自定义试验参数。界面会标明尚未实测的运营商。Windows 支持自选大文件目录，并改进反馈包隐藏横幅过滤、驱动冲突进程名展示与 USB 机型识别诊断。
 
 机主说三网通过：SQC100-1、P’9983 SQK100-1。SQK100-2 还没测。SQW100-2 身份没核实。仍要 Root、系统 10.3.3.3216、对得上的原生文件，以及能恢复的备份。
 
-[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r62.md)
+[适配表](docs/COMPATIBILITY.md) · [本版说明](docs/RELEASE-r63.md)
 
 本版包含[开机持续等网、同卡安全重试与可选手动选网辅助](docs/NETWORK-RESILIENCE.md)。新行为尚待对应版本的真机验收。
 
 ## 这版改了什么
 
-- Windows 可以另选一个文件夹，存放之后开始的下载，以及新的 Root 和原版升级准备。不选也能继续使用。已有文件不搬走，正在进行的下载、准备和刷写不改道。
-- 所选文件夹缺失、是符号链接或目录联接、位于程序或个人材料目录内部，或者不能写入时，新的下载和准备回到原来的位置，并在界面说明。连接、安装和状态查看不依赖这个选择。
-- 清理按项勾选，每一项显示用途和大小，默认不勾选。密钥、连接、日志和刷写记录不会列出。正在下载、准备或刷写的项不能勾选。刷写完成后会询问是否清理这一次，默认不清理。
+- 反馈包收集器仅读取可见状态标签，修复未锁定时误将隐藏“刷写暂停”横幅写入反馈包的问题；`SetupWizard` 与 `FirmwareDialog` 在未锁定时同步清空该标签文本。
+- Windows 驱动安装因冲突进程（如 `nginx`、`RimDeviceManager`）停止时直接显示具体冲突进程名，并在“Windows 驱动”页补充安装前关闭冲突程序提示。
+- USB 网卡已就绪但未能识别机型时记录脱敏原因码（`discovery_reason`，如 `no_link_local_30`、`http_401`、`http_403`、`timeout`、`connection_refused`），在界面与反馈包中明确排查方向；保留 r62 可选大文件目录与按项清理功能。
 - 手机版仍是 0.2.5.0，macOS 仍固定为封板 r43。本版没有新的通话、短信或数据验收。
 
 ## 怎么用
@@ -62,10 +62,10 @@ Windows 打开、切页和拖动窗口卡顿的[绘制修复与对照结果](doc
 
 | 文件 | R2 直接下载 | GitHub 备用 |
 | --- | --- | --- |
-| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r62/bb10-volte-0.5.0-r62-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/bb10-volte-0.5.0-r62-windows-x64.exe) |
+| Windows x64 EXE | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r63/bb10-volte-0.5.0-r63-windows-x64.exe) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r63/bb10-volte-0.5.0-r63-windows-x64.exe) |
 | macOS universal DMG（r43 封板） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r43/bb10-volte-0.5.0-r43-macos-universal.dmg) |
-| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r62/bb10-volte-0.5.0-r62-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/bb10-volte-0.5.0-r62-experimental.zip) |
-| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r62/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r62/SHA256SUMS.txt) |
+| 完整源码 ZIP（含官网源码） | [下载](https://bb10-downloads.octoooo.com/v0.5.0-r63/bb10-volte-0.5.0-r63-experimental.zip) | [下载](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r63/bb10-volte-0.5.0-r63-experimental.zip) |
+| SHA-256 校验码 | [查看](https://bb10-downloads.octoooo.com/v0.5.0-r63/SHA256SUMS.txt) | [查看](https://github.com/Octo-o-o-o/bb10-volte/releases/download/v0.5.0-r63/SHA256SUMS.txt) |
 
 EXE / DMG 均内置 Python 和 Tk；Windows 同时内置 SSH/SCP，Mac 使用系统 SSH/SCP。Windows EXE 尚无 Authenticode 发布者签名。Mac 应用及 DMG 使用 Developer ID 签名、公证并附票；Intel 只核对包内架构，未在 Intel 实机运行。r14 已增加 Mac／Q20 首次 Root，以及 Q20／联通与 Passport／移动短信和短时双向通话实测。
 

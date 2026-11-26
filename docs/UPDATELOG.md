@@ -1,3 +1,11 @@
+# r63 / 手机版 0.2.5.0
+
+- 反馈包收集器仅读取可见状态标签，修复未锁定时误将隐藏“刷写暂停”横幅写入反馈包的问题；`SetupWizard` 与 `FirmwareDialog` 未锁定时清空该标签文本。
+- Windows 驱动安装因冲突进程（如 `nginx`、`RimDeviceManager`）停止时直接显示具体进程名，并在“Windows 驱动”页补充安装前关闭冲突程序提示。
+- USB 网卡已就绪但未读到机型时记录脱敏 `discovery_reason`（如 `no_link_local_30`、`http_401`、`http_403`、`timeout`、`connection_refused`），在界面与反馈包中明确提示排查方向。
+
+[Release notes](RELEASE-r63.md)
+
 # r62 / 手机版 0.2.5.0
 
 - Windows 可选大文件目录：之后的下载和新的 Root、原版升级准备可以改到其他磁盘。不选、目录失效或不能写时仍用原来的位置，不打断已经开始的操作。

@@ -78,7 +78,7 @@ BOOL_FIELDS = {'usb_present', 'usb_network', 'ssh_port', 'bootrom_driver_ready',
                'reboot_required', 'automatic_carrier_selection', 'sim_ready', 'lte_ready', 'restored',
                'sim_supported', 'automatic_start', 'fallback_used', 'stock_apn_bootstrap_eligible'}
 CODE_FIELDS = {'phase', 'state', 'outcome', 'id', 'code', 'note', 'error', 'error_code', 'status_error', 'selected_operator',
-               'operator', 'isim_status',
+               'operator', 'isim_status', 'discovery_reason',
                'managed_adapter', 'registration', 'ims', 'ran', 'ims_observation_scope',
                'pcscf_route_status', 'pcscf_route_family',
                'scope_error', 'sim_reason'}
@@ -157,6 +157,8 @@ def project(value, depth=0):
         elif key in ('usb_count', 'attempt', 'max_attempts', 'seconds_per_attempt', 'pcscf_route_count') and type(item) is int:
             out[key] = max(0, min(item, 10000))
         elif key in ('lte_active_band_mask', 'lte_band_capability_mask') and type(item) is int and 0 <= item <= 0xffffffffffffffff:
+            out[key] = item
+        elif key == 'blocked_process' and isinstance(item, str) and re.fullmatch(r'[A-Za-z][A-Za-z0-9_~.-]{0,31}', item) and not re.search(r'\d{7}', item):
             out[key] = item
         elif key == 'register_status' and isinstance(item, str):
             out[key] = item if item in ('200 OK', '403 Forbidden', '408 Request Timeout', 'not_registered') else 'unknown'

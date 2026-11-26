@@ -6,6 +6,7 @@ from pathlib import Path
 from feedback import FeedbackQueue
 from feedback_gui import help_row
 import queue
+import re
 import sys
 import threading
 import tkinter as tk
@@ -112,6 +113,27 @@ def review_flash_lock(parent):
     return True
 
 
+def _usb_discovery_hint(usb):
+    if usb.get('usb_present') is not True or usb.get('usb_network') is not True:
+        return ''
+    if (usb.get('device') or {}).get('ModelName'):
+        return ''
+    reason = str(usb.get('discovery_reason') or '').strip()
+    if reason == 'no_link_local_30':
+        return tr('机型识别提示：USB 网卡未取得黑莓 /30 地址（常见于 Windows 自动分配 /16、尚未完成开机设置或 USB 连接模式受限）。可重新插拔、在手机“设置 → 存储和访问”允许 USB 连接或排查 VPN/防火墙；若只需先下载固件，可先拔掉数据线并点击“重新检测”，再手动选择型号。')
+    if reason in ('http_401', 'http_403'):
+        return tr('机型识别提示：手机拒绝了设备信息查询（{}）。请确认手机已完成首次开机设置（OOBE）、解锁亮屏并开启开发模式后重新检测；若只需先下载固件，可先拔掉数据线并点击“重新检测”，再手动选择型号。').format(reason)
+    if reason in ('connection_refused', 'timeout', 'unreachable'):
+        return tr('机型识别提示：无法访问手机 USB 发现端口（{}）。请解锁亮屏、核对手机“设置 → 存储和访问”允许 USB 连接，并检查 Windows 防火墙、杀软或 VPN 是否拦截；若只需先下载固件，可先拔掉数据线并点击“重新检测”，再手动选择型号。').format(reason)
+    if reason == 'multiple_usb_devices':
+        return tr('机型识别提示：检测到多台黑莓 USB 设备，已跳过自动读取以避免混淆。请只连接一台手机后重新检测；若只需先下载固件，可拔掉全部数据线并点击“重新检测”，再手动选择型号。')
+    if reason == 'multiple_usb_links':
+        return tr('机型识别提示：检测到多个活跃的黑莓 USB 网卡，已避免误判。请只连接这一台手机并禁用闲置的旧黑莓虚拟网卡后重试。')
+    if reason:
+        return tr('机型识别提示：已连上 USB 网络但未读到有效机型信息（{}）。请解锁手机、确认开发模式与 USB 连接设置后重试；若只需先下载固件，可先拔掉数据线并点击“重新检测”，再手动选择型号。').format(reason)
+    return ''
+
+
 class SetupWizard(tk.Toplevel):
     def __init__(self, parent, on_ready, auto_check=True, initial_page='connection', downloads_only=False,
                  initial_usb=None):
@@ -147,8 +169,7 @@ class SetupWizard(tk.Toplevel):
         self.support_notice.pack(fill='x', pady=(0, 12))
         self.support_notice.bind('<Configure>', lambda event: self.support_notice.configure(wraplength=max(1, event.width - 4)))
         self.flash_lock_bar = ttk.Frame(body)
-        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=580, justify='left',
-                                          text=tr('检测到上次刷写处于暂停状态，刷写与重新准备已锁定（仍可安装 Windows 驱动）。'))
+        self.flash_lock_label = ttk.Label(self.flash_lock_bar, wraplength=580, justify='left', text='')
         self.flash_lock_label.pack(side='left', fill='x', expand=True, padx=(0, 10))
         self.unlock_flash_button = ttk.Button(self.flash_lock_bar, text=tr('查看刷写日志并解除暂停…'),
                                               command=self.review_flash_lock)
@@ -327,6 +348,8 @@ class SetupWizard(tk.Toplevel):
         ttk.Label(drivers, text=tr('即使开机状态下 USB 网络已就绪，刷写阶段仍依赖 BlackBerry 原厂 USB（RimUsb）驱动。\n'
                   '应用会下载并校验官方驱动，随后通过 Windows 管理员确认完成安装；请先保存电脑上的工作。安装器不会自动重启。'),
                   wraplength=740, justify='left').pack(anchor='w')
+        ttk.Label(drivers, text=tr('安装前请先关闭可能冲突的程序（例如 nginx、BlackBerry Link / Device Manager），以免官方安装器中断正在运行的进程。'),
+                  wraplength=740, justify='left').pack(anchor='w', pady=(8, 0))
         self.driver_button = ttk.Button(drivers, text=tr('自动准备并安装驱动'), command=self.drivers)
         self.driver_button.pack(anchor='w', pady=20)
         self.progress = ttk.Progressbar(body, mode='indeterminate')
@@ -388,11 +411,15 @@ class SetupWizard(tk.Toplevel):
         version_gate = self.root_version_gate()
         locked = root_lock_path().exists()
         if locked and not self.downloads_only:
+            self.flash_lock_label.configure(
+                text=tr('检测到上次刷写处于暂停状态，刷写与重新准备已锁定（仍可安装 Windows 驱动）。'))
             if not self.flash_lock_bar.winfo_manager():
                 self.flash_lock_bar.pack(fill='x', before=self.tabs, pady=(0, 10))
             self.unlock_flash_button.configure(state='disabled' if self.busy else 'normal')
-        elif self.flash_lock_bar.winfo_manager():
-            self.flash_lock_bar.pack_forget()
+        else:
+            self.flash_lock_label.configure(text='')
+            if self.flash_lock_bar.winfo_manager():
+                self.flash_lock_bar.pack_forget()
         self.prepare_button.configure(state='normal' if ready and not locked and not version_gate and variant in catalog()['auto_root_variants'] and
                                       sys.platform in ('win32', 'darwin') and not self.choice else 'disabled')
         self.driver_button.configure(state='normal' if not self.busy and sys.platform == 'win32' else 'disabled')
@@ -512,7 +539,11 @@ class SetupWizard(tk.Toplevel):
                 self.events.put(('download_error', error.user_message))
             except (SetupError, WorkflowError) as error:
                 self.events.failure(error)
-                self.events.put(('error', str(error)))
+                blocked = getattr(error, 'blocked_process', None)
+                if isinstance(blocked, str) and re.fullmatch(r'[A-Za-z][A-Za-z0-9_~.-]{0,31}', blocked) and not re.search(r'\d{7}', blocked):
+                    self.events.put(('error', (str(error), {'blocked_process': blocked})))
+                else:
+                    self.events.put(('error', str(error)))
             except Exception as error:
                 self.events.failure(error)
                 self.events.put(('error', 'preparation_failed'))
@@ -813,15 +844,20 @@ class SetupWizard(tk.Toplevel):
                 if kind == 'download_error':
                     self.status.configure(text=value)
                 elif kind == 'error':
+                    error_code = value[0] if isinstance(value, tuple) else value
+                    error_meta = value[1] if isinstance(value, tuple) and len(value) > 1 and isinstance(value[1], dict) else {}
                     self.refresh_history()
-                    if value == 'flash_state_unknown':
+                    if error_code == 'flash_state_unknown':
                         lock_info = inspect_flash_lock()
                         if lock_info and lock_info.get('writing_started') is False:
                             self.status.configure(text=tr('刷写未进入写入阶段（可能缺少 BlackBerry USB 驱动、连接超时或密码提示中断）。可先在“Windows 驱动”页安装驱动，再点击上方“查看刷写日志并解除暂停…”核对后重试。'))
                         else:
                             self.status.configure(text=MESSAGES['flash_state_unknown'])
+                    elif error_code == 'driver_process_running' and error_meta.get('blocked_process'):
+                        proc = error_meta['blocked_process']
+                        self.status.configure(text=tr('检测到正在运行的进程：{}。黑莓官方驱动安装器会强制中断该进程，驱动安装已停止；请先关闭 {} 后重试。').format(proc, proc))
                     else:
-                        self.status.configure(text=MESSAGES.get(value, tr('准备未完成。请检查网络或材料，保留现场后重试；下载代理可在“首次 Root”页设置。')))
+                        self.status.configure(text=MESSAGES.get(error_code, tr('准备未完成。请检查网络或材料，保留现场后重试；下载代理可在“首次 Root”页设置。')))
                 else:
                     action, result = value
                     if action == 'detect':
@@ -848,6 +884,9 @@ class SetupWizard(tk.Toplevel):
                             ssh_state, tr('已验证') if self.choice else tr('未能验证（不等于未 Root）'))
                         if sys.platform == 'win32' and self.usb.get('bootrom_driver_ready') is not None:
                             facts_text += tr('\nBootrom 刷机驱动（RimUsb）：{}').format(yesno(self.usb.get('bootrom_driver_ready')))
+                        discovery_hint = _usb_discovery_hint(self.usb)
+                        if discovery_hint:
+                            facts_text += '\n' + discovery_hint
                         self.facts.configure(text=facts_text)
                         if sys.platform == 'darwin' and self.usb.get('network_interfaces'):
                             interfaces = self.usb['network_interfaces']

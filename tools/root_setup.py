@@ -12,6 +12,7 @@ import socket
 import struct
 import subprocess
 import sys
+import threading
 import uuid
 import xml.etree.ElementTree as ET
 import zipfile
@@ -92,9 +93,13 @@ def powershell():
     return str(Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
 
 
+_DISCOVERY_TLS = threading.local()
+
+
 def discovery(peer='169.254.0.1', source=None, interface_index=None):
     # Anonymous metadata on the directly attached USB link only. Never send
     # credentials, follow a redirect or use an Internet proxy for this request.
+    _DISCOVERY_TLS.reason = 'unreachable'
     connection = None
     try:
         if sys.platform == 'darwin' and source:
@@ -115,15 +120,30 @@ def discovery(peer='169.254.0.1', source=None, interface_index=None):
                 'User-Agent': 'QNXWebClient/1.0', 'Connection': 'close'})
             response = connection.getresponse()
             if response.status != 200:
+                code_num = response.status if isinstance(response.status, int) and 100 <= response.status <= 599 else 0
+                _DISCOVERY_TLS.reason = ('http_' + str(code_num)) if code_num else 'http_error'
                 return {}
             body = response.read(131073)
         if len(body) > 131072:
+            _DISCOVERY_TLS.reason = 'response_too_large'
             return {}
         document = ET.fromstring(body)
         allowed = {'OsType', 'ModelName', 'PlatformVersion', 'DeveloperModeEnabled', 'OobeCompleted'}
-        return {node.tag.rsplit('}', 1)[-1]: node.text for node in document.iter()
+        data = {node.tag.rsplit('}', 1)[-1]: node.text for node in document.iter()
                 if node.tag.rsplit('}', 1)[-1] in allowed}
-    except (OSError, ValueError, ET.ParseError, http.client.HTTPException, subprocess.TimeoutExpired):
+        _DISCOVERY_TLS.reason = 'ok' if data.get('ModelName') else 'empty_metadata'
+        return data
+    except (socket.timeout, TimeoutError, subprocess.TimeoutExpired):
+        _DISCOVERY_TLS.reason = 'timeout'
+        return {}
+    except ConnectionRefusedError:
+        _DISCOVERY_TLS.reason = 'connection_refused'
+        return {}
+    except ET.ParseError:
+        _DISCOVERY_TLS.reason = 'invalid_response'
+        return {}
+    except (OSError, ValueError, http.client.HTTPException):
+        _DISCOVERY_TLS.reason = 'unreachable'
         return {}
     finally:
         if connection is not None:
@@ -212,9 +232,26 @@ $links=@($adapters | Where-Object { $_.PnPDeviceID -match '^USB\\VID_0FCA&' } | 
     # A second active USB network is ambiguous; never choose by response order.
     if len(targets) == 1:
         peer, source, index = targets[0]
+        _DISCOVERY_TLS.reason = None
         result['device'] = discovery(peer, source, index)
         result['usb_peer'] = peer
         result['usb_source_address'] = source
+        reason = getattr(_DISCOVERY_TLS, 'reason', None)
+        if not reason:
+            reason = 'ok' if (result['device'] or {}).get('ModelName') else 'empty_metadata'
+        result['discovery_reason'] = reason
+    elif result.get('usb_present') is False:
+        result['discovery_reason'] = 'no_usb_device'
+    elif isinstance(result.get('usb_count'), int) and result['usb_count'] > 1:
+        result['discovery_reason'] = 'multiple_usb_devices'
+    elif result.get('usb_network') is False:
+        result['discovery_reason'] = 'usb_network_down'
+    elif len(targets) > 1:
+        result['discovery_reason'] = 'multiple_usb_links'
+    elif result.get('usb_present') is True and result.get('usb_network') is True:
+        result['discovery_reason'] = 'no_link_local_30'
+    else:
+        result['discovery_reason'] = 'usb_probe_unavailable'
     # Do not open and abandon QNX development sessions or raw SSH sockets.
     # SSH availability is established by the ordinary, authenticated client.
     result['ssh_port'] = None
